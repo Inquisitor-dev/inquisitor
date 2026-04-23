@@ -8,12 +8,33 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Seeding NPC characters...');
+  console.log('🌱 Seeding database...');
 
-  // Önce mevcut verileri temizle (idempotent)
-  await prisma.dialogueHistory.deleteMany();
-  await prisma.sessionNpcState.deleteMany();
+  // 1. Demo kullanıcı oluştur
+  const demoUser = await prisma.user.upsert({
+    where: { id: 'demo-user-001' },
+    update: {},
+    create: {
+      id: 'demo-user-001',
+      email: 'inquisitor@ashenmoor.ai',
+      passwordHash: 'demo-hash-not-for-login',
+    },
+  });
+  console.log(`  ✅ Demo user: ${demoUser.email}`);
 
+  // 2. Demo game session oluştur
+  const demoSession = await prisma.gameSession.upsert({
+    where: { id: 'demo-session-001' },
+    update: {},
+    create: {
+      id: 'demo-session-001',
+      userId: 'demo-user-001',
+      status: 'ACTIVE',
+    },
+  });
+  console.log(`  ✅ Demo session: ${demoSession.id}`);
+
+  // 3. NPC'leri oluştur / güncelle
   const npcs = [
     {
       id: 'tavern',
@@ -47,7 +68,7 @@ You are not afraid — you are calculating. But your composure can crack if the 
     {
       id: 'graveyard',
       name: 'Old Silas',
-      description: 'The gravedigger. He speaks to the dead more than the living — and sometimes, he claims, they answer.',
+      description: 'The gravedigger. He speaks to the dead more than the living.',
       basePrompt: `You are Old Silas, the gravedigger of Ashenmoor. You are ancient, wiry, and unsettling.
 You have buried everyone in this village for the past forty years and you remember everything.
 You actually saw the ritual three nights ago and are the only witness — but you are terrified to say so.
@@ -66,15 +87,15 @@ Your fear is extreme but so is your stubbornness. You answer to something older 
       update: npc,
       create: npc,
     });
-    console.log(`  ✅ NPC created: ${npc.name} (id: ${npc.id})`);
+    console.log(`  ✅ NPC: ${npc.name} (id: ${npc.id})`);
   }
 
-  console.log('🎭 Seed complete. The village awaits the Inquisitor.');
+  console.log('\n🎭 Seed complete. The village awaits the Inquisitor.');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {
