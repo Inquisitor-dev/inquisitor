@@ -45,10 +45,9 @@ fearChange and lieTendencyChange must be integers between -2 and +2.`;
       this.logger.log(`Calling Groq API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
 
       const response = await this.openai.chat.completions.create({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant', // llama3-8b-8192 decommissioned → llama-3.1-8b-instant
         messages: messages as any,
         temperature: 0.7,
-        // Not using response_format to maximize compatibility
       });
 
       const responseText = response.choices[0].message.content || '{}';
