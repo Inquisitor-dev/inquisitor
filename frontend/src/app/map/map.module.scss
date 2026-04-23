@@ -124,6 +124,7 @@
   width: 100%;
 }
 
+/* The card is now the full link for available locations */
 .locationCard {
   position: relative;
   background: #111111;
@@ -133,10 +134,15 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* pointer events explicitly enabled */
+  pointer-events: auto;
   transition: all 0.3s ease;
   overflow: hidden;
   animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  text-decoration: none;
+  color: inherit;
 
+  /* gradient overlay purely visual, pointer-events disabled */
   &::before {
     content: '';
     position: absolute;
@@ -144,18 +150,28 @@
     background: linear-gradient(135deg, rgba(138, 3, 3, 0.05) 0%, transparent 50%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none; /* ← FIX: never intercept clicks */
+    z-index: 0;
+  }
+
+  /* all direct children above the overlay */
+  & > * {
+    position: relative;
+    z-index: 1;
   }
 
   &:hover:not(.locked) {
     border-color: rgba(138, 3, 3, 0.4);
     transform: translateY(-3px);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(138, 3, 3, 0.2);
+    cursor: pointer;
     &::before { opacity: 1; }
   }
 
   &.locked {
     opacity: 0.4;
     cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -172,10 +188,12 @@ $ct: 1px;
   position: absolute;
   width: $ca;
   height: $ca;
+  pointer-events: none;
   &::before, &::after {
     content: '';
     position: absolute;
     background: rgba(138, 3, 3, 0.3);
+    pointer-events: none;
   }
   &::before { width: 100%; height: $ct; }
   &::after  { width: $ct;  height: 100%; }
@@ -229,8 +247,9 @@ $ct: 1px;
   border: 1px solid rgba(138, 3, 3, 0.4);
   border-radius: 4px;
   transition: all 0.3s ease;
+  pointer-events: none; /* card itself is the link now */
 
-  &:hover {
+  .locationCard:hover & {
     background: #8A0303;
     border-color: #8A0303;
     box-shadow: 0 0 20px rgba(138, 3, 3, 0.4), 0 0 60px rgba(138, 3, 3, 0.15);

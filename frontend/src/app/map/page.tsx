@@ -7,7 +7,6 @@ const locations = [
     name: 'The Tavern',
     subtitle: 'Where secrets are drowned in wine.',
     icon: '🍺',
-    npcIds: [],
     description:
       'Locals gather here at dusk. Loosened tongues and shadowed corners — the perfect hunting ground for contradictions.',
     available: true,
@@ -17,7 +16,6 @@ const locations = [
     name: 'The Church',
     subtitle: 'God watches, but so do you.',
     icon: '⛪',
-    npcIds: [],
     description:
       "The priest holds the village's conscience. But who confesses to the Inquisitor?",
     available: true,
@@ -27,7 +25,6 @@ const locations = [
     name: 'The Graveyard',
     subtitle: 'The dead do not lie. The living do.',
     icon: '🪦',
-    npcIds: [],
     description:
       'Strange rites were reported at midnight. The gravedigger knows what he buried — and what walked away.',
     available: true,
@@ -37,7 +34,6 @@ const locations = [
     name: 'The Mill',
     subtitle: 'Industry masks iniquity.',
     icon: '⚙️',
-    npcIds: [],
     description:
       'The miller deals in grain — and rumour. Follow the flour, follow the conspiracy.',
     available: false,
@@ -76,37 +72,46 @@ export default function MapPage() {
         </div>
 
         <div className={styles.locations}>
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              className={`${styles.locationCard} ${!loc.available ? styles.locked : ''}`}
-            >
-              <div className={styles.locIcon}>{loc.icon}</div>
-              <div className={styles.locContent}>
-                <h2 className={styles.locName}>{loc.name}</h2>
-                <p className={styles.locSubtitle}>{loc.subtitle}</p>
-                <p className={styles.locDesc}>{loc.description}</p>
-              </div>
-              <div className={styles.locFooter}>
-                {loc.available ? (
-                  <Link
-                    href={`/interact/${loc.id}`}
-                    className={styles.enterBtn}
-                  >
-                    Enter & Interrogate
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+          {locations.map((loc) => {
+            // Tüm kart tek bir Link — available ise navigate eder
+            const CardWrapper = loc.available
+              ? ({ children }: { children: React.ReactNode }) => (
+                  <Link href={`/interact/${loc.id}`} className={`${styles.locationCard}`}>
+                    {children}
                   </Link>
-                ) : (
-                  <span className={styles.comingSoon}>Coming Soon</span>
-                )}
-              </div>
-              {/* Corner accent */}
-              <div className={styles.cardCornerTL} />
-              <div className={styles.cardCornerBR} />
-            </div>
-          ))}
+                )
+              : ({ children }: { children: React.ReactNode }) => (
+                  <div className={`${styles.locationCard} ${styles.locked}`}>
+                    {children}
+                  </div>
+                );
+
+            return (
+              <CardWrapper key={loc.id}>
+                <div className={styles.locIcon}>{loc.icon}</div>
+                <div className={styles.locContent}>
+                  <h2 className={styles.locName}>{loc.name}</h2>
+                  <p className={styles.locSubtitle}>{loc.subtitle}</p>
+                  <p className={styles.locDesc}>{loc.description}</p>
+                </div>
+                <div className={styles.locFooter}>
+                  {loc.available ? (
+                    <span className={styles.enterBtn}>
+                      Enter &amp; Interrogate
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className={styles.comingSoon}>Coming Soon</span>
+                  )}
+                </div>
+                {/* Corner accents */}
+                <div className={styles.cardCornerTL} />
+                <div className={styles.cardCornerBR} />
+              </CardWrapper>
+            );
+          })}
         </div>
       </div>
     </main>
