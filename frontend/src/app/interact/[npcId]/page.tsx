@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useGameStore } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
@@ -29,11 +29,12 @@ const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }
   },
 };
 
-// Placeholder session & npc IDs until auth is wired up
 const PLACEHOLDER_SESSION_ID = 'demo-session-001';
 
-export default function InteractPage({ params }: { params: { npcId: string } }) {
-  const npcKey = params.npcId;
+export default function InteractPage({ params }: { params: Promise<{ npcId: string }> }) {
+  // Next.js 15+: params is a Promise, must be unwrapped with React.use()
+  const { npcId } = use(params);
+  const npcKey = npcId;
   const profile = NPC_PROFILES[npcKey] ?? {
     name: 'Unknown Villager',
     title: 'A shadow at the edge of the village',
