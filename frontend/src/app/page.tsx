@@ -1,65 +1,85 @@
-import Image from "next/image";
+import Link from 'next/link';
+import styles from './page.module.scss';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className={styles.main}>
+      {/* Vignette overlay */}
+      <div className={styles.vignette} />
+
+      {/* Animated background candles / particles */}
+      <div className={styles.particles}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <span key={i} className={styles.particle} style={{ '--i': i } as React.CSSProperties} />
+        ))}
+      </div>
+
+      {/* Header corner ornaments */}
+      <div className={styles.cornerTopLeft} />
+      <div className={styles.cornerTopRight} />
+      <div className={styles.cornerBotLeft} />
+      <div className={styles.cornerBotRight} />
+
+      {/* Hero content */}
+      <div className={styles.hero}>
+        {/* Seal / Crown logo */}
+        <div className={styles.seal}>
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
+            <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3"/>
+            <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5"/>
+            {/* Cross */}
+            <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5"/>
+            <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5"/>
+            {/* Diamond ornaments */}
+            <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)"/>
+            <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)"/>
+            <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)"/>
+            <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)"/>
+            <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)"/>
+          </svg>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className={styles.eyebrow}>— ANNO DOMINI MCCXII —</div>
+
+        <h1 className={styles.title}>The Inquisitor</h1>
+
+        <div className={styles.divider}>
+          <span className={styles.dividerLine} />
+          <span className={styles.dividerIcon}>✦</span>
+          <span className={styles.dividerLine} />
         </div>
-      </main>
-    </div>
+
+        <p className={styles.lead}>
+          Nobody in this village is what they seem.
+        </p>
+
+        <p className={styles.description}>
+          You are not the hero of this story. Armed with authority, patience and
+          cold reason — interrogate AI-driven villagers, expose their lies,
+          unravel hidden alliances, and pass your final judgement.
+        </p>
+
+        <div className={styles.slogan}>Listen · Analyze · Condemn</div>
+
+        <div className={styles.cta}>
+          <Link href="/map" className={styles.btnPrimary}>
+            <span>Begin Investigation</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+          <div className={styles.sessionNote}>
+            Free tier · 40 dialogues / day · No download required
+          </div>
+        </div>
+
+        {/* Bottom ornamental rule */}
+        <div className={styles.bottomRule}>
+          <span />
+          <span className={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</span>
+          <span />
+        </div>
+      </div>
+    </main>
   );
 }

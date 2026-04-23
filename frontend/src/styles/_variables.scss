@@ -1,0 +1,42 @@
+// ===========================
+// The Inquisitor — Design System Variables
+// ===========================
+
+// Color Palette (from proje.md)
+$bg-color:      #050505;
+$bg-secondary:  #0d0d0d;
+$bg-card:       #111111;
+$primary:       #8A0303;
+$primary-dark:  #5a0202;
+$primary-glow:  rgba(138, 3, 3, 0.35);
+$text-parchment:#E8DCC4;
+$text-muted:    #8a7f72;
+$text-dim:      #4a4440;
+$border-color:  rgba(232, 220, 196, 0.1);
+$border-red:    rgba(138, 3, 3, 0.4);
+
+// Typography
+$font-title:  'Playfair Display', serif;
+$font-body:   'Inter', sans-serif;
+
+// Spacing Scale
+$sp-xs:   4px;
+$sp-sm:   8px;
+$sp-md:   16px;
+$sp-lg:   24px;
+$sp-xl:   40px;
+$sp-2xl:  64px;
+
+// Border Radius
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 16px;
+
+// Transitions
+$transition-fast:   0.15s ease;
+$transition-normal: 0.3s ease;
+$transition-slow:   0.6s ease;
+
+// Shadows
+$shadow-red: 0 0 20px rgba(138, 3, 3, 0.4), 0 0 60px rgba(138, 3, 3, 0.15);
+$shadow-card: 0 4px 24px rgba(0, 0, 0, 0.6);

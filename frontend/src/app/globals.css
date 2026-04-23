@@ -1,26 +1,88 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap');
 
+/* ===========================
+   CSS Custom Properties (Design Tokens)
+   =========================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-color:       #050505;
+  --bg-secondary:   #0d0d0d;
+  --bg-card:        #111111;
+  --primary:        #8A0303;
+  --primary-dark:   #5a0202;
+  --primary-glow:   rgba(138, 3, 3, 0.35);
+  --text-parchment: #E8DCC4;
+  --text-muted:     #8a7f72;
+  --text-dim:       #4a4440;
+  --border-color:   rgba(232, 220, 196, 0.1);
+  --border-red:     rgba(138, 3, 3, 0.4);
+  --font-title:     'Playfair Display', serif;
+  --font-body:      'Inter', sans-serif;
+  --shadow-red:     0 0 20px rgba(138, 3, 3, 0.4), 0 0 60px rgba(138, 3, 3, 0.15);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ===========================
+   Reset & Base
+   =========================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
+  background-color: var(--bg-color);
+  color: var(--text-parchment);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ===========================
+   Scrollbar Styling
+   =========================== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: var(--primary-dark); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ===========================
+   Selection
+   =========================== */
+::selection {
+  background: rgba(138, 3, 3, 0.4);
+  color: var(--text-parchment);
+}
+
+/* ===========================
+   Grain Texture Overlay
+   =========================== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.35;
 }
