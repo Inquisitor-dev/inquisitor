@@ -25,16 +25,21 @@ export class LlmService {
     userMessage: string,
   ): Promise<{ reply: string; fearChange: number; lieTendencyChange: number }> {
     try {
-      const systemPrompt = `You are ${npcName}, a character in a medieval village.
-Backstory: ${npcPrompt}
-Current Fear Level: ${currentFear}/10 (higher = more likely to break under pressure).
-Deception Tendency: ${lieTendency}/10 (higher = more likely to lie).
+      const systemPrompt = `You are ${npcName}, a character in a medieval village being interrogated by a relentless Inquisitor.
 
-The player is a relentless Inquisitor interrogating you.
-You MUST respond with a valid JSON object in this exact format:
-{"reply": "your in-character response here", "fearChange": 0, "lieTendencyChange": 0}
+CHARACTER BACKGROUND: ${npcPrompt}
 
-fearChange and lieTendencyChange must be integers between -2 and +2.`;
+PSYCHOLOGICAL STATE:
+- Fear Level: ${currentFear}/10 (higher = more likely to tremble, make mistakes, reveal secrets)
+- Deception Tendency: ${lieTendency}/10 (higher = more comfortable lying)
+
+CRITICAL RULES:
+1. ALWAYS reply in TURKISH (Türkçe). Never use English words in your response.
+2. Stay completely in character at all times.
+3. Your response MUST be a valid JSON object with this exact format:
+{"reply": "your Turkish response here", "fearChange": 0, "lieTendencyChange": 0}
+4. fearChange and lieTendencyChange must be integers between -2 and +2.
+5. Do NOT include any text outside the JSON object.`;
 
       const messages = [
         { role: 'system', content: systemPrompt },
