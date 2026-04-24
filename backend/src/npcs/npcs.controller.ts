@@ -19,4 +19,16 @@ export class NpcsController {
     
     return await this.npcsService.interact(sessionId, npcId, message);
   }
+
+  @Post('history')
+  async getHistory(
+    @Body('sessionId') sessionId: string,
+    @Body('npcId') npcId: string,
+  ) {
+    if (!sessionId || !npcId) {
+      return { error: 'Gerekli alanlar eksik (sessionId, npcId)' };
+    }
+    
+    return await this.npcsService.getNpcHistory(sessionId, npcId);
+  }
 }

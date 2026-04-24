@@ -46,20 +46,70 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'npc',
-      text: `*${profile.name} looks up as you enter, eyes narrowing.*\n\n"An Inquisitor in our village... What do you want from me?"`,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Sayfa yüklendiğinde geçmişi çek
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/npcs/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: PLACEHOLDER_SESSION_ID,
+            npcId: npcKey,
+          }),
+        });
+        
+        const data = await res.json();
+        
+        if (data.history && data.history.length > 0) {
+          // Gelen geçmiş mesajlarını Message formatına çevir
+          const formattedHistory = data.history.map((h: any) => ({
+            role: h.role,
+            text: h.text,
+            timestamp: new Date(h.timestamp),
+          }));
+          setMessages(formattedHistory);
+        } else {
+          // Eğer geçmiş yoksa ilk varsayılan mesajı göster
+          setMessages([
+            {
+              role: 'npc',
+              text: `*${profile.name} looks up as you enter, eyes narrowing.*\n\n"An Inquisitor in our village... What do you want from me?"`,
+              timestamp: new Date(),
+            },
+          ]);
+        }
+
+        // Eğer backend'den anlık psikolojik durum döndüyse state'i güncelle
+        if (data.state) {
+          updateNpcState(npcKey, data.state.fear, data.state.lie);
+        }
+      } catch (err) {
+        console.error('History fetch error:', err);
+        // Hata olursa varsayılan mesajla başla
+        setMessages([
+          {
+            role: 'npc',
+            text: `*${profile.name} looks up as you enter, eyes narrowing.*\n\n"An Inquisitor in our village... What do you want from me?"`,
+            timestamp: new Date(),
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [npcKey, profile.name]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -283,6 +333,15 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               />
             </div>
             <p className={styles.sideHint}>{dialoguesUsedToday} / {maxDailyDialogues} dialogues used today.</p>
+          </div>
+
+          <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
+            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={() => alert('Phase 6: Condemn mechanic coming soon!')}>
+              CONDEMN THIS HERETIC
+            </button>
+            <p className={styles.sideHint} style={{ textAlign: 'center', marginTop: '8px' }}>
+              Final judgement ends the session.
+            </p>
           </div>
         </aside>
       </div>

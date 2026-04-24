@@ -102,4 +102,32 @@ export class NpcsService {
       },
     };
   }
+
+  async getNpcHistory(sessionId: string, npcId: string) {
+    const state = await this.prisma.sessionNpcState.findUnique({
+      where: {
+        sessionId_npcId: { sessionId, npcId },
+      },
+      include: {
+        npc: true,
+      },
+    });
+
+    const historyData = await this.prisma.dialogueHistory.findMany({
+      where: { sessionId, npcId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return {
+      state: state
+        ? { fear: state.currentFear, lie: state.lieTendency }
+        : null,
+      history: historyData.map((h) => ({
+        role: h.speaker === 'PLAYER' ? 'player' : 'npc',
+        text: h.message,
+        timestamp: h.createdAt,
+      })),
+      baseNpc: state ? { baseFear: state.npc.baseFear, baseLie: state.npc.baseLie } : null
+    };
+  }
 }
