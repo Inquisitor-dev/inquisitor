@@ -50,19 +50,40 @@ fearChange and lieTendencyChange must be integers between -2 and +2.`;
         temperature: 0.7,
       });
 
-      const responseText = response.choices[0].message.content || '{}';
+      const responseText = response.choices[0].message.content || '';
       this.logger.log(`Groq raw response: ${responseText.slice(0, 200)}`);
 
-      // Extract JSON from the response (model might wrap it in markdown)
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
-      const parsedData = JSON.parse(jsonStr);
+      // Try to parse JSON - model sometimes returns raw text with {action} markers
+      let reply = responseText;
+      let fearChange = 0;
+      let lieTendencyChange = 0;
 
-      return {
-        reply: parsedData.reply || parsedData.response || responseText,
-        fearChange: typeof parsedData.fearChange === 'number' ? parsedData.fearChange : 0,
-        lieTendencyChange: typeof parsedData.lieTendencyChange === 'number' ? parsedData.lieTendencyChange : 0,
-      };
+      try {
+        // Look for a proper JSON object in the response
+        const jsonMatch = responseText.match(/\{(?:[^{}]|\{[^{}]*\})*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.reply) {
+            reply = parsed.reply;
+            fearChange = typeof parsed.fearChange === 'number' ? parsed.fearChange : 0;
+            lieTendencyChange = typeof parsed.lieTendencyChange === 'number' ? parsed.lieTendencyChange : 0;
+          }
+        }
+        // If no valid JSON reply found, use the raw response as the reply (clean up any stray braces)
+        reply = reply.replace(/\{[^}]*\}/g, (match) => {
+          // Keep only {action} style markers as italics, remove JSON-looking ones
+          if (match.includes('"') || match.includes(':')) return '';
+          return `*${match.slice(1, -1).trim()}*`;
+        }).trim();
+      } catch (parseErr) {
+        this.logger.warn(`JSON parse failed, using raw text: ${parseErr}`);
+        // Use raw text, clean up any JSON-like syntax
+        reply = responseText.replace(/^\s*\{[\s\S]*?\}\s*/, '').trim() || responseText;
+      }
+
+      if (!reply) reply = 'Hmm... *shifts uncomfortably*';
+
+      return { reply, fearChange, lieTendencyChange };
     } catch (error: any) {
       this.logger.error(`Groq API Error: ${error?.message || error}`);
       this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
