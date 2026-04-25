@@ -1,7 +1,35 @@
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useGameStore } from '../store/useGameStore';
 import styles from './page.module.scss';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { setSessionId } = useGameStore();
+  const [loading, setLoading] = useState(false);
+
+  const handleStart = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:3001/game-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'demo-user-001' }) // Geçici
+      });
+      const data = await res.json();
+      
+      if (data.id) {
+        setSessionId(data.id);
+        router.push('/map');
+      }
+    } catch (err) {
+      console.error('Failed to start session', err);
+      setLoading(false);
+    }
+  };
+
   return (
     <main className={styles.main}>
       {/* Vignette overlay */}
@@ -62,12 +90,18 @@ export default function HomePage() {
         <div className={styles.slogan}>Listen · Analyze · Condemn</div>
 
         <div className={styles.cta}>
-          <Link href="/map" className={styles.btnPrimary}>
-            <span>Begin Investigation</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
+          <button onClick={handleStart} disabled={loading} className={styles.btnPrimary} style={{ width: '100%', justifyContent: 'center' }}>
+            {loading ? (
+              <span>Preparing the carriage to Ashenmoor...</span>
+            ) : (
+              <>
+                <span>Begin Investigation</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </>
+            )}
+          </button>
           <div className={styles.sessionNote}>
             Free tier · 40 dialogues / day · No download required
           </div>

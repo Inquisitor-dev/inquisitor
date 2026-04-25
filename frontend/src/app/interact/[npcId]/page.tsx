@@ -41,7 +41,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed } =
+  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId } =
     useGameStore();
 
   const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
@@ -58,12 +58,13 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   // Sayfa yüklendiğinde geçmişi çek
   useEffect(() => {
     const fetchHistory = async () => {
+      if (!sessionId) return; // Session ID yoksa çekme
       try {
         const res = await fetch('http://localhost:3001/npcs/history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            sessionId: PLACEHOLDER_SESSION_ID,
+            sessionId: sessionId,
             npcId: npcKey,
           }),
         });
@@ -114,11 +115,11 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [npcKey, profile.name]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
+  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || loading || dialoguesUsedToday >= maxDailyDialogues) return;
+    if (!trimmed || loading || dialoguesUsedToday >= maxDailyDialogues || !sessionId) return;
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
@@ -130,7 +131,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId: PLACEHOLDER_SESSION_ID,
+          sessionId: sessionId,
           npcId: npcKey,
           message: trimmed,
         }),

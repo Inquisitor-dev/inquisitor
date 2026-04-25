@@ -50,7 +50,7 @@ CRITICAL RULES:
       this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
 
       const response = await this.openai.chat.completions.create({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-latest',
         messages: messages as any,
         temperature: 0.7,
       });
@@ -90,13 +90,66 @@ CRITICAL RULES:
 
       return { reply, fearChange, lieTendencyChange };
     } catch (error: any) {
-      this.logger.error(`Groq API Error: ${error?.message || error}`);
+      this.logger.error(`Gemini API Error: ${error?.message || error}`);
       this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
       return {
         reply: 'Şu an sizinle konuşmak istemiyorum... (Sistem Hatası)',
         fearChange: 0,
         lieTendencyChange: 0,
       };
+    }
+  }
+
+  async generateSessionScenario(): Promise<{
+    scenario: string;
+    culpritId: string;
+    npcPrompts: Record<string, string>;
+  }> {
+    const prompt = `You are the Game Master for a dark medieval interrogation game.
+Create a new murder or dark heresy mystery set in the village of Ashenmoor.
+
+We have 3 main NPCs:
+1. "tavern" (Brother Aldric, Innkeeper)
+2. "church" (Father Malachar, Priest)
+3. "graveyard" (Old Silas, Gravedigger)
+
+YOUR TASK:
+1. Invent a specific, gruesome, or mysterious incident that happened recently (e.g. a body found, a dark ritual, cursed crops).
+2. Randomly select exactly ONE of the 3 NPCs to be the GUILTY CULPRIT.
+3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the 3 NPCs. 
+   - The guilty NPC's prompt must explain they did it and how they try to hide it.
+   - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
+
+Return a valid JSON object ONLY, in exactly this format:
+{
+  "scenario": "Description of the dark incident...",
+  "culpritId": "tavern" | "church" | "graveyard",
+  "npcPrompts": {
+    "tavern": "Your personal secret/role regarding this incident...",
+    "church": "Your personal secret/role regarding this incident...",
+    "graveyard": "Your personal secret/role regarding this incident..."
+  }
+}`;
+
+    this.logger.log(`Calling Gemini API to generate dynamic scenario...`);
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gemini-flash-latest',
+      messages: [{ role: 'system', content: prompt }],
+      temperature: 0.9,
+    });
+
+    const responseText = response.choices[0].message.content || '';
+    
+    try {
+      const jsonMatch = responseText.match(/\{(?:[^{}]|\{[^{}]*\})*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      return JSON.parse(responseText);
+    } catch (e) {
+      this.logger.error(`Failed to parse scenario JSON: ${responseText}`);
+      throw new Error('Failed to generate scenario JSON');
     }
   }
 }

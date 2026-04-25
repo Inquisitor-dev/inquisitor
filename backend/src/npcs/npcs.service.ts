@@ -17,13 +17,15 @@ export class NpcsService {
       },
       include: {
         npc: true,
+        session: true, // Senaryoya ulaşmak için
       },
     });
 
-    // Durum yoksa ve NPC varsa, state oluştur (ilk etkileşim)
+    // Durum yoksa ve NPC varsa, state oluştur (ilk etkileşim - ama artık session oluşurken yapılıyor, yinede fallback olarak kalsın)
     if (!state) {
       const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
-      if (!npc) throw new NotFoundException('NPC bulunamadı.');
+      const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
+      if (!npc || !session) throw new NotFoundException('NPC veya Session bulunamadı.');
       
       state = await this.prisma.sessionNpcState.create({
         data: {
@@ -31,8 +33,9 @@ export class NpcsService {
           npcId,
           currentFear: npc.baseFear,
           lieTendency: npc.baseLie,
+          dynamicPrompt: "You are a villager. You know nothing.",
         },
-        include: { npc: true },
+        include: { npc: true, session: true },
       });
     }
 
@@ -58,10 +61,12 @@ export class NpcsService {
       },
     });
 
-    // 4. LLM API'ye sor
+    // 4. LLM API'ye sor (Artık dynamicPrompt ve scenario da gidiyor)
+    const combinedPrompt = `${state.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${state.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${state.dynamicPrompt}`;
+
     const llmResponse = await this.llm.generateNpcResponse(
       state.npc.name,
-      state.npc.basePrompt,
+      combinedPrompt,
       state.currentFear,
       state.lieTendency,
       chatHistory,

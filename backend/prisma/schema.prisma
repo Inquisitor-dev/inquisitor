@@ -22,6 +22,8 @@ model GameSession {
   userId    String
   user      User            @relation(fields: [userId], references: [id])
   status    String          @default("ACTIVE") // ACTIVE, WON, LOST
+  scenario  String?         // Dinamik hikaye özeti
+  culpritId String?         // Cadı/Suçlu olan NPC ID'si
   createdAt DateTime        @default(now())
   npcStates SessionNpcState[]
   dialogues DialogueHistory[]
@@ -38,13 +40,14 @@ model Npc {
 }
 
 model SessionNpcState {
-  id          String      @id @default(uuid())
-  sessionId   String
-  session     GameSession @relation(fields: [sessionId], references: [id])
-  npcId       String
-  npc         Npc         @relation(fields: [npcId], references: [id])
-  currentFear Int         @default(0)
-  lieTendency Int         @default(0)
+  id            String      @id @default(uuid())
+  sessionId     String
+  session       GameSession @relation(fields: [sessionId], references: [id])
+  npcId         String
+  npc           Npc         @relation(fields: [npcId], references: [id])
+  currentFear   Int         @default(0)
+  lieTendency   Int         @default(0)
+  dynamicPrompt String?     // Bu oturum için karaktere özel yazılmış gizli bilgi/motivasyon
   
   @@unique([sessionId, npcId])
 }
