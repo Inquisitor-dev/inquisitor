@@ -118,6 +118,11 @@ export class NpcsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Toplam oturum boyunca kullanıcının gönderdiği mesaj sayısını hesapla
+    const totalDialoguesUsed = await this.prisma.dialogueHistory.count({
+      where: { sessionId, speaker: 'PLAYER' }
+    });
+
     return {
       state: state
         ? { fear: state.currentFear, lie: state.lieTendency }
@@ -127,7 +132,8 @@ export class NpcsService {
         text: h.message,
         timestamp: h.createdAt,
       })),
-      baseNpc: state ? { baseFear: state.npc.baseFear, baseLie: state.npc.baseLie } : null
+      baseNpc: state ? { baseFear: state.npc.baseFear, baseLie: state.npc.baseLie } : null,
+      dialoguesUsed: totalDialoguesUsed
     };
   }
 }

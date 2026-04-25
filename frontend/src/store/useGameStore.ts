@@ -11,6 +11,7 @@ interface GameState {
   setSelectedNpc: (npcId: string) => void;
   updateNpcState: (npcId: string, fear: number, lie: number) => void;
   incrementDialogue: () => void;
+  setDialoguesUsed: (count: number) => void;
   reset: () => void;
 }
 
@@ -36,6 +37,11 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => ({
       dialoguesUsedToday: state.dialoguesUsedToday + 1,
     })),
+
+  setDialoguesUsed: (count) =>
+    set({
+      dialoguesUsedToday: count,
+    }),
 
   reset: () =>
     set({

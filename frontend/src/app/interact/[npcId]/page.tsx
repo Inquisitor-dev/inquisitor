@@ -41,7 +41,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue } =
+  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed } =
     useGameStore();
 
   const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
@@ -92,6 +92,11 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         // Eğer backend'den anlık psikolojik durum döndüyse state'i güncelle
         if (data.state) {
           updateNpcState(npcKey, data.state.fear, data.state.lie);
+        }
+
+        // Kullanılan diyalog miktarını güncelle
+        if (typeof data.dialoguesUsed === 'number') {
+          setDialoguesUsed(data.dialoguesUsed);
         }
       } catch (err) {
         console.error('History fetch error:', err);
