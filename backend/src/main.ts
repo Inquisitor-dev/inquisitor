@@ -14,6 +14,6 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3001);
   console.log(`🚀 Backend running on http://localhost:${process.env.PORT ?? 3001}`);
-  console.log(`🔑 GROQ_API_KEY: ${process.env.GROQ_API_KEY ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`🔑 GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ MISSING'}`);
 }
 bootstrap();

@@ -7,12 +7,12 @@ export class LlmService {
   private readonly logger = new Logger(LlmService.name);
 
   constructor() {
-    const apiKey = process.env.GROQ_API_KEY;
-    this.logger.log(`GROQ_API_KEY: ${apiKey ? `✅ Found (${apiKey.slice(0, 8)}...)` : '❌ MISSING!'}`);
+    const apiKey = process.env.GEMINI_API_KEY;
+    this.logger.log(`GEMINI_API_KEY: ${apiKey ? `✅ Found (${apiKey.slice(0, 8)}...)` : '❌ MISSING!'}`);
     
     this.openai = new OpenAI({
       apiKey: apiKey || 'no-key-provided',
-      baseURL: 'https://api.groq.com/openai/v1',
+      baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
     });
   }
 
@@ -34,12 +34,12 @@ PSYCHOLOGICAL STATE:
 - Deception Tendency: ${lieTendency}/10 (higher = more comfortable lying)
 
 CRITICAL RULES:
-1. ALWAYS reply in TURKISH (Türkçe). Never use English words in your response.
-2. Stay completely in character at all times.
+1. ALWAYS reply in natural, literary TURKISH (Türkçe). Speak smoothly, avoid translation-like phrasing. 
+2. Stay completely in character at all times. React naturally to the pressure.
 3. Your response MUST be a valid JSON object with this exact format:
 {"reply": "your Turkish response here", "fearChange": 0, "lieTendencyChange": 0}
 4. fearChange and lieTendencyChange must be integers between -2 and +2.
-5. Do NOT include any text outside the JSON object.`;
+5. Do NOT include any text outside the JSON object. Do not include markdown formatting or action markers like *sigh* inside the text, just natural speech and occasional subtle narrative descriptions if strictly necessary.`;
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -47,16 +47,16 @@ CRITICAL RULES:
         { role: 'user', content: userMessage },
       ];
 
-      this.logger.log(`Calling Groq API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
+      this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
 
       const response = await this.openai.chat.completions.create({
-        model: 'llama-3.1-8b-instant', // llama3-8b-8192 decommissioned → llama-3.1-8b-instant
+        model: 'gemini-1.5-flash',
         messages: messages as any,
         temperature: 0.7,
       });
 
       const responseText = response.choices[0].message.content || '';
-      this.logger.log(`Groq raw response: ${responseText.slice(0, 200)}`);
+      this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
 
       // Try to parse JSON - model sometimes returns raw text with {action} markers
       let reply = responseText;
