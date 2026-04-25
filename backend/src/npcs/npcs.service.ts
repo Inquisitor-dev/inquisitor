@@ -62,13 +62,14 @@ export class NpcsService {
     });
 
     // 4. LLM API'ye sor (Artık dynamicPrompt ve scenario da gidiyor)
-    const combinedPrompt = `${state.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${state.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${state.dynamicPrompt}`;
+    const currentState = state!;
+    const combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
 
     const llmResponse = await this.llm.generateNpcResponse(
-      state.npc.name,
+      currentState.npc.name,
       combinedPrompt,
-      state.currentFear,
-      state.lieTendency,
+      currentState.currentFear,
+      currentState.lieTendency,
       chatHistory,
       userMessage,
     );
@@ -84,15 +85,15 @@ export class NpcsService {
     });
 
     // 6. NPC State'ini güncelle
-    let newFear = state.currentFear + llmResponse.fearChange;
-    let newLie = state.lieTendency + llmResponse.lieTendencyChange;
+    let newFear = currentState.currentFear + llmResponse.fearChange;
+    let newLie = currentState.lieTendency + llmResponse.lieTendencyChange;
 
     // Sınırlandırmalar: 0 ile 10 arasında tutuyoruz
     newFear = Math.max(0, Math.min(10, newFear));
     newLie = Math.max(0, Math.min(10, newLie));
 
     await this.prisma.sessionNpcState.update({
-      where: { id: state.id },
+      where: { id: currentState.id },
       data: {
         currentFear: newFear,
         lieTendency: newLie,

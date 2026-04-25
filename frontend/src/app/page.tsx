@@ -23,6 +23,9 @@ export default function HomePage() {
       if (data.id) {
         setSessionId(data.id);
         router.push('/map');
+      } else {
+        console.error('Failed to create session, missing ID:', data);
+        setLoading(false);
       }
     } catch (err) {
       console.error('Failed to start session', err);

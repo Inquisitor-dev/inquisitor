@@ -135,7 +135,7 @@ Return a valid JSON object ONLY, in exactly this format:
 
     const response = await this.openai.chat.completions.create({
       model: 'gemini-flash-latest',
-      messages: [{ role: 'system', content: prompt }],
+      messages: [{ role: 'user', content: prompt }],
       temperature: 0.9,
     });
 
