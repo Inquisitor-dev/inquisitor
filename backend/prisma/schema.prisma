@@ -18,15 +18,16 @@ model User {
 }
 
 model GameSession {
-  id        String          @id @default(uuid())
-  userId    String
-  user      User            @relation(fields: [userId], references: [id])
-  status    String          @default("ACTIVE") // ACTIVE, WON, LOST
-  scenario  String?         // Dinamik hikaye özeti
-  culpritId String?         // Cadı/Suçlu olan NPC ID'si
-  createdAt DateTime        @default(now())
-  npcStates SessionNpcState[]
-  dialogues DialogueHistory[]
+  id          String            @id @default(uuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id])
+  status      String            @default("ACTIVE") // ACTIVE, WON, LOST
+  scenario    String?           // Dinamik hikaye özeti
+  culpritId   String?           // Cadı/Suçlu olan NPC ID'si
+  currentDay  Int               @default(1)
+  createdAt   DateTime          @default(now())
+  npcStates   SessionNpcState[]
+  dialogues   DialogueHistory[]
 }
 
 model Npc {
@@ -59,5 +60,6 @@ model DialogueHistory {
   npcId     String
   speaker   String
   message   String
+  dayNumber Int         @default(1)
   createdAt DateTime    @default(now())
 }

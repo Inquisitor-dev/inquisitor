@@ -41,7 +41,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId } =
+  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay } =
     useGameStore();
 
   const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
@@ -99,6 +99,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         if (typeof data.dialoguesUsed === 'number') {
           setDialoguesUsed(data.dialoguesUsed);
         }
+        if (typeof data.currentDay === 'number') {
+          setCurrentDay(data.currentDay);
+        }
       } catch (err) {
         console.error('History fetch error:', err);
         // Hata olursa varsayılan mesajla başla
@@ -115,7 +118,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
+  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState, setCurrentDay]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -245,8 +248,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           {/* Input */}
           <div className={styles.inputArea}>
             {dialoguesUsedToday >= maxDailyDialogues ? (
-              <div className={styles.limitReached}>
-                Daily limit reached — return tomorrow or upgrade to Premium.
+              <div className={styles.limitReached} style={{ color: '#8A0303', textAlign: 'center', padding: '16px', fontStyle: 'italic', background: '#111', border: '1px solid #333' }}>
+                It is getting late. You must return to the village map and end the day.
               </div>
             ) : (
               <>

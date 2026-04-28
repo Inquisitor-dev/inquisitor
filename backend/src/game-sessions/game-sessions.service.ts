@@ -48,4 +48,34 @@ export class GameSessionsService {
     this.logger.log(`Session ${session.id} fully created and populated.`);
     return session;
   }
+
+  async endDay(sessionId: string) {
+    this.logger.log(`Ending day for session: ${sessionId}`);
+    
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      include: { npcStates: true },
+    });
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    // Günü 1 artır
+    const updatedSession = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { currentDay: session.currentDay + 1 },
+    });
+
+    // Her NPC'nin korkusunu 1 azalt (0'ın altına düşmesin)
+    for (const state of session.npcStates) {
+      const newFear = Math.max(0, state.currentFear - 1);
+      await this.prisma.sessionNpcState.update({
+        where: { id: state.id },
+        data: { currentFear: newFear },
+      });
+    }
+
+    return updatedSession;
+  }
 }

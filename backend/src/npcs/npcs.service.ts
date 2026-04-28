@@ -58,6 +58,7 @@ export class NpcsService {
         npcId,
         speaker: 'PLAYER',
         message: userMessage,
+        dayNumber: state.session.currentDay,
       },
     });
 
@@ -81,6 +82,7 @@ export class NpcsService {
         npcId,
         speaker: 'NPC',
         message: llmResponse.reply,
+        dayNumber: state.session.currentDay,
       },
     });
 
@@ -116,6 +118,7 @@ export class NpcsService {
       },
       include: {
         npc: true,
+        session: true,
       },
     });
 
@@ -124,9 +127,10 @@ export class NpcsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    // Toplam oturum boyunca kullanıcının gönderdiği mesaj sayısını hesapla
+    // Sadece bugüne ait olan oyuncu mesajı sayısını hesapla
+    const currentDay = state?.session?.currentDay || 1;
     const totalDialoguesUsed = await this.prisma.dialogueHistory.count({
-      where: { sessionId, speaker: 'PLAYER' }
+      where: { sessionId, speaker: 'PLAYER', dayNumber: currentDay }
     });
 
     return {
@@ -139,7 +143,8 @@ export class NpcsService {
         timestamp: h.createdAt,
       })),
       baseNpc: state ? { baseFear: state.npc.baseFear, baseLie: state.npc.baseLie } : null,
-      dialoguesUsed: totalDialoguesUsed
+      dialoguesUsed: totalDialoguesUsed,
+      currentDay: currentDay
     };
   }
 }

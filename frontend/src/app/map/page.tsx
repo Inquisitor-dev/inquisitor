@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { useGameStore } from '../store/useGameStore';
 import styles from './map.module.scss';
 
 const locations = [
@@ -41,6 +45,24 @@ const locations = [
 ];
 
 export default function MapPage() {
+  const { currentDay, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay } = useGameStore();
+  const [endingDay, setEndingDay] = useState(false);
+
+  const handleEndDay = async () => {
+    if (!sessionId) return;
+    setEndingDay(true);
+    try {
+      await fetch(`http://localhost:3001/game-sessions/${sessionId}/end-day`, {
+        method: 'POST',
+      });
+      endDay(); // Zustand state'i güncelle
+    } catch (err) {
+      console.error('Failed to end day', err);
+    } finally {
+      setEndingDay(false);
+    }
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.vignette} />
@@ -57,9 +79,31 @@ export default function MapPage() {
           <h1 className={styles.pageTitle}>Village of Ashenmoor</h1>
           <p className={styles.pageSub}>Choose your location — Choose your prey.</p>
         </div>
-        <div className={styles.sessionInfo}>
-          <span className={styles.sessionDot} />
-          <span>Session Active</span>
+        <div className={styles.sessionInfo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+          <div>
+            <span className={styles.sessionDot} />
+            <span>Day {currentDay}</span>
+            <span style={{ marginLeft: '12px', opacity: 0.7 }}>
+              Dialogues: {maxDailyDialogues - dialoguesUsedToday}/{maxDailyDialogues}
+            </span>
+          </div>
+          <button 
+            onClick={handleEndDay} 
+            disabled={endingDay}
+            style={{
+              background: 'transparent',
+              border: '1px solid #8A0303',
+              color: '#8A0303',
+              padding: '4px 12px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textTransform: 'uppercase',
+              fontSize: '0.8rem',
+              letterSpacing: '1px'
+            }}
+          >
+            {endingDay ? 'Resting...' : 'End Day'}
+          </button>
         </div>
       </header>
 
