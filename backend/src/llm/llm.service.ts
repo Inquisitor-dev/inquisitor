@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 @Injectable()
 export class LlmService {
   private openai: OpenAI;
@@ -47,15 +49,32 @@ CRITICAL RULES:
         { role: 'user', content: userMessage },
       ];
 
-      this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
+      let response;
+      let retries = 0;
+      const maxRetries = 3;
 
-      const response = await this.openai.chat.completions.create({
-        model: 'gemini-flash-latest',
-        messages: messages as any,
-        temperature: 0.7,
-      });
+      while (retries <= maxRetries) {
+        try {
+          this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
+          response = await this.openai.chat.completions.create({
+            model: 'gemini-flash-latest',
+            messages: messages as any,
+            temperature: 0.7,
+          });
+          break; // Success, exit retry loop
+        } catch (err: any) {
+          if (err?.status === 429 && retries < maxRetries) {
+            retries++;
+            const waitTime = Math.pow(2, retries) * 1500; // 3s, 6s, 12s
+            this.logger.warn(`API Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`);
+            await delay(waitTime);
+          } else {
+            throw err; // Not a 429 or max retries reached, throw it to the outer catch
+          }
+        }
+      }
 
-      const responseText = response.choices[0].message.content || '';
+      const responseText = response?.choices?.[0]?.message?.content || '';
       this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
 
       // Try to parse JSON - model sometimes returns raw text with {action} markers
@@ -89,11 +108,18 @@ CRITICAL RULES:
       if (!reply) reply = 'Hmm... *shifts uncomfortably*';
 
       return { reply, fearChange, lieTendencyChange };
+
     } catch (error: any) {
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
       this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
+      
+      let errorMessage = 'Şu an sizinle konuşmak istemiyorum... (Beklenmeyen Sistem Hatası)';
+      if (error?.status === 429) {
+        errorMessage = '*Karakter sessizliğe bürünüyor...* (Sunucu aşırı yoğun, lütfen birazdan tekrar deneyin.)';
+      }
+
       return {
-        reply: 'Şu an sizinle konuşmak istemiyorum... (Sistem Hatası)',
+        reply: errorMessage,
         fearChange: 0,
         lieTendencyChange: 0,
       };
@@ -133,13 +159,31 @@ Return a valid JSON object ONLY, in exactly this format:
 
     this.logger.log(`Calling Gemini API to generate dynamic scenario...`);
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gemini-flash-latest',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.9,
-    });
+    let response;
+    let retries = 0;
+    const maxRetries = 3;
 
-    const responseText = response.choices[0].message.content || '';
+    while (retries <= maxRetries) {
+      try {
+        response = await this.openai.chat.completions.create({
+          model: 'gemini-flash-latest',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.9,
+        });
+        break; // Success
+      } catch (err: any) {
+        if (err?.status === 429 && retries < maxRetries) {
+          retries++;
+          const waitTime = Math.pow(2, retries) * 1500;
+          this.logger.warn(`Scenario Generation Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`);
+          await delay(waitTime);
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    const responseText = response?.choices?.[0]?.message?.content || '';
     
     try {
       const jsonMatch = responseText.match(/\{(?:[^{}]|\{[^{}]*\})*\}/);
