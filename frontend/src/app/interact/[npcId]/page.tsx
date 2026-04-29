@@ -53,6 +53,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
   const [localNotes, setLocalNotes] = useState('');
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -376,7 +377,14 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           </div>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Engizisyoncunun Notları</div>
+            <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Engizisyoncunun Notları
+              <button className={styles.expandBtn} onClick={() => setIsNotesExpanded(true)} title="Genişlet">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 14V9M2 14h5M14 2v5M14 2H9M6 10l-4 4M10 6l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
             <textarea
               className={styles.textarea}
               style={{ minHeight: '120px', padding: '12px', marginTop: '8px', fontSize: '0.85rem' }}
@@ -408,6 +416,29 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           </div>
         </aside>
       </div>
+
+      {isNotesExpanded && (
+        <div className={styles.notesExpandedOverlay}>
+          <div className={styles.notesExpandedHeader}>
+            <h2 className={styles.notesExpandedTitle}>Engizisyoncunun Notları</h2>
+            <button className={styles.closeBtn} onClick={() => setIsNotesExpanded(false)} title="Küçült">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div className={styles.notesExpandedBody}>
+            <textarea
+              className={styles.notesExpandedTextarea}
+              value={localNotes}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder="Şüpheli davranışları, çelişkileri ve karakter hakkındaki analizlerinizi buraya not edebilirsiniz..."
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
