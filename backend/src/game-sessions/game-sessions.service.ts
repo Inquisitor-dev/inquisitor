@@ -103,4 +103,46 @@ export class GameSessionsService {
 
     return updatedSession;
   }
+
+  async getSession(sessionId: string) {
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+    });
+    if (!session) throw new Error('Session not found');
+    return session;
+  }
+
+  async updateNotes(sessionId: string, notes: string) {
+    return await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { notes },
+    });
+  }
+
+  async condemnNpc(sessionId: string, npcId: string) {
+    this.logger.log(`Condemning NPC: ${npcId} for session: ${sessionId}`);
+
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) throw new Error('Session not found');
+    if (session.status !== 'ACTIVE') throw new Error('Session is already finished');
+
+    const won = session.culpritId === npcId;
+    const newStatus = won ? 'WON' : 'LOST';
+
+    const updatedSession = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { status: newStatus },
+    });
+
+    return {
+      success: true,
+      won,
+      culpritId: session.culpritId,
+      message: won ? 'You found the correct culprit!' : 'You condemned an innocent.',
+      session: updatedSession
+    };
+  }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useGameStore } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
 
@@ -41,15 +42,22 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay } =
+  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes } =
     useGameStore();
+  
+  const router = useRouter();
 
   const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
+  const [localNotes, setLocalNotes] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setLocalNotes(notes);
+  }, [notes]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,6 +110,13 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         if (typeof data.currentDay === 'number') {
           setCurrentDay(data.currentDay);
         }
+
+        // Session notlarını çek
+        const sessionRes = await fetch(`http://localhost:3001/game-sessions/${sessionId}`);
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          setNotes(sessionData.notes || '');
+        }
       } catch (err) {
         console.error('History fetch error:', err);
         // Hata olursa varsayılan mesajla başla
@@ -118,7 +133,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState, setCurrentDay]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
+  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState, setCurrentDay, setNotes]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -179,6 +194,40 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleNotesBlur = async () => {
+    if (localNotes !== notes && sessionId) {
+      setNotes(localNotes);
+      try {
+        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes: localNotes }),
+        });
+      } catch (err) {
+        console.error('Failed to save notes', err);
+      }
+    }
+  };
+
+  const handleCondemn = async () => {
+    if (!sessionId) return;
+    const confirm = window.confirm(`Emin misin? ${profile.name} isimli köylüyü engizisyon mahkemesinde ölüme mahkum etmek üzeresin. Bu karar geri alınamaz ve soruşturmayı sonlandırır.`);
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ npcId: npcKey }),
+      });
+      const data = await res.json();
+      router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
+    } catch (err) {
+      console.error('Failed to condemn', err);
+      alert('Hüküm verilirken bir hata oluştu.');
     }
   };
 
@@ -328,9 +377,14 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
           <div className={styles.sideCard}>
             <div className={styles.sideTitle}>Engizisyoncunun Notları</div>
-            <p className={styles.sideHint}>
-              Farklı oturumlar arasındaki tutarsızlıkları arayın. Baskı altında korku artar — ani sıçramalara dikkat edin.
-            </p>
+            <textarea
+              className={styles.textarea}
+              style={{ minHeight: '120px', padding: '12px', marginTop: '8px', fontSize: '0.85rem' }}
+              value={localNotes}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder="Şüpheli davranışları buraya not et..."
+            />
           </div>
 
           <div className={styles.sideCard}>
@@ -345,7 +399,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           </div>
 
           <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
-            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={() => alert('Faz 9: Hüküm verme (Condemn) mekaniği yakında!')}>
+            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={handleCondemn}>
               BU KAFİRİ MAHKUM ET
             </button>
             <p className={styles.sideHint} style={{ textAlign: 'center', marginTop: '8px' }}>
