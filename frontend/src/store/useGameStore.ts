@@ -7,6 +7,7 @@ interface GameState {
   dialoguesUsedToday: number;
   maxDailyDialogues: number;
   currentDay: number;
+  timeOfDay: number; // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
 
   setSessionId: (id: string) => void;
   setSelectedNpc: (npcId: string) => void;
@@ -14,6 +15,8 @@ interface GameState {
   incrementDialogue: () => void;
   setDialoguesUsed: (count: number) => void;
   setCurrentDay: (day: number) => void;
+  setTimeOfDay: (time: number) => void;
+  advanceTime: () => void;
   endDay: () => void;
   reset: () => void;
 }
@@ -25,6 +28,7 @@ export const useGameStore = create<GameState>((set) => ({
   dialoguesUsedToday: 0,
   maxDailyDialogues: 40,
   currentDay: 1,
+  timeOfDay: 0,
 
   setSessionId: (id) => set({ sessionId: id }),
   setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
@@ -52,9 +56,20 @@ export const useGameStore = create<GameState>((set) => ({
       currentDay: day,
     }),
 
+  setTimeOfDay: (time) =>
+    set({
+      timeOfDay: time,
+    }),
+
+  advanceTime: () =>
+    set((state) => ({
+      timeOfDay: Math.min(4, state.timeOfDay + 1),
+    })),
+
   endDay: () =>
     set((state) => ({
       currentDay: state.currentDay + 1,
+      timeOfDay: 0,
       dialoguesUsedToday: 0,
       // Gece NPC korkuları biraz azalır:
       npcStates: Object.fromEntries(
@@ -72,5 +87,6 @@ export const useGameStore = create<GameState>((set) => ({
       npcStates: {},
       dialoguesUsedToday: 0,
       currentDay: 1,
+      timeOfDay: 0,
     }),
 }));

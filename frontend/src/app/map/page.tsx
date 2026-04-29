@@ -1,52 +1,57 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './map.module.scss';
 
+const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
+
 const locations = [
   {
     id: 'tavern',
-    name: 'The Tavern',
-    subtitle: 'Where secrets are drowned in wine.',
+    name: 'Taverna',
+    subtitle: 'Sırların şarapla boğulduğu yer.',
     icon: '🍺',
     description:
-      'Locals gather here at dusk. Loosened tongues and shadowed corners — the perfect hunting ground for contradictions.',
+      'Yerel halk gün batımında burada toplanır. Çözülen diller ve gölgeli köşeler — çelişkileri avlamak için mükemmel bir avlanma alanı.',
     available: true,
   },
   {
     id: 'church',
-    name: 'The Church',
-    subtitle: 'God watches, but so do you.',
+    name: 'Kilise',
+    subtitle: 'Tanrı izliyor, ama sen de izliyorsun.',
     icon: '⛪',
     description:
-      "The priest holds the village's conscience. But who confesses to the Inquisitor?",
+      "Rahip köyün vicdanını elinde tutar. Fakat Engizisyoncu'ya kim günah çıkaracak?",
     available: true,
   },
   {
     id: 'graveyard',
-    name: 'The Graveyard',
-    subtitle: 'The dead do not lie. The living do.',
+    name: 'Mezarlık',
+    subtitle: 'Ölüler yalan söylemez. Diriler söyler.',
     icon: '🪦',
     description:
-      'Strange rites were reported at midnight. The gravedigger knows what he buried — and what walked away.',
+      'Gece yarısı garip ayinler rapor edildi. Mezarcı neyi gömdüğünü biliyor — ve neyin yürüyerek uzaklaştığını.',
     available: true,
   },
   {
     id: 'mill',
-    name: 'The Mill',
-    subtitle: 'Industry masks iniquity.',
+    name: 'Değirmen',
+    subtitle: 'Endüstri, günahları maskeler.',
     icon: '⚙️',
     description:
-      'The miller deals in grain — and rumour. Follow the flour, follow the conspiracy.',
+      'Değirmenci unla uğraşır — ve dedikoduyla. Unu takip et, komployu bul.',
     available: false,
   },
 ];
 
 export default function MapPage() {
-  const { currentDay, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay } = useGameStore();
+  const router = useRouter();
+  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay } = useGameStore();
   const [endingDay, setEndingDay] = useState(false);
+  const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
 
   const handleEndDay = async () => {
     if (!sessionId) return;
@@ -63,6 +68,21 @@ export default function MapPage() {
     }
   };
 
+  const handleLocationClick = async (locId: string) => {
+    if (!sessionId || timeOfDay >= 4) return;
+    setLoadingLoc(locId);
+    try {
+      await fetch(`http://localhost:3001/game-sessions/${sessionId}/advance-time`, {
+        method: 'POST',
+      });
+      advanceTime();
+      router.push(`/interact/${locId}`);
+    } catch (err) {
+      console.error('Failed to advance time', err);
+      setLoadingLoc(null);
+    }
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.vignette} />
@@ -73,18 +93,18 @@ export default function MapPage() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Retreat
+          Geri Çekil
         </Link>
         <div className={styles.headerCenter}>
-          <h1 className={styles.pageTitle}>Village of Ashenmoor</h1>
-          <p className={styles.pageSub}>Choose your location — Choose your prey.</p>
+          <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
+          <p className={styles.pageSub}>Mekanını seç — Avını seç.</p>
         </div>
         <div className={styles.sessionInfo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
           <div>
             <span className={styles.sessionDot} />
-            <span>Day {currentDay}</span>
+            <span>{currentDay}. Gün - {TIME_LABELS[timeOfDay]}</span>
             <span style={{ marginLeft: '12px', opacity: 0.7 }}>
-              Dialogues: {maxDailyDialogues - dialoguesUsedToday}/{maxDailyDialogues}
+              Limit: {maxDailyDialogues - dialoguesUsedToday}/{maxDailyDialogues}
             </span>
           </div>
           <button 
@@ -102,7 +122,7 @@ export default function MapPage() {
               letterSpacing: '1px'
             }}
           >
-            {endingDay ? 'Resting...' : 'End Day'}
+            {endingDay ? 'Dinleniliyor...' : 'Günü Bitir'}
           </button>
         </div>
       </header>
@@ -117,12 +137,12 @@ export default function MapPage() {
 
         <div className={styles.locations}>
           {locations.map((loc) => {
-            // Tüm kart tek bir Link — available ise navigate eder
-            const CardWrapper = loc.available
+            const isNight = timeOfDay >= 4;
+            const CardWrapper = (loc.available && !isNight)
               ? ({ children }: { children: React.ReactNode }) => (
-                  <Link href={`/interact/${loc.id}`} className={`${styles.locationCard}`}>
+                  <div onClick={() => handleLocationClick(loc.id)} className={`${styles.locationCard}`} style={{ cursor: 'pointer' }}>
                     {children}
-                  </Link>
+                  </div>
                 )
               : ({ children }: { children: React.ReactNode }) => (
                   <div className={`${styles.locationCard} ${styles.locked}`}>
@@ -140,14 +160,20 @@ export default function MapPage() {
                 </div>
                 <div className={styles.locFooter}>
                   {loc.available ? (
-                    <span className={styles.enterBtn}>
-                      Enter &amp; Interrogate
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </span>
+                    isNight ? (
+                      <span className={styles.comingSoon} style={{ color: '#8A0303' }}>Gece Oldu</span>
+                    ) : (
+                      <span className={styles.enterBtn}>
+                        {loadingLoc === loc.id ? 'Gidiliyor...' : 'Gir ve Sorgula'}
+                        {!loadingLoc && (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </span>
+                    )
                   ) : (
-                    <span className={styles.comingSoon}>Coming Soon</span>
+                    <span className={styles.comingSoon}>Yakında</span>
                   )}
                 </div>
                 {/* Corner accents */}

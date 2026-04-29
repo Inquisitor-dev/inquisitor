@@ -25,6 +25,7 @@ model GameSession {
   scenario    String?           // Dinamik hikaye özeti
   culpritId   String?           // Cadı/Suçlu olan NPC ID'si
   currentDay  Int               @default(1)
+  timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
   createdAt   DateTime          @default(now())
   npcStates   SessionNpcState[]
   dialogues   DialogueHistory[]

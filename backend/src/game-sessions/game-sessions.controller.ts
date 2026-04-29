@@ -15,4 +15,9 @@ export class GameSessionsController {
   async endDay(@Param('id') sessionId: string) {
     return await this.gameSessionsService.endDay(sessionId);
   }
+
+  @Post(':id/advance-time')
+  async advanceTime(@Param('id') sessionId: string) {
+    return await this.gameSessionsService.advanceTime(sessionId);
+  }
 }

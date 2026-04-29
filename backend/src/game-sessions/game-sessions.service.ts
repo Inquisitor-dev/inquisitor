@@ -61,10 +61,13 @@ export class GameSessionsService {
       throw new Error('Session not found');
     }
 
-    // Günü 1 artır
+    // Günü 1 artır, timeOfDay'i sıfırla
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
-      data: { currentDay: session.currentDay + 1 },
+      data: { 
+        currentDay: session.currentDay + 1,
+        timeOfDay: 0 
+      },
     });
 
     // Her NPC'nin korkusunu 1 azalt (0'ın altına düşmesin)
@@ -75,6 +78,28 @@ export class GameSessionsService {
         data: { currentFear: newFear },
       });
     }
+
+    return updatedSession;
+  }
+
+  async advanceTime(sessionId: string) {
+    this.logger.log(`Advancing time for session: ${sessionId}`);
+    
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    let newTime = session.timeOfDay + 1;
+    if (newTime > 4) newTime = 4; // Gece'yi geçmesin
+
+    const updatedSession = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { timeOfDay: newTime },
+    });
 
     return updatedSession;
   }

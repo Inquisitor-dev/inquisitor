@@ -81,24 +81,22 @@ export default function HomePage() {
         </div>
 
         <p className={styles.lead}>
-          Nobody in this village is what they seem.
+          Bu köyde kimse göründüğü gibi değil.
         </p>
 
         <p className={styles.description}>
-          You are not the hero of this story. Armed with authority, patience and
-          cold reason — interrogate AI-driven villagers, expose their lies,
-          unravel hidden alliances, and pass your final judgement.
+          Bu hikayenin kahramanı sen değilsin. Yetki, sabır ve soğuk kanlılıkla donanmış bir şekilde — yapay zeka tarafından yönetilen köylüleri sorgula, yalanlarını ortaya çıkar, gizli ittifakları çöz ve nihai hükmünü ver.
         </p>
 
-        <div className={styles.slogan}>Listen · Analyze · Condemn</div>
+        <div className={styles.slogan}>Dinle · Analiz Et · Hüküm Ver</div>
 
         <div className={styles.cta}>
           <button onClick={handleStart} disabled={loading} className={styles.btnPrimary} style={{ width: '100%', justifyContent: 'center' }}>
             {loading ? (
-              <span>Preparing the carriage to Ashenmoor...</span>
+              <span>Ashenmoor'a giden araba hazırlanıyor...</span>
             ) : (
               <>
-                <span>Begin Investigation</span>
+                <span>Soruşturmaya Başla</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -106,7 +104,7 @@ export default function HomePage() {
             )}
           </button>
           <div className={styles.sessionNote}>
-            Free tier · 40 dialogues / day · No download required
+            Ücretsiz Sürüm · Günlük 40 diyalog hakkı
           </div>
         </div>
 

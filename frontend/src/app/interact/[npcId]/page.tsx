@@ -13,18 +13,18 @@ interface Message {
 
 const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }> = {
   tavern: {
-    name: 'Brother Aldric',
-    title: 'The Innkeeper — Keeper of Secrets',
+    name: 'Kardeş Aldric',
+    title: 'Hancı — Sırların Bekçisi',
     icon: '🍺',
   },
   church: {
-    name: 'Father Malachar',
-    title: 'The Priest — Servant of Two Masters',
+    name: 'Peder Malachar',
+    title: 'Rahip — İki Efendinin Hizmetkarı',
     icon: '⛪',
   },
   graveyard: {
-    name: 'Old Silas',
-    title: 'The Gravedigger — He Who Buries the Truth',
+    name: 'İhtiyar Silas',
+    title: 'Mezarcı — Gerçeği Gömüp Saklayan',
     icon: '🪦',
   },
 };
@@ -36,8 +36,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const { npcId } = use(params);
   const npcKey = npcId;
   const profile = NPC_PROFILES[npcKey] ?? {
-    name: 'Unknown Villager',
-    title: 'A shadow at the edge of the village',
+    name: 'Meçhul Köylü',
+    title: 'Köyün sınırlarında dolaşan bir gölge',
     icon: '👤',
   };
 
@@ -84,7 +84,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           setMessages([
             {
               role: 'npc',
-              text: `*${profile.name} looks up as you enter, eyes narrowing.*\n\n"An Inquisitor in our village... What do you want from me?"`,
+              text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
               timestamp: new Date(),
             },
           ]);
@@ -108,7 +108,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         setMessages([
           {
             role: 'npc',
-            text: `*${profile.name} looks up as you enter, eyes narrowing.*\n\n"An Inquisitor in our village... What do you want from me?"`,
+            text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
             timestamp: new Date(),
           },
         ]);
@@ -156,7 +156,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           ...prev,
           {
             role: 'npc',
-            text: '*The villager stares at you in silence, refusing to speak.*',
+            text: '*Köylü sessizliğe bürünüp tek kelime etmeyi reddediyor.*',
             timestamp: new Date(),
           },
         ]);
@@ -166,7 +166,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         ...prev,
         {
           role: 'npc',
-          text: '*A strange silence falls over the room… (Server unreachable — ensure backend is running on port 3001 and your GROQ_API_KEY is set.)*',
+          text: '*Odaya tuhaf bir sessizlik çöküyor... (Sunucuya ulaşılamıyor — backend servisinin ayakta olduğundan emin olun.)*',
           timestamp: new Date(),
         },
       ]);
@@ -196,7 +196,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Map
+          Haritaya Dön
         </Link>
 
         <div className={styles.npcInfo}>
@@ -209,7 +209,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
         <div className={styles.quota}>
           <span className={remaining < 10 ? styles.quotaLow : ''}>
-            {remaining} dialogues left today
+            Bugün kalan sorgu hakkınız: {remaining}
           </span>
         </div>
       </header>
@@ -249,7 +249,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div className={styles.inputArea}>
             {dialoguesUsedToday >= maxDailyDialogues ? (
               <div className={styles.limitReached} style={{ color: '#8A0303', textAlign: 'center', padding: '16px', fontStyle: 'italic', background: '#111', border: '1px solid #333' }}>
-                It is getting late. You must return to the village map and end the day.
+                Gerçek zamanlı günlük sınırınıza ulaştınız. Soruşturmaya devam etmek için yarın tekrar dönün.
               </div>
             ) : (
               <>
@@ -258,7 +258,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask your question… Press Enter to send."
+                  placeholder="Sorunuzu sorun… Göndermek için Enter'a basın."
                   rows={2}
                   disabled={loading}
                 />
@@ -283,11 +283,11 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         {/* ── Sidebar ─── */}
         <aside className={styles.sidebar}>
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Psychological Profile</div>
+            <div className={styles.sideTitle}>Psikolojik Profil</div>
 
             <div className={styles.metric}>
               <div className={styles.metricHeader}>
-                <span className={styles.metricLabel}>Fear Level</span>
+                <span className={styles.metricLabel}>Korku Seviyesi</span>
                 <span className={styles.metricVal}>{npcState.fear}/10</span>
               </div>
               <div className={styles.bar}>
@@ -298,16 +298,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               </div>
               <div className={styles.metricHint}>
                 {npcState.fear >= 7
-                  ? 'On the verge of confession…'
+                  ? 'İtiraf etmenin eşiğinde…'
                   : npcState.fear >= 4
-                  ? 'Visibly unsettled.'
-                  : 'Composed. Dangerous.'}
+                  ? 'Gözle görülür biçimde huzursuz.'
+                  : 'Sakinliğini koruyor. Tehlikeli.'}
               </div>
             </div>
 
             <div className={styles.metric}>
               <div className={styles.metricHeader}>
-                <span className={styles.metricLabel}>Deception Tendency</span>
+                <span className={styles.metricLabel}>Yalan Söyleme Eğilimi</span>
                 <span className={styles.metricVal}>{npcState.lie}/10</span>
               </div>
               <div className={styles.bar}>
@@ -318,38 +318,38 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               </div>
               <div className={styles.metricHint}>
                 {npcState.lie >= 7
-                  ? 'Actively weaving lies.'
+                  ? 'Aktif olarak yalanlar dokuyor.'
                   : npcState.lie >= 4
-                  ? 'Omitting key details.'
-                  : 'Seems cooperative.'}
+                  ? 'Önemli detayları gizliyor.'
+                  : 'İşbirliği yapmaya niyetli gibi.'}
               </div>
             </div>
           </div>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Inquisitor's Notes</div>
+            <div className={styles.sideTitle}>Engizisyoncunun Notları</div>
             <p className={styles.sideHint}>
-              Look for inconsistencies across multiple sessions. Fear rises under pressure — watch for sudden spikes.
+              Farklı oturumlar arasındaki tutarsızlıkları arayın. Baskı altında korku artar — ani sıçramalara dikkat edin.
             </p>
           </div>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Session</div>
+            <div className={styles.sideTitle}>Günlük Kaynak</div>
             <div className={styles.progressBar}>
               <div
                 className={styles.progressFill}
                 style={{ width: `${(dialoguesUsedToday / maxDailyDialogues) * 100}%` }}
               />
             </div>
-            <p className={styles.sideHint}>{dialoguesUsedToday} / {maxDailyDialogues} dialogues used today.</p>
+            <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {maxDailyDialogues} sorgu hakkı kullanıldı.</p>
           </div>
 
           <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
-            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={() => alert('Phase 6: Condemn mechanic coming soon!')}>
-              CONDEMN THIS HERETIC
+            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={() => alert('Faz 9: Hüküm verme (Condemn) mekaniği yakında!')}>
+              BU KAFİRİ MAHKUM ET
             </button>
             <p className={styles.sideHint} style={{ textAlign: 'center', marginTop: '8px' }}>
-              Final judgement ends the session.
+              Nihai hükmünüz hikayenin sonunu belirler.
             </p>
           </div>
         </aside>
