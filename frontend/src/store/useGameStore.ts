@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface GameState {
   sessionId: string | null;
@@ -23,79 +24,86 @@ interface GameState {
   reset: () => void;
 }
 
-export const useGameStore = create<GameState>((set) => ({
-  sessionId: null,
-  selectedNpcId: null,
-  npcStates: {},
-  dialoguesUsedToday: 0,
-  maxDailyDialogues: 40,
-  currentDay: 1,
-  timeOfDay: 0,
-  notes: '',
-
-  setSessionId: (id) => set({ sessionId: id }),
-  setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
-
-  updateNpcState: (npcId, fear, lie) =>
-    set((state) => ({
-      npcStates: {
-        ...state.npcStates,
-        [npcId]: { fear, lie },
-      },
-    })),
-
-  incrementDialogue: () =>
-    set((state) => ({
-      dialoguesUsedToday: state.dialoguesUsedToday + 1,
-    })),
-
-  setDialoguesUsed: (count) =>
-    set({
-      dialoguesUsedToday: count,
-    }),
-
-  setCurrentDay: (day) =>
-    set({
-      currentDay: day,
-    }),
-
-  setTimeOfDay: (time) =>
-    set({
-      timeOfDay: time,
-    }),
-
-  setNotes: (notes) =>
-    set({
-      notes,
-    }),
-
-  advanceTime: () =>
-    set((state) => ({
-      timeOfDay: Math.min(4, state.timeOfDay + 1),
-    })),
-
-  endDay: () =>
-    set((state) => ({
-      currentDay: state.currentDay + 1,
-      timeOfDay: 0,
-      dialoguesUsedToday: 0,
-      // Gece NPC korkuları biraz azalır:
-      npcStates: Object.fromEntries(
-        Object.entries(state.npcStates).map(([id, st]) => [
-          id,
-          { ...st, fear: Math.max(0, st.fear - 1) },
-        ])
-      ),
-    })),
-
-  reset: () =>
-    set({
+export const useGameStore = create<GameState>()(
+  persist(
+    (set) => ({
       sessionId: null,
       selectedNpcId: null,
       npcStates: {},
       dialoguesUsedToday: 0,
+      maxDailyDialogues: 40,
       currentDay: 1,
       timeOfDay: 0,
       notes: '',
+
+      setSessionId: (id) => set({ sessionId: id }),
+      setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
+
+      updateNpcState: (npcId, fear, lie) =>
+        set((state) => ({
+          npcStates: {
+            ...state.npcStates,
+            [npcId]: { fear, lie },
+          },
+        })),
+
+      incrementDialogue: () =>
+        set((state) => ({
+          dialoguesUsedToday: state.dialoguesUsedToday + 1,
+        })),
+
+      setDialoguesUsed: (count) =>
+        set({
+          dialoguesUsedToday: count,
+        }),
+
+      setCurrentDay: (day) =>
+        set({
+          currentDay: day,
+        }),
+
+      setTimeOfDay: (time) =>
+        set({
+          timeOfDay: time,
+        }),
+
+      setNotes: (notes) =>
+        set({
+          notes,
+        }),
+
+      advanceTime: () =>
+        set((state) => ({
+          timeOfDay: Math.min(4, state.timeOfDay + 1),
+        })),
+
+      endDay: () =>
+        set((state) => ({
+          currentDay: state.currentDay + 1,
+          timeOfDay: 0,
+          dialoguesUsedToday: 0,
+          // Gece NPC korkuları biraz azalır:
+          npcStates: Object.fromEntries(
+            Object.entries(state.npcStates).map(([id, st]) => [
+              id,
+              { ...st, fear: Math.max(0, st.fear - 1) },
+            ])
+          ),
+        })),
+
+      reset: () =>
+        set({
+          sessionId: null,
+          selectedNpcId: null,
+          npcStates: {},
+          dialoguesUsedToday: 0,
+          currentDay: 1,
+          timeOfDay: 0,
+          notes: '',
+        }),
     }),
-}));
+    {
+      name: 'inquisitor-game-storage', // name of the item in the storage (must be unique)
+    }
+  )
+);
