@@ -7,7 +7,7 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId } = useGameStore();
+  const { setSessionId, setScenario } = useGameStore();
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -22,6 +22,9 @@ export default function HomePage() {
       
       if (data.id) {
         setSessionId(data.id);
+        if (data.scenario) {
+          setScenario(data.scenario);
+        }
         router.push('/map');
       } else {
         console.error('Failed to create session, missing ID:', data);

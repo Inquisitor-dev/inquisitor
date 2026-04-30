@@ -37,6 +37,15 @@ const locations = [
     available: true,
   },
   {
+    id: 'crime-scene',
+    name: 'Cinayet Mahalli',
+    subtitle: 'Kan kurumadan önce incele.',
+    icon: '🩸',
+    description:
+      'Karanlık bir cinayetin işlendiği yer. Ceset yakında kaldırılacak, etraf temizlenecek. Sadece bugün inceleyebilirsin.',
+    available: true,
+  },
+  {
     id: 'mill',
     name: 'Değirmen',
     subtitle: 'Endüstri, günahları maskeler.',
@@ -76,7 +85,12 @@ export default function MapPage() {
         method: 'POST',
       });
       advanceTime();
-      router.push(`/interact/${locId}`);
+      
+      if (locId === 'crime-scene') {
+        router.push('/crime-scene');
+      } else {
+        router.push(`/interact/${locId}`);
+      }
     } catch (err) {
       console.error('Failed to advance time', err);
       setLoadingLoc(null);
@@ -138,7 +152,10 @@ export default function MapPage() {
         <div className={styles.locations}>
           {locations.map((loc) => {
             const isNight = timeOfDay >= 4;
-            const CardWrapper = (loc.available && !isNight)
+            const isCrimeSceneLocked = loc.id === 'crime-scene' && currentDay !== 1;
+            const isAvailable = loc.available && !isCrimeSceneLocked;
+            
+            const CardWrapper = (isAvailable && !isNight)
               ? ({ children }: { children: React.ReactNode }) => (
                   <div onClick={() => handleLocationClick(loc.id)} className={`${styles.locationCard}`} style={{ cursor: 'pointer' }}>
                     {children}
@@ -159,12 +176,12 @@ export default function MapPage() {
                   <p className={styles.locDesc}>{loc.description}</p>
                 </div>
                 <div className={styles.locFooter}>
-                  {loc.available ? (
+                  {isAvailable ? (
                     isNight ? (
                       <span className={styles.comingSoon} style={{ color: '#8A0303' }}>Gece Oldu</span>
                     ) : (
                       <span className={styles.enterBtn}>
-                        {loadingLoc === loc.id ? 'Gidiliyor...' : 'Gir ve Sorgula'}
+                        {loadingLoc === loc.id ? 'Gidiliyor...' : 'Gir ve İncele'}
                         {!loadingLoc && (
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -172,6 +189,8 @@ export default function MapPage() {
                         )}
                       </span>
                     )
+                  ) : isCrimeSceneLocked ? (
+                    <span className={styles.comingSoon} style={{ color: '#555' }}>Ceset Kaldırıldı</span>
                   ) : (
                     <span className={styles.comingSoon}>Yakında</span>
                   )}

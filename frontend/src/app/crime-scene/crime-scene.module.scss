@@ -1,0 +1,304 @@
+.main {
+  min-height: 100vh;
+  background-color: #050505;
+  color: #dcdcdc;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+  background-image: 
+    linear-gradient(to bottom, rgba(5,5,5,0.9), rgba(5,5,5,0.98)),
+    url('https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?q=80&w=2000&auto=format&fit=crop'); /* Atmospheric background */
+  background-size: cover;
+  background-position: center;
+}
+
+.header {
+  padding: 24px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 10;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+}
+
+.backBtn {
+  color: #888;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    transform: translateX(-4px);
+  }
+}
+
+.npcInfo {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.npcIcon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.npcName {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+}
+
+.npcTitle {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  letter-spacing: 1px;
+}
+
+.sessionInfo {
+  font-size: 0.75rem;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Layout */
+.content {
+  flex: 1;
+  display: flex;
+  position: relative;
+  z-index: 10;
+  height: calc(100vh - 100px);
+}
+
+.sceneArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Inspect Button */
+.inspectBtn {
+  background: transparent;
+  border: 1px solid #8A0303;
+  color: #8A0303;
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #8A0303;
+    z-index: -1;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  &:hover {
+    color: #fff;
+    box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/* Typewriter Scenario Text */
+.scenarioTextWrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background: rgba(10, 10, 10, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: fadeIn 2s ease forwards;
+}
+
+.scenarioText {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #e0e0e0;
+  font-family: 'Playfair Display', serif;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  white-space: pre-wrap;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sidebar Notes (Reusing styles from interact) */
+.sidebar {
+  width: 380px;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(20px);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  overflow-y: auto;
+}
+
+.panel {
+  background: rgba(20, 20, 20, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 24px;
+}
+
+.panelTitle {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: #8A0303;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expandIcon {
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+  &:hover {
+    color: #fff;
+  }
+}
+
+.notesArea {
+  width: 100%;
+  height: 200px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #ccc;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: #8A0303;
+  }
+}
+
+/* Expanded Notes Drawer */
+.expandedNotesOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.expandedNotesPanel {
+  width: 50vw;
+  height: 100vh;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(138, 3, 3, 0.3);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.expandedNotesHeader {
+  padding: 32px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    color: #8A0303;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+}
+
+.closeExpandedBtn {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.expandedNotesTextarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  padding: 40px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  resize: none;
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+.saveHint {
+  padding: 16px 40px;
+  font-size: 0.75rem;
+  color: #666;
+  text-align: right;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
