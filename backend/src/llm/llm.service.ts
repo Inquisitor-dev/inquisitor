@@ -21,27 +21,27 @@ export class LlmService {
   async generateNpcResponse(
     npcName: string,
     npcPrompt: string,
-    currentFear: number,
-    lieTendency: number,
     chatHistory: { role: 'user' | 'assistant'; content: string }[],
     userMessage: string,
-  ): Promise<{ reply: string; fearChange: number; lieTendencyChange: number }> {
+    isNewDay: boolean = false,
+  ): Promise<{ reply: string }> {
     try {
+      const newDayInstruction = isNewDay
+        ? `\nIMPORTANT: This is a NEW DAY. The Inquisitor has returned. Do NOT greet them as a stranger. Acknowledge that you've met before. React naturally — perhaps warmer, colder, more nervous, or more guarded depending on your character and what was discussed yesterday.`
+        : '';
+
       const systemPrompt = `You are ${npcName}, a character in a medieval village being interrogated by a relentless Inquisitor.
 
 CHARACTER BACKGROUND: ${npcPrompt}
 
-PSYCHOLOGICAL STATE:
-- Fear Level: ${currentFear}/10 (higher = more likely to tremble, make mistakes, reveal secrets)
-- Deception Tendency: ${lieTendency}/10 (higher = more comfortable lying)
-
 CRITICAL RULES:
-1. ALWAYS reply in natural, literary TURKISH (Türkçe). Speak smoothly, avoid translation-like phrasing. 
-2. Stay completely in character at all times. React naturally to the pressure.
-3. Your response MUST be a valid JSON object with this exact format:
-{"reply": "your Turkish response here", "fearChange": 0, "lieTendencyChange": 0}
-4. fearChange and lieTendencyChange must be integers between -2 and +2.
-5. Do NOT include any text outside the JSON object. Do not include markdown formatting or action markers like *sigh* inside the text, just natural speech and occasional subtle narrative descriptions if strictly necessary.`;
+1. ALWAYS reply in natural, literary TURKISH (Türkçe). Speak smoothly, avoid translation-like phrasing.
+2. Stay completely in character at all times.
+3. If your character is the CULPRIT, you must lie, deflect, and misdirect. Be clever but not obviously guilty.
+4. If your character is INNOCENT, answer truthfully about what you know, but you may still have your own smaller secrets.
+5. Your response MUST be a valid JSON object with this EXACT format:
+{"reply": "your Turkish response here"}
+6. Do NOT include any text outside the JSON object.${newDayInstruction}`;
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -77,37 +77,30 @@ CRITICAL RULES:
       const responseText = response?.choices?.[0]?.message?.content || '';
       this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
 
-      // Try to parse JSON - model sometimes returns raw text with {action} markers
+      // Try to parse JSON
       let reply = responseText;
-      let fearChange = 0;
-      let lieTendencyChange = 0;
 
       try {
-        // Look for a proper JSON object in the response
         const jsonMatch = responseText.match(/\{(?:[^{}]|\{[^{}]*\})*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           if (parsed.reply) {
             reply = parsed.reply;
-            fearChange = typeof parsed.fearChange === 'number' ? parsed.fearChange : 0;
-            lieTendencyChange = typeof parsed.lieTendencyChange === 'number' ? parsed.lieTendencyChange : 0;
           }
         }
-        // If no valid JSON reply found, use the raw response as the reply (clean up any stray braces)
+        // Clean up any stray braces if raw text returned
         reply = reply.replace(/\{[^}]*\}/g, (match) => {
-          // Keep only {action} style markers as italics, remove JSON-looking ones
           if (match.includes('"') || match.includes(':')) return '';
           return `*${match.slice(1, -1).trim()}*`;
         }).trim();
       } catch (parseErr) {
         this.logger.warn(`JSON parse failed, using raw text: ${parseErr}`);
-        // Use raw text, clean up any JSON-like syntax
         reply = responseText.replace(/^\s*\{[\s\S]*?\}\s*/, '').trim() || responseText;
       }
 
-      if (!reply) reply = 'Hmm... *shifts uncomfortably*';
+      if (!reply) reply = 'Hmm...';
 
-      return { reply, fearChange, lieTendencyChange };
+      return { reply };
 
     } catch (error: any) {
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
@@ -118,11 +111,7 @@ CRITICAL RULES:
         errorMessage = '*Karakter sessizliğe bürünüyor...* (Sunucu aşırı yoğun, lütfen birazdan tekrar deneyin.)';
       }
 
-      return {
-        reply: errorMessage,
-        fearChange: 0,
-        lieTendencyChange: 0,
-      };
+      return { reply: errorMessage };
     }
   }
 

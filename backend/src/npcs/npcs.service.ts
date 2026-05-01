@@ -62,17 +62,20 @@ export class NpcsService {
       },
     });
 
-    // 4. LLM API'ye sor (Artık dynamicPrompt ve scenario da gidiyor)
+    // 4. LLM API'ye sor
     const currentState = state!;
     const combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
+
+    // Yeni gün mü kontrol et (geçmiş varsa ama bugüne ait hiç konuşma yoksa yeni gün demektir)
+    const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
+    const isNewDay = historyData.length > 0 && todayHistory.length === 0;
 
     const llmResponse = await this.llm.generateNpcResponse(
       currentState.npc.name,
       combinedPrompt,
-      currentState.currentFear,
-      currentState.lieTendency,
       chatHistory,
       userMessage,
+      isNewDay,
     );
 
     // 5. NPC'nin cevabını DB'ye kaydet
@@ -86,28 +89,8 @@ export class NpcsService {
       },
     });
 
-    // 6. NPC State'ini güncelle
-    let newFear = currentState.currentFear + llmResponse.fearChange;
-    let newLie = currentState.lieTendency + llmResponse.lieTendencyChange;
-
-    // Sınırlandırmalar: 0 ile 10 arasında tutuyoruz
-    newFear = Math.max(0, Math.min(10, newFear));
-    newLie = Math.max(0, Math.min(10, newLie));
-
-    await this.prisma.sessionNpcState.update({
-      where: { id: currentState.id },
-      data: {
-        currentFear: newFear,
-        lieTendency: newLie,
-      },
-    });
-
     return {
       reply: llmResponse.reply,
-      newState: {
-        fear: newFear,
-        lie: newLie,
-      },
     };
   }
 
@@ -122,27 +105,25 @@ export class NpcsService {
       },
     });
 
+    const currentDay = state?.session?.currentDay || 1;
+
+    // Sadece bugüne ait diyalog geçmişini getir
     const historyData = await this.prisma.dialogueHistory.findMany({
-      where: { sessionId, npcId },
+      where: { sessionId, npcId, dayNumber: currentDay },
       orderBy: { createdAt: 'asc' },
     });
 
-    // Sadece bugüne ait olan oyuncu mesajı sayısını hesapla
-    const currentDay = state?.session?.currentDay || 1;
+    // Sadece bugüne ait oyuncu mesajı sayısını hesapla
     const totalDialoguesUsed = await this.prisma.dialogueHistory.count({
       where: { sessionId, speaker: 'PLAYER', dayNumber: currentDay }
     });
 
     return {
-      state: state
-        ? { fear: state.currentFear, lie: state.lieTendency }
-        : null,
       history: historyData.map((h) => ({
         role: h.speaker === 'PLAYER' ? 'player' : 'npc',
         text: h.message,
         timestamp: h.createdAt,
       })),
-      baseNpc: state ? { baseFear: state.npc.baseFear, baseLie: state.npc.baseLie } : null,
       dialoguesUsed: totalDialoguesUsed,
       currentDay: currentDay
     };

@@ -42,16 +42,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, updateNpcState, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes } =
+  const { npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes } =
     useGameStore();
   
   const router = useRouter();
 
-  const npcState = npcStates[npcKey] ?? { fear: 0, lie: 5 };
+  const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
+  const MAX_CHARS = 100;
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -99,11 +99,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           ]);
         }
 
-        // Eğer backend'den anlık psikolojik durum döndüyse state'i güncelle
-        if (data.state) {
-          updateNpcState(npcKey, data.state.fear, data.state.lie);
-        }
-
         // Kullanılan diyalog miktarını güncelle
         if (typeof data.dialoguesUsed === 'number') {
           setDialoguesUsed(data.dialoguesUsed);
@@ -134,7 +129,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [npcKey, profile.name, sessionId, setDialoguesUsed, updateNpcState, setCurrentDay, setNotes]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
+  }, [npcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -163,9 +158,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           ...prev,
           { role: 'npc', text: data.reply, timestamp: new Date() },
         ]);
-        if (data.newState) {
-          updateNpcState(npcKey, data.newState.fear, data.newState.lie);
-        }
         incrementDialogue();
       } else {
         setMessages((prev) => [
@@ -233,8 +225,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   };
 
   const remaining = maxDailyDialogues - dialoguesUsedToday;
-  const fearPct = (npcState.fear / 10) * 100;
-  const liePct = (npcState.lie / 10) * 100;
 
   return (
     <main className={styles.main}>
@@ -306,12 +296,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 <textarea
                   className={styles.textarea}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
                   onKeyDown={handleKeyDown}
                   placeholder="Sorunuzu sorun… Göndermek için Enter'a basın."
                   rows={2}
                   disabled={loading}
+                  maxLength={MAX_CHARS}
                 />
+                <div style={{ fontSize: '0.7rem', color: input.length >= MAX_CHARS ? '#8A0303' : '#555', textAlign: 'right', paddingRight: '50px', marginTop: '2px' }}>
+                  {input.length}/{MAX_CHARS}
+                </div>
                 <button
                   className={styles.sendBtn}
                   onClick={handleSend}
@@ -332,50 +326,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
         {/* ── Sidebar ─── */}
         <aside className={styles.sidebar}>
-          <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Psikolojik Profil</div>
-
-            <div className={styles.metric}>
-              <div className={styles.metricHeader}>
-                <span className={styles.metricLabel}>Korku Seviyesi</span>
-                <span className={styles.metricVal}>{npcState.fear}/10</span>
-              </div>
-              <div className={styles.bar}>
-                <div
-                  className={`${styles.barFill} ${styles.barFear}`}
-                  style={{ width: `${fearPct}%` }}
-                />
-              </div>
-              <div className={styles.metricHint}>
-                {npcState.fear >= 7
-                  ? 'İtiraf etmenin eşiğinde…'
-                  : npcState.fear >= 4
-                  ? 'Gözle görülür biçimde huzursuz.'
-                  : 'Sakinliğini koruyor. Tehlikeli.'}
-              </div>
-            </div>
-
-            <div className={styles.metric}>
-              <div className={styles.metricHeader}>
-                <span className={styles.metricLabel}>Yalan Söyleme Eğilimi</span>
-                <span className={styles.metricVal}>{npcState.lie}/10</span>
-              </div>
-              <div className={styles.bar}>
-                <div
-                  className={`${styles.barFill} ${styles.barLie}`}
-                  style={{ width: `${liePct}%` }}
-                />
-              </div>
-              <div className={styles.metricHint}>
-                {npcState.lie >= 7
-                  ? 'Aktif olarak yalanlar dokuyor.'
-                  : npcState.lie >= 4
-                  ? 'Önemli detayları gizliyor.'
-                  : 'İşbirliği yapmaya niyetli gibi.'}
-              </div>
-            </div>
-          </div>
-
           <div className={styles.sideCard}>
             <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Engizisyoncunun Notları
