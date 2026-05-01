@@ -146,9 +146,12 @@ YOUR TASK:
    - The guilty NPC's prompt must explain they did it and how they try to hide it.
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
 
+CRITICAL RULE:
+The 'scenario' text MUST be written in dark, literary, and natural TURKISH (Türkçe). It should read like a grimdark detective fantasy novel. Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+
 Return a valid JSON object ONLY, in exactly this format:
 {
-  "scenario": "Description of the dark incident...",
+  "scenario": "Dark, atmospheric Turkish description of the crime scene...",
   "culpritId": "tavern" | "church" | "graveyard",
   "npcPrompts": {
     "tavern": "Your personal secret/role regarding this incident...",
