@@ -141,7 +141,7 @@ export class GameSessionsService {
       success: true,
       won,
       culpritId: session.culpritId,
-      message: won ? 'You found the correct culprit!' : 'You condemned an innocent.',
+      message: won ? 'Doğru kişiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
       session: updatedSession
     };
   }

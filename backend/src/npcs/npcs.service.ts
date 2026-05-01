@@ -51,34 +51,43 @@ export class NpcsService {
       content: h.message,
     })) as { role: 'user' | 'assistant'; content: string }[];
 
-    // 3. User mesajını DB'ye kaydet
-    await this.prisma.dialogueHistory.create({
-      data: {
-        sessionId,
-        npcId,
-        speaker: 'PLAYER',
-        message: userMessage,
-        dayNumber: state.session.currentDay,
-      },
-    });
+    const isGreetingSignal = userMessage === '__NEW_DAY_GREETING__';
+
+    // 3. User mesajını DB'ye kaydet (selamlama sinyali hariç)
+    if (!isGreetingSignal) {
+      await this.prisma.dialogueHistory.create({
+        data: {
+          sessionId,
+          npcId,
+          speaker: 'PLAYER',
+          message: userMessage,
+          dayNumber: state.session.currentDay,
+        },
+      });
+    }
 
     // 4. LLM API'ye sor
     const currentState = state!;
     const combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
 
-    // Yeni gün mü kontrol et (geçmiş varsa ama bugüne ait hiç konuşma yoksa yeni gün demektir)
+    // Yeni gün mü kontrol et
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
-    const isNewDay = historyData.length > 0 && todayHistory.length === 0;
+    const isNewDay = isGreetingSignal || (historyData.length > 0 && todayHistory.length === 0);
+
+    // Selamlama sinyaliyse LLM'e geçirilen mesajı değiştir
+    const effectiveMessage = isGreetingSignal
+      ? '[Engizisyoncu içeri giriyor. Sen onları daha önce gördün. Yeni güne uygun bir şekilde selamla.]'
+      : userMessage;
 
     const llmResponse = await this.llm.generateNpcResponse(
       currentState.npc.name,
       combinedPrompt,
       chatHistory,
-      userMessage,
+      effectiveMessage,
       isNewDay,
     );
 
-    // 5. NPC'nin cevabını DB'ye kaydet
+    // 5. NPC'nin cevabını DB'ye kaydet (selamlama da kaydedilsin ki geçmişte görünsün)
     await this.prisma.dialogueHistory.create({
       data: {
         sessionId,

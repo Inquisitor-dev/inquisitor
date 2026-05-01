@@ -89,14 +89,37 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           }));
           setMessages(formattedHistory);
         } else {
-          // Eğer geçmiş yoksa ilk varsayılan mesajı göster
-          setMessages([
-            {
-              role: 'npc',
-              text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
-              timestamp: new Date(),
-            },
-          ]);
+          const fetchedDay = typeof data.currentDay === 'number' ? data.currentDay : 1;
+
+          if (fetchedDay > 1) {
+            // Yeni gün! NPC'den otomatik selamlama al (token harcamadan isNewDay flag'i backend'e gidiyor)
+            try {
+              const greetRes = await fetch('http://localhost:3001/npcs/interact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sessionId: sessionId,
+                  npcId: npcKey,
+                  message: '__NEW_DAY_GREETING__', // Özel sistem sinyali
+                }),
+              });
+              const greetData = await greetRes.json();
+              if (greetData.reply) {
+                setMessages([{ role: 'npc', text: greetData.reply, timestamp: new Date() }]);
+              }
+            } catch {
+              setMessages([{ role: 'npc', text: `*${profile.name} sizi tanıyarak başını kaldırıyor...*`, timestamp: new Date() }]);
+            }
+          } else {
+            // 1. gün, ilk kez giriliyor — standart karşılama
+            setMessages([
+              {
+                role: 'npc',
+                text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
+                timestamp: new Date(),
+              },
+            ]);
+          }
         }
 
         // Kullanılan diyalog miktarını güncelle
