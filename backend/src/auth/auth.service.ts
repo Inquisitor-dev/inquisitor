@@ -25,6 +25,10 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dakika geçerli
 
     // Kullanıcı yoksa oluştur, varsa güncelle
+    // Admin e-postası ise isAdmin=true ata
+    const adminEmails = ['berkecakiroglu35@gmail.com'];
+    const isAdmin = adminEmails.includes(email);
+
     await this.prisma.user.upsert({
       where: { email },
       update: {
@@ -33,6 +37,7 @@ export class AuthService {
       },
       create: {
         email,
+        isAdmin,
         verificationCode: code,
         codeExpiresAt: expiresAt,
       },
@@ -86,7 +91,7 @@ export class AuthService {
     });
 
     // JWT token üret
-    const token = this.jwt.sign({ sub: user.id, email: user.email });
+    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin });
 
     return { token, userId: user.id };
   }
@@ -95,9 +100,15 @@ export class AuthService {
   async checkAndResetDailyQuota(userId: string): Promise<{
     dailySessionCount: number;
     dailyMessageCount: number;
+    isAdmin: boolean;
   }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
+
+    // Admin kota sınırından muaf
+    if (user.isAdmin) {
+      return { dailySessionCount: 0, dailyMessageCount: 0, isAdmin: true };
+    }
 
     const today = new Date().toISOString().split('T')[0]; // "2026-05-01"
 
@@ -114,12 +125,14 @@ export class AuthService {
       return {
         dailySessionCount: updated.dailySessionCount,
         dailyMessageCount: updated.dailyMessageCount,
+        isAdmin: false,
       };
     }
 
     return {
       dailySessionCount: user.dailySessionCount,
       dailyMessageCount: user.dailyMessageCount,
+      isAdmin: false,
     };
   }
 
