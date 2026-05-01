@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './map.module.scss';
 
@@ -58,9 +58,13 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset } = useGameStore();
+  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset, authToken } = useGameStore();
   const [endingDay, setEndingDay] = useState(false);
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authToken) router.push('/login');
+  }, [authToken, router]);
 
   const handleRetreat = () => {
     reset();
@@ -80,6 +84,7 @@ export default function MapPage() {
     try {
       await fetch(`http://localhost:3001/game-sessions/${sessionId}/end-day`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` },
       });
       endDay(); // Zustand state'i güncelle
     } catch (err) {
@@ -95,6 +100,7 @@ export default function MapPage() {
     try {
       await fetch(`http://localhost:3001/game-sessions/${sessionId}/advance-time`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` },
       });
       advanceTime();
       

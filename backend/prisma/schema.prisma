@@ -10,11 +10,16 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  passwordHash String
-  createdAt    DateTime      @default(now())
-  sessions     GameSession[]
+  id                String        @id @default(uuid())
+  email             String        @unique
+  verificationCode  String?
+  codeExpiresAt     DateTime?
+  isVerified        Boolean       @default(false)
+  dailySessionCount Int           @default(0)
+  dailyMessageCount Int           @default(0)
+  lastResetDate     String        @default("")
+  createdAt         DateTime      @default(now())
+  sessions          GameSession[]
 }
 
 model GameSession {

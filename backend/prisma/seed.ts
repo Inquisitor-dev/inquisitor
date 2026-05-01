@@ -10,29 +10,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 1. Demo kullanıcı oluştur
-  const demoUser = await prisma.user.upsert({
-    where: { id: 'demo-user-001' },
-    update: {},
-    create: {
-      id: 'demo-user-001',
-      email: 'inquisitor@ashenmoor.ai',
-      passwordHash: 'demo-hash-not-for-login',
-    },
-  });
-  console.log(`  ✅ Demo user: ${demoUser.email}`);
-
-  // 2. Demo game session oluştur
-  const demoSession = await prisma.gameSession.upsert({
-    where: { id: 'demo-session-001' },
-    update: {},
-    create: {
-      id: 'demo-session-001',
-      userId: 'demo-user-001',
-      status: 'ACTIVE',
-    },
-  });
-  console.log(`  ✅ Demo session: ${demoSession.id}`);
+  // Sadece NPC'leri seed et — kullanıcılar artık auth sistemiyle oluşturuluyor
 
   // 3. NPC'leri oluştur / güncelle
   const npcs = [

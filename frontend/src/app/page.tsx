@@ -1,27 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '../store/useGameStore';
 import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario } = useGameStore();
+  const { setSessionId, setScenario, authToken, logout } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Token yoksa login'e yönlendir
+  useEffect(() => {
+    if (!authToken) {
+      router.push('/login');
+    }
+  }, [authToken, router]);
+
   const handleStart = async () => {
+    if (!authToken) return;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('http://localhost:3001/game-sessions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'demo-user-001' })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({}),
       });
       const data = await res.json();
+
+      if (res.status === 401) {
+        logout();
+        router.push('/login');
+        return;
+      }
       
+      if (res.status === 403) {
+        setError(data.message || 'Günlük soruşturma limitine ulaştınız.');
+        setLoading(false);
+        return;
+      }
+
       if (data.id) {
         setSessionId(data.id);
         if (data.scenario) {
@@ -29,7 +52,6 @@ export default function HomePage() {
         }
         router.push('/map');
       } else {
-        console.error('Failed to create session, missing ID:', data);
         setError('Yapay zeka şu an meşgul (API limiti). Lütfen 1-2 dakika bekleyip tekrar deneyin.');
         setLoading(false);
       }

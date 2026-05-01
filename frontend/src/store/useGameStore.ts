@@ -2,16 +2,24 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface GameState {
+  // Auth
+  userEmail: string | null;
+  userId: string | null;
+  authToken: string | null;
+
+  // Game
   sessionId: string | null;
   selectedNpcId: string | null;
   npcStates: Record<string, { fear: number; lie: number }>;
   dialoguesUsedToday: number;
   maxDailyDialogues: number;
   currentDay: number;
-  timeOfDay: number; // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
+  timeOfDay: number;
   notes: string;
   scenario: string | null;
 
+  setUser: (email: string, userId: string, token: string) => void;
+  logout: () => void;
   setSessionId: (id: string) => void;
   setSelectedNpc: (npcId: string) => void;
   updateNpcState: (npcId: string, fear: number, lie: number) => void;
@@ -29,6 +37,12 @@ interface GameState {
 export const useGameStore = create<GameState>()(
   persist(
     (set) => ({
+      // Auth
+      userEmail: null,
+      userId: null,
+      authToken: null,
+
+      // Game
       sessionId: null,
       selectedNpcId: null,
       npcStates: {},
@@ -38,6 +52,22 @@ export const useGameStore = create<GameState>()(
       timeOfDay: 0,
       notes: '',
       scenario: null,
+
+      setUser: (email, userId, token) => set({ userEmail: email, userId, authToken: token }),
+
+      logout: () => set({
+        userEmail: null,
+        userId: null,
+        authToken: null,
+        sessionId: null,
+        selectedNpcId: null,
+        npcStates: {},
+        dialoguesUsedToday: 0,
+        currentDay: 1,
+        timeOfDay: 0,
+        notes: '',
+        scenario: null,
+      }),
 
       setSessionId: (id) => set({ sessionId: id }),
       setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),

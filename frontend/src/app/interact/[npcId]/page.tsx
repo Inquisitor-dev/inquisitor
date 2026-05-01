@@ -42,7 +42,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes } =
+  const { npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout } =
     useGameStore();
   
   const router = useRouter();
@@ -71,7 +71,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       try {
         const res = await fetch('http://localhost:3001/npcs/history', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
           body: JSON.stringify({
             sessionId: sessionId,
             npcId: npcKey,
@@ -131,7 +134,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         }
 
         // Session notlarını çek
-        const sessionRes = await fetch(`http://localhost:3001/game-sessions/${sessionId}`);
+        const sessionRes = await fetch(`http://localhost:3001/game-sessions/${sessionId}`, {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
           setNotes(sessionData.notes || '');
@@ -166,7 +171,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     try {
       const res = await fetch('http://localhost:3001/npcs/interact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
         body: JSON.stringify({
           sessionId: sessionId,
           npcId: npcKey,
@@ -218,8 +226,11 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       setNotes(localNotes);
       try {
         await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
           body: JSON.stringify({ notes: localNotes }),
         });
       } catch (err) {
@@ -236,7 +247,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     try {
       const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
         body: JSON.stringify({ npcId: npcKey }),
       });
       const data = await res.json();
