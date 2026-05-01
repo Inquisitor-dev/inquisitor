@@ -51,7 +51,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const MAX_CHARS = 100;
+  const MAX_CHARS = 200;
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
