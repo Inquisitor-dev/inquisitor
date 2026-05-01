@@ -9,14 +9,16 @@ export default function HomePage() {
   const router = useRouter();
   const { setSessionId, setScenario } = useGameStore();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('http://localhost:3001/game-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'demo-user-001' }) // Geçici
+        body: JSON.stringify({ userId: 'demo-user-001' })
       });
       const data = await res.json();
       
@@ -28,10 +30,12 @@ export default function HomePage() {
         router.push('/map');
       } else {
         console.error('Failed to create session, missing ID:', data);
+        setError('Yapay zeka şu an meşgul (API limiti). Lütfen 1-2 dakika bekleyip tekrar deneyin.');
         setLoading(false);
       }
     } catch (err) {
       console.error('Failed to start session', err);
+      setError('Sunucuya bağlanılamadı. Backend servisinin çalıştığından emin olun.');
       setLoading(false);
     }
   };
@@ -106,6 +110,11 @@ export default function HomePage() {
               </>
             )}
           </button>
+          {error && (
+            <div style={{ marginTop: '12px', padding: '12px 16px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.85rem', lineHeight: 1.5, textAlign: 'center' }}>
+              ⚠️ {error}
+            </div>
+          )}
           <div className={styles.sessionNote}>
             Ücretsiz Sürüm · Günlük 40 diyalog hakkı
           </div>
