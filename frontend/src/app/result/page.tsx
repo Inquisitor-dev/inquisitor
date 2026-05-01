@@ -3,10 +3,12 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { useGameStore } from '../store/useGameStore';
 
 function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { reset } = useGameStore();
   
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
@@ -43,12 +45,17 @@ function ResultContent() {
       }}>
         {won 
           ? `Mahkumiyet kararı verildi. ${message} Ashenmoor köyü karanlıktan arındı. Ancak Engizisyon'un işi asla bitmez.`
-          : `Masum bir ruhu alevlere teslim ettiniz. ${message} Gerçek suçlu ise karanlıkta saklanmaya devam ediyor... Köyün kaderi mühürlendi.`
+          : searchParams.get('reason') === 'timeout'
+            ? `Verilen 3 günlük sürede köyü karanlıktan arındıramadınız. Engizisyon, başarısızlığa ve zayıflığa tahammül etmez. Kilise tarafından derhal görevden alındınız...`
+            : `Masum bir ruhu alevlere teslim ettiniz. ${message} Gerçek suçlu ise karanlıkta saklanmaya devam ediyor... Köyün kaderi mühürlendi.`
         }
       </p>
 
       <button 
-        onClick={() => router.push('/')}
+        onClick={() => {
+          reset();
+          router.push('/');
+        }}
         style={{
           background: 'transparent',
           border: `1px solid ${won ? '#b8860b' : '#8A0303'}`,

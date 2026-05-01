@@ -58,12 +58,24 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay } = useGameStore();
+  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset } = useGameStore();
   const [endingDay, setEndingDay] = useState(false);
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
 
+  const handleRetreat = () => {
+    reset();
+    router.push('/');
+  };
+
   const handleEndDay = async () => {
     if (!sessionId) return;
+    
+    // 3. Günün sonu: Eğer kiliseye henüz kimseyi mahkum etmedilerse, oyun biter (Timeout)
+    if (currentDay >= 3) {
+      router.push('/result?won=false&reason=timeout');
+      return;
+    }
+
     setEndingDay(true);
     try {
       await fetch(`http://localhost:3001/game-sessions/${sessionId}/end-day`, {
@@ -103,12 +115,12 @@ export default function MapPage() {
 
       {/* Header */}
       <header className={styles.header}>
-        <Link href="/" className={styles.back}>
+        <button onClick={handleRetreat} className={styles.back} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Geri Çekil
-        </Link>
+        </button>
         <div className={styles.headerCenter}>
           <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
           <p className={styles.pageSub}>Mekanını seç — Avını seç.</p>
