@@ -28,6 +28,11 @@ const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }
     title: 'Mezarcı — Gerçeği Gömüp Saklayan',
     icon: '🪦',
   },
+  mill: {
+    name: 'Değirmenci Giles',
+    title: 'Değirmenci — Rüzgarın Sırdaşı',
+    icon: '⚙️',
+  },
 };
 
 const PLACEHOLDER_SESSION_ID = 'demo-session-001';

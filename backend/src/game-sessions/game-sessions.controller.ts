@@ -17,8 +17,8 @@ export class GameSessionsController {
 
     // Günlük kota kontrolü
     const quota = await this.authService.checkAndResetDailyQuota(userId);
-    if (quota.dailySessionCount >= 3) {
-      throw new ForbiddenException('Günlük soruşturma limitine ulaştınız. (3/3) Yarın tekrar gelin.');
+    if (quota.dailySessionCount >= 2) {
+      throw new ForbiddenException('Günlük soruşturma limitine ulaştınız. (2/2) Yarın tekrar gelin.');
     }
 
     const session = await this.gameSessionsService.createSession(userId);

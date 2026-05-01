@@ -123,15 +123,16 @@ CRITICAL RULES:
     const prompt = `You are the Game Master for a dark medieval interrogation game.
 Create a new murder or dark heresy mystery set in the village of Ashenmoor.
 
-We have 3 main NPCs:
+We have 4 main NPCs:
 1. "tavern" (Brother Aldric, Innkeeper)
 2. "church" (Father Malachar, Priest)
 3. "graveyard" (Old Silas, Gravedigger)
+4. "mill" (Giles, Miller)
 
 YOUR TASK:
 1. Invent a specific, gruesome, or mysterious incident that happened recently (e.g. a body found, a dark ritual, cursed crops).
-2. Randomly select exactly ONE of the 3 NPCs to be the GUILTY CULPRIT.
-3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the 3 NPCs. 
+2. Randomly select exactly ONE of the 4 NPCs to be the GUILTY CULPRIT.
+3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the 4 NPCs. 
    - The guilty NPC's prompt must explain they did it and how they try to hide it.
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
 
@@ -141,11 +142,12 @@ The 'scenario' text MUST be written in dark, literary, and natural TURKISH (Tür
 Return a valid JSON object ONLY, in exactly this format:
 {
   "scenario": "Dark, atmospheric Turkish description of the crime scene...",
-  "culpritId": "tavern" | "church" | "graveyard",
+  "culpritId": "tavern" | "church" | "graveyard" | "mill",
   "npcPrompts": {
     "tavern": "Your personal secret/role regarding this incident...",
     "church": "Your personal secret/role regarding this incident...",
-    "graveyard": "Your personal secret/role regarding this incident..."
+    "graveyard": "Your personal secret/role regarding this incident...",
+    "mill": "Your personal secret/role regarding this incident..."
   }
 }`;
 

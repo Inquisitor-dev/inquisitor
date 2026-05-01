@@ -47,7 +47,7 @@ export const useGameStore = create<GameState>()(
       selectedNpcId: null,
       npcStates: {},
       dialoguesUsedToday: 0,
-      maxDailyDialogues: 40,
+      maxDailyDialogues: 30,
       currentDay: 1,
       timeOfDay: 0,
       notes: '',

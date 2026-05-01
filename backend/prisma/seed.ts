@@ -57,6 +57,18 @@ Your fear is extreme but so is your stubbornness. You answer to something older 
       baseFear: 7,
       baseLie: 4,
     },
+    {
+      id: 'mill',
+      name: 'Giles the Miller',
+      description: 'The village miller. He sees everyone who needs flour, and hears every rumor.',
+      basePrompt: `You are Giles, the miller of Ashenmoor. You are a large, flour-dusted man with a booming voice but shifty eyes.
+You know more about the villagers' secret dealings than anyone else.
+You are greedy and sometimes take a bit too much from the flour sacks.
+You have noticed strange midnight deliveries but you stay quiet to protect your business.
+You are cooperative but always try to shift the blame to the poorest villagers.`,
+      baseFear: 4,
+      baseLie: 5,
+    },
   ];
 
   for (const npc of npcs) {

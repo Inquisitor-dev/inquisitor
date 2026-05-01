@@ -52,7 +52,7 @@ const locations = [
     icon: '⚙️',
     description:
       'Değirmenci unla uğraşır — ve dedikoduyla. Unu takip et, komployu bul.',
-    available: false,
+    available: true,
   },
 ];
 
