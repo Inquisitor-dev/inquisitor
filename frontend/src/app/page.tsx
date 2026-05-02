@@ -138,7 +138,7 @@ export default function HomePage() {
             </div>
           )}
           <div className={styles.sessionNote}>
-            Ücretsiz Sürüm · Günlük 40 diyalog hakkı
+            Ücretsiz Sürüm · Günlük 30 diyalog hakkı
           </div>
         </div>
 
