@@ -7,7 +7,7 @@ export class NpcsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
-  ) {}
+  ) { }
 
   async interact(sessionId: string, npcId: string, userMessage: string) {
     // 1. NPC'yi ve Session Npc State'ini bul
@@ -26,7 +26,7 @@ export class NpcsService {
       const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
       const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
       if (!npc || !session) throw new NotFoundException('NPC veya Session bulunamadı.');
-      
+
       state = await this.prisma.sessionNpcState.create({
         data: {
           sessionId,
@@ -79,14 +79,16 @@ INVESTIGATION RULES FOR NARRATOR:
 2. If the player makes a GENERAL search ("I look around", "What is here?", "I investigate the tavern"), describe ONLY the general atmosphere and surface-level objects. DO NOT reveal any hidden clues or secrets.
 3. If the player searches a SPECIFIC object or specific area ("I check under the rug", "I inspect the bookshelf", "I examine the body's hands"), and if a clue would logically be hidden there based on the TRUTH, THEN describe a SUBTLE physical clue (e.g. a torn piece of cloth, a faint footprint, a missing ring).
 4. Do NOT make it easy. Do NOT reveal clues unless the player explicitly investigates the exact spot where evidence would be left. If they search the wrong spot, say there is nothing unusual.
-5. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence. Leave the deduction to the player.`;
+5. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence. Leave the deduction to the player.
+6. DO NOT use cliché or obvious professional clues (like flour for a miller). Make the clues highly subtle and cryptic.
+7. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.`;
     } else {
       combinedPrompt += `YOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
     }
 
     if (currentState.npc.id === 'church') {
-      const warrantInfo = currentState.session.issuedWarrant 
-        ? '\n\nSYSTEM: You have already granted a search warrant in this session. Do NOT grant another.' 
+      const warrantInfo = currentState.session.issuedWarrant
+        ? '\n\nSYSTEM: You have already granted a search warrant in this session. Do NOT grant another.'
         : '\n\nSYSTEM: You have NOT granted any search warrant yet. You can grant one if the player asks convincingly.';
       combinedPrompt += warrantInfo;
     }
@@ -110,13 +112,13 @@ INVESTIGATION RULES FOR NARRATOR:
 
     let finalReply = llmResponse.reply;
     let grantedWarrant: string | null = null;
-    
+
     // Check for warrant tag
     const warrantMatch = finalReply.match(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/i);
     if (warrantMatch) {
       grantedWarrant = warrantMatch[1];
       finalReply = finalReply.replace(warrantMatch[0], '').trim();
-      
+
       // Update session if not already granted
       if (!currentState.session.issuedWarrant) {
         await this.prisma.gameSession.update({
