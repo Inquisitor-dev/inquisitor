@@ -15,7 +15,7 @@ export class GameSessionsService {
     this.logger.log(`Creating new dynamic session for user: ${userId}`);
 
     // 1. LLM'den Senaryo Üret
-    const { scenario, culpritId, npcPrompts } = await this.llm.generateSessionScenario();
+    const { scenario, truthReveal, culpritId, npcPrompts } = await this.llm.generateSessionScenario();
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
     // 2. Yeni Session Oluştur
@@ -23,6 +23,7 @@ export class GameSessionsService {
       data: {
         userId,
         scenario,
+        truthReveal,
         culpritId,
         status: 'ACTIVE',
       },
@@ -46,7 +47,8 @@ export class GameSessionsService {
     }
 
     this.logger.log(`Session ${session.id} fully created and populated.`);
-    return session;
+    const { truthReveal: _, ...safeSession } = session;
+    return safeSession;
   }
 
   async endDay(sessionId: string) {
@@ -109,6 +111,11 @@ export class GameSessionsService {
       where: { id: sessionId },
     });
     if (!session) throw new Error('Session not found');
+    
+    if (session.status === 'ACTIVE') {
+      const { truthReveal, ...safeSession } = session;
+      return safeSession;
+    }
     return session;
   }
 
@@ -153,5 +160,21 @@ export class GameSessionsService {
       where: { id: sessionId },
       data: { isWarrantUsed: true },
     });
+  }
+
+  async timeoutSession(sessionId: string) {
+    this.logger.log(`Session timed out: ${sessionId}`);
+
+    const updatedSession = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { status: 'LOST' },
+    });
+
+    return {
+      success: true,
+      won: false,
+      message: 'Zamanınız doldu.',
+      session: updatedSession,
+    };
   }
 }

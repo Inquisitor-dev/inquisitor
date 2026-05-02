@@ -89,7 +89,22 @@ export default function MapPage() {
     
     // 3. Günün sonu: Eğer kiliseye henüz kimseyi mahkum etmedilerse, oyun biter (Timeout)
     if (currentDay >= 3) {
-      router.push('/result?won=false&reason=timeout');
+      setEndingDay(true);
+      try {
+        const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/timeout`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        const data = await res.json();
+        if (data.session && data.session.truthReveal) {
+          useGameStore.getState().setTruthReveal(data.session.truthReveal);
+        }
+        router.push('/result?won=false&reason=timeout');
+      } catch (err) {
+        console.error('Failed to handle timeout', err);
+      } finally {
+        setEndingDay(false);
+      }
       return;
     }
 

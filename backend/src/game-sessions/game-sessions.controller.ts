@@ -64,4 +64,10 @@ export class GameSessionsController {
   async consumeWarrant(@Param('id') sessionId: string) {
     return await this.gameSessionsService.consumeWarrant(sessionId);
   }
+
+  @Post(':id/timeout')
+  @UseGuards(JwtAuthGuard)
+  async timeoutSession(@Param('id') sessionId: string) {
+    return await this.gameSessionsService.timeoutSession(sessionId);
+  }
 }

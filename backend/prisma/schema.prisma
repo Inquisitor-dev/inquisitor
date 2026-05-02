@@ -30,6 +30,7 @@ model GameSession {
   user        User              @relation(fields: [userId], references: [id])
   status      String            @default("ACTIVE") // ACTIVE, WON, LOST
   scenario    String?           // Dinamik hikaye özeti
+  truthReveal String?           @db.Text // Gerçek hikaye perde arkası
   culpritId   String?           // Cadı/Suçlu olan NPC ID'si
   currentDay  Int               @default(1)
   timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece

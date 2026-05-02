@@ -287,6 +287,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         body: JSON.stringify({ npcId: npcKey }),
       });
       const data = await res.json();
+      if (data.session && data.session.truthReveal) {
+        useGameStore.getState().setTruthReveal(data.session.truthReveal);
+      }
       router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
     } catch (err) {
       console.error('Failed to condemn', err);

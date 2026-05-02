@@ -8,7 +8,7 @@ import { useGameStore } from '../../store/useGameStore';
 function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { reset } = useGameStore();
+  const { reset, truthReveal } = useGameStore();
   
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
@@ -50,6 +50,25 @@ function ResultContent() {
             : `Masum bir ruhu alevlere teslim ettiniz. Gerçek suçlu ise karanlıkta saklanmaya devam ediyor... Köyün kaderi mühürlendi.`
         }
       </p>
+
+      {truthReveal && (
+        <div style={{
+          maxWidth: '800px',
+          background: 'rgba(0,0,0,0.6)',
+          border: '1px solid #333',
+          padding: '24px',
+          borderRadius: '8px',
+          marginBottom: '40px',
+          textAlign: 'left'
+        }}>
+          <h2 style={{ fontSize: '1.2rem', color: '#888', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
+            Gerçeklerin Ardından
+          </h2>
+          <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#ccc', fontStyle: 'italic' }}>
+            {truthReveal}
+          </p>
+        </div>
+      )}
 
       <button 
         onClick={() => {

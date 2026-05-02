@@ -117,6 +117,7 @@ CRITICAL RULES:
 
   async generateSessionScenario(): Promise<{
     scenario: string;
+    truthReveal: string;
     culpritId: string;
     npcPrompts: Record<string, string>;
   }> {
@@ -137,11 +138,13 @@ YOUR TASK:
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
 
 CRITICAL RULE:
-The 'scenario' text MUST be written in dark, literary, and natural TURKISH (Türkçe). It should read like a grimdark detective fantasy novel. Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Türkçe). It should read like a grimdark detective fantasy novel. Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 Return a valid JSON object ONLY, in exactly this format:
 {
   "scenario": "Dark, atmospheric Turkish description of the crime scene...",
+  "truthReveal": "Dark, atmospheric Turkish paragraph revealing the ENTIRE truth and behind-the-scenes of this mystery...",
   "culpritId": "tavern" | "church" | "graveyard" | "mill",
   "npcPrompts": {
     "tavern": "Your personal secret/role regarding this incident...",
