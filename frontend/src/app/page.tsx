@@ -52,7 +52,7 @@ export default function HomePage() {
         }
         router.push('/map');
       } else {
-        setError('Yapay zeka şu an meşgul (API limiti). Lütfen 1-2 dakika bekleyip tekrar deneyin.');
+        setError(data.message || 'Yapay zeka şu an meşgul veya bir hata oluştu. Lütfen biraz bekleyip tekrar deneyin.');
         setLoading(false);
       }
     } catch (err) {

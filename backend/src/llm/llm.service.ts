@@ -196,13 +196,25 @@ Return a valid JSON object ONLY, in exactly this format:
     const responseText = response?.choices?.[0]?.message?.content || '';
     
     try {
-      const jsonMatch = responseText.match(/\{(?:[^{}]|\{[^{}]*\})*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+      // Find the first { and last } to extract JSON
+      const firstBrace = responseText.indexOf('{');
+      const lastBrace = responseText.lastIndexOf('}');
+      
+      if (firstBrace === -1 || lastBrace === -1) {
+        throw new Error('No JSON object found in response');
       }
-      return JSON.parse(responseText);
+
+      let jsonStr = responseText.substring(firstBrace, lastBrace + 1);
+      
+      try {
+        return JSON.parse(jsonStr);
+      } catch (parseError) {
+        // Handle potential trailing commas (common in LLM output)
+        const cleanedJson = jsonStr.replace(/,\s*([\]}])/g, '$1');
+        return JSON.parse(cleanedJson);
+      }
     } catch (e) {
-      this.logger.error(`Failed to parse scenario JSON: ${responseText}`);
+      this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
     }
   }
