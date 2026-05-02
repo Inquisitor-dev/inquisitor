@@ -58,7 +58,7 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset, authToken } = useGameStore();
+  const { isAdmin, currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset, authToken } = useGameStore();
   const [endingDay, setEndingDay] = useState(false);
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
 
@@ -136,7 +136,7 @@ export default function MapPage() {
             <span className={styles.sessionDot} />
             <span>{currentDay}. Gün - {TIME_LABELS[timeOfDay]}</span>
             <span style={{ marginLeft: '12px', opacity: 0.7 }}>
-              Limit: {maxDailyDialogues - dialoguesUsedToday}/{maxDailyDialogues}
+              Limit: {isAdmin ? 'Sınırsız' : `${30 - dialoguesUsedToday}/30`}
             </span>
           </div>
           <button 

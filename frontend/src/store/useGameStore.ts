@@ -6,6 +6,7 @@ interface GameState {
   userEmail: string | null;
   userId: string | null;
   authToken: string | null;
+  isAdmin: boolean;
 
   // Game
   sessionId: string | null;
@@ -18,7 +19,7 @@ interface GameState {
   notes: string;
   scenario: string | null;
 
-  setUser: (email: string, userId: string, token: string) => void;
+  setUser: (email: string, userId: string, token: string, isAdmin: boolean) => void;
   logout: () => void;
   setSessionId: (id: string) => void;
   setSelectedNpc: (npcId: string) => void;
@@ -41,6 +42,7 @@ export const useGameStore = create<GameState>()(
       userEmail: null,
       userId: null,
       authToken: null,
+      isAdmin: false,
 
       // Game
       sessionId: null,
@@ -53,12 +55,13 @@ export const useGameStore = create<GameState>()(
       notes: '',
       scenario: null,
 
-      setUser: (email, userId, token) => set({ userEmail: email, userId, authToken: token }),
+      setUser: (email, userId, token, isAdmin) => set({ userEmail: email, userId, authToken: token, isAdmin }),
 
       logout: () => set({
         userEmail: null,
         userId: null,
         authToken: null,
+        isAdmin: false,
         sessionId: null,
         selectedNpcId: null,
         npcStates: {},

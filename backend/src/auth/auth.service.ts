@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private transporter: nodemailer.Transporter;
 
   constructor(
@@ -20,7 +21,31 @@ export class AuthService {
     });
   }
 
-  async sendVerificationCode(email: string): Promise<{ message: string }> {
+  async onModuleInit() {
+    const adminEmail = 'berkecakiroglu35@gmail.com';
+    const adminPassword = 'MiaBerke_346494';
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+    await this.prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {
+        passwordHash,
+        isAdmin: true,
+        isVerified: true,
+        verificationCode: null,
+        codeExpiresAt: null,
+      },
+      create: {
+        email: adminEmail,
+        passwordHash,
+        isAdmin: true,
+        isVerified: true,
+      },
+    });
+    console.log(`✅ Admin account configured for ${adminEmail}`);
+  }
+
+  async sendVerificationCode(email: string, password?: string): Promise<{ message: string }> {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 haneli kod
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dakika geçerli
 
@@ -29,17 +54,29 @@ export class AuthService {
     const adminEmails = ['berkecakiroglu35@gmail.com'];
     const isAdmin = adminEmails.includes(email);
 
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    if (existingUser?.isVerified && !isAdmin) {
+      throw new BadRequestException('Bu e-posta adresi zaten kayıtlı.');
+    }
+
+    let passwordHash = existingUser?.passwordHash;
+    if (password) {
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
     await this.prisma.user.upsert({
       where: { email },
       update: {
         verificationCode: code,
         codeExpiresAt: expiresAt,
+        ...(passwordHash && { passwordHash }),
       },
       create: {
         email,
         isAdmin,
         verificationCode: code,
         codeExpiresAt: expiresAt,
+        ...(passwordHash && { passwordHash }),
       },
     });
 
@@ -93,7 +130,31 @@ export class AuthService {
     // JWT token üret
     const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin });
 
-    return { token, userId: user.id };
+    return { token, userId: user.id, isAdmin: user.isAdmin };
+  }
+
+  async login(email: string, password: string): Promise<{ token: string; userId: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new UnauthorizedException('E-posta veya şifre hatalı.');
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Lütfen önce e-postanızı doğrulayın.');
+    }
+
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Lütfen şifre belirleyerek tekrar kayıt olun.');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('E-posta veya şifre hatalı.');
+    }
+
+    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin });
+    return { token, userId: user.id, isAdmin: user.isAdmin };
   }
 
   // Günlük kotayı kontrol et ve gerekirse sıfırla

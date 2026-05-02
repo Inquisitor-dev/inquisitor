@@ -8,7 +8,7 @@ import styles from './crime-scene.module.scss';
 
 export default function CrimeScenePage() {
   const router = useRouter();
-  const { currentDay, timeOfDay, maxDailyDialogues, dialoguesUsedToday, scenario, notes, setNotes, sessionId } = useGameStore();
+  const { isAdmin, currentDay, timeOfDay, maxDailyDialogues, dialoguesUsedToday, scenario, notes, setNotes, sessionId } = useGameStore();
   
   const [inspected, setInspected] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
@@ -84,7 +84,7 @@ export default function CrimeScenePage() {
         </div>
 
         <div className={styles.sessionInfo}>
-          Bugün kalan sorgu hakkınız: {maxDailyDialogues - dialoguesUsedToday}
+          Bugün kalan sorgu hakkınız: {isAdmin ? 'Sınırsız' : (30 - dialoguesUsedToday)}
         </div>
       </header>
 

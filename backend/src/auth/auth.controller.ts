@@ -7,11 +7,14 @@ export class AuthController {
 
   @Post('send-code')
   @HttpCode(200)
-  async sendCode(@Body('email') email: string) {
+  async sendCode(
+    @Body('email') email: string,
+    @Body('password') password?: string,
+  ) {
     if (!email || !email.includes('@')) {
       return { error: 'Geçerli bir e-posta adresi girin.' };
     }
-    return this.authService.sendVerificationCode(email.toLowerCase().trim());
+    return this.authService.sendVerificationCode(email.toLowerCase().trim(), password);
   }
 
   @Post('verify')
@@ -21,5 +24,17 @@ export class AuthController {
     @Body('code') code: string,
   ) {
     return this.authService.verifyCode(email.toLowerCase().trim(), code.trim());
+  }
+
+  @Post('login')
+  @HttpCode(200)
+  async login(
+    @Body('email') email: string,
+    @Body('password') password?: string,
+  ) {
+    if (!email || !password) {
+      return { error: 'E-posta ve şifre gereklidir.' };
+    }
+    return this.authService.login(email.toLowerCase().trim(), password);
   }
 }

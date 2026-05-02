@@ -47,7 +47,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout } =
+  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout } =
     useGameStore();
   
   const router = useRouter();
@@ -166,7 +166,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || loading || dialoguesUsedToday >= maxDailyDialogues || !sessionId) return;
+    if (!trimmed || loading || (!isAdmin && dialoguesUsedToday >= 30) || !sessionId) return;
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
@@ -290,8 +290,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         </div>
 
         <div className={styles.quota}>
-          <span className={remaining < 10 ? styles.quotaLow : ''}>
-            Bugün kalan sorgu hakkınız: {remaining}
+          <span className={(!isAdmin && remaining < 10) ? styles.quotaLow : ''}>
+            Bugün kalan sorgu hakkınız: {isAdmin ? 'Sınırsız' : (30 - dialoguesUsedToday)}
           </span>
         </div>
       </header>
@@ -395,7 +395,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 style={{ width: `${(dialoguesUsedToday / maxDailyDialogues) * 100}%` }}
               />
             </div>
-            <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {maxDailyDialogues} sorgu hakkı kullanıldı.</p>
+            <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {isAdmin ? 'Sınırsız' : 30} sorgu hakkı kullanıldı.</p>
           </div>
 
           <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
