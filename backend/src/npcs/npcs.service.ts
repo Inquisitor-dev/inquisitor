@@ -68,7 +68,21 @@ export class NpcsService {
 
     // 4. LLM API'ye sor
     const currentState = state!;
-    let combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
+    let combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\n`;
+
+    if (currentState.npc.id.startsWith('narrator_')) {
+      combinedPrompt += `THE ABSOLUTE TRUTH OF WHAT HAPPENED:
+${currentState.session.truthReveal}
+
+INVESTIGATION RULES FOR NARRATOR:
+1. The player is searching the environment.
+2. If the player makes a GENERAL search ("I look around", "What is here?", "I investigate the tavern"), describe ONLY the general atmosphere and surface-level objects. DO NOT reveal any hidden clues or secrets.
+3. If the player searches a SPECIFIC object or specific area ("I check under the rug", "I inspect the bookshelf", "I examine the body's hands"), and if a clue would logically be hidden there based on the TRUTH, THEN describe a SUBTLE physical clue (e.g. a torn piece of cloth, a faint footprint, a missing ring).
+4. Do NOT make it easy. Do NOT reveal clues unless the player explicitly investigates the exact spot where evidence would be left. If they search the wrong spot, say there is nothing unusual.
+5. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence. Leave the deduction to the player.`;
+    } else {
+      combinedPrompt += `YOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
+    }
 
     if (currentState.npc.id === 'church') {
       const warrantInfo = currentState.session.issuedWarrant 
