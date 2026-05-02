@@ -98,7 +98,7 @@ export class NpcsService {
     let grantedWarrant = null;
     
     // Check for warrant tag
-    const warrantMatch = finalReply.match(/\[GRANT_WARRANT:\s*([a-zA-Z0-9_]+)\]/i);
+    const warrantMatch = finalReply.match(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/i);
     if (warrantMatch) {
       grantedWarrant = warrantMatch[1];
       finalReply = finalReply.replace(warrantMatch[0], '').trim();
