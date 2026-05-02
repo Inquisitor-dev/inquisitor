@@ -33,6 +33,11 @@ const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }
     title: 'Değirmenci — Rüzgarın Sırdaşı',
     icon: '⚙️',
   },
+  crime_scene: {
+    name: 'Cinayet Mahalli',
+    title: 'Sessiz Tanıklar...',
+    icon: '🩸',
+  },
 };
 
 const PLACEHOLDER_SESSION_ID = 'demo-session-001';
@@ -47,12 +52,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout } =
+  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, setWarrant, consumeWarrant } =
     useGameStore();
   
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true); // Başlangıçta true, veri gelene kadar
+  const [loading, setLoading] = useState(true);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -60,6 +65,11 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const isCrimeScene = npcKey === 'crime_scene';
+  const [isInvestigating, setIsInvestigating] = useState(isCrimeScene);
+  const currentNpcKey = isInvestigating ? `narrator_${npcKey}` : npcKey;
+  const canInvestigate = isCrimeScene || (inventory?.warrant === npcKey && !inventory?.isWarrantUsed);
 
   useEffect(() => {
     setLocalNotes(notes);
@@ -73,6 +83,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   useEffect(() => {
     const fetchHistory = async () => {
       if (!sessionId) return; // Session ID yoksa çekme
+      setLoading(true);
+      setMessages([]);
+      
       try {
         const res = await fetch('http://localhost:3001/npcs/history', {
           method: 'POST',
@@ -82,7 +95,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           },
           body: JSON.stringify({
             sessionId: sessionId,
-            npcId: npcKey,
+            npcId: currentNpcKey,
           }),
         });
         
@@ -99,7 +112,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         } else {
           const fetchedDay = typeof data.currentDay === 'number' ? data.currentDay : 1;
 
-          if (fetchedDay > 1) {
+          if (fetchedDay > 1 && !isInvestigating) {
             // Yeni gün! NPC'den otomatik selamlama al (token harcamadan isNewDay flag'i backend'e gidiyor)
             try {
               const greetRes = await fetch('http://localhost:3001/npcs/interact', {
@@ -107,7 +120,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   sessionId: sessionId,
-                  npcId: npcKey,
+                  npcId: currentNpcKey,
                   message: '__NEW_DAY_GREETING__', // Özel sistem sinyali
                 }),
               });
@@ -119,14 +132,24 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               setMessages([{ role: 'npc', text: `*${profile.name} sizi tanıyarak başını kaldırıyor...*`, timestamp: new Date() }]);
             }
           } else {
-            // 1. gün, ilk kez giriliyor — standart karşılama
-            setMessages([
-              {
-                role: 'npc',
-                text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
-                timestamp: new Date(),
-              },
-            ]);
+            // 1. gün veya araştırma modu
+            if (isInvestigating) {
+              setMessages([
+                {
+                  role: 'npc',
+                  text: `*[Mekan: ${profile.name}] Etrafı araştırmaya başlıyorsunuz. Sadece detaylara odaklanın...*`,
+                  timestamp: new Date(),
+                },
+              ]);
+            } else {
+              setMessages([
+                {
+                  role: 'npc',
+                  text: `*${profile.name} içeri girdiğinizde gözlerini kısarak size bakıyor.*\n\n"Köyümüzde bir Engizisyoncu... Benden ne istiyorsunuz?"`,
+                  timestamp: new Date(),
+                },
+              ]);
+            }
           }
         }
 
@@ -162,7 +185,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [npcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes]); // npcKey değişirse (başka sayfaya geçilirse) tekrar çalışır
+  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes]); // isInvestigating (currentNpcKey) değişirse tekrar çalışır
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -182,12 +205,17 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         },
         body: JSON.stringify({
           sessionId: sessionId,
-          npcId: npcKey,
+          npcId: currentNpcKey,
           message: trimmed,
         }),
       });
 
       const data = await res.json();
+
+      if (data.grantedWarrant) {
+        setWarrant(data.grantedWarrant, false);
+        alert(`Peder size bir arama izni verdi: ${data.grantedWarrant.toUpperCase()}`);
+      }
 
       if (data.reply) {
         setMessages((prev) => [
@@ -282,10 +310,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         </Link>
 
         <div className={styles.npcInfo}>
-          <span className={styles.npcIcon}>{profile.icon}</span>
+          <span className={styles.npcIcon}>{isInvestigating ? '👁️' : profile.icon}</span>
           <div>
-            <div className={styles.npcName}>{profile.name}</div>
-            <div className={styles.npcTitle}>{profile.title}</div>
+            <div className={styles.npcName}>{isInvestigating ? 'Fiziksel Çevre' : profile.name}</div>
+            <div className={styles.npcTitle}>{isInvestigating ? 'Etrafınızdaki Dünya' : profile.title}</div>
           </div>
         </div>
 
@@ -303,7 +331,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             {messages.map((msg, i) => (
               <div key={i} className={`${styles.bubble} ${msg.role === 'player' ? styles.player : styles.npc}`}>
                 <div className={styles.bubbleLabel}>
-                  {msg.role === 'player' ? 'Inquisitor' : profile.name}
+                  {msg.role === 'player' ? 'Inquisitor' : (isInvestigating ? 'Anlatıcı' : profile.name)}
                 </div>
                 <div className={styles.bubbleText}>
                   {msg.text.split('\n').map((line, j) => (
@@ -318,7 +346,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
             {loading && (
               <div className={`${styles.bubble} ${styles.npc} ${styles.typing}`}>
-                <div className={styles.bubbleLabel}>{profile.name}</div>
+                <div className={styles.bubbleLabel}>{isInvestigating ? 'Anlatıcı' : profile.name}</div>
                 <div className={styles.typingDots}>
                   <span /><span /><span />
                 </div>
@@ -398,8 +426,89 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {isAdmin ? 'Sınırsız' : 30} sorgu hakkı kullanıldı.</p>
           </div>
 
+          <div className={styles.sideCard}>
+            <div className={styles.sideTitle}>Envanter</div>
+            <div style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '12px' }}>
+              {inventory?.warrant ? (inventory.isWarrantUsed ? 'Geçerli arama izni yok (Kullanıldı)' : `Arama İzni: ${inventory.warrant.toUpperCase()}`) : 'Envanter boş'}
+            </div>
+            
+            {!isInvestigating ? (
+              <button 
+                onClick={() => {
+                  if (canInvestigate) {
+                    setIsInvestigating(true);
+                  } else {
+                    alert('Bu mekanı araştırmak için pederden izin almalısınız.');
+                  }
+                }}
+                disabled={!canInvestigate}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: canInvestigate ? '#8A0303' : 'rgba(255,255,255,0.05)',
+                  color: canInvestigate ? '#fff' : '#555',
+                  border: '1px solid ' + (canInvestigate ? '#a00' : '#333'),
+                  cursor: canInvestigate ? 'pointer' : 'not-allowed',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem',
+                  letterSpacing: '1px',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Mekanı Araştır
+              </button>
+            ) : (
+              !isCrimeScene && (
+                <button 
+                  onClick={async () => {
+                    const confirmWindow = window.confirm('Araştırmayı sonlandırmak izninizi tüketecek ve bir daha araştıramayacaksınız. Emin misiniz?');
+                    if (!confirmWindow) return;
+                    
+                    consumeWarrant();
+                    setIsInvestigating(false);
+                    
+                    try {
+                      await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                      });
+                    } catch(e) { console.error(e); }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: '#8A0303',
+                    color: '#fff',
+                    border: '1px solid #a00',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    fontSize: '0.75rem',
+                    letterSpacing: '1px',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  Araştırmayı Sonlandır
+                </button>
+              )
+            )}
+          </div>
+
           <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
-            <button className={`${styles.sendBtn} ${styles.condemnBtn}`} style={{ width: '100%', background: '#8A0303', color: '#fff', border: 'none', padding: '12px' }} onClick={handleCondemn}>
+            <button 
+              className={`${styles.sendBtn} ${styles.condemnBtn}`} 
+              style={{ 
+                width: '100%', 
+                background: isInvestigating ? '#4a0202' : '#8A0303', 
+                color: isInvestigating ? '#888' : '#fff', 
+                border: 'none', 
+                padding: '12px',
+                cursor: isInvestigating ? 'not-allowed' : 'pointer',
+                opacity: isInvestigating ? 0.5 : 1
+              }} 
+              onClick={handleCondemn}
+              disabled={isInvestigating}
+            >
               BU KAFİRİ MAHKUM ET
             </button>
             <p className={styles.sideHint} style={{ textAlign: 'center', marginTop: '8px' }}>

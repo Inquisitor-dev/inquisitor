@@ -68,7 +68,14 @@ export class NpcsService {
 
     // 4. LLM API'ye sor
     const currentState = state!;
-    const combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
+    let combinedPrompt = `${currentState.npc.basePrompt}\n\nINCIDENT SCENARIO:\n${currentState.session.scenario}\n\nYOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
+
+    if (currentState.npc.id === 'church') {
+      const warrantInfo = currentState.session.issuedWarrant 
+        ? '\n\nSYSTEM: You have already granted a search warrant in this session. Do NOT grant another.' 
+        : '\n\nSYSTEM: You have NOT granted any search warrant yet. You can grant one if the player asks convincingly.';
+      combinedPrompt += warrantInfo;
+    }
 
     // Yeni gün mü kontrol et
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
@@ -87,19 +94,41 @@ export class NpcsService {
       isNewDay,
     );
 
+    let finalReply = llmResponse.reply;
+    let grantedWarrant = null;
+    
+    // Check for warrant tag
+    const warrantMatch = finalReply.match(/\[GRANT_WARRANT:\s*([a-zA-Z0-9_]+)\]/i);
+    if (warrantMatch) {
+      grantedWarrant = warrantMatch[1];
+      finalReply = finalReply.replace(warrantMatch[0], '').trim();
+      
+      // Update session if not already granted
+      if (!currentState.session.issuedWarrant) {
+        await this.prisma.gameSession.update({
+          where: { id: sessionId },
+          data: { issuedWarrant: grantedWarrant, isWarrantUsed: false }
+        });
+      } else {
+        // Zaten izin vermiş, bu tagi yoksay
+        grantedWarrant = null;
+      }
+    }
+
     // 5. NPC'nin cevabını DB'ye kaydet (selamlama da kaydedilsin ki geçmişte görünsün)
     await this.prisma.dialogueHistory.create({
       data: {
         sessionId,
         npcId,
         speaker: 'NPC',
-        message: llmResponse.reply,
+        message: finalReply,
         dayNumber: state.session.currentDay,
       },
     });
 
     return {
-      reply: llmResponse.reply,
+      reply: finalReply,
+      grantedWarrant,
     };
   }
 

@@ -58,4 +58,10 @@ export class GameSessionsController {
   async condemnNpc(@Param('id') sessionId: string, @Body('npcId') npcId: string) {
     return await this.gameSessionsService.condemnNpc(sessionId, npcId);
   }
+
+  @Post(':id/consume-warrant')
+  @UseGuards(JwtAuthGuard)
+  async consumeWarrant(@Param('id') sessionId: string) {
+    return await this.gameSessionsService.consumeWarrant(sessionId);
+  }
 }

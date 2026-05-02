@@ -33,10 +33,12 @@ model GameSession {
   culpritId   String?           // Cadı/Suçlu olan NPC ID'si
   currentDay  Int               @default(1)
   timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
-  notes       String?           @default("") // Engizisyoncunun notları
-  createdAt   DateTime          @default(now())
-  npcStates   SessionNpcState[]
-  dialogues   DialogueHistory[]
+  notes         String?           @default("") // Engizisyoncunun notları
+  issuedWarrant String?           // Peder'den alınan arama izni (örn: "tavern")
+  isWarrantUsed Boolean           @default(false) // İzin kullanıldı mı?
+  createdAt     DateTime          @default(now())
+  npcStates     SessionNpcState[]
+  dialogues     DialogueHistory[]
 }
 
 model Npc {

@@ -18,6 +18,10 @@ interface GameState {
   timeOfDay: number;
   notes: string;
   scenario: string | null;
+  inventory: {
+    warrant: string | null;
+    isWarrantUsed: boolean;
+  };
 
   setUser: (email: string, userId: string, token: string, isAdmin: boolean) => void;
   logout: () => void;
@@ -33,6 +37,8 @@ interface GameState {
   advanceTime: () => void;
   endDay: () => void;
   reset: () => void;
+  setWarrant: (warrant: string | null, isUsed?: boolean) => void;
+  consumeWarrant: () => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -54,6 +60,7 @@ export const useGameStore = create<GameState>()(
       timeOfDay: 0,
       notes: '',
       scenario: null,
+      inventory: { warrant: null, isWarrantUsed: false },
 
       setUser: (email, userId, token, isAdmin) => set({ userEmail: email, userId, authToken: token, isAdmin }),
 
@@ -70,6 +77,7 @@ export const useGameStore = create<GameState>()(
         timeOfDay: 0,
         notes: '',
         scenario: null,
+        inventory: { warrant: null, isWarrantUsed: false },
       }),
 
       setSessionId: (id) => set({ sessionId: id }),
@@ -132,20 +140,28 @@ export const useGameStore = create<GameState>()(
           ),
         })),
 
-      reset: () =>
-        set({
-          sessionId: null,
-          selectedNpcId: null,
-          npcStates: {},
-          dialoguesUsedToday: 0,
-          currentDay: 1,
-          timeOfDay: 0,
-          notes: '',
-          scenario: null,
-        }),
+      reset: () => set({
+        sessionId: null,
+        selectedNpcId: null,
+        npcStates: {},
+        dialoguesUsedToday: 0,
+        currentDay: 1,
+        timeOfDay: 0,
+        notes: '',
+        scenario: null,
+        inventory: { warrant: null, isWarrantUsed: false },
+      }),
+
+      setWarrant: (warrant, isUsed = false) => set((state) => ({
+        inventory: { warrant, isWarrantUsed: isUsed },
+      })),
+
+      consumeWarrant: () => set((state) => ({
+        inventory: { ...state.inventory, isWarrantUsed: true },
+      })),
     }),
     {
-      name: 'inquisitor-game-storage', // name of the item in the storage (must be unique)
+      name: 'inquisitor-storage',
     }
   )
 );

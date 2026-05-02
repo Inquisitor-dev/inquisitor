@@ -58,13 +58,26 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { isAdmin, currentDay, timeOfDay, advanceTime, dialoguesUsedToday, maxDailyDialogues, sessionId, endDay, reset, authToken } = useGameStore();
-  const [endingDay, setEndingDay] = useState(false);
+  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrant } = useGameStore();
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
+  const [endingDay, setEndingDay] = useState(false);
 
   useEffect(() => {
     if (!authToken) router.push('/login');
-  }, [authToken, router]);
+
+    const fetchSession = async () => {
+      if (sessionId) {
+        try {
+          const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          const data = await res.json();
+          setWarrant(data.issuedWarrant, data.isWarrantUsed);
+        } catch(e) {}
+      }
+    };
+    fetchSession();
+  }, [authToken, router, sessionId, setWarrant]);
 
   const handleRetreat = () => {
     reset();
@@ -105,7 +118,7 @@ export default function MapPage() {
       advanceTime();
       
       if (locId === 'crime-scene') {
-        router.push('/crime-scene');
+        router.push('/interact/crime_scene');
       } else {
         router.push(`/interact/${locId}`);
       }

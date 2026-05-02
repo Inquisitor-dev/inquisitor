@@ -142,7 +142,17 @@ export class GameSessionsService {
       won,
       culpritId: session.culpritId,
       message: won ? 'Doğru kişiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
-      session: updatedSession
+      session: updatedSession,
+      won,
     };
+  }
+
+  async consumeWarrant(sessionId: string) {
+    this.logger.log(`Consuming warrant for session: ${sessionId}`);
+    
+    return await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { isWarrantUsed: true },
+    });
   }
 }
