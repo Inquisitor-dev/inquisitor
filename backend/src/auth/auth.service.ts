@@ -102,7 +102,7 @@ export class AuthService implements OnModuleInit {
     return { message: 'Doğrulama kodu e-posta adresinize gönderildi.' };
   }
 
-  async verifyCode(email: string, code: string): Promise<{ token: string; userId: string }> {
+  async verifyCode(email: string, code: string): Promise<{ token: string; userId: string; isAdmin: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.verificationCode || !user.codeExpiresAt) {
@@ -133,7 +133,7 @@ export class AuthService implements OnModuleInit {
     return { token, userId: user.id, isAdmin: user.isAdmin };
   }
 
-  async login(email: string, password: string): Promise<{ token: string; userId: string }> {
+  async login(email: string, password: string): Promise<{ token: string; userId: string; isAdmin: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
