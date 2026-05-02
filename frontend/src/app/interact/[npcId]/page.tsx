@@ -290,6 +290,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       if (data.session && data.session.truthReveal) {
         useGameStore.getState().setTruthReveal(data.session.truthReveal);
       }
+      if (data.session && data.session.locationClues) {
+        useGameStore.getState().setLocationClues(data.session.locationClues);
+      }
       router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
     } catch (err) {
       console.error('Failed to condemn', err);

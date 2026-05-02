@@ -99,6 +99,9 @@ export default function MapPage() {
         if (data.session && data.session.truthReveal) {
           useGameStore.getState().setTruthReveal(data.session.truthReveal);
         }
+        if (data.session && data.session.locationClues) {
+          useGameStore.getState().setLocationClues(data.session.locationClues);
+        }
         router.push('/result?won=false&reason=timeout');
       } catch (err) {
         console.error('Failed to handle timeout', err);

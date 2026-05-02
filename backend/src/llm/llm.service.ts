@@ -120,6 +120,7 @@ CRITICAL RULES:
     truthReveal: string;
     culpritId: string;
     npcPrompts: Record<string, string>;
+    locationClues: Record<string, string>;
   }> {
     const prompt = `You are the Game Master for a dark medieval interrogation game.
 Create a new murder or dark heresy mystery set in the village of Ashenmoor.
@@ -144,6 +145,7 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 CLUE & MYSTERY RULES:
 1. DO NOT use cliché or overly obvious clues that instantly give away the killer's profession (e.g. NO flour for the miller, NO holy water for the priest, NO dirt for the gravedigger). The mystery must be difficult to solve. Use subtle, psychological, or indirect clues. Red herrings (false clues pointing to innocent people) are highly encouraged.
 2. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
+3. For 'locationClues': invent one hidden physical clue (real or red herring) per location. These should be very specific and small details - not generic descriptions, but exact objects/marks the player needs to find. Written in dark literary Turkish.
 
 Return a valid JSON object ONLY, in exactly this format:
 {
@@ -155,6 +157,13 @@ Return a valid JSON object ONLY, in exactly this format:
     "church": "Your personal secret/role regarding this incident...",
     "graveyard": "Your personal secret/role regarding this incident...",
     "mill": "Your personal secret/role regarding this incident..."
+  },
+  "locationClues": {
+    "crime_scene": "Turkish description of a subtle physical clue hidden at the crime scene...",
+    "tavern": "Turkish description of a subtle clue hidden in the tavern (real or red herring)...",
+    "church": "Turkish description of a subtle clue hidden in the church (real or red herring)...",
+    "graveyard": "Turkish description of a subtle clue hidden in the graveyard (real or red herring)...",
+    "mill": "Turkish description of a subtle clue hidden in the mill (real or red herring)..."
   }
 }`;
 

@@ -15,7 +15,7 @@ export class GameSessionsService {
     this.logger.log(`Creating new dynamic session for user: ${userId}`);
 
     // 1. LLM'den Senaryo Üret
-    const { scenario, truthReveal, culpritId, npcPrompts } = await this.llm.generateSessionScenario();
+    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario();
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
     // 2. Yeni Session Oluştur
@@ -24,6 +24,7 @@ export class GameSessionsService {
         userId,
         scenario,
         truthReveal,
+        locationClues,
         culpritId,
         status: 'ACTIVE',
       },
@@ -113,7 +114,7 @@ export class GameSessionsService {
     if (!session) throw new Error('Session not found');
     
     if (session.status === 'ACTIVE') {
-      const { truthReveal, ...safeSession } = session;
+      const { truthReveal, locationClues, ...safeSession } = session;
       return safeSession;
     }
     return session;

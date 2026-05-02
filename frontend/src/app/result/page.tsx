@@ -8,7 +8,15 @@ import { useGameStore } from '../../store/useGameStore';
 function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { reset, truthReveal } = useGameStore();
+  const { reset, truthReveal, locationClues } = useGameStore();
+  
+  const locationNames: Record<string, string> = {
+    crime_scene: 'Cinayet Mahalli',
+    tavern: 'Taverna (Meyhane)',
+    church: 'Kilise',
+    graveyard: 'Mezarlik',
+    mill: 'Degirmen',
+  };
   
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
@@ -58,7 +66,7 @@ function ResultContent() {
           border: '1px solid #333',
           padding: '24px',
           borderRadius: '8px',
-          marginBottom: '40px',
+          marginBottom: '24px',
           textAlign: 'left'
         }}>
           <h2 style={{ fontSize: '1.2rem', color: '#888', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
@@ -67,6 +75,44 @@ function ResultContent() {
           <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#ccc', fontStyle: 'italic' }}>
             {truthReveal}
           </p>
+        </div>
+      )}
+
+      {locationClues && Object.keys(locationClues).length > 0 && (
+        <div style={{
+          maxWidth: '800px',
+          background: 'rgba(10,5,0,0.7)',
+          border: '1px solid #3a2510',
+          padding: '24px',
+          borderRadius: '8px',
+          marginBottom: '40px',
+          textAlign: 'left',
+          width: '100%'
+        }}>
+          <h2 style={{ fontSize: '1.1rem', color: '#7a5c2e', marginBottom: '20px', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
+            Gizli Ipuclari
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {Object.entries(locationClues).map(([locId, clue]) => (
+              <div key={locId} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', borderBottom: '1px solid #2a1a08', paddingBottom: '12px' }}>
+                <span style={{
+                  minWidth: '150px',
+                  fontWeight: 'bold',
+                  color: '#7a5c2e',
+                  fontSize: '0.8rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  paddingTop: '3px',
+                  flexShrink: 0
+                }}>
+                  {locationNames[locId] || locId}
+                </span>
+                <span style={{ color: '#b8a898', fontSize: '0.95rem', lineHeight: 1.6, fontStyle: 'italic' }}>
+                  {String(clue)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

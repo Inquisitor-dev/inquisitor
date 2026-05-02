@@ -23,6 +23,7 @@ interface GameState {
     isWarrantUsed: boolean;
   };
   truthReveal: string | null;
+  locationClues: Record<string, string> | null;
 
   setUser: (email: string, userId: string, token: string, isAdmin: boolean) => void;
   logout: () => void;
@@ -41,6 +42,7 @@ interface GameState {
   setWarrant: (warrant: string | null, isUsed?: boolean) => void;
   consumeWarrant: () => void;
   setTruthReveal: (truth: string | null) => void;
+  setLocationClues: (clues: Record<string, string> | null) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -64,6 +66,7 @@ export const useGameStore = create<GameState>()(
       scenario: null,
       inventory: { warrant: null, isWarrantUsed: false },
       truthReveal: null,
+      locationClues: null,
 
       setUser: (email, userId, token, isAdmin) => set({ userEmail: email, userId, authToken: token, isAdmin }),
 
@@ -82,6 +85,7 @@ export const useGameStore = create<GameState>()(
         scenario: null,
         inventory: { warrant: null, isWarrantUsed: false },
         truthReveal: null,
+        locationClues: null,
       }),
 
       setSessionId: (id) => set({ sessionId: id }),
@@ -155,6 +159,7 @@ export const useGameStore = create<GameState>()(
         scenario: null,
         inventory: { warrant: null, isWarrantUsed: false },
         truthReveal: null,
+        locationClues: null,
       }),
 
       setWarrant: (warrant, isUsed = false) => set((state) => ({
@@ -166,6 +171,8 @@ export const useGameStore = create<GameState>()(
       })),
 
       setTruthReveal: (truth) => set({ truthReveal: truth }),
+
+      setLocationClues: (clues) => set({ locationClues: clues }),
     }),
     {
       name: 'inquisitor-storage',
