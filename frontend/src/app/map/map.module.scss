@@ -147,7 +147,7 @@
   width: 100%;
   max-width: 1800px;
   height: 100%;
-  background-image: url('/map/map_base.png');
+  background-image: url('/map/village_map.png');
   background-size: cover;
   background-position: center;
   transition: filter 1s ease;
@@ -157,24 +157,25 @@
   filter: brightness(0.4) contrast(1.2) sepia(0.2) hue-rotate(180deg);
 }
 
-.buildingWrapper {
+/* GÖRÜNMEZ BUTONLAR (HOTSPOTS) */
+.invisibleButton {
   position: absolute;
   cursor: pointer;
+  /* TEST İÇİN GEÇİCİ BORDER: Bu border'ları sen binaların tam üstüne yerleştirdiğinde 'none' yapacağız */
+  border: 2px dashed rgba(255, 0, 0, 0.6);
+  border-radius: 50%; /* Ya da tasarımına göre 8px yapabiliriz */
+  transition: all 0.3s ease;
+  z-index: 10;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 10;
 
   &:hover {
-    transform: scale(1.08) translateY(-10px);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    box-shadow: inset 0 0 30px rgba(232, 220, 196, 0.2);
+    border-color: rgba(232, 220, 196, 0.8);
     z-index: 20;
 
-    .buildingImage {
-      filter: drop-shadow(0 0 25px rgba(232, 220, 196, 0.9)) brightness(1.3);
-    }
-    
     .label {
       opacity: 1;
       transform: translateY(0);
@@ -186,17 +187,12 @@
 
   &.locked {
     cursor: not-allowed;
-    
-    .buildingImage {
-      opacity: 0.6;
-      filter: grayscale(0.8) brightness(0.5);
-    }
+    border-color: rgba(100, 100, 100, 0.3);
 
     &:hover {
-      transform: none;
-      .buildingImage {
-        filter: grayscale(0.8) brightness(0.5);
-      }
+      background: transparent;
+      box-shadow: none;
+      
       .label {
         background: rgba(10, 5, 5, 0.9);
         border-color: #333;
@@ -207,18 +203,8 @@
   }
 }
 
-.buildingImage {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  mix-blend-mode: screen; /* Removes black background */
-  transition: all 0.3s ease;
-  pointer-events: none; /* Let the wrapper handle clicks */
-}
-
 .label {
   position: absolute;
-  bottom: 10%;
   background: rgba(10, 5, 5, 0.95);
   border: 1px solid rgba(232, 220, 196, 0.2);
   padding: 8px 16px;

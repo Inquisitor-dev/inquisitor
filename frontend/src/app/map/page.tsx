@@ -8,14 +8,16 @@ import styles from './map.module.scss';
 
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
+// Geçici koordinatlar (Kullanıcı yönlendirmesiyle düzeltilecek)
 const locations = [
   {
     id: 'church',
     name: 'Kilise',
     icon: '⛪',
-    top: '10%',
+    top: '15%',
     left: '40%',
-    width: '25%',
+    width: '15%',
+    height: '25%',
     available: true,
   },
   {
@@ -23,8 +25,9 @@ const locations = [
     name: 'Değirmen',
     icon: '⚙️',
     top: '30%',
-    left: '10%',
-    width: '20%',
+    left: '15%',
+    width: '12%',
+    height: '20%',
     available: true,
   },
   {
@@ -32,8 +35,9 @@ const locations = [
     name: 'Taverna',
     icon: '🍺',
     top: '55%',
-    left: '20%',
-    width: '22%',
+    left: '25%',
+    width: '18%',
+    height: '20%',
     available: true,
   },
   {
@@ -42,7 +46,8 @@ const locations = [
     icon: '🪦',
     top: '40%',
     left: '65%',
-    width: '28%',
+    width: '20%',
+    height: '25%',
     available: true,
   },
   {
@@ -51,7 +56,8 @@ const locations = [
     icon: '🩸',
     top: '75%',
     left: '45%',
-    width: '18%',
+    width: '15%',
+    height: '15%',
     available: true,
   },
 ];
@@ -185,19 +191,15 @@ export default function MapPage() {
           return (
             <div 
               key={loc.id}
-              className={`${styles.buildingWrapper} ${!isAvailable ? styles.locked : ''}`}
+              className={`${styles.invisibleButton} ${!isAvailable ? styles.locked : ''}`}
               style={{
                 top: loc.top,
                 left: loc.left,
-                width: loc.width
+                width: loc.width,
+                height: loc.height,
               }}
               onClick={() => isAvailable && handleLocationClick(loc.id)}
             >
-              <img 
-                src={`/map/map_${loc.id}.png`} 
-                alt={loc.name} 
-                className={styles.buildingImage} 
-              />
               <div className={styles.label}>
                 <span className={styles.icon}>{loc.icon}</span>
                 {loadingLoc === loc.id ? 'Gidiliyor...' : loc.name}
