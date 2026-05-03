@@ -161,9 +161,8 @@
 .invisibleButton {
   position: absolute;
   cursor: pointer;
-  /* TEST İÇİN GEÇİCİ BORDER: Bu border'ları sen binaların tam üstüne yerleştirdiğinde 'none' yapacağız */
-  border: 2px dashed rgba(255, 0, 0, 0.6);
-  border-radius: 50%; /* Ya da tasarımına göre 8px yapabiliriz */
+  border: none;
+  border-radius: 8px;
   transition: all 0.3s ease;
   z-index: 10;
   display: flex;
@@ -171,17 +170,14 @@
   justify-content: center;
 
   &:hover {
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    box-shadow: inset 0 0 30px rgba(232, 220, 196, 0.2);
-    border-color: rgba(232, 220, 196, 0.8);
     z-index: 20;
 
     .label {
       opacity: 1;
       transform: translateY(0);
-      background: rgba(138, 3, 3, 0.9);
+      background: rgba(138, 3, 3, 0.95);
       border-color: #E8DCC4;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.8), 0 0 15px rgba(138,3,3,0.5);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 15px rgba(138,3,3,0.4);
     }
   }
 
@@ -235,4 +231,48 @@
   color: #8A0303;
   font-weight: normal;
   letter-spacing: 0;
+}
+
+/* ── CRIME SCENE CORNER ── */
+.crimeSceneCorner {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 60;
+}
+
+.crimeSceneBtn {
+  background: rgba(20, 5, 5, 0.85);
+  border: 1px solid #8A0303;
+  color: #E8DCC4;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+
+  &:hover {
+    background: #8A0303;
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(138, 3, 3, 0.5);
+  }
+}
+
+.crimeHint {
+  font-size: 0.75rem;
+  color: #8a7f72;
+  font-style: italic;
+  margin: 0;
+  letter-spacing: 0.05em;
 }

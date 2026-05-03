@@ -34,7 +34,7 @@ const locations = [
     id: 'tavern',
     name: 'Taverna',
     icon: '🍺',
-    top: '42%',
+    top: '36%',
     left: '42%',
     width: '16%',
     height: '25%',
@@ -49,17 +49,7 @@ const locations = [
     width: '25%',
     height: '30%',
     available: true,
-  },
-  {
-    id: 'crime_scene',
-    name: 'Cinayet Mahalli',
-    icon: '🩸',
-    top: '78%',
-    left: '45%',
-    width: '15%',
-    height: '18%',
-    available: true,
-  },
+  }
 ];
 
 export default function MapPage() {
@@ -213,6 +203,20 @@ export default function MapPage() {
           );
         })}
       </div>
+
+      {/* Special: Crime Scene Button in the Corner */}
+      {currentDay === 1 && !isNight && (
+        <div className={styles.crimeSceneCorner}>
+          <button 
+            onClick={() => handleLocationClick('crime_scene')}
+            className={styles.crimeSceneBtn}
+          >
+            <span className={styles.icon}>🩸</span>
+            {loadingLoc === 'crime_scene' ? 'Gidiliyor...' : 'Cinayet Mahalli'}
+          </button>
+          <p className={styles.crimeHint}>Sadece bugün incelenebilir.</p>
+        </div>
+      )}
     </main>
   );
 }
