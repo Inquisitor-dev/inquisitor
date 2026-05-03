@@ -265,6 +265,12 @@ export default function MapPage() {
                 <div className={styles.inventoryItem}>
                   <span className={styles.itemIcon}>📜</span>
                   <span className={styles.itemName}>Arama İzni</span>
+                  <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
+                    {inventory.warrant === 'church' ? 'Kilise' : 
+                     inventory.warrant === 'tavern' ? 'Taverna' :
+                     inventory.warrant === 'mill' ? 'Değirmen' :
+                     inventory.warrant === 'graveyard' ? 'Mezarlık' : inventory.warrant}
+                  </span>
                   <span>{inventory.isWarrantUsed ? '(Kullanıldı)' : '(Hazır)'}</span>
                 </div>
               ) : (
