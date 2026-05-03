@@ -303,7 +303,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const remaining = maxDailyDialogues - dialoguesUsedToday;
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} style={{ backgroundImage: `url('/backgrounds/bg_${npcKey}.png')` }}>
       <div className={styles.vignette} />
 
       {/* ── Header ─── */}

@@ -5,10 +5,19 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(138, 3, 3, 0.07) 0%, transparent 60%),
-    #050505;
+  background-color: #050505;
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
+}
+
+.main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 10%, rgba(138, 3, 3, 0.15) 0%, rgba(5, 5, 5, 0.75) 60%, rgba(0, 0, 0, 0.95) 100%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .vignette {
