@@ -8,7 +8,6 @@ import styles from './map.module.scss';
 
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
-// Geçici koordinatlar (Kullanıcı yönlendirmesiyle düzeltilecek)
 const locations = [
   {
     id: 'church',
@@ -54,9 +53,13 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrant } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrant, notes, setNotes, inventory } = useGameStore();
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
   const [endingDay, setEndingDay] = useState(false);
+  
+  // Modal states
+  const [isNotebookOpen, setIsNotebookOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
 
   useEffect(() => {
     if (!authToken) router.push('/login');
@@ -152,31 +155,22 @@ export default function MapPage() {
         </button>
         <div className={styles.headerCenter}>
           <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
-          <p className={styles.pageSub}>Mekanını seç — Avını seç.</p>
+          <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
         </div>
         <div className={styles.sessionInfo}>
           <div className={styles.stats}>
             <span className={styles.sessionDot} />
-            <span>{currentDay}. Gün - {TIME_LABELS[timeOfDay]}</span>
             <span className={styles.limitText}>
-              Limit: {isAdmin ? 'Sınırsız' : `${30 - dialoguesUsedToday}/30`}
+              Soru Hakkı: {isAdmin ? 'Sınırsız' : `${30 - dialoguesUsedToday}/30`}
             </span>
           </div>
-          <button 
-            onClick={handleEndDay} 
-            disabled={endingDay}
-            className={styles.endDayBtn}
-          >
-            {endingDay ? 'Dinleniliyor...' : 'Günü Bitir'}
-          </button>
         </div>
       </header>
 
       {/* Interactive Map */}
       <div className={`${styles.mapContainer} ${isNight ? styles.nightMap : ''}`}>
         {locations.map((loc) => {
-          const isCrimeSceneLocked = loc.id === 'crime_scene' && currentDay !== 1;
-          const isAvailable = loc.available && !isCrimeSceneLocked && !isNight;
+          const isAvailable = loc.available && !isNight;
 
           return (
             <div 
@@ -192,7 +186,7 @@ export default function MapPage() {
             >
               <div className={styles.label}>
                 <span className={styles.icon}>{loc.icon}</span>
-                {loadingLoc === loc.id ? 'Gidiliyor...' : loc.name}
+                {loadingLoc === loc.id ? 'Gidiliyor...' : `${loc.name}'e Git`}
                 {!isAvailable && (
                   <span className={styles.lockedText}>
                     ({isNight ? 'Gece' : 'Kapalı'})
@@ -204,17 +198,80 @@ export default function MapPage() {
         })}
       </div>
 
-      {/* Special: Crime Scene Button in the Corner */}
-      {currentDay === 1 && !isNight && (
-        <div className={styles.crimeSceneCorner}>
-          <button 
-            onClick={() => handleLocationClick('crime_scene')}
-            className={styles.crimeSceneBtn}
-          >
-            <span className={styles.icon}>🩸</span>
-            {loadingLoc === 'crime_scene' ? 'Gidiliyor...' : 'Cinayet Mahalli'}
+      {/* Action Bar (Bant) */}
+      <footer className={styles.actionBar}>
+        <div className={styles.actionGroup}>
+          <button className={styles.iconBtn} onClick={() => setIsNotebookOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span>Notlar</span>
           </button>
-          <p className={styles.crimeHint}>Sadece bugün incelenebilir.</p>
+          <button className={styles.iconBtn} onClick={() => setIsInventoryOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+            <span>Envanter</span>
+          </button>
+        </div>
+
+        <div className={styles.actionGroup}>
+          {currentDay === 1 && !isNight && (
+            <button 
+              onClick={() => handleLocationClick('crime_scene')}
+              className={styles.crimeSceneBarBtn}
+            >
+              <span className={styles.icon}>🩸</span>
+              {loadingLoc === 'crime_scene' ? 'Gidiliyor...' : 'Cinayet Mahalli'}
+            </button>
+          )}
+          
+          <button 
+            onClick={handleEndDay} 
+            disabled={endingDay}
+            className={styles.endDayBtn}
+          >
+            {endingDay ? 'Dinleniliyor...' : 'Günü Bitir'}
+          </button>
+        </div>
+      </footer>
+
+      {/* Notebook Modal */}
+      {isNotebookOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsNotebookOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsNotebookOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Soruşturma Notları</h2>
+            <textarea 
+              className={styles.notesArea} 
+              value={notes} 
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Gözlemlerini buraya not et..."
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Modal */}
+      {isInventoryOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsInventoryOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Envanter</h2>
+            <div className={styles.inventoryList}>
+              {inventory.warrant ? (
+                <div className={styles.inventoryItem}>
+                  <span className={styles.itemIcon}>📜</span>
+                  <span className={styles.itemName}>Arama İzni</span>
+                  <span>{inventory.isWarrantUsed ? '(Kullanıldı)' : '(Hazır)'}</span>
+                </div>
+              ) : (
+                <p style={{ color: '#8a7f72', gridColumn: '1/-1' }}>Henüz bir eşyan yok.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </main>
