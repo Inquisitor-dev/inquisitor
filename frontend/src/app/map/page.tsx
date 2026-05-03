@@ -60,6 +60,11 @@ export default function MapPage() {
   // Modal states
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [localNotes, setLocalNotes] = useState('');
+
+  useEffect(() => {
+    setLocalNotes(notes);
+  }, [notes]);
 
   useEffect(() => {
     if (!authToken) router.push('/login');
@@ -136,6 +141,24 @@ export default function MapPage() {
     } catch (err) {
       console.error('Failed to advance time', err);
       setLoadingLoc(null);
+    }
+  };
+
+  const handleNotesBlur = async () => {
+    if (localNotes !== notes && sessionId) {
+      setNotes(localNotes);
+      try {
+        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ notes: localNotes }),
+        });
+      } catch (err) {
+        console.error('Failed to save notes', err);
+      }
     }
   };
 
@@ -255,8 +278,9 @@ export default function MapPage() {
             <h2 className={styles.modalTitle}>Soruşturma Notları</h2>
             <textarea 
               className={styles.notesArea} 
-              value={notes} 
-              onChange={(e) => setNotes(e.target.value)}
+              value={localNotes} 
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={handleNotesBlur}
               placeholder="Gözlemlerini buraya not et..."
             />
           </div>
