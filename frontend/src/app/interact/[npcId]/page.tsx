@@ -64,6 +64,17 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const MAX_CHARS = 200;
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const isCrimeScene = npcKey === 'crime_scene';
@@ -214,7 +225,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
       if (data.grantedWarrant) {
         setWarrant(data.grantedWarrant, false);
-        alert(`Peder size bir arama izni verdi: ${data.grantedWarrant.toUpperCase()}`);
+        setConfirmModal({
+          isOpen: true,
+          title: 'Arama İzni Verildi',
+          message: `Peder size bir arama izni verdi: ${data.grantedWarrant.toUpperCase()}. Artık bu mekanı fiziksel olarak arayabilirsiniz.`,
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false })),
+        });
       }
 
       if (data.reply) {
@@ -272,32 +288,37 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     }
   };
 
-  const handleCondemn = async () => {
+  const handleCondemn = () => {
     if (!sessionId) return;
-    const confirm = window.confirm(`Emin misin? ${profile.name} isimli köylüyü engizisyon mahkemesinde ölüme mahkum etmek üzeresin. Bu karar geri alınamaz ve soruşturmayı sonlandırır.`);
-    if (!confirm) return;
-
-    try {
-      const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ npcId: npcKey }),
-      });
-      const data = await res.json();
-      if (data.session && data.session.truthReveal) {
-        useGameStore.getState().setTruthReveal(data.session.truthReveal);
-      }
-      if (data.session && data.session.locationClues) {
-        useGameStore.getState().setLocationClues(data.session.locationClues);
-      }
-      router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
-    } catch (err) {
-      console.error('Failed to condemn', err);
-      alert('Hüküm verilirken bir hata oluştu.');
-    }
+    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Engizisyon Hükmü',
+      message: `Emin misiniz? ${profile.name} isimli köylüyü Engizisyon mahkemesinde ölüme mahkum etmek üzeresiniz. Bu karar geri alınamaz ve soruşturmayı sonlandırır.`,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ npcId: npcKey }),
+          });
+          const data = await res.json();
+          if (data.session && data.session.truthReveal) {
+            useGameStore.getState().setTruthReveal(data.session.truthReveal);
+          }
+          if (data.session && data.session.locationClues) {
+            useGameStore.getState().setLocationClues(data.session.locationClues);
+          }
+          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
+        } catch (err) {
+          console.error('Failed to condemn', err);
+        }
+      },
+    });
   };
 
   const remaining = maxDailyDialogues - dialoguesUsedToday;
@@ -467,19 +488,23 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             ) : (
               !isCrimeScene && (
                 <button 
-                  onClick={async () => {
-                    const confirmWindow = window.confirm('Araştırmayı sonlandırmak izninizi tüketecek ve bir daha araştıramayacaksınız. Emin misiniz?');
-                    if (!confirmWindow) return;
-                    
-                    consumeWarrant();
-                    setIsInvestigating(false);
-                    
-                    try {
-                      await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                      });
-                    } catch(e) { console.error(e); }
+                  onClick={() => {
+                    setConfirmModal({
+                      isOpen: true,
+                      title: 'Araştırmayı Bitir',
+                      message: 'Araştırmayı sonlandırmak izninizi tüketecek ve bu mekanı bir daha araştıramayacaksınız. Emin misiniz?',
+                      onConfirm: async () => {
+                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                        consumeWarrant();
+                        setIsInvestigating(false);
+                        try {
+                          await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                          });
+                        } catch(e) { console.error(e); }
+                      }
+                    });
                   }}
                   style={{
                     width: '100%',
@@ -543,6 +568,30 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               placeholder="Şüpheli davranışları, çelişkileri ve karakter hakkındaki analizlerinizi buraya not edebilirsiniz..."
               autoFocus
             />
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Modal */}
+      {confirmModal.isOpen && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
+            <p className={styles.modalMessage}>{confirmModal.message}</p>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalCancel} 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                Vazgeç
+              </button>
+              <button 
+                className={styles.modalConfirm} 
+                onClick={confirmModal.onConfirm}
+              >
+                Onayla
+              </button>
+            </div>
           </div>
         </div>
       )}

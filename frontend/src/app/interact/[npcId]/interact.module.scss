@@ -463,3 +463,105 @@
     color: #E8DCC4;
   }
 }
+
+/* ── CONFIRM MODAL ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: #0f0b09;
+  border: 1px solid #3d342d;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  border-radius: 4px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(138, 3, 3, 0.05);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScale {
+  from { transform: scale(0.95) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modalTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #E8DCC4;
+  margin: 0;
+  border-bottom: 1px solid #3d342d;
+  padding-bottom: 12px;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.modalMessage {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #8a7f72;
+  text-align: center;
+  margin: 0;
+}
+
+.modalActions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.modalCancel, .modalConfirm {
+  flex: 1;
+  padding: 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.modalCancel {
+  background: transparent;
+  border: 1px solid #3d342d;
+  color: #8a7f72;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #E8DCC4;
+    border-color: #8a7f72;
+  }
+}
+
+.modalConfirm {
+  background: #8A0303;
+  border: 1px solid #a00;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(138, 3, 3, 0.3);
+
+  &:hover {
+    background: #6e0202;
+    box-shadow: 0 0 25px rgba(138, 3, 3, 0.5);
+    transform: translateY(-1px);
+  }
+}
