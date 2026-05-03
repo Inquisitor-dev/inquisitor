@@ -144,13 +144,13 @@
 /* ── INTERACTIVE MAP ── */
 .mapContainer {
   position: relative;
-  width: 100%;
-  max-width: 1800px;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-image: url('/map/village_map.png');
   background-size: cover;
   background-position: center;
   transition: filter 1s ease;
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
 }
 
 .nightMap {
