@@ -10,48 +10,48 @@ const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
 const locations = [
   {
-    id: 'tavern',
-    name: 'Taverna',
-    subtitle: 'Sırların şarapla boğulduğu yer.',
-    icon: '🍺',
-    description:
-      'Yerel halk gün batımında burada toplanır. Çözülen diller ve gölgeli köşeler — çelişkileri avlamak için mükemmel bir avlanma alanı.',
-    available: true,
-  },
-  {
     id: 'church',
     name: 'Kilise',
-    subtitle: 'Tanrı izliyor, ama sen de izliyorsun.',
     icon: '⛪',
-    description:
-      "Rahip köyün vicdanını elinde tutar. Fakat Engizisyoncu'ya kim günah çıkaracak?",
-    available: true,
-  },
-  {
-    id: 'graveyard',
-    name: 'Mezarlık',
-    subtitle: 'Ölüler yalan söylemez. Diriler söyler.',
-    icon: '🪦',
-    description:
-      'Gece yarısı garip ayinler rapor edildi. Mezarcı neyi gömdüğünü biliyor — ve neyin yürüyerek uzaklaştığını.',
-    available: true,
-  },
-  {
-    id: 'crime-scene',
-    name: 'Cinayet Mahalli',
-    subtitle: 'Kan kurumadan önce incele.',
-    icon: '🩸',
-    description:
-      'Karanlık bir cinayetin işlendiği yer. Ceset yakında kaldırılacak, etraf temizlenecek. Sadece bugün inceleyebilirsin.',
+    top: '10%',
+    left: '40%',
+    width: '25%',
     available: true,
   },
   {
     id: 'mill',
     name: 'Değirmen',
-    subtitle: 'Endüstri, günahları maskeler.',
     icon: '⚙️',
-    description:
-      'Değirmenci unla uğraşır — ve dedikoduyla. Unu takip et, komployu bul.',
+    top: '30%',
+    left: '10%',
+    width: '20%',
+    available: true,
+  },
+  {
+    id: 'tavern',
+    name: 'Taverna',
+    icon: '🍺',
+    top: '55%',
+    left: '20%',
+    width: '22%',
+    available: true,
+  },
+  {
+    id: 'graveyard',
+    name: 'Mezarlık',
+    icon: '🪦',
+    top: '40%',
+    left: '65%',
+    width: '28%',
+    available: true,
+  },
+  {
+    id: 'crime_scene',
+    name: 'Cinayet Mahalli',
+    icon: '🩸',
+    top: '75%',
+    left: '45%',
+    width: '18%',
     available: true,
   },
 ];
@@ -87,7 +87,6 @@ export default function MapPage() {
   const handleEndDay = async () => {
     if (!sessionId) return;
     
-    // 3. Günün sonu: Eğer kiliseye henüz kimseyi mahkum etmedilerse, oyun biter (Timeout)
     if (currentDay >= 3) {
       setEndingDay(true);
       try {
@@ -117,7 +116,7 @@ export default function MapPage() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
-      endDay(); // Zustand state'i güncelle
+      endDay();
     } catch (err) {
       console.error('Failed to end day', err);
     } finally {
@@ -134,25 +133,22 @@ export default function MapPage() {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       advanceTime();
-      
-      if (locId === 'crime-scene') {
-        router.push('/interact/crime_scene');
-      } else {
-        router.push(`/interact/${locId}`);
-      }
+      router.push(`/interact/${locId}`);
     } catch (err) {
       console.error('Failed to advance time', err);
       setLoadingLoc(null);
     }
   };
 
+  const isNight = timeOfDay >= 4;
+
   return (
     <main className={styles.main}>
-      <div className={styles.vignette} />
+      <div className={`${styles.vignette} ${isNight ? styles.nightVignette : ''}`} />
 
-      {/* Header */}
+      {/* Header overlay */}
       <header className={styles.header}>
-        <button onClick={handleRetreat} className={styles.back} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button onClick={handleRetreat} className={styles.backBtn}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -162,95 +158,58 @@ export default function MapPage() {
           <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
           <p className={styles.pageSub}>Mekanını seç — Avını seç.</p>
         </div>
-        <div className={styles.sessionInfo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-          <div>
+        <div className={styles.sessionInfo}>
+          <div className={styles.stats}>
             <span className={styles.sessionDot} />
             <span>{currentDay}. Gün - {TIME_LABELS[timeOfDay]}</span>
-            <span style={{ marginLeft: '12px', opacity: 0.7 }}>
+            <span className={styles.limitText}>
               Limit: {isAdmin ? 'Sınırsız' : `${30 - dialoguesUsedToday}/30`}
             </span>
           </div>
           <button 
             onClick={handleEndDay} 
             disabled={endingDay}
-            style={{
-              background: 'transparent',
-              border: '1px solid #8A0303',
-              color: '#8A0303',
-              padding: '4px 12px',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textTransform: 'uppercase',
-              fontSize: '0.8rem',
-              letterSpacing: '1px'
-            }}
+            className={styles.endDayBtn}
           >
             {endingDay ? 'Dinleniliyor...' : 'Günü Bitir'}
           </button>
         </div>
       </header>
 
-      {/* Map grid */}
-      <div className={styles.mapWrapper}>
-        <div className={styles.mapDecor}>
-          <div className={styles.mapDecorLine} />
-          <div className={styles.mapDecorText}>ANNO DOMINI MCCXII</div>
-          <div className={styles.mapDecorLine} />
-        </div>
+      {/* Interactive Map */}
+      <div className={`${styles.mapContainer} ${isNight ? styles.nightMap : ''}`}>
+        {locations.map((loc) => {
+          const isCrimeSceneLocked = loc.id === 'crime_scene' && currentDay !== 1;
+          const isAvailable = loc.available && !isCrimeSceneLocked && !isNight;
 
-        <div className={styles.locations}>
-          {locations.map((loc) => {
-            const isNight = timeOfDay >= 4;
-            const isCrimeSceneLocked = loc.id === 'crime-scene' && currentDay !== 1;
-            const isAvailable = loc.available && !isCrimeSceneLocked;
-            
-            const CardWrapper = (isAvailable && !isNight)
-              ? ({ children }: { children: React.ReactNode }) => (
-                  <div onClick={() => handleLocationClick(loc.id)} className={`${styles.locationCard}`} style={{ cursor: 'pointer' }}>
-                    {children}
-                  </div>
-                )
-              : ({ children }: { children: React.ReactNode }) => (
-                  <div className={`${styles.locationCard} ${styles.locked}`}>
-                    {children}
-                  </div>
-                );
-
-            return (
-              <CardWrapper key={loc.id}>
-                <div className={styles.locIcon}>{loc.icon}</div>
-                <div className={styles.locContent}>
-                  <h2 className={styles.locName}>{loc.name}</h2>
-                  <p className={styles.locSubtitle}>{loc.subtitle}</p>
-                  <p className={styles.locDesc}>{loc.description}</p>
-                </div>
-                <div className={styles.locFooter}>
-                  {isAvailable ? (
-                    isNight ? (
-                      <span className={styles.comingSoon} style={{ color: '#8A0303' }}>Gece Oldu</span>
-                    ) : (
-                      <span className={styles.enterBtn}>
-                        {loadingLoc === loc.id ? 'Gidiliyor...' : 'Gir ve İncele'}
-                        {!loadingLoc && (
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                      </span>
-                    )
-                  ) : isCrimeSceneLocked ? (
-                    <span className={styles.comingSoon} style={{ color: '#555' }}>Ceset Kaldırıldı</span>
-                  ) : (
-                    <span className={styles.comingSoon}>Yakında</span>
-                  )}
-                </div>
-                {/* Corner accents */}
-                <div className={styles.cardCornerTL} />
-                <div className={styles.cardCornerBR} />
-              </CardWrapper>
-            );
-          })}
-        </div>
+          return (
+            <div 
+              key={loc.id}
+              className={`${styles.buildingWrapper} ${!isAvailable ? styles.locked : ''}`}
+              style={{
+                top: loc.top,
+                left: loc.left,
+                width: loc.width
+              }}
+              onClick={() => isAvailable && handleLocationClick(loc.id)}
+            >
+              <img 
+                src={`/map/map_${loc.id}.png`} 
+                alt={loc.name} 
+                className={styles.buildingImage} 
+              />
+              <div className={styles.label}>
+                <span className={styles.icon}>{loc.icon}</span>
+                {loadingLoc === loc.id ? 'Gidiliyor...' : loc.name}
+                {!isAvailable && (
+                  <span className={styles.lockedText}>
+                    ({isNight ? 'Gece' : 'Kapalı'})
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </main>
   );
