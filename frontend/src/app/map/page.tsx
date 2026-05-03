@@ -140,6 +140,12 @@ export default function MapPage() {
   };
 
   const isNight = timeOfDay >= 4;
+  
+  const getMapBg = () => {
+    if (timeOfDay <= 1) return '/map/village_map_morning.png';
+    if (timeOfDay <= 3) return '/map/village_map_sunset.png';
+    return '/map/village_map.png';
+  };
 
   return (
     <main className={styles.main}>
@@ -168,7 +174,10 @@ export default function MapPage() {
       </header>
 
       {/* Interactive Map */}
-      <div className={`${styles.mapContainer} ${isNight ? styles.nightMap : ''}`}>
+      <div 
+        className={styles.mapContainer}
+        style={{ backgroundImage: `url(${getMapBg()})` }}
+      >
         {locations.map((loc) => {
           const isAvailable = loc.available && !isNight;
 

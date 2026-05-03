@@ -161,6 +161,11 @@
   display: flex;
   align-items: center;
   gap: 24px;
+  
+  /* İlk grubu (Notlar/Envanter) biraz sağa kaydır */
+  &:first-child {
+    margin-left: 60px;
+  }
 }
 
 .iconBtn {
@@ -299,16 +304,13 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  background-image: url('/map/village_map.png');
   background-size: cover;
   background-position: center;
-  transition: filter 1s ease;
+  transition: all 1s ease;
   box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
 }
 
-.nightMap {
-  filter: brightness(0.4) contrast(1.2) sepia(0.2) hue-rotate(180deg);
-}
+/* nightMap filter removed per user request */
 
 /* GÖRÜNMEZ BUTONLAR (HOTSPOTS) */
 .invisibleButton {
