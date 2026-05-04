@@ -24,8 +24,10 @@ interface GameState {
   };
   truthReveal: string | null;
   locationClues: Record<string, string> | null;
+  hasHydrated: boolean;
 
   setUser: (email: string, userId: string, token: string, isAdmin: boolean) => void;
+  setHasHydrated: (val: boolean) => void;
   logout: () => void;
   setSessionId: (id: string) => void;
   setSelectedNpc: (npcId: string) => void;
@@ -68,8 +70,10 @@ export const useGameStore = create<GameState>()(
       inventory: { activeWarrants: [], usedWarrants: [] },
       truthReveal: null,
       locationClues: null,
+      hasHydrated: false,
 
       setUser: (email, userId, token, isAdmin) => set({ userEmail: email, userId, authToken: token, isAdmin }),
+      setHasHydrated: (val) => set({ hasHydrated: val }),
 
       logout: () => set({
         userEmail: null,
@@ -187,6 +191,9 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'inquisitor-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      }
     }
   )
 );

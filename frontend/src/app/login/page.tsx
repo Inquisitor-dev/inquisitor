@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '../../store/useGameStore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useGameStore();
+  const { setUser, authToken, hasHydrated } = useGameStore();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [step, setStep] = useState<'details' | 'code'>('details');
@@ -28,6 +28,13 @@ export default function LoginPage() {
     setMode(m);
     resetState();
   };
+
+  // Zaten giriş yapılmışsa ana sayfaya at
+  useEffect(() => {
+    if (hasHydrated && authToken) {
+      router.push('/');
+    }
+  }, [hasHydrated, authToken, router]);
 
   const handleLogin = async () => {
     if (!email || !password) {

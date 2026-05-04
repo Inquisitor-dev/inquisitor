@@ -52,7 +52,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant } =
+  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
     useGameStore();
   
   const router = useRouter();
@@ -85,6 +85,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   useEffect(() => {
     setLocalNotes(notes);
   }, [notes]);
+
+  useEffect(() => {
+    if (hasHydrated && !authToken) {
+      router.push('/login');
+    }
+  }, [authToken, router, hasHydrated]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

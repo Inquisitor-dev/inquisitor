@@ -53,7 +53,7 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrant, notes, setNotes, inventory } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
   const [endingDay, setEndingDay] = useState(false);
   
@@ -79,21 +79,24 @@ export default function MapPage() {
   }, [notes]);
 
   useEffect(() => {
-    if (!authToken) router.push('/login');
+    if (hasHydrated && !authToken) {
+      router.push('/login');
+      return;
+    }
 
     const fetchSession = async () => {
-      if (sessionId) {
+      if (sessionId && authToken) {
         try {
           const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
           const data = await res.json();
-          setWarrant(data.issuedWarrant, data.isWarrantUsed);
+          setWarrants(data.activeWarrants || [], data.usedWarrants || []);
         } catch(e) {}
       }
     };
-    fetchSession();
-  }, [authToken, router, sessionId, setWarrant]);
+    if (hasHydrated) fetchSession();
+  }, [authToken, router, sessionId, setWarrants, hasHydrated]);
 
   const handleRetreat = () => {
     reset();

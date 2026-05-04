@@ -7,17 +7,17 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario, authToken, logout } = useGameStore();
+  const { setSessionId, setScenario, authToken, logout, hasHydrated } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
 
-  // Token yoksa login'e yönlendir
+  // Token yoksa login'e yönlendir (Hidratasyon tamamlandıktan sonra)
   useEffect(() => {
-    if (!authToken) {
+    if (hasHydrated && !authToken) {
       router.push('/login');
     }
-  }, [authToken, router]);
+  }, [authToken, router, hasHydrated]);
 
   const handleStart = async () => {
     if (!authToken) return;
