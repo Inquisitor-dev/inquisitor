@@ -397,6 +397,7 @@ export default function MapPage() {
             </div>
           </div>
         </div>
+      )}
       {/* Confirm Modal */}
       {confirmModal.isOpen && (
         <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
