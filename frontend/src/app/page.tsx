@@ -10,6 +10,7 @@ export default function HomePage() {
   const { setSessionId, setScenario, authToken, logout } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
 
   // Token yoksa login'e yönlendir
   useEffect(() => {
@@ -132,6 +133,13 @@ export default function HomePage() {
               </>
             )}
           </button>
+          <button 
+            onClick={() => setIsHowToPlayOpen(true)} 
+            className={styles.btnSecondary} 
+            style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
+          >
+            <span>Nasıl Oynanır?</span>
+          </button>
           {error && (
             <div style={{ marginTop: '12px', padding: '12px 16px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.85rem', lineHeight: 1.5, textAlign: 'center' }}>
               ⚠️ {error}
@@ -149,6 +157,51 @@ export default function HomePage() {
           <span />
         </div>
       </div>
+
+      {/* How To Play Modal */}
+      {isHowToPlayOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsHowToPlayOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsHowToPlayOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Soruşturma Kılavuzu</h2>
+            
+            <div className={styles.modalScroll}>
+              <section className={styles.guideSection}>
+                <h3>👁️ Temel Amaç</h3>
+                <p>Ashenmoor köyünde işlenen gizemli bir cinayeti çözmekle görevli bir Engizisyon müfettişisin. 3 günün var. Bu süre zarfında doğru kişiyi ölüme mahkum etmeli veya gerçeği ortaya çıkarmalısın.</p>
+              </section>
+
+              <section className={styles.guideSection}>
+                <h3>⏳ Zaman ve Diyalog</h3>
+                <p>Her gün sınırlı sayıda (10) diyalog hakkın bulunur. Bir köylüyle her konuştuğunda vakit ilerler (Sabah, Öğlen, İkindi, Akşam). Gece olduğunda herkes evine çekilir ve gün biter.</p>
+              </section>
+
+              <section className={styles.guideSection}>
+                <h3>📜 Arama İzinleri</h3>
+                <p>Köylüleri sadece sorgulayarak değil, mekanlarını arayarak da kanıt bulabilirsin. Ancak bir mekanı aramak için <strong>Peder Malachar'dan</strong> arama izni almalısın. Peder, sadece yeterli şüphe uyandıran kanıtlar sunduğunda sana bu yetkiyi verecektir.</p>
+              </section>
+
+              <section className={styles.guideSection}>
+                <h3>📝 Not Tutma</h3>
+                <p>Köylülerin söyledikleri çelişkili olabilir. Önemli ipuçlarını not defterine kaydet. Bu notlar veritabanına işlenir ve soruşturman boyunca sana rehberlik eder.</p>
+              </section>
+
+              <section className={styles.guideSection}>
+                <h3>⚖️ Nihai Hüküm</h3>
+                <p>İstediğin an haritadaki "MAHKUMU SEÇ" butonuna basarak birini suçlayabilirsin. Ancak unutma: Yanlış kişiyi asarsan gerçek katil aramızda dolaşmaya devam eder ve soruşturman başarısız sayılır.</p>
+              </section>
+
+              <div className={styles.guideTip}>
+                <strong>İpucu:</strong> Köylülerin korku ve yalan seviyelerini analiz et. Bazen sessizlik, en büyük itiraftır.
+              </div>
+            </div>
+
+            <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
+              Anladım, Müfettiş.
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
