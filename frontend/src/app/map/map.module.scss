@@ -141,6 +141,34 @@
   }
 }
 
+.condemnCenter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 110;
+}
+
+.mainCondemnBtn {
+  background: #8A0303;
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(138, 3, 3, 0.4), 0 0 40px rgba(138, 3, 3, 0.1);
+
+  &:hover {
+    background: #a00;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(138, 3, 3, 0.6), 0 0 60px rgba(138, 3, 3, 0.2);
+  }
+}
+
 .actionBar {
   position: absolute;
   bottom: 0;
@@ -155,6 +183,67 @@
   padding: 0 40px;
   z-index: 100;
   backdrop-filter: blur(10px);
+}
+
+.modalSubtitle {
+  font-size: 0.85rem;
+  color: #8a7f72;
+  font-style: italic;
+  text-align: center;
+  margin-top: -16px;
+  margin-bottom: 24px;
+}
+
+.villagerList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.villagerItem {
+  background: #251f1b;
+  border: 1px solid #3d342d;
+  padding: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    background: #332924;
+    border-color: #8A0303;
+    transform: translateY(-2px);
+
+    .villagerName { color: #fff; }
+    .villagerIcon { transform: scale(1.1); }
+  }
+}
+
+.villagerIcon {
+  font-size: 1.8rem;
+  transition: transform 0.2s ease;
+}
+
+.villagerInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.villagerName {
+  color: #E8DCC4;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.villagerRole {
+  color: #8a7f72;
+  font-size: 0.75rem;
+  font-style: italic;
 }
 
 .actionGroup {

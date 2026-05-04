@@ -60,6 +60,7 @@ export default function MapPage() {
   // Modal states
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState('');
 
   useEffect(() => {
@@ -162,6 +163,31 @@ export default function MapPage() {
     }
   };
 
+  const handleCondemn = async (npcId: string) => {
+    if (!sessionId) return;
+    
+    try {
+      const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ npcId }),
+      });
+      const data = await res.json();
+      if (data.session && data.session.truthReveal) {
+        useGameStore.getState().setTruthReveal(data.session.truthReveal);
+      }
+      if (data.session && data.session.locationClues) {
+        useGameStore.getState().setLocationClues(data.session.locationClues);
+      }
+      router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
+    } catch (err) {
+      console.error('Failed to condemn', err);
+    }
+  };
+
   const isNight = timeOfDay >= 4;
   
   const getMapBg = () => {
@@ -249,6 +275,16 @@ export default function MapPage() {
           </button>
         </div>
 
+        {/* Central Condemn Button */}
+        <div className={styles.condemnCenter}>
+          <button 
+            className={styles.mainCondemnBtn}
+            onClick={() => setIsCondemnModalOpen(true)}
+          >
+            BU KAFİRİ MAHKUM ET
+          </button>
+        </div>
+
         <div className={styles.actionGroup}>
           {currentDay === 1 && !isNight && (
             <button 
@@ -309,6 +345,40 @@ export default function MapPage() {
               ) : (
                 <p style={{ color: '#8a7f72', gridColumn: '1/-1' }}>Henüz bir eşyan yok.</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Condemn Selection Modal */}
+      {isCondemnModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsCondemnModalOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsCondemnModalOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Hüküm Verilecek Kişiyi Seç</h2>
+            <p className={styles.modalSubtitle}>Nihai kararınız hikayenin sonunu belirleyecek. Dikkatli seçin.</p>
+            <div className={styles.villagerList}>
+              {[
+                { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
+                { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
+                { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
+                { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
+              ].map(villager => (
+                <button 
+                  key={villager.id} 
+                  className={styles.villagerItem}
+                  onClick={() => {
+                    if (window.confirm(`${villager.name} isimli köylüyü ölüme mahkum etmek istediğinizden emin misiniz?`)) {
+                      handleCondemn(villager.id);
+                    }
+                  }}
+                >
+                  <span className={styles.villagerIcon}>{villager.icon}</span>
+                  <div className={styles.villagerInfo}>
+                    <span className={styles.villagerName}>{villager.name}</span>
+                    <span className={styles.villagerRole}>{villager.role}</span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
