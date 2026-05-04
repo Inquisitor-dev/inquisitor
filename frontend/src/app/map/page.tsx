@@ -323,18 +323,29 @@ export default function MapPage() {
             <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Envanter</h2>
             <div className={styles.inventoryList}>
-              {inventory.warrant ? (
-                <div className={styles.inventoryItem}>
-                  <span className={styles.itemIcon}>📜</span>
-                  <span className={styles.itemName}>Arama İzni</span>
-                  <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                    {inventory.warrant === 'church' ? 'Kilise' : 
-                     inventory.warrant === 'tavern' ? 'Taverna' :
-                     inventory.warrant === 'mill' ? 'Değirmen' :
-                     inventory.warrant === 'graveyard' ? 'Mezarlık' : inventory.warrant}
-                  </span>
-                  <span>{inventory.isWarrantUsed ? '(Kullanıldı)' : '(Hazır)'}</span>
-                </div>
+              {inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0 ? (
+                <>
+                  {inventory.activeWarrants.map((w, idx) => (
+                    <div key={`active-${idx}`} className={styles.inventoryItem}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <span className={styles.itemName}>Arama İzni</span>
+                      <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w}
+                      </span>
+                      <span>(Hazır)</span>
+                    </div>
+                  ))}
+                  {inventory.usedWarrants.map((w, idx) => (
+                    <div key={`used-${idx}`} className={styles.inventoryItem} style={{ opacity: 0.6 }}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <span className={styles.itemName}>Arama İzni</span>
+                      <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w}
+                      </span>
+                      <span>(Kullanıldı)</span>
+                    </div>
+                  ))}
+                </>
               ) : (
                 <p style={{ color: '#8a7f72', gridColumn: '1/-1' }}>Henüz bir eşyan yok.</p>
               )}

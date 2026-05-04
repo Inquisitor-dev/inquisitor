@@ -87,16 +87,19 @@ INVESTIGATION RULES FOR NARRATOR:
     }
 
     if (currentState.npc.id === 'church') {
-      const remainingWarrants = 2 - currentState.session.warrantsIssued;
-      const canGrant = remainingWarrants > 0 && (currentState.session.issuedWarrant === null || currentState.session.isWarrantUsed);
+      const issuedCount = currentState.session.warrantsIssued;
+      const activeCount = currentState.session.activeWarrants.length;
+      const remaining = 2 - issuedCount;
       
-      let warrantInfo = `\n\nSYSTEM: Total warrants issued: ${currentState.session.warrantsIssued}/2.`;
-      if (canGrant) {
-        warrantInfo += ` You CAN grant another search warrant if the player asks convincingly. Use [GRANT_WARRANT: location] tag.`;
-      } else if (remainingWarrants > 0) {
-        warrantInfo += ` The player already has an active warrant (${currentState.session.issuedWarrant}). They must use it before you grant another one.`;
+      let warrantInfo = `\n\n[SYSTEM - SEARCH WARRANT STATUS]:
+- Total Warrants Issued in Session: ${issuedCount}/2
+- Currently Active Warrants: ${activeCount > 0 ? currentState.session.activeWarrants.join(', ') : 'None'}
+- Remaining Warrants You Can Grant: ${remaining}`;
+
+      if (remaining > 0) {
+        warrantInfo += `\n\nIMPORTANT: You ARE ALLOWED to grant up to ${remaining} more search warrant(s) now. You can grant one or even two at once if the player asks for multiple locations convincingly. To grant, use [GRANT_WARRANT: location] tags. You can use multiple tags like [GRANT_WARRANT: tavern] [GRANT_WARRANT: mill].`;
       } else {
-        warrantInfo += ` You have already granted the maximum of 2 search warrants. Do NOT grant any more.`;
+        warrantInfo += `\n\nIMPORTANT: You have reached the limit of 2 warrants. Do NOT grant any more.`;
       }
       combinedPrompt += warrantInfo;
     }
@@ -118,33 +121,38 @@ INVESTIGATION RULES FOR NARRATOR:
       isNewDay,
     );
 
-    let finalReply = llmResponse.reply;
-    let grantedWarrant: string | null = null;
+    // Check for warrant tags
+    const warrantMatches = Array.from(finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi));
+    let newlyGranted: string[] = [];
 
-    // Check for warrant tag
-    const warrantMatch = finalReply.match(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/i);
-    if (warrantMatch) {
-      grantedWarrant = warrantMatch[1];
-      finalReply = finalReply.replace(warrantMatch[0], '').trim();
+    if (warrantMatches.length > 0) {
+      let issuedCount = currentState.session.warrantsIssued;
+      
+      for (const match of warrantMatches) {
+        if (issuedCount < 2) {
+          const loc = match[1];
+          // Zaten aktif olan veya kullanılmış olan bir yer için tekrar verme
+          if (!currentState.session.activeWarrants.includes(loc) && !currentState.session.usedWarrants.includes(loc)) {
+            newlyGranted.push(loc);
+            issuedCount++;
+          }
+        }
+        finalReply = finalReply.replace(match[0], '').trim();
+      }
 
-      // Update session if limit not reached and (no active warrant or current is used)
-      const canGrantMore = currentState.session.warrantsIssued < 2;
-      const noActiveWarrant = !currentState.session.issuedWarrant || currentState.session.isWarrantUsed;
-
-      if (canGrantMore && noActiveWarrant) {
+      if (newlyGranted.length > 0) {
         await this.prisma.gameSession.update({
           where: { id: sessionId },
-          data: { 
-            issuedWarrant: grantedWarrant, 
-            isWarrantUsed: false,
-            warrantsIssued: { increment: 1 }
+          data: {
+            activeWarrants: { push: newlyGranted },
+            warrantsIssued: { increment: newlyGranted.length }
           }
         });
-      } else {
-        // Limit reached or already has active warrant
-        grantedWarrant = null;
       }
     }
+
+    // Geriye dönük uyumluluk ve UI için grantedWarrant (ilkini dönelim)
+    let grantedWarrant = newlyGranted.length > 0 ? newlyGranted[0] : null;
 
     // 5. NPC'nin cevabını DB'ye kaydet (selamlama da kaydedilsin ki geçmişte görünsün)
     await this.prisma.dialogueHistory.create({

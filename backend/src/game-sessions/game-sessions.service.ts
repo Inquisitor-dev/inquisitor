@@ -154,12 +154,22 @@ export class GameSessionsService {
     };
   }
 
-  async consumeWarrant(sessionId: string) {
-    this.logger.log(`Consuming warrant for session: ${sessionId}`);
+  async consumeWarrant(sessionId: string, location: string) {
+    this.logger.log(`Consuming warrant for ${location} in session: ${sessionId}`);
     
+    const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
+    if (!session) throw new Error('Session not found');
+
+    const newActive = session.activeWarrants.filter(w => w !== location);
+    const newUsed = [...session.usedWarrants];
+    if (!newUsed.includes(location)) newUsed.push(location);
+
     return await this.prisma.gameSession.update({
       where: { id: sessionId },
-      data: { isWarrantUsed: true },
+      data: { 
+        activeWarrants: newActive,
+        usedWarrants: newUsed
+      },
     });
   }
 

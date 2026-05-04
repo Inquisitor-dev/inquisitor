@@ -52,7 +52,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, setWarrant, consumeWarrant } =
+  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant } =
     useGameStore();
   
   const router = useRouter();
@@ -80,7 +80,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const isCrimeScene = npcKey === 'crime_scene';
   const [isInvestigating, setIsInvestigating] = useState(isCrimeScene);
   const currentNpcKey = isInvestigating ? `narrator_${npcKey}` : npcKey;
-  const canInvestigate = isCrimeScene || (inventory?.warrant === npcKey && !inventory?.isWarrantUsed);
+  const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(npcKey);
 
   useEffect(() => {
     setLocalNotes(notes);
@@ -224,7 +224,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       const data = await res.json();
 
       if (data.grantedWarrant) {
-        setWarrant(data.grantedWarrant, false);
+        addWarrant(data.grantedWarrant);
         setConfirmModal({
           isOpen: true,
           title: 'Arama İzni Verildi',
@@ -456,7 +456,17 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div className={styles.sideCard}>
             <div className={styles.sideTitle}>Envanter</div>
             <div style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '12px' }}>
-              {inventory?.warrant ? (inventory.isWarrantUsed ? 'Geçerli arama izni yok (Kullanıldı)' : `Arama İzni: ${inventory.warrant.toUpperCase()}`) : 'Envanter boş'}
+              {inventory?.activeWarrants?.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {inventory.activeWarrants.map(w => (
+                    <div key={w}>📜 Arama İzni: {w.toUpperCase()}</div>
+                  ))}
+                </div>
+              ) : inventory?.usedWarrants?.length > 0 ? (
+                <span style={{ color: '#8a7f72' }}>Tüm izinler kullanıldı.</span>
+              ) : (
+                'Envanter boş'
+              )}
             </div>
             
             {!isInvestigating ? (
@@ -495,12 +505,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                       message: 'Araştırmayı sonlandırmak izninizi tüketecek ve bu mekanı bir daha araştıramayacaksınız. Emin misiniz?',
                       onConfirm: async () => {
                         setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                        consumeWarrant();
+                        consumeWarrant(npcId);
                         setIsInvestigating(false);
                         try {
                           await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${authToken}` }
+                            headers: { 
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${authToken}` 
+                            },
+                            body: JSON.stringify({ location: npcId })
                           });
                         } catch(e) { console.error(e); }
                       }

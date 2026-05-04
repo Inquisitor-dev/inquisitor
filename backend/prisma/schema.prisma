@@ -36,9 +36,9 @@ model GameSession {
   currentDay  Int               @default(1)
   timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
   notes         String?           @default("") // Engizisyoncunun notları
-  issuedWarrant String?           // Peder'den alınan arama izni (örn: "tavern")
-  isWarrantUsed Boolean           @default(false) // İzin kullanıldı mı?
-  warrantsIssued Int               @default(0)     // Toplam alınan izin sayısı
+  activeWarrants String[]         @default([]) // Aktif arama izinleri
+  usedWarrants   String[]         @default([]) // Kullanılmış arama izinleri
+  warrantsIssued Int               @default(0)  // Toplam alınan izin sayısı
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]

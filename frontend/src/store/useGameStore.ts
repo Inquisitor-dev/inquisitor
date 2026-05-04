@@ -19,8 +19,8 @@ interface GameState {
   notes: string;
   scenario: string | null;
   inventory: {
-    warrant: string | null;
-    isWarrantUsed: boolean;
+    activeWarrants: string[];
+    usedWarrants: string[];
   };
   truthReveal: string | null;
   locationClues: Record<string, string> | null;
@@ -39,8 +39,9 @@ interface GameState {
   advanceTime: () => void;
   endDay: () => void;
   reset: () => void;
-  setWarrant: (warrant: string | null, isUsed?: boolean) => void;
-  consumeWarrant: () => void;
+  setWarrants: (active: string[], used: string[]) => void;
+  addWarrant: (warrant: string) => void;
+  consumeWarrant: (location: string) => void;
   setTruthReveal: (truth: string | null) => void;
   setLocationClues: (clues: Record<string, string> | null) => void;
 }
@@ -64,7 +65,7 @@ export const useGameStore = create<GameState>()(
       timeOfDay: 0,
       notes: '',
       scenario: null,
-      inventory: { warrant: null, isWarrantUsed: false },
+      inventory: { activeWarrants: [], usedWarrants: [] },
       truthReveal: null,
       locationClues: null,
 
@@ -83,7 +84,7 @@ export const useGameStore = create<GameState>()(
         timeOfDay: 0,
         notes: '',
         scenario: null,
-        inventory: { warrant: null, isWarrantUsed: false },
+        inventory: { activeWarrants: [], usedWarrants: [] },
         truthReveal: null,
         locationClues: null,
       }),
@@ -157,17 +158,27 @@ export const useGameStore = create<GameState>()(
         timeOfDay: 0,
         notes: '',
         scenario: null,
-        inventory: { warrant: null, isWarrantUsed: false },
+        inventory: { activeWarrants: [], usedWarrants: [] },
         truthReveal: null,
         locationClues: null,
       }),
 
-      setWarrant: (warrant, isUsed = false) => set((state) => ({
-        inventory: { warrant, isWarrantUsed: isUsed },
+      setWarrants: (active, used) => set({
+        inventory: { activeWarrants: active, usedWarrants: used }
+      }),
+      
+      addWarrant: (warrant) => set((state) => ({
+        inventory: {
+          ...state.inventory,
+          activeWarrants: [...state.inventory.activeWarrants, warrant]
+        }
       })),
-
-      consumeWarrant: () => set((state) => ({
-        inventory: { ...state.inventory, isWarrantUsed: true },
+      
+      consumeWarrant: (location) => set((state) => ({
+        inventory: {
+          activeWarrants: state.inventory.activeWarrants.filter(w => w !== location),
+          usedWarrants: [...state.inventory.usedWarrants, location]
+        }
       })),
 
       setTruthReveal: (truth) => set({ truthReveal: truth }),
