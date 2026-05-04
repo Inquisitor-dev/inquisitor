@@ -140,6 +140,18 @@ export default function HomePage() {
           >
             <span>Nasıl Oynanır?</span>
           </button>
+          
+          <button
+            onClick={() => {
+              logout();
+              router.push('/login');
+            }}
+            className={styles.btnSecondary}
+            style={{ width: '100%', justifyContent: 'center', marginTop: '12px', borderColor: 'rgba(255,255,255,0.1)', opacity: 0.8 }}
+          >
+            <span>Hesaptan Çıkış Yap</span>
+          </button>
+
           {error && (
             <div style={{ marginTop: '12px', padding: '12px 16px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.85rem', lineHeight: 1.5, textAlign: 'center' }}>
               ⚠️ {error}
