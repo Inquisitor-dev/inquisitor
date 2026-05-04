@@ -121,6 +121,8 @@ INVESTIGATION RULES FOR NARRATOR:
       isNewDay,
     );
 
+    let finalReply = llmResponse.reply;
+
     // Check for warrant tags
     const warrantMatches = Array.from(finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi));
     let newlyGranted: string[] = [];
@@ -144,7 +146,7 @@ INVESTIGATION RULES FOR NARRATOR:
         await this.prisma.gameSession.update({
           where: { id: sessionId },
           data: {
-            activeWarrants: { push: newlyGranted },
+            activeWarrants: [...currentState.session.activeWarrants, ...newlyGranted],
             warrantsIssued: { increment: newlyGranted.length }
           }
         });
