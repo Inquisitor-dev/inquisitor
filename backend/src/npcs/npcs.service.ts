@@ -153,8 +153,8 @@ INVESTIGATION RULES FOR NARRATOR:
       }
     }
 
-    // Geriye dönük uyumluluk ve UI için grantedWarrant (ilkini dönelim)
-    let grantedWarrant = newlyGranted.length > 0 ? newlyGranted[0] : null;
+    // Geriye dönük uyumluluk ve UI için grantedWarrants
+    let grantedWarrants = newlyGranted;
 
     // 5. NPC'nin cevabını DB'ye kaydet (selamlama da kaydedilsin ki geçmişte görünsün)
     await this.prisma.dialogueHistory.create({
@@ -169,7 +169,7 @@ INVESTIGATION RULES FOR NARRATOR:
 
     return {
       reply: finalReply,
-      grantedWarrant,
+      grantedWarrants,
     };
   }
 

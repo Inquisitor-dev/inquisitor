@@ -223,12 +223,17 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
       const data = await res.json();
 
-      if (data.grantedWarrant) {
-        addWarrant(data.grantedWarrant);
+      if (data.grantedWarrants && data.grantedWarrants.length > 0) {
+        data.grantedWarrants.forEach((w: string) => addWarrant(w));
+        
+        const locNames = data.grantedWarrants.map((w: string) => 
+          w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()
+        ).join(' ve ');
+
         setConfirmModal({
           isOpen: true,
-          title: 'Arama İzni Verildi',
-          message: `Peder size bir arama izni verdi: ${data.grantedWarrant.toUpperCase()}. Artık bu mekanı fiziksel olarak arayabilirsiniz.`,
+          title: 'Arama İzni Alındı',
+          message: `Peder Malachar size ${locNames} için arama izni verdi. Bu izinleri kullanarak ilgili mekanları detaylıca arayabilirsiniz.`,
           onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false })),
         });
       }
@@ -459,7 +464,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               {inventory?.activeWarrants?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {inventory.activeWarrants.map(w => (
-                    <div key={w}>📜 Arama İzni: {w.toUpperCase()}</div>
+                    <div key={w}>📜 Arama İzni: {
+                      w === 'tavern' ? 'TAVERNA' : 
+                      w === 'mill' ? 'DEĞİRMEN' : 
+                      w === 'graveyard' ? 'MEZARLIK' : 
+                      w === 'church' ? 'KİLİSE' : w.toUpperCase()
+                    }</div>
                   ))}
                 </div>
               ) : inventory?.usedWarrants?.length > 0 ? (

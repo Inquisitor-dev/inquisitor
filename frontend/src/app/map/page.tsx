@@ -330,7 +330,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w}
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
                       </span>
                       <span>(Hazır)</span>
                     </div>
@@ -340,7 +340,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w}
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
                       </span>
                       <span>(Kullanıldı)</span>
                     </div>
