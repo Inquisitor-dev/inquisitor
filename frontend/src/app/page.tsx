@@ -39,7 +39,7 @@ export default function HomePage() {
         router.push('/login');
         return;
       }
-      
+
       if (res.status === 403) {
         setError(data.message || 'Günlük soruşturma limitine ulaştınız.');
         setLoading(false);
@@ -86,17 +86,17 @@ export default function HomePage() {
         {/* Seal / Crown logo */}
         <div className={styles.seal}>
           <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
-            <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3"/>
-            <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5"/>
+            <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
+            <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5" />
             {/* Cross */}
-            <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5"/>
-            <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5"/>
+            <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5" />
+            <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5" />
             {/* Diamond ornaments */}
-            <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)"/>
-            <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)"/>
-            <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)"/>
-            <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)"/>
-            <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)"/>
+            <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)" />
+            <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)" />
+            <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)" />
+            <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)" />
+            <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)" />
           </svg>
         </div>
 
@@ -128,14 +128,14 @@ export default function HomePage() {
               <>
                 <span>Soruşturmaya Başla</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </>
             )}
           </button>
-          <button 
-            onClick={() => setIsHowToPlayOpen(true)} 
-            className={styles.btnSecondary} 
+          <button
+            onClick={() => setIsHowToPlayOpen(true)}
+            className={styles.btnSecondary}
             style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
           >
             <span>Nasıl Oynanır?</span>
@@ -164,40 +164,40 @@ export default function HomePage() {
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setIsHowToPlayOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Soruşturma Kılavuzu</h2>
-            
+
             <div className={styles.modalScroll}>
               <section className={styles.guideSection}>
                 <h3>👁️ Temel Amaç</h3>
-                <p>Ashenmoor köyünde işlenen gizemli bir cinayeti çözmekle görevli bir Engizisyon müfettişisin. 3 günün var. Bu süre zarfında doğru kişiyi ölüme mahkum etmeli veya gerçeği ortaya çıkarmalısın.</p>
+                <p>Ashenmoor köyünde işlenen gizemli bir cinayeti çözmekle görevli bir Engizisyon müfettişisin. 4 günün var. Bu süre zarfında doğru kişiyi ölüme mahkum etmeli ve gerçeği ortaya çıkarmalısın.</p>
               </section>
 
               <section className={styles.guideSection}>
-                <h3>⏳ Zaman ve Diyalog</h3>
-                <p>Her gün sınırlı sayıda (10) diyalog hakkın bulunur. Bir köylüyle her konuştuğunda vakit ilerler (Sabah, Öğlen, İkindi, Akşam). Gece olduğunda herkes evine çekilir ve gün biter.</p>
+                <h3>⏳ Zaman Yönetimi</h3>
+                <p>Bir mekana her girdiğinde vakit ilerler (Sabah, Öğlen, İkindi, Akşam). Gece olduğunda herkes evine çekilir ve gün biter.</p>
               </section>
 
               <section className={styles.guideSection}>
                 <h3>📜 Arama İzinleri</h3>
-                <p>Köylüleri sadece sorgulayarak değil, mekanlarını arayarak da kanıt bulabilirsin. Ancak bir mekanı aramak için <strong>Peder Malachar'dan</strong> arama izni almalısın. Peder, sadece yeterli şüphe uyandıran kanıtlar sunduğunda sana bu yetkiyi verecektir.</p>
+                <p>Köylüleri sadece sorgulayarak değil, mekanlarını arayarak da kanıt bulabilirsin. Ama bir mekanı aramak için <strong>Peder Malachar'dan</strong> arama izni almalısın. Soruşturma boyunca en fazla <strong>2 kez</strong> arama izni alma hakkın var. Peder, sadece yeterli şüphe uyandıran kanıtlar sunduğunda sana bu yetkiyi verecektir.</p>
               </section>
 
               <section className={styles.guideSection}>
                 <h3>📝 Not Tutma</h3>
-                <p>Köylülerin söyledikleri çelişkili olabilir. Önemli ipuçlarını not defterine kaydet. Bu notlar veritabanına işlenir ve soruşturman boyunca sana rehberlik eder.</p>
+                <p>Köylülerin söyledikleri çelişkili olabilir. Önemli ipuçlarını not defterine kaydet. Bu notlar soruşturman boyunca sana rehberlik eder.</p>
               </section>
 
               <section className={styles.guideSection}>
                 <h3>⚖️ Nihai Hüküm</h3>
-                <p>İstediğin an haritadaki "MAHKUMU SEÇ" butonuna basarak birini suçlayabilirsin. Ancak unutma: Yanlış kişiyi asarsan gerçek katil aramızda dolaşmaya devam eder ve soruşturman başarısız sayılır.</p>
+                <p>İstediğin an haritadaki "MAHKUMU SEÇ" butonuna basarak birini suçlayabilirsin. Dikkat et: Yanlış kişiyi asarsan gerçek katil aramızda dolaşmaya devam eder ve soruşturman başarısız sayılır.</p>
               </section>
 
               <div className={styles.guideTip}>
-                <strong>İpucu:</strong> Köylülerin korku ve yalan seviyelerini analiz et. Bazen sessizlik, en büyük itiraftır.
+                <strong>İpucu:</strong> Köylüler çok farklı motivasyonlarla yalan söyleyebilirler. Her yalan söyleyen köylü katil olmayabilir.
               </div>
             </div>
 
             <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
-              Anladım, Müfettiş.
+              Anladım.
             </button>
           </div>
         </div>

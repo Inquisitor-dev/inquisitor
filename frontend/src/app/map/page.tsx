@@ -103,26 +103,8 @@ export default function MapPage() {
   const handleEndDay = async () => {
     if (!sessionId) return;
     
-    if (currentDay >= 3) {
-      setEndingDay(true);
-      try {
-        const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/timeout`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${authToken}` },
-        });
-        const data = await res.json();
-        if (data.session && data.session.truthReveal) {
-          useGameStore.getState().setTruthReveal(data.session.truthReveal);
-        }
-        if (data.session && data.session.locationClues) {
-          useGameStore.getState().setLocationClues(data.session.locationClues);
-        }
-        router.push('/result?won=false&reason=timeout');
-      } catch (err) {
-        console.error('Failed to handle timeout', err);
-      } finally {
-        setEndingDay(false);
-      }
+    if (currentDay >= 4) {
+      setIsCondemnModalOpen(true);
       return;
     }
 
@@ -365,8 +347,14 @@ export default function MapPage() {
         <div className={styles.modalOverlay} onClick={() => setIsCondemnModalOpen(false)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setIsCondemnModalOpen(false)}>&times;</button>
-            <h2 className={styles.modalTitle}>Hüküm Verilecek Kişiyi Seç</h2>
-            <p className={styles.modalSubtitle}>Nihai kararınız hikayenin sonunu belirleyecek. Dikkatli seçin.</p>
+            <h2 className={styles.modalTitle}>
+              {currentDay === 4 && timeOfDay === 4 ? 'Vakit Doldu: Nihai Hüküm' : 'Hüküm Verilecek Kişiyi Seç'}
+            </h2>
+            <p className={styles.modalSubtitle}>
+              {currentDay === 4 && timeOfDay === 4 
+                ? 'Soruşturma için size tanınan süre bitti. Nihai kararınız nedir?' 
+                : 'Nihai kararınız hikayenin sonunu belirleyecek. Dikkatli seçin.'}
+            </p>
             <div className={styles.villagerList}>
               {[
                 { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },

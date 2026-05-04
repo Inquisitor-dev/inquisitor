@@ -87,9 +87,17 @@ INVESTIGATION RULES FOR NARRATOR:
     }
 
     if (currentState.npc.id === 'church') {
-      const warrantInfo = currentState.session.issuedWarrant
-        ? '\n\nSYSTEM: You have already granted a search warrant in this session. Do NOT grant another.'
-        : '\n\nSYSTEM: You have NOT granted any search warrant yet. You can grant one if the player asks convincingly.';
+      const remainingWarrants = 2 - currentState.session.warrantsIssued;
+      const canGrant = remainingWarrants > 0 && (currentState.session.issuedWarrant === null || currentState.session.isWarrantUsed);
+      
+      let warrantInfo = `\n\nSYSTEM: Total warrants issued: ${currentState.session.warrantsIssued}/2.`;
+      if (canGrant) {
+        warrantInfo += ` You CAN grant another search warrant if the player asks convincingly. Use [GRANT_WARRANT: location] tag.`;
+      } else if (remainingWarrants > 0) {
+        warrantInfo += ` The player already has an active warrant (${currentState.session.issuedWarrant}). They must use it before you grant another one.`;
+      } else {
+        warrantInfo += ` You have already granted the maximum of 2 search warrants. Do NOT grant any more.`;
+      }
       combinedPrompt += warrantInfo;
     }
 
@@ -119,14 +127,21 @@ INVESTIGATION RULES FOR NARRATOR:
       grantedWarrant = warrantMatch[1];
       finalReply = finalReply.replace(warrantMatch[0], '').trim();
 
-      // Update session if not already granted
-      if (!currentState.session.issuedWarrant) {
+      // Update session if limit not reached and (no active warrant or current is used)
+      const canGrantMore = currentState.session.warrantsIssued < 2;
+      const noActiveWarrant = !currentState.session.issuedWarrant || currentState.session.isWarrantUsed;
+
+      if (canGrantMore && noActiveWarrant) {
         await this.prisma.gameSession.update({
           where: { id: sessionId },
-          data: { issuedWarrant: grantedWarrant, isWarrantUsed: false }
+          data: { 
+            issuedWarrant: grantedWarrant, 
+            isWarrantUsed: false,
+            warrantsIssued: { increment: 1 }
+          }
         });
       } else {
-        // Zaten izin vermiş, bu tagi yoksay
+        // Limit reached or already has active warrant
         grantedWarrant = null;
       }
     }

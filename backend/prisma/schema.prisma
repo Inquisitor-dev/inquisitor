@@ -38,6 +38,7 @@ model GameSession {
   notes         String?           @default("") // Engizisyoncunun notları
   issuedWarrant String?           // Peder'den alınan arama izni (örn: "tavern")
   isWarrantUsed Boolean           @default(false) // İzin kullanıldı mı?
+  warrantsIssued Int               @default(0)     // Toplam alınan izin sayısı
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]
