@@ -384,7 +384,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
           {/* Input */}
           <div className={styles.inputArea}>
-            {dialoguesUsedToday >= maxDailyDialogues ? (
+            {(dialoguesUsedToday >= maxDailyDialogues && !isAdmin) ? (
               <div className={styles.limitReached} style={{ color: '#8A0303', textAlign: 'center', padding: '16px', fontStyle: 'italic', background: '#111', border: '1px solid #333' }}>
                 Gerçek zamanlı günlük sınırınıza ulaştınız. Soruşturmaya devam etmek için yarın tekrar dönün.
               </div>
