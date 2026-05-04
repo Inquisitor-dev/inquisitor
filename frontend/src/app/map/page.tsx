@@ -61,6 +61,17 @@ export default function MapPage() {
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   const [localNotes, setLocalNotes] = useState('');
 
   useEffect(() => {
@@ -281,7 +292,7 @@ export default function MapPage() {
             className={styles.mainCondemnBtn}
             onClick={() => setIsCondemnModalOpen(true)}
           >
-            BU KAFİRİ MAHKUM ET
+            MAHKUMU SEÇ
           </button>
         </div>
 
@@ -367,9 +378,13 @@ export default function MapPage() {
                   key={villager.id} 
                   className={styles.villagerItem}
                   onClick={() => {
-                    if (window.confirm(`${villager.name} isimli köylüyü ölüme mahkum etmek istediğinizden emin misiniz?`)) {
-                      handleCondemn(villager.id);
-                    }
+                    setIsCondemnModalOpen(false);
+                    setConfirmModal({
+                      isOpen: true,
+                      title: 'Engizisyon Hükmü',
+                      message: `${villager.name} isimli köylüyü ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
+                      onConfirm: () => handleCondemn(villager.id),
+                    });
                   }}
                 >
                   <span className={styles.villagerIcon}>{villager.icon}</span>
@@ -379,6 +394,28 @@ export default function MapPage() {
                   </div>
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      {/* Confirm Modal */}
+      {confirmModal.isOpen && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
+            <p className={styles.modalMessage}>{confirmModal.message}</p>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalCancel} 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                Vazgeç
+              </button>
+              <button 
+                className={styles.modalConfirm} 
+                onClick={confirmModal.onConfirm}
+              >
+                Onayla
+              </button>
             </div>
           </div>
         </div>
