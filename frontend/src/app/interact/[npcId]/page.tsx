@@ -432,78 +432,78 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             )}
           </div>
         </div>
+      </div>
 
-        {/* Action Bar */}
-        <footer className={styles.actionBar}>
-          <div className={styles.actionGroup}>
-            <button className={styles.iconBtn} onClick={() => setIsNotesExpanded(true)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-              <span>Notlar</span>
-            </button>
-            <button className={styles.iconBtn} onClick={() => setIsInventoryOpen(true)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-              </svg>
-              <span>Envanter</span>
-            </button>
-          </div>
+      {/* Action Bar */}
+      <footer className={styles.actionBar}>
+        <div className={styles.actionGroup}>
+          <button className={styles.iconBtn} onClick={() => setIsNotesExpanded(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span>Notlar</span>
+          </button>
+          <button className={styles.iconBtn} onClick={() => setIsInventoryOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+            <span>Envanter</span>
+          </button>
+        </div>
 
-          <div className={styles.condemnCenter}>
+        <div className={styles.condemnCenter}>
+          <button 
+            className={styles.mainCondemnBtn}
+            onClick={handleCondemn}
+            disabled={isInvestigating}
+          >
+            BU KAFİRİ MAHKUM ET
+          </button>
+        </div>
+
+        <div className={styles.actionGroup}>
+          {!isInvestigating ? (
             <button 
-              className={styles.mainCondemnBtn}
-              onClick={handleCondemn}
-              disabled={isInvestigating}
+              onClick={() => {
+                if (canInvestigate) setIsInvestigating(true);
+                else alert('Bu mekanı araştırmak için pederden izin almalısınız.');
+              }}
+              disabled={!canInvestigate}
+              className={styles.investigateBtn}
             >
-              BU KAFİRİ MAHKUM ET
+              🔍 Mekanı Araştır
             </button>
-          </div>
-
-          <div className={styles.actionGroup}>
-            {!isInvestigating ? (
+          ) : (
+            !isCrimeScene && (
               <button 
                 onClick={() => {
-                  if (canInvestigate) setIsInvestigating(true);
-                  else alert('Bu mekanı araştırmak için pederden izin almalısınız.');
+                  setConfirmModal({
+                    isOpen: true,
+                    title: 'Araştırmayı Bitir',
+                    message: 'Araştırmayı sonlandırmak izninizi tüketecek ve bu mekanı bir daha araştıramayacaksınız. Emin misiniz?',
+                    onConfirm: async () => {
+                      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                      consumeWarrant(npcId);
+                      setIsInvestigating(false);
+                      try {
+                        await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                          method: 'POST',
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}` 
+                          },
+                          body: JSON.stringify({ location: npcId })
+                        });
+                      } catch(e) { console.error(e); }
+                    }
+                  });
                 }}
-                disabled={!canInvestigate}
                 className={styles.investigateBtn}
               >
-                🔍 Mekanı Araştır
+                🚪 Araştırmayı Sonlandır
               </button>
-            ) : (
-              !isCrimeScene && (
-                <button 
-                  onClick={() => {
-                    setConfirmModal({
-                      isOpen: true,
-                      title: 'Araştırmayı Bitir',
-                      message: 'Araştırmayı sonlandırmak izninizi tüketecek ve bu mekanı bir daha araştıramayacaksınız. Emin misiniz?',
-                      onConfirm: async () => {
-                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                        consumeWarrant(npcId);
-                        setIsInvestigating(false);
-                        try {
-                          await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
-                            method: 'POST',
-                            headers: { 
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${authToken}` 
-                            },
-                            body: JSON.stringify({ location: npcId })
-                          });
-                        } catch(e) { console.error(e); }
-                      }
-                    });
-                  }}
-                  className={styles.investigateBtn}
-                >
-                  🚪 Araştırmayı Sonlandır
-                </button>
-              )
             )}
           </div>
         </footer>

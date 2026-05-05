@@ -270,13 +270,15 @@
   position: relative;
   z-index: 10;
   height: 80px;
-  background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
+  width: 100%;
+  background: #050505;
   border-top: 1px solid rgba(232, 220, 196, 0.15);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 40px;
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .actionGroup {
