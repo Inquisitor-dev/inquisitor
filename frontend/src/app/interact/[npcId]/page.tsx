@@ -504,10 +504,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               >
                 🚪 Araştırmayı Sonlandır
               </button>
-            )}
-          </div>
-        </footer>
-      </div>
+            )) }
+        </div>
+      </footer>
 
       {/* Notebook Modal */}
       {isNotesExpanded && (
