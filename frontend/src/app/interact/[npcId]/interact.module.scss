@@ -265,26 +265,27 @@
   padding: 16px;
 }
 
-/* Action Bar */
-.actionBar {
-  position: relative;
-  z-index: 10;
-  height: 80px;
-  width: 100%;
-  background: #050505;
-  border-top: 1px solid rgba(232, 220, 196, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
-  backdrop-filter: blur(10px);
+/* Sidebar */
+.sidebar {
+  width: 240px;
   flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(232, 220, 196, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  gap: 40px;
+  align-items: center;
+  z-index: 10;
 }
 
 .actionGroup {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 32px;
+  width: 100%;
 }
 
 .iconBtn {
@@ -294,88 +295,94 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   color: #8a7f72;
   transition: all 0.2s ease;
-  padding: 8px;
+  padding: 12px;
+  width: 100%;
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     stroke-width: 1.5;
   }
 
   span {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
+    font-weight: 500;
   }
 
   &:hover {
     color: #E8DCC4;
-    transform: translateY(-2px);
+    transform: scale(1.05);
+    background: rgba(232, 220, 196, 0.05);
+    border-radius: 8px;
   }
 }
 
-.condemnCenter {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
+.condemnGroup {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
 .mainCondemnBtn {
   background: #8A0303;
   color: #fff;
   border: none;
-  padding: 10px 30px;
+  padding: 15px;
   font-family: 'Playfair Display', serif;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   border-radius: 4px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(138, 3, 3, 0.4);
+  width: 100%;
+  text-transform: uppercase;
 
   &:hover:not(:disabled) {
     background: #a00;
-    transform: translateY(-2px) scale(1.05);
     box-shadow: 0 8px 25px rgba(138, 3, 3, 0.6);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: not-allowed;
     background: #331111;
   }
 }
 
 .investigateBtn {
-  background: rgba(138, 3, 3, 0.15);
-  border: 1px solid #8A0303;
+  background: rgba(138, 3, 3, 0.1);
+  border: 1px solid rgba(138, 3, 3, 0.5);
   color: #E8DCC4;
-  padding: 10px 20px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   font-family: 'Playfair Display', serif;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s ease;
+  width: 100%;
 
   &:hover:not(:disabled) {
-    background: #8A0303;
-    box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
+    background: rgba(138, 3, 3, 0.2);
+    border-color: #8A0303;
   }
 
   &:disabled {
-    opacity: 0.3;
+    opacity: 0.2;
     cursor: not-allowed;
-    border-color: #444;
-    color: #555;
   }
 }
 
