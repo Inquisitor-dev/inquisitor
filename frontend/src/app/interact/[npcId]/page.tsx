@@ -64,6 +64,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const MAX_CHARS = 200;
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ 
     isOpen: boolean; 
     title: string; 
@@ -356,8 +357,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         </div>
 
         <div className={styles.quota}>
-          <span className={(!isAdmin && remaining < 10) ? styles.quotaLow : ''}>
-            Bugün kalan sorgu hakkınız: {isAdmin ? 'Sınırsız' : (30 - dialoguesUsedToday)}
+          <span>
+            Sorgu Hakkı: {isAdmin ? 'Sınırsız' : `${maxDailyDialogues - dialoguesUsedToday} / ${maxDailyDialogues}`}
           </span>
         </div>
       </header>
@@ -432,84 +433,46 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           </div>
         </div>
 
-        {/* ── Sidebar ─── */}
-        <aside className={styles.sidebar}>
-          <div className={styles.sideCard}>
-            <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Engizisyoncunun Notları
-              <button className={styles.expandBtn} onClick={() => setIsNotesExpanded(true)} title="Genişlet">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 14V9M2 14h5M14 2v5M14 2H9M6 10l-4 4M10 6l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
-            <textarea
-              className={styles.textarea}
-              style={{ minHeight: '120px', padding: '12px', marginTop: '8px', fontSize: '0.85rem' }}
-              value={localNotes}
-              onChange={(e) => setLocalNotes(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder="Şüpheli davranışları buraya not et..."
-            />
+        {/* Action Bar */}
+        <footer className={styles.actionBar}>
+          <div className={styles.actionGroup}>
+            <button className={styles.iconBtn} onClick={() => setIsNotesExpanded(true)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <span>Notlar</span>
+            </button>
+            <button className={styles.iconBtn} onClick={() => setIsInventoryOpen(true)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="7" width="18" height="14" rx="2" ry="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+              </svg>
+              <span>Envanter</span>
+            </button>
           </div>
 
-          <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Günlük Kaynak</div>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${(dialoguesUsedToday / maxDailyDialogues) * 100}%` }}
-              />
-            </div>
-            <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {isAdmin ? 'Sınırsız' : 30} sorgu hakkı kullanıldı.</p>
+          <div className={styles.condemnCenter}>
+            <button 
+              className={styles.mainCondemnBtn}
+              onClick={handleCondemn}
+              disabled={isInvestigating}
+            >
+              BU KAFİRİ MAHKUM ET
+            </button>
           </div>
 
-          <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Envanter</div>
-            <div style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '12px' }}>
-              {inventory?.activeWarrants?.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {inventory.activeWarrants.map(w => (
-                    <div key={w}>📜 Arama İzni: {
-                      w === 'tavern' ? 'TAVERNA' : 
-                      w === 'mill' ? 'DEĞİRMEN' : 
-                      w === 'graveyard' ? 'MEZARLIK' : 
-                      w === 'church' ? 'KİLİSE' : w.toUpperCase()
-                    }</div>
-                  ))}
-                </div>
-              ) : inventory?.usedWarrants?.length > 0 ? (
-                <span style={{ color: '#8a7f72' }}>Tüm izinler kullanıldı.</span>
-              ) : (
-                'Envanter boş'
-              )}
-            </div>
-            
+          <div className={styles.actionGroup}>
             {!isInvestigating ? (
               <button 
                 onClick={() => {
-                  if (canInvestigate) {
-                    setIsInvestigating(true);
-                  } else {
-                    alert('Bu mekanı araştırmak için pederden izin almalısınız.');
-                  }
+                  if (canInvestigate) setIsInvestigating(true);
+                  else alert('Bu mekanı araştırmak için pederden izin almalısınız.');
                 }}
                 disabled={!canInvestigate}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  background: canInvestigate ? '#8A0303' : 'rgba(255,255,255,0.05)',
-                  color: canInvestigate ? '#fff' : '#555',
-                  border: '1px solid ' + (canInvestigate ? '#a00' : '#333'),
-                  cursor: canInvestigate ? 'pointer' : 'not-allowed',
-                  textTransform: 'uppercase',
-                  fontSize: '0.75rem',
-                  letterSpacing: '1px',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.3s ease'
-                }}
+                className={styles.investigateBtn}
               >
-                Mekanı Araştır
+                🔍 Mekanı Araştır
               </button>
             ) : (
               !isCrimeScene && (
@@ -536,91 +499,81 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                       }
                     });
                   }}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: '#8A0303',
-                    color: '#fff',
-                    border: '1px solid #a00',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    fontSize: '0.75rem',
-                    letterSpacing: '1px',
-                    fontFamily: 'inherit',
-                  }}
+                  className={styles.investigateBtn}
                 >
-                  Araştırmayı Sonlandır
+                  🚪 Araştırmayı Sonlandır
                 </button>
               )
             )}
           </div>
-
-          <div className={styles.sideCard} style={{ marginTop: 'auto' }}>
-            <button 
-              className={`${styles.sendBtn} ${styles.condemnBtn}`} 
-              style={{ 
-                width: '100%', 
-                background: isInvestigating ? '#4a0202' : '#8A0303', 
-                color: isInvestigating ? '#888' : '#fff', 
-                border: 'none', 
-                padding: '12px',
-                cursor: isInvestigating ? 'not-allowed' : 'pointer',
-                opacity: isInvestigating ? 0.5 : 1
-              }} 
-              onClick={handleCondemn}
-              disabled={isInvestigating}
-            >
-              BU KAFİRİ MAHKUM ET
-            </button>
-            <p className={styles.sideHint} style={{ textAlign: 'center', marginTop: '8px' }}>
-              Nihai hükmünüz hikayenin sonunu belirler.
-            </p>
-          </div>
-        </aside>
+        </footer>
       </div>
 
+      {/* Notebook Modal */}
       {isNotesExpanded && (
-        <div className={styles.notesExpandedOverlay}>
-          <div className={styles.notesExpandedHeader}>
-            <h2 className={styles.notesExpandedTitle}>Engizisyoncunun Notları</h2>
-            <button className={styles.closeBtn} onClick={() => setIsNotesExpanded(false)} title="Küçült">
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          <div className={styles.notesExpandedBody}>
-            <textarea
-              className={styles.notesExpandedTextarea}
-              value={localNotes}
+        <div className={styles.modalOverlay} onClick={() => setIsNotesExpanded(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsNotesExpanded(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Soruşturma Notları</h2>
+            <textarea 
+              className={styles.notesArea} 
+              value={localNotes} 
               onChange={(e) => setLocalNotes(e.target.value)}
               onBlur={handleNotesBlur}
-              placeholder="Şüpheli davranışları, çelişkileri ve karakter hakkındaki analizlerinizi buraya not edebilirsiniz..."
+              placeholder="Gözlemlerini buraya not et..."
               autoFocus
             />
           </div>
         </div>
       )}
 
+      {/* Inventory Modal */}
+      {isInventoryOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsInventoryOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Envanter</h2>
+            <div className={styles.inventoryList}>
+              {(inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0) ? (
+                <>
+                  {inventory.activeWarrants.map((w, idx) => (
+                    <div key={`active-${idx}`} className={styles.inventoryItem}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <span className={styles.itemName}>Arama İzni</span>
+                      <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
+                      </span>
+                      <span>(Hazır)</span>
+                    </div>
+                  ))}
+                  {inventory.usedWarrants.map((w, idx) => (
+                    <div key={`used-${idx}`} className={styles.inventoryItem} style={{ opacity: 0.6 }}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <span className={styles.itemName}>Arama İzni</span>
+                      <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
+                      </span>
+                      <span>(Kullanıldı)</span>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <p style={{ color: '#8a7f72', gridColumn: '1/-1', textAlign: 'center' }}>Henüz bir eşyan yok.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirm Modal */}
       {confirmModal.isOpen && (
-        <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
             <p className={styles.modalMessage}>{confirmModal.message}</p>
             <div className={styles.modalActions}>
-              <button 
-                className={styles.modalCancel} 
-                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-              >
-                Vazgeç
-              </button>
-              <button 
-                className={styles.modalConfirm} 
-                onClick={confirmModal.onConfirm}
-              >
-                Onayla
-              </button>
+              <button className={styles.modalCancel} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>İptal</button>
+              <button className={styles.modalConfirm} onClick={confirmModal.onConfirm}>Onayla</button>
             </div>
           </div>
         </div>
