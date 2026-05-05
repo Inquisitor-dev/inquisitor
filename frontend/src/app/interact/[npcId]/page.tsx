@@ -53,7 +53,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     icon: '👤',
   };
 
-  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
+  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, timeOfDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
     useGameStore();
   
   const router = useRouter();
