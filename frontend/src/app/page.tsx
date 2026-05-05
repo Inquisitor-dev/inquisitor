@@ -7,10 +7,13 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario, authToken, logout, hasHydrated } = useGameStore();
+  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, authToken, logout, hasHydrated } = useGameStore();
   const [loading, setLoading] = useState(false);
+  const [resumeLoading, setResumeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   // Token yoksa login'e yönlendir (Hidratasyon tamamlandıktan sonra)
   useEffect(() => {
@@ -18,6 +21,48 @@ export default function HomePage() {
       router.push('/login');
     }
   }, [authToken, router, hasHydrated]);
+
+  // Aktif oturum kontrolü
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      if (!authToken) return;
+      try {
+        const res = await fetch('http://localhost:3001/game-sessions/active', {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        const data = await res.json();
+        if (data.session) {
+          setActiveSession(data.session);
+        }
+      } catch (err) {
+        console.error('Failed to check active session', err);
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+    if (hasHydrated && authToken) {
+      checkActiveSession();
+    } else if (hasHydrated) {
+      setCheckingSession(false);
+    }
+  }, [authToken, hasHydrated]);
+
+  const handleResume = async () => {
+    if (!activeSession) return;
+    setResumeLoading(true);
+    try {
+      setSessionId(activeSession.id);
+      if (activeSession.scenario) setScenario(activeSession.scenario);
+      if (activeSession.currentDay) setCurrentDay(activeSession.currentDay);
+      if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
+      if (activeSession.notes) setNotes(activeSession.notes);
+      setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
+      router.push('/map');
+    } catch (err) {
+      console.error('Failed to resume session', err);
+      setResumeLoading(false);
+    }
+  };
 
   const handleStart = async () => {
     if (!authToken) return;
@@ -121,12 +166,38 @@ export default function HomePage() {
         <div className={styles.slogan}>Dinle · Analiz Et · Hüküm Ver</div>
 
         <div className={styles.cta}>
+          {activeSession && !checkingSession && (
+            <button 
+              onClick={handleResume} 
+              disabled={resumeLoading} 
+              className={styles.btnPrimary} 
+              style={{ 
+                width: '100%', 
+                justifyContent: 'center', 
+                marginBottom: '12px',
+                background: 'rgba(232, 220, 196, 0.08)',
+                border: '1px solid rgba(232, 220, 196, 0.3)',
+                color: '#E8DCC4',
+              }}
+            >
+              {resumeLoading ? (
+                <span>Soruşturmaya dönülüyor...</span>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Soruşturmaya Devam Et (Gün {activeSession.currentDay})</span>
+                </>
+              )}
+            </button>
+          )}
           <button onClick={handleStart} disabled={loading} className={styles.btnPrimary} style={{ width: '100%', justifyContent: 'center' }}>
             {loading ? (
-              <span>Ashenmoor'a giden araba hazırlanıyor...</span>
+              <span>Ashenmoor&apos;a giden araba hazırlanıyor...</span>
             ) : (
               <>
-                <span>Soruşturmaya Başla</span>
+                <span>{activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla'}</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

@@ -188,4 +188,22 @@ export class GameSessionsService {
       session: updatedSession,
     };
   }
+
+  async findActiveSession(userId: string) {
+    this.logger.log(`Looking for active session for user: ${userId}`);
+    
+    const session = await this.prisma.gameSession.findFirst({
+      where: {
+        userId,
+        status: 'ACTIVE',
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!session) return null;
+
+    // Don't leak truthReveal to the client
+    const { truthReveal, locationClues, ...safeSession } = session;
+    return safeSession;
+  }
 }

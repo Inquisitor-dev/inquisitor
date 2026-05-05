@@ -10,6 +10,14 @@ export class GameSessionsController {
     private readonly authService: AuthService,
   ) {}
 
+  @Get('active')
+  @UseGuards(JwtAuthGuard)
+  async findActiveSession(@Request() req: any) {
+    const userId: string = req.user.userId;
+    const session = await this.gameSessionsService.findActiveSession(userId);
+    return { session };
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async createSession(@Request() req: any) {

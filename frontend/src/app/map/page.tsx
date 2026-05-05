@@ -98,8 +98,23 @@ export default function MapPage() {
     if (hasHydrated) fetchSession();
   }, [authToken, router, sessionId, setWarrants, hasHydrated]);
 
-  const handleRetreat = () => {
-    reset();
+  const handleRetreat = async () => {
+    // Notları sunucuya kaydet
+    if (sessionId && authToken) {
+      try {
+        const notes = useGameStore.getState().notes;
+        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ notes }),
+        });
+      } catch (e) {
+        console.error('Failed to save notes', e);
+      }
+    }
     router.push('/');
   };
 
@@ -202,7 +217,7 @@ export default function MapPage() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Geri Çekil
+          Kaydet ve Çık
         </button>
         <div className={styles.headerCenter}>
           <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
