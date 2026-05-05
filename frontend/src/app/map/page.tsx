@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './map.module.scss';
+import AmbientAudio from '../../components/AmbientAudio';
 
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
@@ -209,6 +210,7 @@ export default function MapPage() {
 
   return (
     <main className={styles.main}>
+      <AmbientAudio timeOfDay={timeOfDay} type="map" />
       <div className={`${styles.vignette} ${isNight ? styles.nightVignette : ''}`} />
 
       {/* Header overlay */}
