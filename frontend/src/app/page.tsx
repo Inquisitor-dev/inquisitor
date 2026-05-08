@@ -376,7 +376,7 @@ export default function HomePage() {
                   <span style={{ fontSize: '0.75rem', color: '#666' }}>5 Şüpheli</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
-                  + Çiftçi Edmund. Daha karmaşık ilişkiler ve sahte ipuçları.
+                  + Çiftçi Edmund. Artan şüpheli sayısıyla daha karmaşıklaşan ilişkiler.
                 </p>
               </button>
 
@@ -400,7 +400,7 @@ export default function HomePage() {
                   <span style={{ fontSize: '0.75rem', color: '#666' }}>6 Şüpheli</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
-                  + Çiftçi & Doktor. Çok katmanlı, aldatıcı gizem.
+                  + Çiftçi & Doktor. Kalabalıklaşan şüpheli listesiyle en karmaşık hikaye.
                 </p>
               </button>
             </div>

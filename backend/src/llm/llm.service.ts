@@ -127,7 +127,7 @@ CRITICAL RULES:
     let styleInstruction = '';
     
     // Senaryoya göre NPC listesini belirle
-    let baseNpcs = [];
+    let baseNpcs: { id: string; name: string; role: string }[] = [];
     
     if (scenarioType === 'modern') {
       worldDescription = 'Set in a quiet, eerie modern American small town named "Oakhaven".';
@@ -193,10 +193,10 @@ CRITICAL RULES:
       .join(',\n');
 
     const difficultyInstruction = difficulty === 'easy'
-      ? 'Create a relatively straightforward mystery with clear clues.'
+      ? 'Create a straightforward mystery. The narrative complexity relies solely on the interactions between the 4 main NPCs.'
       : difficulty === 'medium'
-        ? 'Create a moderately complex mystery. Add more red herrings and make connections between suspects more tangled. The farm/hydroponics adds an extra layer of suspicion.'
-        : 'Create a highly complex, deeply layered mystery. Multiple suspects should have overlapping motives. The doctor/ripperdoc\'s medical knowledge adds forensic complexity. Red herrings should be sophisticated and misleading. This should be very difficult to solve.';
+        ? 'Create a more complex mystery. The increased complexity should solely be a natural result of having 5 main NPCs. The additional character organically complicates the web of relationships and motives.'
+        : 'Create a highly complex mystery. The complexity must purely stem from managing 6 interconnected main NPCs. The interwoven motives of these characters should naturally increase the difficulty without introducing artificial tricks.';
 
     const prompt = `You are the Game Master for a dark interrogation detective game.
 ${worldDescription}
