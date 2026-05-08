@@ -7,7 +7,7 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, setDifficulty, authToken, logout, hasHydrated, isPremium } = useGameStore();
+  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, setDifficulty, setScenarioType, authToken, logout, hasHydrated, isPremium } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
