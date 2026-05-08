@@ -102,7 +102,7 @@ export class AuthService implements OnModuleInit {
     return { message: 'Doğrulama kodu e-posta adresinize gönderildi.' };
   }
 
-  async verifyCode(email: string, code: string): Promise<{ token: string; userId: string; isAdmin: boolean }> {
+  async verifyCode(email: string, code: string): Promise<{ token: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.verificationCode || !user.codeExpiresAt) {
@@ -128,12 +128,12 @@ export class AuthService implements OnModuleInit {
     });
 
     // JWT token üret
-    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin });
+    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
 
-    return { token, userId: user.id, isAdmin: user.isAdmin };
+    return { token, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
   }
 
-  async login(email: string, password: string): Promise<{ token: string; userId: string; isAdmin: boolean }> {
+  async login(email: string, password: string): Promise<{ token: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -153,8 +153,8 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('E-posta veya şifre hatalı.');
     }
 
-    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin });
-    return { token, userId: user.id, isAdmin: user.isAdmin };
+    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
+    return { token, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
   }
 
   // Günlük kotayı kontrol et ve gerekirse sıfırla
@@ -162,13 +162,14 @@ export class AuthService implements OnModuleInit {
     dailySessionCount: number;
     dailyMessageCount: number;
     isAdmin: boolean;
+    isPremium: boolean;
   }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
 
     // Admin kota sınırından muaf
     if (user.isAdmin) {
-      return { dailySessionCount: 0, dailyMessageCount: 0, isAdmin: true };
+      return { dailySessionCount: 0, dailyMessageCount: 0, isAdmin: true, isPremium: user.isPremium };
     }
 
     const today = new Date().toISOString().split('T')[0]; // "2026-05-01"
@@ -187,6 +188,7 @@ export class AuthService implements OnModuleInit {
         dailySessionCount: updated.dailySessionCount,
         dailyMessageCount: updated.dailyMessageCount,
         isAdmin: false,
+        isPremium: user.isPremium,
       };
     }
 
@@ -194,6 +196,7 @@ export class AuthService implements OnModuleInit {
       dailySessionCount: user.dailySessionCount,
       dailyMessageCount: user.dailyMessageCount,
       isAdmin: false,
+      isPremium: user.isPremium,
     };
   }
 
@@ -209,5 +212,28 @@ export class AuthService implements OnModuleInit {
       where: { id: userId },
       data: { dailyMessageCount: { increment: 1 } },
     });
+  }
+
+  // Premium aktivasyonu (simüle edilmiş ödeme)
+  async activatePremium(userId: string, activationCode: string): Promise<{ success: boolean; message: string }> {
+    const VALID_CODE = 'PREMIUM246741';
+
+    if (activationCode !== VALID_CODE) {
+      throw new BadRequestException('Geçersiz aktivasyon kodu.');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
+
+    if (user.isPremium) {
+      return { success: true, message: 'Hesabınız zaten Premium.' };
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isPremium: true },
+    });
+
+    return { success: true, message: 'Premium başarıyla aktifleştirildi! Artık tüm özelliklere erişebilirsiniz.' };
   }
 }

@@ -7,6 +7,7 @@ interface GameState {
   userId: string | null;
   authToken: string | null;
   isAdmin: boolean;
+  isPremium: boolean;
 
   // Game
   sessionId: string | null;
@@ -26,7 +27,8 @@ interface GameState {
   locationClues: Record<string, string> | null;
   hasHydrated: boolean;
 
-  setUser: (email: string, userId: string, token: string, isAdmin: boolean) => void;
+  setUser: (email: string, userId: string, token: string, isAdmin: boolean, isPremium: boolean) => void;
+  setIsPremium: (val: boolean) => void;
   setHasHydrated: (val: boolean) => void;
   logout: () => void;
   setSessionId: (id: string) => void;
@@ -56,6 +58,7 @@ export const useGameStore = create<GameState>()(
       userId: null,
       authToken: null,
       isAdmin: false,
+      isPremium: false,
 
       // Game
       sessionId: null,
@@ -72,7 +75,15 @@ export const useGameStore = create<GameState>()(
       locationClues: null,
       hasHydrated: false,
 
-      setUser: (email, userId, token, isAdmin) => set({ userEmail: email, userId, authToken: token, isAdmin }),
+      setUser: (email, userId, token, isAdmin, isPremium) => set({ 
+        userEmail: email, 
+        userId, 
+        authToken: token, 
+        isAdmin,
+        isPremium,
+        maxDailyDialogues: isPremium ? 100 : 30,
+      }),
+      setIsPremium: (val) => set({ isPremium: val, maxDailyDialogues: val ? 100 : 30 }),
       setHasHydrated: (val) => set({ hasHydrated: val }),
 
       logout: () => set({
@@ -80,6 +91,7 @@ export const useGameStore = create<GameState>()(
         userId: null,
         authToken: null,
         isAdmin: false,
+        isPremium: false,
         sessionId: null,
         selectedNpcId: null,
         npcStates: {},

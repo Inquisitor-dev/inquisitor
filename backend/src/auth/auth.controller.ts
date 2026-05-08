@@ -1,5 +1,6 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -36,5 +37,16 @@ export class AuthController {
       return { error: 'E-posta ve şifre gereklidir.' };
     }
     return this.authService.login(email.toLowerCase().trim(), password);
+  }
+
+  @Post('activate-premium')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async activatePremium(
+    @Request() req: any,
+    @Body('activationCode') activationCode: string,
+  ) {
+    const userId: string = req.user.userId;
+    return this.authService.activatePremium(userId, activationCode);
   }
 }

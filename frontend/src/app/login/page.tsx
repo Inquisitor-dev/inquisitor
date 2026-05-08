@@ -51,7 +51,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        setUser(email, data.userId, data.token, data.isAdmin);
+        setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
         router.push('/');
       } else {
         setError(data.message || data.error || 'Giriş başarısız.');
@@ -105,7 +105,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        setUser(email, data.userId, data.token, data.isAdmin);
+        setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
         router.push('/');
       } else {
         setError(data.message || data.error || 'Geçersiz kod.');

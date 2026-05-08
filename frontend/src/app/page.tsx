@@ -7,7 +7,7 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, authToken, logout, hasHydrated } = useGameStore();
+  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, authToken, logout, hasHydrated, isPremium } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -223,13 +223,29 @@ export default function HomePage() {
             <span>Hesaptan Çıkış Yap</span>
           </button>
 
+          {!isPremium && (
+            <button
+              onClick={() => router.push('/premium')}
+              className={styles.btnSecondary}
+              style={{ 
+                width: '100%', 
+                justifyContent: 'center', 
+                marginTop: '12px',
+                borderColor: 'rgba(218, 165, 32, 0.4)',
+                color: '#DAA520',
+              }}
+            >
+              <span>⭐ Premium'a Yükselt</span>
+            </button>
+          )}
+
           {error && (
             <div style={{ marginTop: '12px', padding: '12px 16px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.85rem', lineHeight: 1.5, textAlign: 'center' }}>
               ⚠️ {error}
             </div>
           )}
           <div className={styles.sessionNote}>
-            Ücretsiz Sürüm · Günlük 30 diyalog hakkı
+            {isPremium ? '⭐ Premium Sürüm · Günlük 100 diyalog · 5 soruşturma hakkı' : 'Ücretsiz Sürüm · Günlük 30 diyalog hakkı'}
           </div>
         </div>
 
