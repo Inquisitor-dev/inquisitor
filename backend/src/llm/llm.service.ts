@@ -115,26 +115,60 @@ CRITICAL RULES:
     }
   }
 
-  async generateSessionScenario(): Promise<{
+  async generateSessionScenario(difficulty: string = 'easy'): Promise<{
     scenario: string;
     truthReveal: string;
     culpritId: string;
     npcPrompts: Record<string, string>;
     locationClues: Record<string, string>;
   }> {
+    // Zorluğa göre NPC listesi
+    const baseNpcs = [
+      { id: 'tavern', name: 'Brother Aldric', role: 'Innkeeper' },
+      { id: 'church', name: 'Father Malachar', role: 'Priest' },
+      { id: 'graveyard', name: 'Old Silas', role: 'Gravedigger' },
+      { id: 'mill', name: 'Giles', role: 'Miller' },
+    ];
+
+    if (difficulty === 'medium' || difficulty === 'hard') {
+      baseNpcs.push({ id: 'farm', name: 'Farmer Edmund', role: 'Farmer' });
+    }
+    if (difficulty === 'hard') {
+      baseNpcs.push({ id: 'clinic', name: 'Doctor Harland', role: 'Healer/Doctor' });
+    }
+
+    const npcListText = baseNpcs
+      .map((npc, i) => `${i + 1}. "${npc.id}" (${npc.name}, ${npc.role})`)
+      .join('\n');
+
+    const npcIds = baseNpcs.map(n => `"${n.id}"`).join(' | ');
+
+    const npcPromptsTemplate = baseNpcs
+      .map(n => `    "${n.id}": "Your personal secret/role regarding this incident..."`)
+      .join(',\n');
+
+    const locationList = ['crime_scene', ...baseNpcs.map(n => n.id)];
+    const locationCluesTemplate = locationList
+      .map(loc => `    "${loc}": "Turkish description of a subtle clue hidden at ${loc}..."`)
+      .join(',\n');
+
+    const difficultyInstruction = difficulty === 'easy'
+      ? 'Create a relatively straightforward mystery with clear clues.'
+      : difficulty === 'medium'
+        ? 'Create a moderately complex mystery. Add more red herrings and make connections between suspects more tangled. The farmer adds an extra layer of rural suspicion.'
+        : 'Create a highly complex, deeply layered mystery. Multiple suspects should have overlapping motives. The doctor\'s medical knowledge adds forensic complexity. Red herrings should be sophisticated and misleading. This should be very difficult to solve.';
+
     const prompt = `You are the Game Master for a dark medieval interrogation game.
 Create a new murder or dark heresy mystery set in the village of Ashenmoor.
+Difficulty level: ${difficulty.toUpperCase()}. ${difficultyInstruction}
 
-We have 4 main NPCs:
-1. "tavern" (Brother Aldric, Innkeeper)
-2. "church" (Father Malachar, Priest)
-3. "graveyard" (Old Silas, Gravedigger)
-4. "mill" (Giles, Miller)
+We have ${baseNpcs.length} main NPCs:
+${npcListText}
 
 YOUR TASK:
 1. Invent a specific, gruesome, or mysterious incident that happened recently (e.g. a body found, a dark ritual, cursed crops).
-2. Randomly select exactly ONE of the 4 NPCs to be the GUILTY CULPRIT.
-3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the 4 NPCs. 
+2. Randomly select exactly ONE of the ${baseNpcs.length} NPCs to be the GUILTY CULPRIT.
+3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the ${baseNpcs.length} NPCs. 
    - The guilty NPC's prompt must explain they did it and how they try to hide it.
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
 
@@ -151,23 +185,16 @@ Return a valid JSON object ONLY, in exactly this format:
 {
   "scenario": "Dark, atmospheric Turkish description of the crime scene...",
   "truthReveal": "Dark, atmospheric Turkish paragraph revealing the ENTIRE truth and behind-the-scenes of this mystery...",
-  "culpritId": "tavern" | "church" | "graveyard" | "mill",
+  "culpritId": ${npcIds},
   "npcPrompts": {
-    "tavern": "Your personal secret/role regarding this incident...",
-    "church": "Your personal secret/role regarding this incident...",
-    "graveyard": "Your personal secret/role regarding this incident...",
-    "mill": "Your personal secret/role regarding this incident..."
+${npcPromptsTemplate}
   },
   "locationClues": {
-    "crime_scene": "Turkish description of a subtle physical clue hidden at the crime scene...",
-    "tavern": "Turkish description of a subtle clue hidden in the tavern (real or red herring)...",
-    "church": "Turkish description of a subtle clue hidden in the church (real or red herring)...",
-    "graveyard": "Turkish description of a subtle clue hidden in the graveyard (real or red herring)...",
-    "mill": "Turkish description of a subtle clue hidden in the mill (real or red herring)..."
+${locationCluesTemplate}
   }
 }`;
 
-    this.logger.log(`Calling Gemini API to generate dynamic scenario...`);
+    this.logger.log(`Calling Gemini API to generate dynamic scenario (difficulty: ${difficulty})...`);
 
     let response;
     let retries = 0;

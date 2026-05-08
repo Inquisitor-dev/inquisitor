@@ -11,6 +11,7 @@ interface GameState {
 
   // Game
   sessionId: string | null;
+  difficulty: string;
   selectedNpcId: string | null;
   npcStates: Record<string, { fear: number; lie: number }>;
   dialoguesUsedToday: number;
@@ -32,6 +33,7 @@ interface GameState {
   setHasHydrated: (val: boolean) => void;
   logout: () => void;
   setSessionId: (id: string) => void;
+  setDifficulty: (d: string) => void;
   setSelectedNpc: (npcId: string) => void;
   updateNpcState: (npcId: string, fear: number, lie: number) => void;
   incrementDialogue: () => void;
@@ -62,6 +64,7 @@ export const useGameStore = create<GameState>()(
 
       // Game
       sessionId: null,
+      difficulty: 'easy',
       selectedNpcId: null,
       npcStates: {},
       dialoguesUsedToday: 0,
@@ -93,6 +96,7 @@ export const useGameStore = create<GameState>()(
         isAdmin: false,
         isPremium: false,
         sessionId: null,
+        difficulty: 'easy',
         selectedNpcId: null,
         npcStates: {},
         dialoguesUsedToday: 0,
@@ -106,6 +110,7 @@ export const useGameStore = create<GameState>()(
       }),
 
       setSessionId: (id) => set({ sessionId: id }),
+      setDifficulty: (d) => set({ difficulty: d }),
       setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
 
       updateNpcState: (npcId, fear, lie) =>

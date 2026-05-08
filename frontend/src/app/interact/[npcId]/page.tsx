@@ -34,6 +34,16 @@ const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }
     title: 'Değirmenci — Rüzgarın Sırdaşı',
     icon: '⚙️',
   },
+  farm: {
+    name: 'Çiftçi Edmund',
+    title: 'Çiftçi — Toprağın ve Karanlığın Tanığı',
+    icon: '🌾',
+  },
+  clinic: {
+    name: 'Doktor Harland',
+    title: 'Hekim — Soğuk Ellerin ve Daha Soğuk Gözlerin Sahibi',
+    icon: '🏥',
+  },
   crime_scene: {
     name: 'Cinayet Mahalli',
     title: 'Sessiz Tanıklar...',

@@ -11,17 +11,18 @@ export class GameSessionsService {
     private readonly llm: LlmService,
   ) {}
 
-  async createSession(userId: string = 'demo-user-001') {
-    this.logger.log(`Creating new dynamic session for user: ${userId}`);
+  async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy') {
+    this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty})`);
 
-    // 1. LLM'den Senaryo Üret
-    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario();
+    // 1. LLM'den Senaryo Üret (zorluğa göre)
+    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario(difficulty);
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
     // 2. Yeni Session Oluştur
     const session = await this.prisma.gameSession.create({
       data: {
         userId,
+        difficulty,
         scenario,
         truthReveal,
         locationClues,
@@ -30,10 +31,28 @@ export class GameSessionsService {
       },
     });
 
-    // 3. NPC'lerin başlangıç state'lerini (fear, lie) ve dynamic prompt'larını kaydet
+    // 3. Zorluğa göre hangi NPC'lerin dahil olacağını belirle
+    const allowedNpcIds = ['tavern', 'church', 'graveyard', 'mill'];
+    if (difficulty === 'medium' || difficulty === 'hard') {
+      allowedNpcIds.push('farm');
+    }
+    if (difficulty === 'hard') {
+      allowedNpcIds.push('clinic');
+    }
+
+    // NPC'lerin başlangıç state'lerini ve dynamic prompt'larını kaydet
     const npcs = await this.prisma.npc.findMany();
     
     for (const npc of npcs) {
+      // Sadece ilgili NPC'ler ve narrator'ları dahil et
+      const isMainNpc = allowedNpcIds.includes(npc.id);
+      const isNarrator = npc.id.startsWith('narrator_') && (
+        npc.id === 'narrator_crime_scene' || 
+        allowedNpcIds.some(id => npc.id === `narrator_${id}`)
+      );
+
+      if (!isMainNpc && !isNarrator) continue;
+
       const dynamicPrompt = npcPrompts[npc.id] || "No dynamic prompt generated.";
       
       await this.prisma.sessionNpcState.create({
@@ -47,7 +66,7 @@ export class GameSessionsService {
       });
     }
 
-    this.logger.log(`Session ${session.id} fully created and populated.`);
+    this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
     const { truthReveal: _, ...safeSession } = session;
     return safeSession;
   }

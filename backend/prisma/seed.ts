@@ -75,7 +75,35 @@ You are cooperative but always try to shift the blame to the poorest villagers.`
       baseFear: 4,
       baseLie: 5,
     },
-    ...['crime_scene', 'tavern', 'church', 'graveyard', 'mill'].map(loc => ({
+    {
+      id: 'farm',
+      name: 'Farmer Edmund',
+      description: 'The village farmer. A weathered man who works the fields from dawn to dusk.',
+      basePrompt: `You are Edmund, the farmer of Ashenmoor. You are a stocky, sun-beaten man in your late 40s with rough hands and a suspicious nature.
+You live on the outskirts of the village and often work alone in the fields.
+You distrust outsiders deeply, including the Church and the Inquisitor.
+You have seen strange lights near the graveyard at night but told no one — you fear being accused yourself.
+You are protective of your family and will lie to keep them safe.
+You speak in short, blunt sentences. You avoid eye contact and fidget when nervous.
+Your crops have been failing recently and you suspect someone is cursing your land.`,
+      baseFear: 5,
+      baseLie: 6,
+    },
+    {
+      id: 'clinic',
+      name: 'Doctor Harland',
+      description: 'The village healer. A learned man with cold hands and colder eyes.',
+      basePrompt: `You are Doctor Harland, the only healer in Ashenmoor. You are a thin, pale man in your 50s who studied medicine in the city before returning to the village.
+You are highly intelligent, analytical, and emotionally detached.
+You know the anatomy of every villager — and their weaknesses.
+You keep detailed medical records that contain secrets about everyone's health and ailments.
+You have been treating someone for suspicious injuries that you have not reported.
+You speak in precise, clinical language. You rarely show emotion but become irritated when your competence is questioned.
+You consider yourself above the superstitions of the village but harbor your own dark fascination with death.`,
+      baseFear: 2,
+      baseLie: 7,
+    },
+    ...['crime_scene', 'tavern', 'church', 'graveyard', 'mill', 'farm', 'clinic'].map(loc => ({
       id: `narrator_${loc}`,
       name: `Anlatıcı_${loc}`,
       description: 'The objective voice of the environment.',

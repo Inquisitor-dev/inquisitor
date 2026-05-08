@@ -7,11 +7,12 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
-  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, authToken, logout, hasHydrated, isPremium } = useGameStore();
+  const { setSessionId, setScenario, setCurrentDay, setTimeOfDay, setNotes, setWarrants, setDifficulty, authToken, logout, hasHydrated, isPremium } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [isDifficultyOpen, setIsDifficultyOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
 
@@ -56,6 +57,7 @@ export default function HomePage() {
       if (activeSession.currentDay) setCurrentDay(activeSession.currentDay);
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
       if (activeSession.notes) setNotes(activeSession.notes);
+      if (activeSession.difficulty) setDifficulty(activeSession.difficulty);
       setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
       router.push('/map');
     } catch (err) {
@@ -64,10 +66,11 @@ export default function HomePage() {
     }
   };
 
-  const handleStart = async () => {
+  const startWithDifficulty = async (difficulty: string) => {
     if (!authToken) return;
     setLoading(true);
     setError(null);
+    setIsDifficultyOpen(false);
     try {
       const res = await fetch('http://localhost:3001/game-sessions', {
         method: 'POST',
@@ -75,7 +78,7 @@ export default function HomePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ difficulty }),
       });
       const data = await res.json();
 
@@ -93,6 +96,7 @@ export default function HomePage() {
 
       if (data.id) {
         setSessionId(data.id);
+        setDifficulty(difficulty);
         if (data.scenario) {
           setScenario(data.scenario);
         }
@@ -105,6 +109,14 @@ export default function HomePage() {
       console.error('Failed to start session', err);
       setError('Sunucuya bağlanılamadı. Backend servisinin çalıştığından emin olun.');
       setLoading(false);
+    }
+  };
+
+  const handleStart = () => {
+    if (isPremium) {
+      setIsDifficultyOpen(true);
+    } else {
+      startWithDifficulty('easy');
     }
   };
 
@@ -298,6 +310,96 @@ export default function HomePage() {
             <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
               Anladım.
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Difficulty Selection Modal */}
+      {isDifficultyOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsDifficultyOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+            <button className={styles.closeBtn} onClick={() => setIsDifficultyOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Zorluk Seviyesi Seç</h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+              {/* Kolay */}
+              <button
+                onClick={() => startWithDifficulty('easy')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(100,180,100,0.08)',
+                  border: '1px solid rgba(100,180,100,0.3)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7aba7a' }}>🌿 Kolay</span>
+                  <span style={{ fontSize: '0.75rem', color: '#666' }}>4 Şüpheli</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  Hancı, Peder, Mezarcı ve Değirmenci. Standart soruşturma deneyimi.
+                </p>
+              </button>
+
+              {/* Orta */}
+              <button
+                onClick={() => startWithDifficulty('medium')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(218,165,32,0.08)',
+                  border: '1px solid rgba(218,165,32,0.3)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#DAA520' }}>⚔️ Orta</span>
+                  <span style={{ fontSize: '0.75rem', color: '#666' }}>5 Şüpheli</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  + Çiftçi Edmund. Daha karmaşık ilişkiler ve sahte ipuçları.
+                </p>
+              </button>
+
+              {/* Zor */}
+              <button
+                onClick={() => startWithDifficulty('hard')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(138,3,3,0.12)',
+                  border: '1px solid rgba(138,3,3,0.4)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#c44' }}>💀 Zor</span>
+                  <span style={{ fontSize: '0.75rem', color: '#666' }}>6 Şüpheli</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  + Çiftçi Edmund & Doktor Harland. Çok katmanlı, aldatıcı gizem.
+                </p>
+              </button>
+            </div>
+
+            {loading && (
+              <p style={{ textAlign: 'center', color: '#888', marginTop: '16px', fontSize: '0.85rem' }}>
+                Ashenmoor&apos;a giden araba hazırlanıyor...
+              </p>
+            )}
           </div>
         </div>
       )}

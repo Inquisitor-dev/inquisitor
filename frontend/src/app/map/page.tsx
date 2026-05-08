@@ -49,12 +49,42 @@ const locations = [
     width: '25%',
     height: '30%',
     available: true,
+  },
+  {
+    id: 'farm',
+    name: 'Çiftlik',
+    icon: '🌾',
+    top: '65%',
+    left: '5%',
+    width: '22%',
+    height: '30%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+  {
+    id: 'clinic',
+    name: 'Klinik',
+    icon: '🏥',
+    top: '65%',
+    left: '72%',
+    width: '20%',
+    height: '28%',
+    available: true,
+    minDifficulty: 'hard',
   }
 ];
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
+
+  // Zorluk seviyesine göre lokasyonları filtrele
+  const difficultyOrder = ['easy', 'medium', 'hard'];
+  const currentDiffIdx = difficultyOrder.indexOf(difficulty);
+  const visibleLocations = locations.filter((loc: any) => {
+    if (!loc.minDifficulty) return true;
+    return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
+  });
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
   const [endingDay, setEndingDay] = useState(false);
   
@@ -240,7 +270,7 @@ export default function MapPage() {
         className={styles.mapContainer}
         style={{ backgroundImage: `url(${getMapBg()})` }}
       >
-        {locations.map((loc) => {
+        {visibleLocations.map((loc) => {
           const isAvailable = loc.available && !isNight;
 
           return (
@@ -350,7 +380,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase()}
                       </span>
                       <span>(Hazır)</span>
                     </div>
@@ -360,7 +390,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()}
+                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase()}
                       </span>
                       <span>(Kullanıldı)</span>
                     </div>
@@ -387,12 +417,21 @@ export default function MapPage() {
                 : 'Nihai kararınız hikayenin sonunu belirleyecek. Dikkatli seçin.'}
             </p>
             <div className={styles.villagerList}>
-              {[
-                { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
-                { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
-                { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
-                { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
-              ].map(villager => (
+              {(() => {
+                const villagers = [
+                  { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
+                  { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
+                  { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
+                  { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
+                ];
+                if (difficulty === 'medium' || difficulty === 'hard') {
+                  villagers.push({ id: 'farm', name: 'Çiftçi Edmund', icon: '🌾', role: 'Çiftçi' });
+                }
+                if (difficulty === 'hard') {
+                  villagers.push({ id: 'clinic', name: 'Doktor Harland', icon: '🏥', role: 'Doktor' });
+                }
+                return villagers;
+              })().map(villager => (
                 <button 
                   key={villager.id} 
                   className={styles.villagerItem}
