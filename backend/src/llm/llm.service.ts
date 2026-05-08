@@ -115,26 +115,66 @@ CRITICAL RULES:
     }
   }
 
-  async generateSessionScenario(difficulty: string = 'easy'): Promise<{
+  async generateSessionScenario(difficulty: string = 'easy', scenarioType: string = 'medieval'): Promise<{
     scenario: string;
     truthReveal: string;
     culpritId: string;
     npcPrompts: Record<string, string>;
     locationClues: Record<string, string>;
   }> {
-    // Zorluğa göre NPC listesi
-    const baseNpcs = [
-      { id: 'tavern', name: 'Brother Aldric', role: 'Innkeeper' },
-      { id: 'church', name: 'Father Malachar', role: 'Priest' },
-      { id: 'graveyard', name: 'Old Silas', role: 'Gravedigger' },
-      { id: 'mill', name: 'Giles', role: 'Miller' },
-    ];
-
-    if (difficulty === 'medium' || difficulty === 'hard') {
-      baseNpcs.push({ id: 'farm', name: 'Farmer Edmund', role: 'Farmer' });
-    }
-    if (difficulty === 'hard') {
-      baseNpcs.push({ id: 'clinic', name: 'Doctor Harland', role: 'Healer/Doctor' });
+    // Senaryoya göre temel bilgiler
+    let worldDescription = '';
+    let styleInstruction = '';
+    
+    // Senaryoya göre NPC listesini belirle
+    let baseNpcs = [];
+    
+    if (scenarioType === 'modern') {
+      worldDescription = 'Set in a quiet, eerie modern American small town named "Oakhaven".';
+      styleInstruction = 'It should read like a modern true-crime thriller or a dark Stephen King novel. Use modern terms, but keep the atmosphere tense and suspenseful.';
+      baseNpcs = [
+        { id: 'tavern', name: 'Al', role: 'Bartender at the local dive bar' },
+        { id: 'church', name: 'Father Miller', role: 'Local Pastor' },
+        { id: 'graveyard', name: 'Silas', role: 'Cemetery Groundskeeper' },
+        { id: 'mill', name: 'Giles', role: 'Sawmill Foreman' },
+      ];
+      if (difficulty === 'medium' || difficulty === 'hard') {
+        baseNpcs.push({ id: 'farm', name: 'Edmund', role: 'Corn Farmer' });
+      }
+      if (difficulty === 'hard') {
+        baseNpcs.push({ id: 'clinic', name: 'Dr. Harland', role: 'Town Doctor / Coroner' });
+      }
+    } else if (scenarioType === 'cyberpunk') {
+      worldDescription = 'Set in a neon-lit, dystopian cyberpunk megacity named "Neon Prime".';
+      styleInstruction = 'It should read like a grim, tech-noir cyberpunk thriller. Use cyberpunk terminology (cyberware, credits, neon, synth, mega-corps).';
+      baseNpcs = [
+        { id: 'tavern', name: 'Aldric', role: 'Owner of the "Neon Neon" Synth-Bar' },
+        { id: 'church', name: 'Malachar', role: 'Leader of the "Digital Ascension" Tech-Cult' },
+        { id: 'graveyard', name: 'Silas', role: 'Data-Crypt Scavenger / Body Recycler' },
+        { id: 'mill', name: 'Giles', role: 'Foreman of the Corp-Processing Factory' },
+      ];
+      if (difficulty === 'medium' || difficulty === 'hard') {
+        baseNpcs.push({ id: 'farm', name: 'Edmund', role: 'Hydroponics Lab Operator' });
+      }
+      if (difficulty === 'hard') {
+        baseNpcs.push({ id: 'clinic', name: 'Doc Harland', role: 'Ripperdoc / Black Market Surgeon' });
+      }
+    } else {
+      // Default: medieval
+      worldDescription = 'Set in the dark, medieval village of Ashenmoor.';
+      styleInstruction = 'It should read like a grimdark medieval fantasy or historical detective novel.';
+      baseNpcs = [
+        { id: 'tavern', name: 'Brother Aldric', role: 'Innkeeper' },
+        { id: 'church', name: 'Father Malachar', role: 'Priest' },
+        { id: 'graveyard', name: 'Old Silas', role: 'Gravedigger' },
+        { id: 'mill', name: 'Giles', role: 'Miller' },
+      ];
+      if (difficulty === 'medium' || difficulty === 'hard') {
+        baseNpcs.push({ id: 'farm', name: 'Farmer Edmund', role: 'Farmer' });
+      }
+      if (difficulty === 'hard') {
+        baseNpcs.push({ id: 'clinic', name: 'Doctor Harland', role: 'Healer/Doctor' });
+      }
     }
 
     const npcListText = baseNpcs
@@ -155,11 +195,11 @@ CRITICAL RULES:
     const difficultyInstruction = difficulty === 'easy'
       ? 'Create a relatively straightforward mystery with clear clues.'
       : difficulty === 'medium'
-        ? 'Create a moderately complex mystery. Add more red herrings and make connections between suspects more tangled. The farmer adds an extra layer of rural suspicion.'
-        : 'Create a highly complex, deeply layered mystery. Multiple suspects should have overlapping motives. The doctor\'s medical knowledge adds forensic complexity. Red herrings should be sophisticated and misleading. This should be very difficult to solve.';
+        ? 'Create a moderately complex mystery. Add more red herrings and make connections between suspects more tangled. The farm/hydroponics adds an extra layer of suspicion.'
+        : 'Create a highly complex, deeply layered mystery. Multiple suspects should have overlapping motives. The doctor/ripperdoc\'s medical knowledge adds forensic complexity. Red herrings should be sophisticated and misleading. This should be very difficult to solve.';
 
-    const prompt = `You are the Game Master for a dark medieval interrogation game.
-Create a new murder or dark heresy mystery set in the village of Ashenmoor.
+    const prompt = `You are the Game Master for a dark interrogation detective game.
+${worldDescription}
 Difficulty level: ${difficulty.toUpperCase()}. ${difficultyInstruction}
 
 We have ${baseNpcs.length} main NPCs:
@@ -173,7 +213,7 @@ YOUR TASK:
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
 
 CRITICAL RULE:
-The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Türkçe). It should read like a grimdark detective fantasy novel. Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Türkçe). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:

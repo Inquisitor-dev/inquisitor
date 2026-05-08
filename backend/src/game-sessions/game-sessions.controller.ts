@@ -20,9 +20,14 @@ export class GameSessionsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createSession(@Request() req: any, @Body('difficulty') difficulty?: string) {
+  async createSession(
+    @Request() req: any, 
+    @Body('difficulty') difficulty?: string,
+    @Body('scenarioType') scenarioType?: string
+  ) {
     const userId: string = req.user.userId;
     const diff = difficulty || 'easy';
+    const sType = scenarioType || 'medieval';
 
     // Günlük kota kontrolü
     const quota = await this.authService.checkAndResetDailyQuota(userId);
@@ -31,12 +36,17 @@ export class GameSessionsController {
       throw new ForbiddenException(`Günlük soruşturma limitine ulaştınız. (${maxSessions}/${maxSessions}) Yarın tekrar gelin.`);
     }
 
-    // Premium olmayan kullanıcılar sadece easy oynayabilir
-    if (!quota.isPremium && !quota.isAdmin && diff !== 'easy') {
-      throw new ForbiddenException('Zorluk seçimi sadece Premium üyelere açıktır.');
+    // Premium olmayan kullanıcılar sadece easy ve medieval oynayabilir
+    if (!quota.isPremium && !quota.isAdmin) {
+      if (diff !== 'easy') {
+        throw new ForbiddenException('Zorluk seçimi sadece Premium üyelere açıktır.');
+      }
+      if (sType !== 'medieval') {
+        throw new ForbiddenException('Farklı senaryo seçimi sadece Premium üyelere açıktır.');
+      }
     }
 
-    const session = await this.gameSessionsService.createSession(userId, diff);
+    const session = await this.gameSessionsService.createSession(userId, diff, sType);
 
     // Başarılı oluşturulunca sayacı artır
     await this.authService.incrementSessionCount(userId);

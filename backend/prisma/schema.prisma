@@ -31,6 +31,7 @@ model GameSession {
   user        User              @relation(fields: [userId], references: [id])
   status      String            @default("ACTIVE") // ACTIVE, WON, LOST
   difficulty  String            @default("easy")   // easy, medium, hard
+  scenarioType String           @default("medieval") // medieval, modern, cyberpunk
   scenario    String?           // Dinamik hikaye özeti
   truthReveal String?           @db.Text // Gerçek hikaye perde arkası
   locationClues Json?                    // Her mekan için gizli ipuçları listesi

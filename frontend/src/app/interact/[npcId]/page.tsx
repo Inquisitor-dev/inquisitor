@@ -13,42 +13,41 @@ interface Message {
   timestamp: Date;
 }
 
-const NPC_PROFILES: Record<string, { name: string; title: string; icon: string }> = {
-  tavern: {
-    name: 'Kardeş Aldric',
-    title: 'Hancı — Sırların Bekçisi',
-    icon: '🍺',
-  },
-  church: {
-    name: 'Peder Malachar',
-    title: 'Rahip — İki Efendinin Hizmetkarı',
-    icon: '⛪',
-  },
-  graveyard: {
-    name: 'İhtiyar Silas',
-    title: 'Mezarcı — Gerçeği Gömüp Saklayan',
-    icon: '🪦',
-  },
-  mill: {
-    name: 'Değirmenci Giles',
-    title: 'Değirmenci — Rüzgarın Sırdaşı',
-    icon: '⚙️',
-  },
-  farm: {
-    name: 'Çiftçi Edmund',
-    title: 'Çiftçi — Toprağın ve Karanlığın Tanığı',
-    icon: '🌾',
-  },
-  clinic: {
-    name: 'Doktor Harland',
-    title: 'Hekim — Soğuk Ellerin ve Daha Soğuk Gözlerin Sahibi',
-    icon: '🏥',
-  },
-  crime_scene: {
-    name: 'Cinayet Mahalli',
-    title: 'Sessiz Tanıklar...',
-    icon: '🩸',
-  },
+const getNpcProfile = (npcKey: string, scenarioType: string) => {
+  if (scenarioType === 'modern') {
+    const profiles: Record<string, { name: string; title: string; icon: string }> = {
+      tavern: { name: 'Al', title: 'Barmen — Dedikoduların Merkezi', icon: '🍺' },
+      church: { name: 'Peder Miller', title: 'Papaz — Kasabanın Manevi Lideri', icon: '⛪' },
+      graveyard: { name: 'Silas', title: 'Mezarlık Bekçisi — Sırların Bekçisi', icon: '🪦' },
+      mill: { name: 'Giles', title: 'Kereste Fabrikası Şefi — Gürültünün Ardındaki Adam', icon: '⚙️' },
+      farm: { name: 'Edmund', title: 'Mısır Çiftçisi — Kasaba Sınırında Tek Başına', icon: '🌾' },
+      clinic: { name: 'Dr. Harland', title: 'Kasaba Doktoru / Adli Tabip — Kanıksanmış Ölüm', icon: '🏥' },
+      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    };
+    return profiles[npcKey];
+  } else if (scenarioType === 'cyberpunk') {
+    const profiles: Record<string, { name: string; title: string; icon: string }> = {
+      tavern: { name: 'Aldric', title: 'Neon-Barmen — Sentetik Düşlerin Sağlayıcısı', icon: '🥃' },
+      church: { name: 'Malachar', title: 'Dijital Tarikat Lideri — Kodun Rahibi', icon: '🔌' },
+      graveyard: { name: 'Silas', title: 'Veri Çöpçüsü / Ceset Geri Dönüşümcüsü — Atıkların Bekçisi', icon: '💀' },
+      mill: { name: 'Giles', title: 'Mega-Fabrika Ustabaşısı — Çarkların Arasındaki Adam', icon: '🏭' },
+      farm: { name: 'Edmund', title: 'Hidroponik Laboratuvar İşletmecisi — Sentetik Besin', icon: '🧪' },
+      clinic: { name: 'Doc Harland', title: 'Kaçak Cerrah (Ripperdoc) — Karaborsa Siber Kasap', icon: '💉' },
+      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    };
+    return profiles[npcKey];
+  } else {
+    const profiles: Record<string, { name: string; title: string; icon: string }> = {
+      tavern: { name: 'Kardeş Aldric', title: 'Hancı — Sırların Bekçisi', icon: '🍺' },
+      church: { name: 'Peder Malachar', title: 'Rahip — İki Efendinin Hizmetkarı', icon: '⛪' },
+      graveyard: { name: 'İhtiyar Silas', title: 'Mezarcı — Gerçeği Gömüp Saklayan', icon: '🪦' },
+      mill: { name: 'Değirmenci Giles', title: 'Değirmenci — Rüzgarın Sırdaşı', icon: '⚙️' },
+      farm: { name: 'Çiftçi Edmund', title: 'Çiftçi — Toprağın ve Karanlığın Tanığı', icon: '🌾' },
+      clinic: { name: 'Doktor Harland', title: 'Hekim — Soğuk Ellerin ve Daha Soğuk Gözlerin Sahibi', icon: '🏥' },
+      crime_scene: { name: 'Cinayet Mahalli', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    };
+    return profiles[npcKey];
+  }
 };
 
 const PLACEHOLDER_SESSION_ID = 'demo-session-001';
@@ -57,14 +56,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   // Next.js 15+: params is a Promise, must be unwrapped with React.use()
   const { npcId } = use(params);
   const npcKey = npcId;
-  const profile = NPC_PROFILES[npcKey] ?? {
+  const { scenarioType, isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, timeOfDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
+    useGameStore();
+  
+  const profile = getNpcProfile(npcKey, scenarioType || 'medieval') ?? {
     name: 'Meçhul Köylü',
     title: 'Köyün sınırlarında dolaşan bir gölge',
     icon: '👤',
   };
 
-  const { isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, timeOfDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
-    useGameStore();
+
   
   const router = useRouter();
 

@@ -11,11 +11,11 @@ export class GameSessionsService {
     private readonly llm: LlmService,
   ) {}
 
-  async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy') {
-    this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty})`);
+  async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy', scenarioType: string = 'medieval') {
+    this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`);
 
     // 1. LLM'den Senaryo Üret (zorluğa göre)
-    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario(difficulty);
+    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario(difficulty, scenarioType);
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
     // 2. Yeni Session Oluştur
@@ -23,6 +23,7 @@ export class GameSessionsService {
       data: {
         userId,
         difficulty,
+        scenarioType,
         scenario,
         truthReveal,
         locationClues,

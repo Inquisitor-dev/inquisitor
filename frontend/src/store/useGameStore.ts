@@ -12,6 +12,7 @@ interface GameState {
   // Game
   sessionId: string | null;
   difficulty: string;
+  scenarioType: string;
   selectedNpcId: string | null;
   npcStates: Record<string, { fear: number; lie: number }>;
   dialoguesUsedToday: number;
@@ -34,6 +35,7 @@ interface GameState {
   logout: () => void;
   setSessionId: (id: string) => void;
   setDifficulty: (d: string) => void;
+  setScenarioType: (s: string) => void;
   setSelectedNpc: (npcId: string) => void;
   updateNpcState: (npcId: string, fear: number, lie: number) => void;
   incrementDialogue: () => void;
@@ -65,6 +67,7 @@ export const useGameStore = create<GameState>()(
       // Game
       sessionId: null,
       difficulty: 'easy',
+      scenarioType: 'medieval',
       selectedNpcId: null,
       npcStates: {},
       dialoguesUsedToday: 0,
@@ -97,6 +100,7 @@ export const useGameStore = create<GameState>()(
         isPremium: false,
         sessionId: null,
         difficulty: 'easy',
+        scenarioType: 'medieval',
         selectedNpcId: null,
         npcStates: {},
         dialoguesUsedToday: 0,
@@ -111,6 +115,7 @@ export const useGameStore = create<GameState>()(
 
       setSessionId: (id) => set({ sessionId: id }),
       setDifficulty: (d) => set({ difficulty: d }),
+      setScenarioType: (s) => set({ scenarioType: s }),
       setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
 
       updateNpcState: (npcId, fear, lie) =>

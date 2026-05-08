@@ -66,11 +66,11 @@ export default function HomePage() {
     }
   };
 
-  const startWithDifficulty = async (difficulty: string) => {
+  const startWithDifficultyAndScenario = async (difficulty: string, scenarioType: string) => {
     if (!authToken) return;
     setLoading(true);
     setError(null);
-    setIsDifficultyOpen(false);
+    setIsScenarioOpen(false);
     try {
       const res = await fetch('http://localhost:3001/game-sessions', {
         method: 'POST',
@@ -78,7 +78,7 @@ export default function HomePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ difficulty }),
+        body: JSON.stringify({ difficulty, scenarioType }),
       });
       const data = await res.json();
 
@@ -97,6 +97,7 @@ export default function HomePage() {
       if (data.id) {
         setSessionId(data.id);
         setDifficulty(difficulty);
+        setScenarioType(scenarioType);
         if (data.scenario) {
           setScenario(data.scenario);
         }
@@ -112,11 +113,20 @@ export default function HomePage() {
     }
   };
 
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [isScenarioOpen, setIsScenarioOpen] = useState(false);
+
+  const handleDifficultySelect = (diff: string) => {
+    setSelectedDifficulty(diff);
+    setIsDifficultyOpen(false);
+    setIsScenarioOpen(true);
+  };
+
   const handleStart = () => {
     if (isPremium) {
       setIsDifficultyOpen(true);
     } else {
-      startWithDifficulty('easy');
+      startWithDifficultyAndScenario('easy', 'medieval');
     }
   };
 
@@ -324,7 +334,7 @@ export default function HomePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
               {/* Kolay */}
               <button
-                onClick={() => startWithDifficulty('easy')}
+                onClick={() => handleDifficultySelect('easy')}
                 disabled={loading}
                 style={{
                   background: 'rgba(100,180,100,0.08)',
@@ -348,7 +358,7 @@ export default function HomePage() {
 
               {/* Orta */}
               <button
-                onClick={() => startWithDifficulty('medium')}
+                onClick={() => handleDifficultySelect('medium')}
                 disabled={loading}
                 style={{
                   background: 'rgba(218,165,32,0.08)',
@@ -372,7 +382,7 @@ export default function HomePage() {
 
               {/* Zor */}
               <button
-                onClick={() => startWithDifficulty('hard')}
+                onClick={() => handleDifficultySelect('hard')}
                 disabled={loading}
                 style={{
                   background: 'rgba(138,3,3,0.12)',
@@ -390,14 +400,95 @@ export default function HomePage() {
                   <span style={{ fontSize: '0.75rem', color: '#666' }}>6 Şüpheli</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
-                  + Çiftçi Edmund & Doktor Harland. Çok katmanlı, aldatıcı gizem.
+                  + Çiftçi & Doktor. Çok katmanlı, aldatıcı gizem.
+                </p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scenario Selection Modal */}
+      {isScenarioOpen && selectedDifficulty && (
+        <div className={styles.modalOverlay} onClick={() => setIsScenarioOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Senaryo Evreni Seç</h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+              {/* Ortaçağ (Medieval) */}
+              <button
+                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'medieval')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(232,220,196,0.08)',
+                  border: '1px solid rgba(232,220,196,0.3)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#E8DCC4' }}>🏰 Klasik Ortaçağ</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  Ashenmoor Köyü. Engizisyon, cadı avları, batıl inançlar ve karanlık sırlar. Standart karanlık fantezi deneyimi.
+                </p>
+              </button>
+
+              {/* Modern (Modern) */}
+              <button
+                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'modern')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(100,140,200,0.08)',
+                  border: '1px solid rgba(100,140,200,0.3)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7ba4d1' }}>🚔 Modern Amerikan Kasabası</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  Oakhaven. Yerel polis, cinayet dedektifleri, şüpheli kasabalılar. Gerilim dolu "True Crime" polisiyesi.
+                </p>
+              </button>
+
+              {/* Cyberpunk (Cyberpunk) */}
+              <button
+                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'cyberpunk')}
+                disabled={loading}
+                style={{
+                  background: 'rgba(180,50,200,0.08)',
+                  border: '1px solid rgba(180,50,200,0.3)',
+                  color: '#e5d9c5',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'Playfair Display', serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#d06ee0' }}>🌃 Distopik Cyberpunk</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                  Neon Prime Şehri. Yozlaşmış mega şirketler, siber-geliştirmeler, karanlık ara sokaklar. Tech-noir bilimkurgu.
                 </p>
               </button>
             </div>
 
             {loading && (
               <p style={{ textAlign: 'center', color: '#888', marginTop: '16px', fontSize: '0.85rem' }}>
-                Ashenmoor&apos;a giden araba hazırlanıyor...
+                Senaryo oluşturuluyor, lütfen bekleyin...
               </p>
             )}
           </div>

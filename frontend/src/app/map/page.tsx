@@ -76,7 +76,7 @@ const locations = [
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
@@ -287,7 +287,24 @@ export default function MapPage() {
             >
               <div className={styles.label}>
                 <span className={styles.icon}>{loc.icon}</span>
-                {loadingLoc === loc.id ? 'Gidiliyor...' : `${loc.name}'e Git`}
+                {loadingLoc === loc.id ? 'Gidiliyor...' : `${(() => {
+                  if (scenarioType === 'modern') {
+                    if (loc.id === 'tavern') return 'Bar';
+                    if (loc.id === 'church') return 'Kilise';
+                    if (loc.id === 'mill') return 'Fabrika';
+                    if (loc.id === 'graveyard') return 'Mezarlık';
+                    if (loc.id === 'farm') return 'Mısır Tarlası';
+                    if (loc.id === 'clinic') return 'Klinik';
+                  } else if (scenarioType === 'cyberpunk') {
+                    if (loc.id === 'tavern') return 'Neon Bar';
+                    if (loc.id === 'church') return 'Tarikat Merkezi';
+                    if (loc.id === 'mill') return 'Üretim Tesisi';
+                    if (loc.id === 'graveyard') return 'Veri Çöplüğü';
+                    if (loc.id === 'farm') return 'Hidroponik';
+                    if (loc.id === 'clinic') return 'Ripperdoc';
+                  }
+                  return loc.name; // default medieval
+                })()}'a Git`}
                 {!isAvailable && (
                   <span className={styles.lockedText}>
                     ({isNight ? 'Gece' : 'Kapalı'})
@@ -380,7 +397,14 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase()}
+                        {(() => {
+                          if (scenarioType === 'modern') {
+                            return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Bar' : w === 'mill' ? 'Fabrika' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
+                          } else if (scenarioType === 'cyberpunk') {
+                            return w === 'church' ? 'Tarikat Merkezi' : w === 'tavern' ? 'Neon Bar' : w === 'mill' ? 'Üretim Tesisi' : w === 'graveyard' ? 'Veri Çöplüğü' : w === 'farm' ? 'Hidroponik' : w === 'clinic' ? 'Ripperdoc' : w.toUpperCase();
+                          }
+                          return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
+                        })()}
                       </span>
                       <span>(Hazır)</span>
                     </div>
@@ -390,7 +414,14 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
-                        {w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase()}
+                        {(() => {
+                          if (scenarioType === 'modern') {
+                            return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Bar' : w === 'mill' ? 'Fabrika' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
+                          } else if (scenarioType === 'cyberpunk') {
+                            return w === 'church' ? 'Tarikat Merkezi' : w === 'tavern' ? 'Neon Bar' : w === 'mill' ? 'Üretim Tesisi' : w === 'graveyard' ? 'Veri Çöplüğü' : w === 'farm' ? 'Hidroponik' : w === 'clinic' ? 'Ripperdoc' : w.toUpperCase();
+                          }
+                          return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
+                        })()}
                       </span>
                       <span>(Kullanıldı)</span>
                     </div>
@@ -418,17 +449,46 @@ export default function MapPage() {
             </p>
             <div className={styles.villagerList}>
               {(() => {
-                const villagers = [
-                  { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
-                  { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
-                  { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
-                  { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
-                ];
-                if (difficulty === 'medium' || difficulty === 'hard') {
-                  villagers.push({ id: 'farm', name: 'Çiftçi Edmund', icon: '🌾', role: 'Çiftçi' });
-                }
-                if (difficulty === 'hard') {
-                  villagers.push({ id: 'clinic', name: 'Doktor Harland', icon: '🏥', role: 'Doktor' });
+                let villagers = [];
+                if (scenarioType === 'modern') {
+                  villagers = [
+                    { id: 'tavern', name: 'Al', icon: '🍺', role: 'Barmen' },
+                    { id: 'church', name: 'Peder Miller', icon: '⛪', role: 'Papaz' },
+                    { id: 'mill', name: 'Giles', icon: '⚙️', role: 'Fabrika Şefi' },
+                    { id: 'graveyard', name: 'Silas', icon: '🪦', role: 'Mezarlık Bekçisi' },
+                  ];
+                  if (difficulty === 'medium' || difficulty === 'hard') {
+                    villagers.push({ id: 'farm', name: 'Edmund', icon: '🌾', role: 'Mısır Çiftçisi' });
+                  }
+                  if (difficulty === 'hard') {
+                    villagers.push({ id: 'clinic', name: 'Dr. Harland', icon: '🏥', role: 'Adli Tabip' });
+                  }
+                } else if (scenarioType === 'cyberpunk') {
+                  villagers = [
+                    { id: 'tavern', name: 'Aldric', icon: '🥃', role: 'Neon-Barmen' },
+                    { id: 'church', name: 'Malachar', icon: '🔌', role: 'Tarikat Lideri' },
+                    { id: 'mill', name: 'Giles', icon: '🏭', role: 'Ustabaşı' },
+                    { id: 'graveyard', name: 'Silas', icon: '💀', role: 'Veri Çöpçüsü' },
+                  ];
+                  if (difficulty === 'medium' || difficulty === 'hard') {
+                    villagers.push({ id: 'farm', name: 'Edmund', icon: '🧪', role: 'Hidroponik Çiftçi' });
+                  }
+                  if (difficulty === 'hard') {
+                    villagers.push({ id: 'clinic', name: 'Doc Harland', icon: '💉', role: 'Ripperdoc' });
+                  }
+                } else {
+                  villagers = [
+                    { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
+                    { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
+                    { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
+                    { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
+                  ];
+                  if (difficulty === 'medium' || difficulty === 'hard') {
+                    villagers.push({ id: 'farm', name: 'Çiftçi Edmund', icon: '🌾', role: 'Çiftçi' });
+                  }
+                  if (difficulty === 'hard') {
+                    villagers.push({ id: 'clinic', name: 'Doktor Harland', icon: '🏥', role: 'Doktor' });
+                  }
                 }
                 return villagers;
               })().map(villager => (
