@@ -56,7 +56,6 @@ export default function HomePage() {
     setResumeLoading(true);
     try {
       setSessionId(activeSession.id);
-      if (activeSession.scenarioType) setScenarioType(activeSession.scenarioType);
       if (activeSession.scenario) setScenario(activeSession.scenario);
       if (activeSession.currentDay) setCurrentDay(activeSession.currentDay);
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);

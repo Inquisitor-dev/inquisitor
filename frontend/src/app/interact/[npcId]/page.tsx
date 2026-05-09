@@ -102,7 +102,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     sessionId,
     currentDay,
     setCurrentDay,
-    setScenarioType,
     timeOfDay,
     notes,
     setNotes,
@@ -238,9 +237,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         });
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
-          if (sessionData.scenarioType) {
-            setScenarioType(sessionData.scenarioType);
-          }
           setNotes(sessionData.notes || '');
         }
       } catch (err) {
@@ -258,7 +254,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, setScenarioType, authToken, isInvestigating]);
+  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, authToken, isInvestigating]);
 
   const handleSend = async () => {
     const trimmed = input.trim();

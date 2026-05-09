@@ -253,7 +253,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, hasHydrated } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
@@ -305,15 +305,12 @@ export default function MapPage() {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
           const data = await res.json();
-          if (data.scenarioType) {
-            setScenarioType(data.scenarioType);
-          }
           setWarrants(data.activeWarrants || [], data.usedWarrants || []);
         } catch(e) {}
       }
     };
     if (hasHydrated) fetchSession();
-  }, [authToken, router, sessionId, setScenarioType, setWarrants, hasHydrated]);
+  }, [authToken, router, sessionId, setWarrants, hasHydrated]);
 
   const handleRetreat = async () => {
     // Notları sunucuya kaydet
