@@ -9,6 +9,7 @@ import AmbientAudio from '../../components/AmbientAudio';
 
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
+// Medieval köy konumları
 const locations = [
   {
     id: 'church',
@@ -74,6 +75,78 @@ const locations = [
   }
 ];
 
+// Modern kasaba konumları (Millfield, KY 1994 haritasına göre)
+const modernLocations = [
+  {
+    // Karakol (Police Station) — Sol üst köşe, büyük bina
+    id: 'tavern',
+    name: 'Karakol',
+    icon: '🚔',
+    top: '3%',
+    left: '1%',
+    width: '28%',
+    height: '45%',
+    available: true,
+  },
+  {
+    // Kaset Dükkanı (Video Rental) — Orta üst, neon tabela
+    id: 'graveyard',
+    name: 'Kaset Dükkanı',
+    icon: '📼',
+    top: '5%',
+    left: '29%',
+    width: '20%',
+    height: '32%',
+    available: true,
+  },
+  {
+    // Kilise — Sağ üst köşe
+    id: 'church',
+    name: 'Kilise',
+    icon: '⛪',
+    top: '3%',
+    left: '80%',
+    width: '18%',
+    height: '30%',
+    available: true,
+  },
+  {
+    // Benzinlik (Gas Station) — Orta sol alt
+    id: 'farm',
+    name: 'Benzinlik',
+    icon: '⛽',
+    top: '42%',
+    left: '10%',
+    width: '20%',
+    height: '28%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+  {
+    // Prefabrik Evler (Trailer Park) — Sağ orta
+    id: 'clinic',
+    name: 'Prefabrik Evler',
+    icon: '🏠',
+    top: '28%',
+    left: '68%',
+    width: '28%',
+    height: '38%',
+    available: true,
+    minDifficulty: 'hard',
+  },
+  {
+    // Açık Hava Sineması (Drive-In Theater) — Alt merkez sağ
+    id: 'mill',
+    name: 'Açık Hava Sineması',
+    icon: '🎬',
+    top: '65%',
+    left: '36%',
+    width: '38%',
+    height: '32%',
+    available: true,
+  },
+];
+
 export default function MapPage() {
   const router = useRouter();
   const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
@@ -81,7 +154,8 @@ export default function MapPage() {
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
   const currentDiffIdx = difficultyOrder.indexOf(difficulty);
-  const visibleLocations = locations.filter((loc: any) => {
+  const baseLocations = scenarioType === 'modern' ? modernLocations : locations;
+  const visibleLocations = baseLocations.filter((loc: any) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
   });
