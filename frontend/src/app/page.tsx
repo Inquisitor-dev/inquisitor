@@ -134,6 +134,30 @@ export default function HomePage() {
     }
   };
 
+  if (!hasHydrated) {
+    return (
+      <main className={styles.main}>
+        <div className={styles.vignette} />
+        <div className={styles.hero}>
+          <h1 className={styles.title}>The Inquisitor</h1>
+          <p className={styles.description}>Oturum yukleniyor...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!authToken) {
+    return (
+      <main className={styles.main}>
+        <div className={styles.vignette} />
+        <div className={styles.hero}>
+          <h1 className={styles.title}>The Inquisitor</h1>
+          <p className={styles.description}>Giris ekranina yonlendiriliyorsunuz...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.main}>
       {/* Vignette overlay */}
