@@ -147,6 +147,45 @@ const modernLocations = [
   },
 ];
 
+const getLocationLabel = (locationId: string, scenarioType: string) => {
+  if (scenarioType === 'modern') {
+    const labels: Record<string, string> = {
+      tavern: 'Karakol',
+      church: 'Kilise',
+      graveyard: 'Kaset Dukkani',
+      mill: 'Acik Hava Sinemasi',
+      farm: 'Benzinlik',
+      clinic: 'Prefabrik Evler',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  if (scenarioType === 'cyberpunk') {
+    const labels: Record<string, string> = {
+      tavern: 'Neon Bar',
+      church: 'Tarikat Merkezi',
+      graveyard: 'Veri Coplugu',
+      mill: 'Uretim Tesisi',
+      farm: 'Hidroponik',
+      clinic: 'Ripperdoc',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  const labels: Record<string, string> = {
+    tavern: 'Taverna',
+    church: 'Kilise',
+    graveyard: 'Mezarlik',
+    mill: 'Degirmen',
+    farm: 'Ciftlik',
+    clinic: 'Klinik',
+    crime_scene: 'Cinayet Mahalli',
+  };
+  return labels[locationId] ?? locationId.toUpperCase();
+};
+
 export default function MapPage() {
   const router = useRouter();
   const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
@@ -478,14 +517,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                        {(() => {
-                          if (scenarioType === 'modern') {
-                            return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Bar' : w === 'mill' ? 'Fabrika' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
-                          } else if (scenarioType === 'cyberpunk') {
-                            return w === 'church' ? 'Tarikat Merkezi' : w === 'tavern' ? 'Neon Bar' : w === 'mill' ? 'Üretim Tesisi' : w === 'graveyard' ? 'Veri Çöplüğü' : w === 'farm' ? 'Hidroponik' : w === 'clinic' ? 'Ripperdoc' : w.toUpperCase();
-                          }
-                          return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
-                        })()}
+                        {getLocationLabel(w, scenarioType)}
                       </span>
                       <span>(Hazır)</span>
                     </div>
@@ -495,14 +527,7 @@ export default function MapPage() {
                       <span className={styles.itemIcon}>📜</span>
                       <span className={styles.itemName}>Arama İzni</span>
                       <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
-                        {(() => {
-                          if (scenarioType === 'modern') {
-                            return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Bar' : w === 'mill' ? 'Fabrika' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
-                          } else if (scenarioType === 'cyberpunk') {
-                            return w === 'church' ? 'Tarikat Merkezi' : w === 'tavern' ? 'Neon Bar' : w === 'mill' ? 'Üretim Tesisi' : w === 'graveyard' ? 'Veri Çöplüğü' : w === 'farm' ? 'Hidroponik' : w === 'clinic' ? 'Ripperdoc' : w.toUpperCase();
-                          }
-                          return w === 'church' ? 'Kilise' : w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w === 'farm' ? 'Çiftlik' : w === 'clinic' ? 'Klinik' : w.toUpperCase();
-                        })()}
+                        {getLocationLabel(w, scenarioType)}
                       </span>
                       <span>(Kullanıldı)</span>
                     </div>

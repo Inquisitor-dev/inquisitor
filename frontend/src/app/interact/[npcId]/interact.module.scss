@@ -20,6 +20,10 @@
   z-index: 1;
 }
 
+.modernPlain::before {
+  background: rgba(0, 0, 0, 0.92);
+}
+
 .vignette {
   position: fixed;
   inset: 0;

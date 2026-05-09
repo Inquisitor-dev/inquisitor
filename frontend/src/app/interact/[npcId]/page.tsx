@@ -50,6 +50,45 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
   }
 };
 
+const getLocationLabel = (locationId: string, scenarioType: string) => {
+  if (scenarioType === 'modern') {
+    const labels: Record<string, string> = {
+      tavern: 'Karakol',
+      church: 'Kilise',
+      graveyard: 'Kaset Dukkani',
+      mill: 'Acik Hava Sinemasi',
+      farm: 'Benzinlik',
+      clinic: 'Prefabrik Evler',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  if (scenarioType === 'cyberpunk') {
+    const labels: Record<string, string> = {
+      tavern: 'Neon Bar',
+      church: 'Tarikat Merkezi',
+      graveyard: 'Veri Coplugu',
+      mill: 'Uretim Tesisi',
+      farm: 'Hidroponik',
+      clinic: 'Ripperdoc',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  const labels: Record<string, string> = {
+    tavern: 'Taverna',
+    church: 'Kilise',
+    graveyard: 'Mezarlik',
+    mill: 'Degirmen',
+    farm: 'Ciftlik',
+    clinic: 'Klinik',
+    crime_scene: 'Cinayet Mahalli',
+  };
+  return labels[locationId] ?? locationId.toUpperCase();
+};
+
 const PLACEHOLDER_SESSION_ID = 'demo-session-001';
 
 export default function InteractPage({ params }: { params: Promise<{ npcId: string }> }) {
@@ -245,9 +284,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       if (data.grantedWarrants && data.grantedWarrants.length > 0) {
         data.grantedWarrants.forEach((w: string) => addWarrant(w));
         
-        const locNames = data.grantedWarrants.map((w: string) => 
-          w === 'tavern' ? 'Taverna' : w === 'mill' ? 'Değirmen' : w === 'graveyard' ? 'Mezarlık' : w.toUpperCase()
-        ).join(' ve ');
+        const locNames = data.grantedWarrants
+          .map((w: string) => getLocationLabel(w, scenarioType || 'medieval'))
+          .join(' ve ');
 
         setConfirmModal({
           isOpen: true,
@@ -358,7 +397,14 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const remaining = maxDailyDialogues - dialoguesUsedToday;
 
   return (
-    <main className={styles.main} style={{ backgroundImage: `url('/backgrounds/bg_${npcKey}.png')` }}>
+    <main
+      className={`${styles.main} ${scenarioType === 'modern' ? styles.modernPlain : ''}`}
+      style={
+        scenarioType === 'modern'
+          ? { backgroundImage: 'none', backgroundColor: '#000000' }
+          : { backgroundImage: `url('/backgrounds/bg_${npcKey}.png')` }
+      }
+    >
       <AmbientAudio timeOfDay={timeOfDay} type="interact" />
       <div className={styles.vignette} />
 
@@ -494,12 +540,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               {inventory?.activeWarrants?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {inventory.activeWarrants.map(w => (
-                    <div key={w}>📜 Arama İzni: {
-                      w === 'tavern' ? 'TAVERNA' : 
-                      w === 'mill' ? 'DEĞİRMEN' : 
-                      w === 'graveyard' ? 'MEZARLIK' : 
-                      w === 'church' ? 'KİLİSE' : w.toUpperCase()
-                    }</div>
+                    <div key={w}>📜 Arama İzni: {getLocationLabel(w, scenarioType || 'medieval').toUpperCase()}</div>
                   ))}
                 </div>
               ) : inventory?.usedWarrants?.length > 0 ? (
