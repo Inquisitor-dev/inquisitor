@@ -119,7 +119,7 @@ function ResultContent() {
       <button 
         onClick={() => {
           reset();
-          router.push('/');
+          window.location.href = '/';
         }}
         style={{
           background: 'transparent',
