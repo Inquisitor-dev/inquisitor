@@ -93,7 +93,7 @@ const modernLocations = [
     id: 'graveyard',
     name: 'Kaset Dükkanı',
     icon: '📼',
-    top: '20%',
+    top: '25%',
     left: '42%',
     width: '20%',
     height: '32%',
