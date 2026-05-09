@@ -8,20 +8,8 @@ interface AmbientAudioProps {
 }
 
 const SOUND_MAPPING = {
-  map: [
-    '/sounds/map_morning.mp3',
-    '/sounds/map_noon.mp3',
-    '/sounds/map_afternoon.mp3',
-    '/sounds/map_evening.mp3',
-    '/sounds/map_night.mp3',
-  ],
-  interact: [
-    '/sounds/interact_morning.mp3',
-    '/sounds/interact_noon.mp3',
-    '/sounds/interact_afternoon.mp3',
-    '/sounds/interact_evening.mp3',
-    '/sounds/interact_night.mp3',
-  ]
+  map: ['', '', '', '', ''],
+  interact: ['', '', '', '', ''],
 };
 
 export default function AmbientAudio({ timeOfDay, type }: AmbientAudioProps) {
@@ -34,6 +22,12 @@ export default function AmbientAudio({ timeOfDay, type }: AmbientAudioProps) {
 
     const currentSound = SOUND_MAPPING[type][timeOfDay] || SOUND_MAPPING[type][0];
     
+    if (!currentSound) {
+      audio.pause();
+      audio.removeAttribute('src');
+      return;
+    }
+
     if (audio.src !== window.location.origin + currentSound) {
       audio.src = currentSound;
       audio.load();

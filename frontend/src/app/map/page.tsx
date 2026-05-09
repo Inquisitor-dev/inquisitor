@@ -152,50 +152,50 @@ const cyberpunkLocations = [
     id: 'tavern',
     name: 'Polis Karakolu',
     icon: '👮',
-    top: '18%',
-    left: '3%',
-    width: '29%',
-    height: '49%',
+    top: '20%',
+    left: '2%',
+    width: '27%',
+    height: '48%',
     available: true,
   },
   {
     id: 'church',
     name: 'Lokanta',
     icon: '🍜',
-    top: '34%',
-    left: '47%',
+    top: '40%',
+    left: '45%',
     width: '12%',
-    height: '21%',
+    height: '18%',
     available: true,
   },
   {
     id: 'graveyard',
     name: 'Hurdalik',
     icon: '🛠️',
-    top: '24%',
-    left: '72%',
-    width: '26%',
-    height: '51%',
+    top: '38%',
+    left: '73%',
+    width: '25%',
+    height: '44%',
     available: true,
   },
   {
     id: 'mill',
     name: 'Robot Dukkani',
     icon: '🤖',
-    top: '22%',
-    left: '58%',
-    width: '18%',
-    height: '26%',
+    top: '28%',
+    left: '60%',
+    width: '14%',
+    height: '21%',
     available: true,
   },
   {
     id: 'farm',
     name: 'Kopru Alti',
     icon: '🧥',
-    top: '77%',
-    left: '40%',
-    width: '26%',
-    height: '17%',
+    top: '29%',
+    left: '73%',
+    width: '16%',
+    height: '16%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -203,10 +203,10 @@ const cyberpunkLocations = [
     id: 'clinic',
     name: 'Bar',
     icon: '🍸',
-    top: '22%',
-    left: '38%',
-    width: '12%',
-    height: '24%',
+    top: '39%',
+    left: '36%',
+    width: '9%',
+    height: '14%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -253,7 +253,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, notes, setNotes, inventory, hasHydrated } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, hasHydrated } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
@@ -305,12 +305,15 @@ export default function MapPage() {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
           const data = await res.json();
+          if (data.scenarioType) {
+            setScenarioType(data.scenarioType);
+          }
           setWarrants(data.activeWarrants || [], data.usedWarrants || []);
         } catch(e) {}
       }
     };
     if (hasHydrated) fetchSession();
-  }, [authToken, router, sessionId, setWarrants, hasHydrated]);
+  }, [authToken, router, sessionId, setScenarioType, setWarrants, hasHydrated]);
 
   const handleRetreat = async () => {
     // Notları sunucuya kaydet
@@ -431,6 +434,26 @@ export default function MapPage() {
     return '/map/village_map.png';
   };
 
+  const getLocationActionText = (loc: { id: string; name: string }) => {
+    if (scenarioType === 'modern') {
+      if (loc.id === 'tavern') return "Karakol'a Git";
+      if (loc.id === 'church') return "Kilise'ye Git";
+      if (loc.id === 'mill') return "Acik Hava Sinemasi'na Git";
+      if (loc.id === 'graveyard') return "Kaset Dukkani'na Git";
+      if (loc.id === 'farm') return "Benzinlige Git";
+      if (loc.id === 'clinic') return "Prefabrik Evlere Git";
+    } else if (scenarioType === 'cyberpunk') {
+      if (loc.id === 'tavern') return "Polis Karakolu'na Git";
+      if (loc.id === 'church') return "Lokantaya Git";
+      if (loc.id === 'mill') return "Robot\nDukkanina Git";
+      if (loc.id === 'graveyard') return "Hurdaliga Git";
+      if (loc.id === 'farm') return "Kopru Altina Git";
+      if (loc.id === 'clinic') return "Bara Git";
+    }
+
+    return `${loc.name}'a Git`;
+  };
+
   return (
     <main className={styles.main}>
       <AmbientAudio timeOfDay={timeOfDay} type="map" />
@@ -446,7 +469,11 @@ export default function MapPage() {
         </button>
         <div className={styles.headerCenter}>
           <h1 className={styles.pageTitle}>
-            {scenarioType === 'modern' ? 'Millfield Kasabası' : 'Ashenmoor Köyü'}
+            {scenarioType === 'modern'
+              ? 'Millfield Kasabasi'
+              : scenarioType === 'cyberpunk'
+                ? 'Neon Prime'
+                : 'Ashenmoor Koyu'}
           </h1>
           <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
         </div>
@@ -480,26 +507,11 @@ export default function MapPage() {
               }}
               onClick={() => isAvailable && handleLocationClick(loc.id)}
             >
-              <div className={styles.label}>
+              <div
+                className={`${styles.label} ${scenarioType === 'cyberpunk' && loc.id === 'mill' ? styles.multiLineLabel : ''}`}
+              >
                 <span className={styles.icon}>{loc.icon}</span>
-                {loadingLoc === loc.id ? 'Gidiliyor...' : `${(() => {
-                  if (scenarioType === 'modern') {
-                    if (loc.id === 'tavern') return 'Karakol';
-                    if (loc.id === 'church') return 'Kilise';
-                    if (loc.id === 'mill') return 'Açık Hava Sineması';
-                    if (loc.id === 'graveyard') return 'Kaset Dükkanı';
-                    if (loc.id === 'farm') return 'Benzinlik';
-                    if (loc.id === 'clinic') return 'Prefabrik Evler';
-                  } else if (scenarioType === 'cyberpunk') {
-                    if (loc.id === 'tavern') return 'Polis Karakolu';
-                    if (loc.id === 'church') return 'Lokanta';
-                    if (loc.id === 'mill') return 'Robot Dukkani';
-                    if (loc.id === 'graveyard') return 'Hurdalik';
-                    if (loc.id === 'farm') return 'Kopru Alti';
-                    if (loc.id === 'clinic') return 'Bar';
-                  }
-                  return loc.name; // default medieval
-                })()}'a Git`}
+                <span>{loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}</span>
                 {!isAvailable && (
                   <span className={styles.lockedText}>
                     ({isNight ? 'Gece' : 'Kapalı'})
