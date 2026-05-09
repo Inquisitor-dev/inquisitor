@@ -147,6 +147,71 @@ const modernLocations = [
   },
 ];
 
+const cyberpunkLocations = [
+  {
+    id: 'tavern',
+    name: 'Polis Karakolu',
+    icon: '👮',
+    top: '8%',
+    left: '8%',
+    width: '24%',
+    height: '34%',
+    available: true,
+  },
+  {
+    id: 'church',
+    name: 'Lokanta',
+    icon: '🍜',
+    top: '12%',
+    left: '38%',
+    width: '22%',
+    height: '26%',
+    available: true,
+  },
+  {
+    id: 'graveyard',
+    name: 'Hurdalik',
+    icon: '🛠️',
+    top: '10%',
+    left: '68%',
+    width: '24%',
+    height: '34%',
+    available: true,
+  },
+  {
+    id: 'mill',
+    name: 'Robot Dukkani',
+    icon: '🤖',
+    top: '50%',
+    left: '48%',
+    width: '18%',
+    height: '22%',
+    available: true,
+  },
+  {
+    id: 'farm',
+    name: 'Kopru Alti',
+    icon: '🧥',
+    top: '62%',
+    left: '10%',
+    width: '22%',
+    height: '24%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+  {
+    id: 'clinic',
+    name: 'Bar',
+    icon: '🍸',
+    top: '58%',
+    left: '74%',
+    width: '18%',
+    height: '24%',
+    available: true,
+    minDifficulty: 'hard',
+  },
+];
+
 const getLocationLabel = (locationId: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const labels: Record<string, string> = {
@@ -193,7 +258,12 @@ export default function MapPage() {
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
   const currentDiffIdx = difficultyOrder.indexOf(difficulty);
-  const baseLocations = scenarioType === 'modern' ? modernLocations : locations;
+  const baseLocations =
+    scenarioType === 'modern'
+      ? modernLocations
+      : scenarioType === 'cyberpunk'
+        ? cyberpunkLocations
+        : locations;
   const visibleLocations = baseLocations.filter((loc: any) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
@@ -350,6 +420,11 @@ export default function MapPage() {
       if (timeOfDay <= 1) return '/map/town_map_morning.png';
       if (timeOfDay <= 3) return '/map/town_map_sunset.png';
       return '/map/town_map_night.png';
+    }
+    if (scenarioType === 'cyberpunk') {
+      if (timeOfDay <= 1) return '/map/cyberpunk_map_morning.png';
+      if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.png';
+      return '/map/cyberpunk_map_night.png';
     }
     if (timeOfDay <= 1) return '/map/village_map_morning.png';
     if (timeOfDay <= 3) return '/map/village_map_sunset.png';
