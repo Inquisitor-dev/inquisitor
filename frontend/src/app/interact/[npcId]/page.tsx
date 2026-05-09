@@ -56,7 +56,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   // Next.js 15+: params is a Promise, must be unwrapped with React.use()
   const { npcId } = use(params);
   const npcKey = npcId;
-  const { scenarioType, isAdmin, npcStates, dialoguesUsedToday, maxDailyDialogues, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, timeOfDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
+  const { scenarioType, isAdmin, isPremium, npcStates, dialoguesUsedToday, incrementDialogue, setDialoguesUsed, sessionId, currentDay, setCurrentDay, timeOfDay, notes, setNotes, authToken, logout, inventory, addWarrant, consumeWarrant, hasHydrated } =
     useGameStore();
   
   const profile = getNpcProfile(npcKey, scenarioType || 'medieval') ?? {
@@ -218,7 +218,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || loading || (!isAdmin && dialoguesUsedToday >= 30) || !sessionId) return;
+    const maxLimit = isPremium ? 100 : 30;
+    if (!trimmed || loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
@@ -256,12 +257,21 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         });
       }
 
-      if (data.reply) {
+      if (res.ok && data.reply) {
         setMessages((prev) => [
           ...prev,
           { role: 'npc', text: data.reply, timestamp: new Date() },
         ]);
         incrementDialogue();
+      } else if (!res.ok && data.message) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'npc',
+            text: `*[Sistem Hatası: ${data.message}]*`,
+            timestamp: new Date(),
+          },
+        ]);
       } else {
         setMessages((prev) => [
           ...prev,

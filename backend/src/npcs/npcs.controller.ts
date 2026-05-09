@@ -28,8 +28,9 @@ export class NpcsController {
     // Selamlama sinyali değilse günlük mesaj kotasını kontrol et
     if (!isGreeting) {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
-      if (quota.dailyMessageCount >= 30) {
-        throw new ForbiddenException('Günlük mesaj limitine ulaştınız. (30/30) Yarın tekrar gelin.');
+      const maxMessages = quota.isPremium ? 100 : 30;
+      if (quota.dailyMessageCount >= maxMessages) {
+        throw new ForbiddenException(`Günlük mesaj limitine ulaştınız. (${maxMessages}/${maxMessages}) Yarın tekrar gelin.`);
       }
       await this.authService.incrementMessageCount(userId);
     }
