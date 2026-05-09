@@ -30,10 +30,13 @@ export default function HomePage() {
       try {
         const res = await fetch('http://localhost:3001/game-sessions/active', {
           headers: { 'Authorization': `Bearer ${authToken}` },
+          cache: 'no-store',
         });
         const data = await res.json();
         if (data.session) {
           setActiveSession(data.session);
+        } else {
+          setActiveSession(null);
         }
       } catch (err) {
         console.error('Failed to check active session', err);
