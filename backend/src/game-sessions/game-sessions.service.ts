@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
+import { getScenarioConfig } from '../scenarios/scenario-config';
 
 @Injectable()
 export class GameSessionsService {
@@ -14,11 +15,13 @@ export class GameSessionsService {
   async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy', scenarioType: string = 'medieval') {
     this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`);
 
-    // 1. LLM'den Senaryo Üret (zorluğa göre)
-    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario(difficulty, scenarioType);
+    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } =
+      await this.llm.generateSessionScenario(difficulty, scenarioType);
+    const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
+    const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
+
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
-    // Önce kullanıcının yarım bıraktığı eski aktif oturumları kapatıyoruz ki ana sayfada hayalet oturumlar görünmesin
     await this.prisma.gameSession.updateMany({
       where: {
         userId,
@@ -29,7 +32,6 @@ export class GameSessionsService {
       },
     });
 
-    // 2. Yeni Session Oluştur
     const session = await this.prisma.gameSession.create({
       data: {
         userId,
@@ -43,30 +45,18 @@ export class GameSessionsService {
       },
     });
 
-    // 3. Zorluğa göre hangi NPC'lerin dahil olacağını belirle
-    const allowedNpcIds = ['tavern', 'church', 'graveyard', 'mill'];
-    if (difficulty === 'medium' || difficulty === 'hard') {
-      allowedNpcIds.push('farm');
-    }
-    if (difficulty === 'hard') {
-      allowedNpcIds.push('clinic');
-    }
-
-    // NPC'lerin başlangıç state'lerini ve dynamic prompt'larını kaydet
     const npcs = await this.prisma.npc.findMany();
-    
+
     for (const npc of npcs) {
-      // Sadece ilgili NPC'ler ve narrator'ları dahil et
       const isMainNpc = allowedNpcIds.includes(npc.id);
-      const isNarrator = npc.id.startsWith('narrator_') && (
-        npc.id === 'narrator_crime_scene' || 
-        allowedNpcIds.some(id => npc.id === `narrator_${id}`)
-      );
+      const isNarrator =
+        npc.id.startsWith('narrator_') &&
+        scenarioConfig.locationDefinitions.some((location) => npc.id === `narrator_${location.id}`);
 
       if (!isMainNpc && !isNarrator) continue;
 
-      const dynamicPrompt = npcPrompts[npc.id] || "No dynamic prompt generated.";
-      
+      const dynamicPrompt = npcPrompts[npc.id] || 'No dynamic prompt generated.';
+
       await this.prisma.sessionNpcState.create({
         data: {
           sessionId: session.id,
@@ -85,7 +75,7 @@ export class GameSessionsService {
 
   async endDay(sessionId: string) {
     this.logger.log(`Ending day for session: ${sessionId}`);
-    
+
     const session = await this.prisma.gameSession.findUnique({
       where: { id: sessionId },
       include: { npcStates: true },
@@ -95,16 +85,14 @@ export class GameSessionsService {
       throw new Error('Session not found');
     }
 
-    // Günü 1 artır, timeOfDay'i sıfırla
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
-      data: { 
+      data: {
         currentDay: session.currentDay + 1,
-        timeOfDay: 0 
+        timeOfDay: 0,
       },
     });
 
-    // Her NPC'nin korkusunu 1 azalt (0'ın altına düşmesin)
     for (const state of session.npcStates) {
       const newFear = Math.max(0, state.currentFear - 1);
       await this.prisma.sessionNpcState.update({
@@ -118,7 +106,7 @@ export class GameSessionsService {
 
   async advanceTime(sessionId: string) {
     this.logger.log(`Advancing time for session: ${sessionId}`);
-    
+
     const session = await this.prisma.gameSession.findUnique({
       where: { id: sessionId },
     });
@@ -128,7 +116,7 @@ export class GameSessionsService {
     }
 
     let newTime = session.timeOfDay + 1;
-    if (newTime > 4) newTime = 4; // Gece'yi geçmesin
+    if (newTime > 4) newTime = 4;
 
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
@@ -143,7 +131,7 @@ export class GameSessionsService {
       where: { id: sessionId },
     });
     if (!session) throw new Error('Session not found');
-    
+
     if (session.status === 'ACTIVE') {
       const { truthReveal, locationClues, ...safeSession } = session;
       return safeSession;
@@ -180,26 +168,26 @@ export class GameSessionsService {
       success: true,
       won,
       culpritId: session.culpritId,
-      message: won ? 'Doğru kişiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
+      message: won ? 'DoÄŸru kiÅŸiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
       session: updatedSession,
     };
   }
 
   async consumeWarrant(sessionId: string, location: string) {
     this.logger.log(`Consuming warrant for ${location} in session: ${sessionId}`);
-    
+
     const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
     if (!session) throw new Error('Session not found');
 
-    const newActive = session.activeWarrants.filter(w => w !== location);
+    const newActive = session.activeWarrants.filter((w) => w !== location);
     const newUsed = [...session.usedWarrants];
     if (!newUsed.includes(location)) newUsed.push(location);
 
     return await this.prisma.gameSession.update({
       where: { id: sessionId },
-      data: { 
+      data: {
         activeWarrants: newActive,
-        usedWarrants: newUsed
+        usedWarrants: newUsed,
       },
     });
   }
@@ -215,14 +203,14 @@ export class GameSessionsService {
     return {
       success: true,
       won: false,
-      message: 'Zamanınız doldu.',
+      message: 'ZamanÄ±nÄ±z doldu.',
       session: updatedSession,
     };
   }
 
   async findActiveSession(userId: string) {
     this.logger.log(`Looking for active session for user: ${userId}`);
-    
+
     const session = await this.prisma.gameSession.findFirst({
       where: {
         userId,
@@ -233,7 +221,6 @@ export class GameSessionsService {
 
     if (!session) return null;
 
-    // Don't leak truthReveal to the client
     const { truthReveal, locationClues, ...safeSession } = session;
     return safeSession;
   }
