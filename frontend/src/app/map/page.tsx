@@ -163,12 +163,12 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
   if (scenarioType === 'cyberpunk') {
     const labels: Record<string, string> = {
-      tavern: 'Neon Bar',
-      church: 'Tarikat Merkezi',
-      graveyard: 'Veri Coplugu',
-      mill: 'Uretim Tesisi',
-      farm: 'Hidroponik',
-      clinic: 'Ripperdoc',
+      tavern: 'Polis Karakolu',
+      church: 'Lokanta',
+      graveyard: 'Hurdalik',
+      mill: 'Robot Dukkani',
+      farm: 'Kopru Alti',
+      clinic: 'Bar',
       crime_scene: 'Olay Yeri',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -416,12 +416,12 @@ export default function MapPage() {
                     if (loc.id === 'farm') return 'Benzinlik';
                     if (loc.id === 'clinic') return 'Prefabrik Evler';
                   } else if (scenarioType === 'cyberpunk') {
-                    if (loc.id === 'tavern') return 'Neon Bar';
-                    if (loc.id === 'church') return 'Tarikat Merkezi';
-                    if (loc.id === 'mill') return 'Üretim Tesisi';
-                    if (loc.id === 'graveyard') return 'Veri Çöplüğü';
-                    if (loc.id === 'farm') return 'Hidroponik';
-                    if (loc.id === 'clinic') return 'Ripperdoc';
+                    if (loc.id === 'tavern') return 'Polis Karakolu';
+                    if (loc.id === 'church') return 'Lokanta';
+                    if (loc.id === 'mill') return 'Robot Dukkani';
+                    if (loc.id === 'graveyard') return 'Hurdalik';
+                    if (loc.id === 'farm') return 'Kopru Alti';
+                    if (loc.id === 'clinic') return 'Bar';
                   }
                   return loc.name; // default medieval
                 })()}'a Git`}
@@ -571,16 +571,16 @@ export default function MapPage() {
                   }
                 } else if (scenarioType === 'cyberpunk') {
                   villagers = [
-                    { id: 'tavern', name: 'Aldric', icon: '🥃', role: 'Neon-Barmen' },
-                    { id: 'church', name: 'Malachar', icon: '🔌', role: 'Tarikat Lideri' },
-                    { id: 'mill', name: 'Giles', icon: '🏭', role: 'Ustabaşı' },
-                    { id: 'graveyard', name: 'Silas', icon: '💀', role: 'Veri Çöpçüsü' },
+                    { id: 'tavern', name: 'Officer Kael Voss', icon: '👮', role: 'Memur Bey' },
+                    { id: 'church', name: 'Mirel Sato', icon: '🍜', role: 'Restoran Sahibi' },
+                    { id: 'mill', name: 'AURA-9', icon: '🤖', role: 'Satici Android' },
+                    { id: 'graveyard', name: 'Brakk Coil', icon: '🛠️', role: 'Hurdaci' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Edmund', icon: '🧪', role: 'Hidroponik Çiftçi' });
+                    villagers.push({ id: 'farm', name: 'Ash', icon: '🧥', role: 'Dilenci' });
                   }
                   if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Doc Harland', icon: '💉', role: 'Ripperdoc' });
+                    villagers.push({ id: 'clinic', name: 'Vera Nyx', icon: '🍸', role: 'Barmen' });
                   }
                 } else {
                   villagers = [

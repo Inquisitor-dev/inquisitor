@@ -128,8 +128,9 @@ ${currentState.dynamicPrompt}`;
     }
 
     const isWarrantIssuer =
-      currentState.npc.id === 'church' ||
-      (currentState.npc.id === 'tavern' && currentState.session.scenarioType === 'modern');
+      (currentState.session.scenarioType === 'medieval' && currentState.npc.id === 'church') ||
+      ((currentState.session.scenarioType === 'modern' || currentState.session.scenarioType === 'cyberpunk') &&
+        currentState.npc.id === 'tavern');
 
     if (isWarrantIssuer) {
       const issuedCount = currentState.session.warrantsIssued;
