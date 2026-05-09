@@ -354,6 +354,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     });
   };
 
+  const maxDailyDialogues = isPremium ? 100 : 30;
   const remaining = maxDailyDialogues - dialoguesUsedToday;
 
   return (
