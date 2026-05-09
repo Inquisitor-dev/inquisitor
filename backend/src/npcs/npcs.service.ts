@@ -86,18 +86,20 @@ INVESTIGATION RULES FOR NARRATOR:
       combinedPrompt += `YOUR PERSONAL SECRET/ROLE IN THIS:\n${currentState.dynamicPrompt}`;
     }
 
-    if (currentState.npc.id === 'church') {
+    // Arama izni: Medieval'de Kilise (church), Modern'de Şerif (tavern) verir
+    const isWarrantIssuer =
+      currentState.npc.id === 'church' ||
+      (currentState.npc.id === 'tavern' && currentState.session.scenarioType === 'modern');
+
+    if (isWarrantIssuer) {
       const issuedCount = currentState.session.warrantsIssued;
       const activeCount = currentState.session.activeWarrants.length;
       const remaining = 2 - issuedCount;
       
-      let warrantInfo = `\n\n[SYSTEM - SEARCH WARRANT STATUS]:
-- Total Warrants Issued in Session: ${issuedCount}/2
-- Currently Active Warrants: ${activeCount > 0 ? currentState.session.activeWarrants.join(', ') : 'None'}
-- Remaining Warrants You Can Grant: ${remaining}`;
+      let warrantInfo = `\n\n[SYSTEM - SEARCH WARRANT STATUS]:\n- Total Warrants Issued in Session: ${issuedCount}/2\n- Currently Active Warrants: ${activeCount > 0 ? currentState.session.activeWarrants.join(', ') : 'None'}\n- Remaining Warrants You Can Grant: ${remaining}`;
 
       if (remaining > 0) {
-        warrantInfo += `\n\nIMPORTANT: You ARE ALLOWED to grant up to ${remaining} more search warrant(s) now. You can grant one or even two at once if the player asks for multiple locations convincingly. To grant, use [GRANT_WARRANT: location] tags. You can use multiple tags like [GRANT_WARRANT: tavern] [GRANT_WARRANT: mill].`;
+        warrantInfo += `\n\nIMPORTANT: You ARE ALLOWED to grant up to ${remaining} more search warrant(s) now. You can grant one or even two at once if the player asks for multiple locations convincingly. To grant, use [GRANT_WARRANT: location] tags. You can use multiple tags like [GRANT_WARRANT: church] [GRANT_WARRANT: mill].`;
       } else {
         warrantInfo += `\n\nIMPORTANT: You have reached the limit of 2 warrants. Do NOT grant any more.`;
       }

@@ -16,12 +16,12 @@ interface Message {
 const getNpcProfile = (npcKey: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Al', title: 'Barmen — Dedikoduların Merkezi', icon: '🍺' },
-      church: { name: 'Peder Miller', title: 'Papaz — Kasabanın Manevi Lideri', icon: '⛪' },
-      graveyard: { name: 'Silas', title: 'Mezarlık Bekçisi — Sırların Bekçisi', icon: '🪦' },
-      mill: { name: 'Giles', title: 'Kereste Fabrikası Şefi — Gürültünün Ardındaki Adam', icon: '⚙️' },
-      farm: { name: 'Edmund', title: 'Mısır Çiftçisi — Kasaba Sınırında Tek Başına', icon: '🌾' },
-      clinic: { name: 'Dr. Harland', title: 'Kasaba Doktoru / Adli Tabip — Kanıksanmış Ölüm', icon: '🏥' },
+      tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
+      church: { name: 'Papaz Gerald', title: 'Papaz — Kilisedeki Sessiz Tanık', icon: '⛪' },
+      graveyard: { name: 'Randy', title: 'Video Kasetçi — Herkesin Uğradığı Dükkan', icon: '📼' },
+      mill: { name: 'Donna', title: 'Gişe Görevlisi — Açık Hava Sinemasının Gözleri', icon: '🎬' },
+      farm: { name: 'Earl', title: 'Pompacı — Benzinliğin Sessiz Bekçisi', icon: '⛽' },
+      clinic: { name: 'Old Marge', title: 'Köyün Yaşlısı — Her Şeyi Bilen Ama Söylemeyen', icon: '🏠' },
       crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];

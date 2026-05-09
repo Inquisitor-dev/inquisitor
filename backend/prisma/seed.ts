@@ -1,19 +1,19 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
+import { Pool } from 'pg';
 
 dotenv.config();
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Sadece NPC'leri seed et — kullanıcılar artık auth sistemiyle oluşturuluyor
-
-  // 3. NPC'leri oluştur / güncelle
   const npcs = [
+    // ─── MEDIEVAL NPCs ────────────────────────────────────────────────────────
     {
       id: 'tavern',
       name: 'Brother Aldric',
@@ -103,6 +103,7 @@ You consider yourself above the superstitions of the village but harbor your own
       baseFear: 2,
       baseLie: 7,
     },
+    // ─── NARRATORS (all scenarios share these IDs) ─────────────────────────────
     ...['crime_scene', 'tavern', 'church', 'graveyard', 'mill', 'farm', 'clinic'].map(loc => ({
       id: `narrator_${loc}`,
       name: `Anlatıcı_${loc}`,
@@ -129,7 +130,7 @@ The current location you are describing is: ${loc}.`,
     console.log(`  ✅ NPC: ${npc.name} (id: ${npc.id})`);
   }
 
-  console.log('\n🎭 Seed complete. The village awaits the Inquisitor.');
+  console.log('\n🎭 Seed complete. The investigation awaits.');
 }
 
 main()

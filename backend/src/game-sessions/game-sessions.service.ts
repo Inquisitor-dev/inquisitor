@@ -18,6 +18,17 @@ export class GameSessionsService {
     const { scenario, truthReveal, culpritId, npcPrompts, locationClues } = await this.llm.generateSessionScenario(difficulty, scenarioType);
     this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
 
+    // Önce kullanıcının yarım bıraktığı eski aktif oturumları kapatıyoruz ki ana sayfada hayalet oturumlar görünmesin
+    await this.prisma.gameSession.updateMany({
+      where: {
+        userId,
+        status: 'ACTIVE',
+      },
+      data: {
+        status: 'LOST',
+      },
+    });
+
     // 2. Yeni Session Oluştur
     const session = await this.prisma.gameSession.create({
       data: {

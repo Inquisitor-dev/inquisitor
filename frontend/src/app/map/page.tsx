@@ -233,6 +233,11 @@ export default function MapPage() {
   const isNight = timeOfDay >= 4;
   
   const getMapBg = () => {
+    if (scenarioType === 'modern') {
+      if (timeOfDay <= 1) return '/map/town_map_morning.png';
+      if (timeOfDay <= 3) return '/map/town_map_sunset.png';
+      return '/map/town_map_night.png';
+    }
     if (timeOfDay <= 1) return '/map/village_map_morning.png';
     if (timeOfDay <= 3) return '/map/village_map_sunset.png';
     return '/map/village_map.png';
@@ -252,7 +257,9 @@ export default function MapPage() {
           Kaydet ve Çık
         </button>
         <div className={styles.headerCenter}>
-          <h1 className={styles.pageTitle}>Ashenmoor Köyü</h1>
+          <h1 className={styles.pageTitle}>
+            {scenarioType === 'modern' ? 'Millfield Kasabası' : 'Ashenmoor Köyü'}
+          </h1>
           <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
         </div>
         <div className={styles.sessionInfo}>
@@ -289,12 +296,12 @@ export default function MapPage() {
                 <span className={styles.icon}>{loc.icon}</span>
                 {loadingLoc === loc.id ? 'Gidiliyor...' : `${(() => {
                   if (scenarioType === 'modern') {
-                    if (loc.id === 'tavern') return 'Bar';
+                    if (loc.id === 'tavern') return 'Karakol';
                     if (loc.id === 'church') return 'Kilise';
-                    if (loc.id === 'mill') return 'Fabrika';
-                    if (loc.id === 'graveyard') return 'Mezarlık';
-                    if (loc.id === 'farm') return 'Mısır Tarlası';
-                    if (loc.id === 'clinic') return 'Klinik';
+                    if (loc.id === 'mill') return 'Açık Hava Sineması';
+                    if (loc.id === 'graveyard') return 'Kaset Dükkanı';
+                    if (loc.id === 'farm') return 'Benzinlik';
+                    if (loc.id === 'clinic') return 'Prefabrik Evler';
                   } else if (scenarioType === 'cyberpunk') {
                     if (loc.id === 'tavern') return 'Neon Bar';
                     if (loc.id === 'church') return 'Tarikat Merkezi';
@@ -452,16 +459,16 @@ export default function MapPage() {
                 let villagers = [];
                 if (scenarioType === 'modern') {
                   villagers = [
-                    { id: 'tavern', name: 'Al', icon: '🍺', role: 'Barmen' },
-                    { id: 'church', name: 'Peder Miller', icon: '⛪', role: 'Papaz' },
-                    { id: 'mill', name: 'Giles', icon: '⚙️', role: 'Fabrika Şefi' },
-                    { id: 'graveyard', name: 'Silas', icon: '🪦', role: 'Mezarlık Bekçisi' },
+                    { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Polis Amiri' },
+                    { id: 'church', name: 'Papaz Gerald', icon: '⛪', role: 'Papaz' },
+                    { id: 'mill', name: 'Donna', icon: '🎬', role: 'Gişe Görevlisi' },
+                    { id: 'graveyard', name: 'Randy', icon: '📼', role: 'Video Kasetçi' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Edmund', icon: '🌾', role: 'Mısır Çiftçisi' });
+                    villagers.push({ id: 'farm', name: 'Earl', icon: '⛽', role: 'Pompacı' });
                   }
                   if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Dr. Harland', icon: '🏥', role: 'Adli Tabip' });
+                    villagers.push({ id: 'clinic', name: 'Old Marge', icon: '🏠', role: 'Köyün Yaşlısı' });
                   }
                 } else if (scenarioType === 'cyberpunk') {
                   villagers = [

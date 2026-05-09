@@ -130,19 +130,19 @@ CRITICAL RULES:
     let baseNpcs: { id: string; name: string; role: string }[] = [];
     
     if (scenarioType === 'modern') {
-      worldDescription = 'Set in a quiet, eerie modern American small town named "Oakhaven".';
-      styleInstruction = 'It should read like a modern true-crime thriller or a dark Stephen King novel. Use modern terms, but keep the atmosphere tense and suspenseful.';
+      worldDescription = 'Set in the eerie, small American town of "Millfield, Kentucky" in 1994. The atmosphere is like a dark Stephen King or Twin Peaks story — friendly faces hiding terrible secrets.';
+      styleInstruction = 'It should read like a 90s true-crime thriller or a small-town mystery novel. Use authentic 90s American small-town terms, culture references (VHS tapes, drive-in theaters, gas stations, CB radios). Keep the atmosphere tense and suffocating.';
       baseNpcs = [
-        { id: 'tavern', name: 'Al', role: 'Bartender at the local dive bar' },
-        { id: 'church', name: 'Father Miller', role: 'Local Pastor' },
-        { id: 'graveyard', name: 'Silas', role: 'Cemetery Groundskeeper' },
-        { id: 'mill', name: 'Giles', role: 'Sawmill Foreman' },
+        { id: 'tavern', name: 'Sheriff Dale Cooper', role: 'Town Sheriff / Police Chief at the local precinct' },
+        { id: 'church', name: 'Pastor Gerald', role: 'Local Baptist Pastor' },
+        { id: 'graveyard', name: 'Randy Kowalski', role: 'Video Rental Store Owner ("Randy\'s VHS Paradise")' },
+        { id: 'mill', name: 'Donna Perkins', role: 'Ticket Booth Clerk at the Millfield Drive-In Theater' },
       ];
       if (difficulty === 'medium' || difficulty === 'hard') {
-        baseNpcs.push({ id: 'farm', name: 'Edmund', role: 'Corn Farmer' });
+        baseNpcs.push({ id: 'farm', name: 'Earl Hutchins', role: 'Gas Station Attendant at the edge of town' });
       }
       if (difficulty === 'hard') {
-        baseNpcs.push({ id: 'clinic', name: 'Dr. Harland', role: 'Town Doctor / Coroner' });
+        baseNpcs.push({ id: 'clinic', name: 'Old Marge Bellamy', role: 'Town Elder / Reclusive widow living in the trailer park' });
       }
     } else if (scenarioType === 'cyberpunk') {
       worldDescription = 'Set in a neon-lit, dystopian cyberpunk megacity named "Neon Prime".';
