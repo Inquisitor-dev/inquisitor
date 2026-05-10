@@ -693,10 +693,14 @@
     pointer-events: auto;
   }
 
+  .modalOverlay {
+    padding: 10px; /* Kenar boşluklarını azaltarak pencereyi büyüt */
+  }
+
   .modalContent {
-    max-width: 95%;
+    max-width: 98%; /* Ekranı daha fazla kaplasın */
     padding: 15px;
-    max-height: 85vh;
+    max-height: 90vh;
     overflow-y: auto;
   }
 
@@ -711,7 +715,7 @@
   }
 
   .villagerList {
-    grid-template-columns: 1fr 1fr; /* Mobilde de 2 sütun ama kartlar daha küçük */
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
@@ -733,7 +737,7 @@
   }
 
   .notesArea {
-    height: 200px;
+    height: 250px;
     font-size: 0.9rem;
   }
 }
