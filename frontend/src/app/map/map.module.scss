@@ -616,7 +616,7 @@
     left: 0;
     right: 0;
     height: 70px;
-    padding: 0 8px;
+    padding: 0 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -629,12 +629,16 @@
   .actionGroup {
     gap: 8px;
     flex: 1;
-    justify-content: flex-start;
+    display: flex;
+    align-items: center;
+    
+    &:first-child {
+      margin-left: 50px; /* Sol köşedeki N harfinden uzaklaştır */
+      justify-content: flex-start;
+    }
+    
     &:last-child {
       justify-content: flex-end;
-    }
-    &:first-child {
-      margin-left: 0;
     }
   }
 
