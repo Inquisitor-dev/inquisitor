@@ -380,9 +380,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   return (
     <main
-      className={`${styles.main} ${scenarioType === 'modern' ? styles.modernPlain : ''}`}
+      className={`${styles.main} ${(scenarioType === 'modern' || scenarioType === 'cyberpunk') ? styles.modernPlain : ''}`}
       style={
-        scenarioType === 'modern'
+        (scenarioType === 'modern' || scenarioType === 'cyberpunk')
           ? { backgroundImage: 'none', backgroundColor: '#000000' }
           : { backgroundImage: `url('/backgrounds/bg_${npcKey}.png')` }
       }
