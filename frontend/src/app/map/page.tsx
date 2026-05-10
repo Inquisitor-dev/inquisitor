@@ -404,13 +404,9 @@ export default function MapPage() {
         body: JSON.stringify({ npcId }),
       });
       const data = await res.json();
-      if (data.session && data.session.truthReveal) {
-        useGameStore.getState().setTruthReveal(data.session.truthReveal);
+      if (data.won !== undefined) {
+        router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
       }
-      if (data.session && data.session.locationClues) {
-        useGameStore.getState().setLocationClues(data.session.locationClues);
-      }
-      router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
     } catch (err) {
       console.error('Failed to condemn', err);
     }
@@ -548,7 +544,8 @@ export default function MapPage() {
             className={styles.mainCondemnBtn}
             onClick={() => setIsCondemnModalOpen(true)}
           >
-            MAHKUMU SEÇ
+            <span className={styles.icon}>⚖️</span>
+            <span className={styles.btnText}>MAHKUMU SEÇ</span>
           </button>
         </div>
 
@@ -559,7 +556,7 @@ export default function MapPage() {
               className={styles.crimeSceneBarBtn}
             >
               <span className={styles.icon}>🩸</span>
-              {loadingLoc === 'crime_scene' ? 'Gidiliyor...' : 'Cinayet Mahalli'}
+              <span className={styles.btnText}>Cinayet Mahalli</span>
             </button>
           )}
           
@@ -568,7 +565,8 @@ export default function MapPage() {
             disabled={endingDay}
             className={styles.endDayBtn}
           >
-            {endingDay ? 'Dinleniliyor...' : 'Günü Bitir'}
+            <span className={styles.icon}>🛌</span>
+            <span className={styles.btnText}>Günü Bitir</span>
           </button>
         </div>
       </footer>
@@ -627,6 +625,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
+
       {/* Condemn Selection Modal */}
       {isCondemnModalOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsCondemnModalOpen(false)}>
@@ -709,6 +708,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
+
       {/* Confirm Modal */}
       {confirmModal.isOpen && (
         <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>

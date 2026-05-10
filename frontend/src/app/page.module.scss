@@ -526,30 +526,33 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   }
 
   .modalContent {
-    max-width: 95% !important;
+    max-width: 98% !important;
     padding: 20px 15px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .modalTitle {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
   }
 
   .selectionList {
     margin-top: 15px;
-    gap: 10px;
+    gap: 8px;
   }
 
   .selectionBtn {
-    padding: 14px;
+    padding: 12px 15px;
     
     div {
       margin-bottom: 4px;
-      span:first-child { font-size: 1rem; }
+      span:first-child { font-size: 0.95rem; }
       span:last-child { font-size: 0.6rem; }
     }
 
     p {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       line-height: 1.4;
     }
   }

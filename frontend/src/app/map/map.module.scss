@@ -611,76 +611,114 @@
   }
 
   .actionBar {
-    position: fixed; /* Altta sabit kalsın */
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 70px;
-    padding: 0 10px;
+    height: 72px;
+    padding: 0 4px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-evenly; // Eşit aralıklarla dağıt
     background: rgba(5, 5, 5, 0.98);
-    border-top: 1px solid rgba(138, 3, 3, 0.4);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(138, 3, 3, 0.6);
     z-index: 1000;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
+    gap: 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(138, 3, 3, 0.8), transparent);
+    }
   }
 
-  .actionGroup {
-    gap: 8px;
-    flex: 1;
+  .actionGroup, .condemnCenter {
+    display: contents;
+  }
+
+  .iconBtn, .crimeSceneBarBtn, .endDayBtn, .mainCondemnBtn {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    
-    &:first-child {
-      margin-left: 50px; /* Sol köşedeki N harfinden uzaklaştır */
-      justify-content: flex-start;
-    }
-    
-    &:last-child {
-      justify-content: flex-end;
-    }
-  }
-
-  .iconBtn {
-    padding: 2px;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    flex: 1;
+    min-width: 0;
     gap: 2px;
-    span {
-      font-size: 0.5rem;
+    
+    .icon {
+      font-size: 1.1rem;
+      margin-bottom: 2px;
+      color: #E8DCC4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
+    
     svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
+      color: #E8DCC4;
+    }
+
+    span, .btnText {
+      font-size: 0.48rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      color: #E8DCC4;
+      opacity: 0.8;
+      white-space: nowrap;
+      text-align: center;
     }
   }
 
   .crimeSceneBarBtn {
-    padding: 4px 6px;
-    font-size: 0.55rem;
-    gap: 2px;
-    .icon { font-size: 0.7rem; }
-    span { display: none; }
-    &::after { content: 'Mahal'; }
+    .btnText { display: none; }
+    &::after { 
+      content: 'Mahal'; 
+      font-size: 0.48rem; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      color: #E8DCC4; 
+      opacity: 0.8; 
+    }
+  }
+
+  .endDayBtn {
+    .btnText { display: none; }
+    &::after { 
+      content: 'Dinlen'; 
+      font-size: 0.48rem; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      color: #E8DCC4; 
+      opacity: 0.8; 
+    }
   }
 
   .mainCondemnBtn {
-    padding: 6px 10px;
-    font-size: 0.65rem;
-    border-radius: 3px;
-    background: #8A0303;
-    color: #fff;
-    font-weight: 700;
-    white-space: nowrap;
-    box-shadow: 0 0 10px rgba(138,3,3,0.3);
-  }
-
-  .condemnCenter {
-    position: static; /* Floating'den çıkar barın içine al */
-    transform: none;
-    margin: 0 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    .icon {
+      color: #ff4d4d;
+      font-size: 1.2rem;
+      text-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+    }
+    .btnText {
+      color: #ff4d4d;
+      opacity: 1;
+      font-weight: 700;
+    }
+    margin: 0;
+    box-shadow: none;
   }
 
   .label {

@@ -86,3 +86,9 @@ body::before {
   z-index: 9999;
   opacity: 0.35;
 }
+/* ===========================
+   Next.js Dev Overlay Hide
+   =========================== */
+nextjs-portal {
+  display: none !important;
+}
