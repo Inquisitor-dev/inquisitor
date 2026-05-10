@@ -526,3 +526,121 @@
 }
 
 /* Remove old crime scene corner */
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+  }
+
+  .headerCenter {
+    order: -1;
+  }
+
+  .pageTitle {
+    font-size: 1.4rem;
+  }
+
+  .pageSub {
+    font-size: 0.75rem;
+  }
+
+  .sessionInfo {
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .stats {
+    font-size: 0.7rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .limitText {
+    margin-left: 0;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .endDayBtn {
+    padding: 6px 12px;
+    font-size: 0.65rem;
+  }
+
+  .actionBar {
+    height: auto;
+    min-height: 70px;
+    padding: 10px 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .actionGroup {
+    gap: 15px;
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+
+  .iconBtn {
+    padding: 4px;
+    gap: 2px;
+    svg { width: 20px; height: 20px; }
+    span { font-size: 0.6rem; }
+  }
+
+  .crimeSceneBarBtn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+
+  .mainCondemnBtn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    bottom: 80px; /* Action bar üstünde dursun */
+  }
+
+  .condemnCenter {
+    bottom: 80px;
+  }
+
+  .invisibleButton {
+    .label {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+  }
+
+  .modalOverlay {
+    padding: 15px;
+  }
+
+  .modalContent {
+    padding: 20px;
+    max-width: 95%;
+  }
+
+  .modalTitle {
+    font-size: 1.3rem;
+  }
+
+  .modalMessage {
+    font-size: 0.85rem;
+  }
+
+  .villagerList {
+    grid-template-columns: 1fr;
+  }
+
+  .inventoryList {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+}

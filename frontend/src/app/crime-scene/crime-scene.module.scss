@@ -302,3 +302,72 @@
   text-align: right;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .backBtn {
+    font-size: 0.7rem;
+    order: 2;
+  }
+
+  .npcInfo {
+    order: 1;
+  }
+
+  .npcName {
+    font-size: 1rem;
+  }
+
+  .sessionInfo {
+    order: 3;
+    font-size: 0.65rem;
+  }
+
+  .content {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sceneArea {
+    padding: 20px;
+    min-height: calc(100vh - 200px);
+  }
+
+  .sidebar {
+    display: none; /* Mobilde gizle */
+  }
+
+  .scenarioTextWrapper {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .scenarioText {
+    font-size: 1rem;
+  }
+
+  .inspectBtn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+
+  .expandedNotesPanel {
+    width: 100vw;
+  }
+
+  .expandedNotesHeader {
+    padding: 20px;
+  }
+
+  .expandedNotesTextarea {
+    padding: 20px;
+    font-size: 1rem;
+  }
+}
