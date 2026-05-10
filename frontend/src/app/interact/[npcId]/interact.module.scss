@@ -655,4 +655,82 @@
   .notesExpandedTextarea {
     font-size: 1rem;
   }
+
+  .mobileToolbar {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(5, 5, 5, 0.95);
+    padding: 8px 12px;
+    border-top: 1px solid rgba(138, 3, 3, 0.3);
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .toolBtn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #8a7f72;
+    font-size: 0.6rem;
+    padding: 6px 2px;
+    border-radius: 4px;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    span { font-size: 1.1rem; }
+
+    &:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      filter: grayscale(1);
+    }
+  }
+
+  .activeTool {
+    border-color: #8A0303;
+    color: #E8DCC4;
+    background: rgba(138, 3, 3, 0.15);
+  }
+
+  .condemnBtn {
+    border-color: rgba(138, 3, 3, 0.5);
+    color: #fff;
+    background: rgba(138, 3, 3, 0.2);
+    font-weight: 600;
+  }
 }
+
+.mobileToolbar {
+  display: none;
+}
+
+.inventoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.inventoryItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #8A0303;
+}
+
+.itemIcon { font-size: 1.5rem; }
+.itemDetails { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.itemName { font-size: 0.9rem; color: #E8DCC4; font-weight: 600; }
+.itemLoc { font-size: 0.75rem; color: #8A0303; }
+.itemStatus { font-size: 0.7rem; color: #8a7f72; font-style: italic; }

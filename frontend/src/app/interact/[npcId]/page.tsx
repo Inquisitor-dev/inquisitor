@@ -125,6 +125,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const MAX_CHARS = 200;
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -439,6 +440,64 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             <div ref={bottomRef} />
           </div>
 
+          {/* Mobile Quick Actions Toolbar */}
+          <div className={styles.mobileToolbar}>
+            <button className={styles.toolBtn} onClick={() => setIsNotesExpanded(true)}>
+              <span>📝</span> Notlar
+            </button>
+            <button className={styles.toolBtn} onClick={() => setIsInventoryOpen(true)}>
+              <span>📜</span> Envanter
+            </button>
+            
+            {!isInvestigating ? (
+              <button 
+                className={`${styles.toolBtn} ${canInvestigate ? styles.activeTool : ''}`}
+                disabled={!canInvestigate}
+                onClick={() => setIsInvestigating(true)}
+              >
+                <span>🔍</span> Mekanı Araştır
+              </button>
+            ) : (
+              !isCrimeScene && (
+                <button 
+                  className={`${styles.toolBtn} ${styles.activeTool}`}
+                  onClick={() => {
+                    setConfirmModal({
+                      isOpen: true,
+                      title: 'Araştırmayı Bitir',
+                      message: 'Araştırmayı bitirmek izninizi tüketecek. Emin misiniz?',
+                      onConfirm: async () => {
+                        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                        consumeWarrant(npcId);
+                        setIsInvestigating(false);
+                        try {
+                          await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${authToken}`,
+                            },
+                            body: JSON.stringify({ location: npcId }),
+                          });
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      },
+                    });
+                  }}
+                >
+                  <span>⏹️</span> Araştırmayı Bitir
+                </button>
+              )
+            )}
+
+            {!isInvestigating && (
+              <button className={`${styles.toolBtn} ${styles.condemnBtn}`} onClick={handleCondemn}>
+                <span>⚖️</span> Hüküm Ver
+              </button>
+            )}
+          </div>
+
           <div className={styles.inputArea}>
             {dialoguesUsedToday >= maxDailyDialogues && !isAdmin ? (
               <div className={styles.limitReached}>Gunluk siniriniza ulastiniz.</div>
@@ -616,6 +675,43 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               placeholder="Supheli davranislari, celiskileri ve analizlerinizi buraya not edin..."
               autoFocus
             />
+          </div>
+        </div>
+      )}
+
+      {isInventoryOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsInventoryOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Envanter</h2>
+            <div className={styles.inventoryList}>
+              {inventory?.activeWarrants?.length > 0 || inventory?.usedWarrants?.length > 0 ? (
+                <>
+                  {inventory.activeWarrants.map((w, idx) => (
+                    <div key={`active-${idx}`} className={styles.inventoryItem}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <div className={styles.itemDetails}>
+                        <span className={styles.itemName}>Arama İzni</span>
+                        <span className={styles.itemLoc}>{getLocationLabel(w, scenarioType || 'medieval')}</span>
+                      </div>
+                      <span className={styles.itemStatus}>(Hazır)</span>
+                    </div>
+                  ))}
+                  {inventory.usedWarrants.map((w, idx) => (
+                    <div key={`used-${idx}`} className={styles.inventoryItem} style={{ opacity: 0.6 }}>
+                      <span className={styles.itemIcon}>📜</span>
+                      <div className={styles.itemDetails}>
+                        <span className={styles.itemName}>Arama İzni</span>
+                        <span className={styles.itemLoc}>{getLocationLabel(w, scenarioType || 'medieval')}</span>
+                      </div>
+                      <span className={styles.itemStatus}>(Kullanıldı)</span>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <p style={{ color: '#8a7f72', textAlign: 'center', width: '100%' }}>Henüz bir eşyan yok.</p>
+              )}
+            </div>
           </div>
         </div>
       )}
