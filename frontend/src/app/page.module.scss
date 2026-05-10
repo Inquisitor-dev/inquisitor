@@ -409,3 +409,148 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+.selectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.selectionBtn {
+  width: 100%;
+  padding: 24px;
+  text-align: left;
+  font-family: 'Playfair Display', serif;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  color: #e5d9c5;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+
+    span:first-child {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    span:last-child {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: rgba(232, 220, 196, 0.6);
+    margin: 0;
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Difficulty Variants */
+.difficultyEasy {
+  background: rgba(100, 180, 100, 0.05);
+  border: 1px solid rgba(100, 180, 100, 0.2);
+  div span:first-child { color: #7aba7a; }
+}
+
+.difficultyMedium {
+  background: rgba(218, 165, 32, 0.05);
+  border: 1px solid rgba(218, 165, 32, 0.2);
+  div span:first-child { color: #DAA520; }
+}
+
+.difficultyHard {
+  background: rgba(138, 3, 3, 0.08);
+  border: 1px solid rgba(138, 3, 3, 0.3);
+  div span:first-child { color: #cc4444; }
+}
+
+/* Scenario Variants */
+.scenarioMedieval {
+  background: rgba(232, 220, 196, 0.05);
+  border: 1px solid rgba(232, 220, 196, 0.2);
+  div span:first-child { color: #E8DCC4; }
+}
+
+.scenarioModern {
+  background: rgba(100, 140, 200, 0.05);
+  border: 1px solid rgba(100, 140, 200, 0.2);
+  div span:first-child { color: #7ba4d1; }
+}
+
+.scenarioCyberpunk {
+  background: rgba(180, 50, 200, 0.05);
+  border: 1px solid rgba(180, 50, 200, 0.2);
+  div span:first-child { color: #d06ee0; }
+}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .hero {
+    padding: 30px 15px;
+  }
+
+  .title {
+    font-size: 2.4rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  .description {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 0;
+  }
+
+  .modalContent {
+    max-width: 95% !important;
+    padding: 20px 15px;
+  }
+
+  .modalTitle {
+    font-size: 1.5rem;
+  }
+
+  .selectionList {
+    margin-top: 15px;
+    gap: 10px;
+  }
+
+  .selectionBtn {
+    padding: 14px;
+    
+    div {
+      margin-bottom: 4px;
+      span:first-child { font-size: 1rem; }
+      span:last-child { font-size: 0.6rem; }
+    }
+
+    p {
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+  }
+}

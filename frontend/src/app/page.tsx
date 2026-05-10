@@ -331,31 +331,22 @@ export default function HomePage() {
       {/* Difficulty Selection Modal */}
       {isDifficultyOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsDifficultyOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setIsDifficultyOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Zorluk Seviyesi Seç</h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+            <div className={styles.selectionList}>
               {/* Kolay */}
               <button
                 onClick={() => handleDifficultySelect('easy')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(100,180,100,0.08)',
-                  border: '1px solid rgba(100,180,100,0.3)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.difficultyEasy}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7aba7a' }}>🌿 Kolay</span>
-                  <span style={{ fontSize: '0.75rem', color: '#666' }}>4 Şüpheli</span>
+                <div>
+                  <span>🌿 Kolay</span>
+                  <span>4 Şüpheli</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   Hancı, Peder, Mezarcı ve Değirmenci. Standart soruşturma deneyimi.
                 </p>
               </button>
@@ -364,22 +355,13 @@ export default function HomePage() {
               <button
                 onClick={() => handleDifficultySelect('medium')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(218,165,32,0.08)',
-                  border: '1px solid rgba(218,165,32,0.3)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.difficultyMedium}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#DAA520' }}>⚔️ Orta</span>
-                  <span style={{ fontSize: '0.75rem', color: '#666' }}>5 Şüpheli</span>
+                <div>
+                  <span>⚔️ Orta</span>
+                  <span>5 Şüpheli</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   + Çiftçi Edmund. Artan şüpheli sayısıyla daha karmaşıklaşan ilişkiler.
                 </p>
               </button>
@@ -388,22 +370,13 @@ export default function HomePage() {
               <button
                 onClick={() => handleDifficultySelect('hard')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(138,3,3,0.12)',
-                  border: '1px solid rgba(138,3,3,0.4)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.difficultyHard}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#c44' }}>💀 Zor</span>
-                  <span style={{ fontSize: '0.75rem', color: '#666' }}>6 Şüpheli</span>
+                <div>
+                  <span>💀 Zor</span>
+                  <span>6 Şüpheli</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   + Çiftçi & Doktor. Kalabalıklaşan şüpheli listesiyle en karmaşık hikaye.
                 </p>
               </button>
@@ -415,30 +388,21 @@ export default function HomePage() {
       {/* Scenario Selection Modal */}
       {isScenarioOpen && selectedDifficulty && (
         <div className={styles.modalOverlay} onClick={() => setIsScenarioOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Senaryo Evreni Seç</h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+            <div className={styles.selectionList}>
               {/* Ortaçağ (Medieval) */}
               <button
                 onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'medieval')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(232,220,196,0.08)',
-                  border: '1px solid rgba(232,220,196,0.3)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.scenarioMedieval}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#E8DCC4' }}>🏰 Klasik Ortaçağ</span>
+                <div>
+                  <span>🏰 Klasik Ortaçağ</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   Ashenmoor Köyü. Engizisyon, cadı avları, batıl inançlar ve karanlık sırlar. Standart karanlık fantezi deneyimi.
                 </p>
               </button>
@@ -447,21 +411,12 @@ export default function HomePage() {
               <button
                 onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'modern')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(100,140,200,0.08)',
-                  border: '1px solid rgba(100,140,200,0.3)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.scenarioModern}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#7ba4d1' }}>🚔 Modern Amerikan Kasabası</span>
+                <div>
+                  <span>🚔 Modern Amerikan Kasabası</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   Oakhaven. Yerel polis, cinayet dedektifleri, şüpheli kasabalılar. Gerilim dolu "True Crime" polisiyesi.
                 </p>
               </button>
@@ -470,21 +425,12 @@ export default function HomePage() {
               <button
                 onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'cyberpunk')}
                 disabled={loading}
-                style={{
-                  background: 'rgba(180,50,200,0.08)',
-                  border: '1px solid rgba(180,50,200,0.3)',
-                  color: '#e5d9c5',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: "'Playfair Display', serif",
-                  transition: 'all 0.2s',
-                }}
+                className={`${styles.selectionBtn} ${styles.scenarioCyberpunk}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#d06ee0' }}>🌃 Distopik Cyberpunk</span>
+                <div>
+                  <span>🌃 Distopik Cyberpunk</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#888', margin: 0, lineHeight: 1.5 }}>
+                <p>
                   Neon Prime Şehri. Yozlaşmış mega şirketler, siber-geliştirmeler, karanlık ara sokaklar. Tech-noir bilimkurgu.
                 </p>
               </button>
