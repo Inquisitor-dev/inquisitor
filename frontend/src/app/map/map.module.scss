@@ -694,7 +694,46 @@
   }
 
   .modalContent {
-    max-width: 98%;
-    padding: 12px;
+    max-width: 95%;
+    padding: 15px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modalTitle {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .modalSubtitle {
+    font-size: 0.7rem;
+    margin-bottom: 15px;
+  }
+
+  .villagerList {
+    grid-template-columns: 1fr 1fr; /* Mobilde de 2 sütun ama kartlar daha küçük */
+    gap: 8px;
+  }
+
+  .villagerItem {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .villagerIcon {
+    font-size: 1.2rem;
+  }
+
+  .villagerName {
+    font-size: 0.8rem;
+  }
+
+  .villagerRole {
+    font-size: 0.65rem;
+  }
+
+  .notesArea {
+    height: 200px;
+    font-size: 0.9rem;
   }
 }
