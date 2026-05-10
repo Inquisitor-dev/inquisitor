@@ -685,28 +685,39 @@
 
   .mobileToolbar {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     background: rgba(5, 5, 5, 0.95);
-    padding: 8px 12px;
-    border-top: 1px solid rgba(138, 3, 3, 0.3);
-    gap: 8px;
+    padding: 10px 15px;
+    gap: 12px;
     z-index: 10;
-    margin-left: 45px; /* N logosundan kaçınmak için */
+    position: relative;
+    border-top: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(138, 3, 3, 0.8), transparent);
+    }
   }
 
   .toolBtn {
-    flex: 1;
+    flex: 0 1 auto;
+    min-width: 70px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: #8a7f72;
     font-size: 0.6rem;
-    padding: 6px 2px;
+    padding: 8px 6px;
     border-radius: 4px;
-    gap: 2px;
+    gap: 3px;
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -714,6 +725,7 @@
 
     &:active {
       background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     &:disabled {
@@ -729,9 +741,9 @@
   }
 
   .condemnBtn {
-    border-color: rgba(138, 3, 3, 0.5);
+    border-color: rgba(138, 3, 3, 0.6);
     color: #fff;
-    background: rgba(138, 3, 3, 0.2);
+    background: rgba(138, 3, 3, 0.25);
     font-weight: 600;
   }
 }
