@@ -404,6 +404,12 @@ export default function MapPage() {
         body: JSON.stringify({ npcId }),
       });
       const data = await res.json();
+      if (data.session && data.session.truthReveal) {
+        useGameStore.getState().setTruthReveal(data.session.truthReveal);
+      }
+      if (data.session && data.session.locationClues) {
+        useGameStore.getState().setLocationClues(data.session.locationClues);
+      }
       if (data.won !== undefined) {
         router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
       }
