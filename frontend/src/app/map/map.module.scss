@@ -532,6 +532,12 @@
     overflow: auto; /* Sürükleyerek dolaşmak için */
     display: block;
     -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .vignette {
+    display: none; /* Mobilde kaydırırken kötü görünüyor, kaldırıyoruz */
   }
 
   .mapContainer {
@@ -543,19 +549,23 @@
 
   .header {
     position: fixed; /* Kaydırırken tepede kalsın */
-    padding: 10px 15px;
-    background: rgba(0, 0, 0, 0.85);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(10px);
     pointer-events: auto;
     z-index: 1000;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(138, 3, 3, 0.2);
   }
 
   .headerCenter {
-    margin-top: 2px;
+    margin-top: 0;
   }
 
   .pageTitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .pageSub {
@@ -564,13 +574,11 @@
 
   .sessionInfo {
     flex-direction: row;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
+    gap: 5px;
   }
 
   .stats {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
 
   .limitText {
@@ -578,8 +586,7 @@
   }
 
   .endDayBtn {
-    padding: 4px 8px;
-    font-size: 0.6rem;
+    display: none; /* Mobilde yer kısıtlı, ana menüde veya başka yerde sunulabilir */
   }
 
   .actionBar {
@@ -587,27 +594,28 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 70px;
-    padding: 0 10px;
+    height: 85px;
+    padding: 0 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(0, 0, 0, 0.9);
-    border-top: 1px solid rgba(138, 3, 3, 0.3);
+    background: rgba(5, 5, 5, 0.98);
+    border-top: 1px solid rgba(138, 3, 3, 0.4);
     z-index: 1000;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
   }
 
   .actionGroup {
-    gap: 8px;
+    gap: 12px;
     &:first-child {
       margin-left: 0;
     }
   }
 
   .iconBtn {
-    padding: 4px;
+    padding: 2px;
     span {
-      font-size: 0.55rem;
+      font-size: 0.5rem;
     }
     svg {
       width: 18px;
@@ -616,40 +624,43 @@
   }
 
   .crimeSceneBarBtn {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    gap: 5px;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    gap: 4px;
+    span { display: none; } /* Sadece ikon kalsın çok sıkışıyor */
+    &::after { content: 'Mahal'; font-size: 0.7rem; } /* Kısa isim */
   }
 
   .mainCondemnBtn {
-    padding: 6px 12px;
-    font-size: 0.75rem;
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
 
   .condemnCenter {
-    bottom: 75px; /* Action bar'ın hemen üstü */
+    bottom: 95px; /* Action bar'ın üstü */
   }
 
   .label {
     opacity: 1 !important;
     transform: translateY(0) !important;
-    font-size: 0.65rem !important;
-    padding: 3px 6px !important;
+    font-size: 0.62rem !important;
+    padding: 2px 5px !important;
     min-width: auto !important;
-    background: rgba(138, 3, 3, 0.85) !important;
-    border-color: #E8DCC4 !important;
+    background: rgba(138, 3, 3, 0.9) !important;
+    border: 1px solid #E8DCC4 !important;
     white-space: nowrap !important;
     pointer-events: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 
   .icon {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .modalContent {
     max-width: 95%;
     padding: 15px;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 85vh;
   }
 }
