@@ -528,21 +528,106 @@
 /* Remove old crime scene corner */
 /* ── MOBILE RESPONSIVE ── */
 @media (max-width: 768px) {
+  .main {
+    overflow: auto; /* Sürükleyerek dolaşmak için */
+    display: block;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .mapContainer {
-    background-size: 100% 100%; /* Haritanın tamamını sığdır (hafif basıklık olsa da tüm butonlar yerinde kalır) */
+    width: 1200px; /* Haritayı geniş tut ki kaydırılabilsin */
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
   }
 
   .header {
+    position: fixed; /* Kaydırırken tepede kalsın */
     padding: 10px 15px;
-    gap: 8px;
-  }
-
-  .pageTitle {
-    font-size: 1.2rem;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+    z-index: 1000;
   }
 
   .headerCenter {
-    margin-top: 5px;
+    margin-top: 2px;
+  }
+
+  .pageTitle {
+    font-size: 1.1rem;
+  }
+
+  .pageSub {
+    display: none; /* Mobilde yer kazanmak için */
+  }
+
+  .sessionInfo {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stats {
+    font-size: 0.65rem;
+  }
+
+  .limitText {
+    margin: 0;
+  }
+
+  .endDayBtn {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+
+  .actionBar {
+    position: fixed; /* Altta sabit kalsın */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 1px solid rgba(138, 3, 3, 0.3);
+    z-index: 1000;
+  }
+
+  .actionGroup {
+    gap: 8px;
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+
+  .iconBtn {
+    padding: 4px;
+    span {
+      font-size: 0.55rem;
+    }
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .crimeSceneBarBtn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    gap: 5px;
+  }
+
+  .mainCondemnBtn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .condemnCenter {
+    bottom: 75px; /* Action bar'ın hemen üstü */
   }
 
   .label {
@@ -551,37 +636,20 @@
     font-size: 0.65rem !important;
     padding: 3px 6px !important;
     min-width: auto !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    border-color: rgba(138, 3, 3, 0.5) !important;
-    pointer-events: auto; /* Tıklanabilir olsun */
+    background: rgba(138, 3, 3, 0.85) !important;
+    border-color: #E8DCC4 !important;
+    white-space: nowrap !important;
+    pointer-events: auto;
   }
 
   .icon {
-    font-size: 0.9rem;
-  }
-
-  .multiLineLabel {
-    min-width: 80px;
-  }
-
-  .actionBar {
-    padding: 5px 10px;
-    min-height: 60px;
-  }
-
-  .iconBtn {
-    span {
-      font-size: 0.55rem;
-    }
-  }
-
-  .mainCondemnBtn {
-    padding: 6px 16px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .modalContent {
-    max-width: 98%;
+    max-width: 95%;
     padding: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }
