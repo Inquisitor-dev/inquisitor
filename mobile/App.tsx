@@ -1,12 +1,39 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-export default function App() {
+type RootStackParamList = {
+  Diagnostic: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function DiagnosticScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>The Inquisitor</Text>
-      <Text style={styles.body}>Diagnostic build is running.</Text>
-      <Text style={styles.body}>If you can see this screen, the crash is inside our app UI flow.</Text>
+      <Text style={styles.body}>Navigation diagnostic screen is running.</Text>
+      <Text style={styles.body}>If you can see this, the crash is inside our real screens/components.</Text>
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            component={DiagnosticScreen}
+            name="Diagnostic"
+            options={{ title: "Diagnostic" }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
