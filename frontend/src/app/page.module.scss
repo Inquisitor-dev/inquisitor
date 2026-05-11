@@ -15,6 +15,93 @@
     #050505;
 }
 
+.soundControls {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 12px;
+  border: 1px solid rgba(138, 3, 3, 0.3);
+  border-radius: 30px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(138, 3, 3, 0.6);
+    .volumeWrapper {
+      width: 100px;
+      opacity: 1;
+      margin-right: 8px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    top: 20px;
+    right: 20px;
+    padding: 4px 10px;
+  }
+}
+
+.muteBtn {
+  background: transparent;
+  border: none;
+  color: #E8DCC4;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+
+  &:hover {
+    color: #8A0303;
+    transform: scale(1.1);
+  }
+}
+
+.volumeWrapper {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+}
+
+.volumeSlider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: rgba(232, 220, 196, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #8A0303;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(138, 3, 3, 0.5);
+    transition: all 0.2s;
+  }
+
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(138, 3, 3, 0.8);
+  }
+}
+
 .vignette {
   position: fixed;
   inset: 0;

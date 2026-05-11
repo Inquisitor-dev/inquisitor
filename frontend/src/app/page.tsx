@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '../store/useGameStore';
 import styles from './page.module.scss';
@@ -15,6 +15,35 @@ export default function HomePage() {
   const [isDifficultyOpen, setIsDifficultyOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.4);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Audio control
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/sounds/Main_Soundtrack.mp3');
+      audioRef.current.loop = true;
+    }
+
+    audioRef.current.volume = volume;
+
+    if (isMuted || volume === 0) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(err => console.log("Audio play failed:", err));
+    }
+  }, [isMuted, volume]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Token yoksa login'e yönlendir (Hidratasyon tamamlandıktan sonra)
   useEffect(() => {
@@ -136,6 +165,28 @@ export default function HomePage() {
 
   return (
     <main className={styles.main}>
+      {/* Sound Controls */}
+      <div className={styles.soundControls}>
+        <div className={styles.volumeWrapper}>
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
+            value={volume} 
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className={styles.volumeSlider}
+          />
+        </div>
+        <button 
+          className={styles.muteBtn} 
+          onClick={() => setIsMuted(!isMuted)}
+          title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
+        >
+          {isMuted || volume === 0 ? '🔇' : '🔊'}
+        </button>
+      </div>
+
       {/* Vignette overlay */}
       <div className={styles.vignette} />
 
