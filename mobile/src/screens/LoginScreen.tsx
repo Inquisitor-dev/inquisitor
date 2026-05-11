@@ -4,6 +4,7 @@ import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { Screen } from "@/components/Screen";
+import { env } from "@/config/env";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
 import { colors } from "@/theme/colors";
@@ -45,6 +46,9 @@ export function LoginScreen() {
 
       <Panel>
         <Text style={styles.panelTitle}>Sign in</Text>
+        <Text style={styles.apiHint}>
+          API target: {env.apiBaseUrl} ({env.apiBaseUrlSource})
+        </Text>
         <TextInput
           autoCapitalize="none"
           keyboardType="email-address"
@@ -97,6 +101,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: "700",
+  },
+  apiHint: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   input: {
     minHeight: 50,
