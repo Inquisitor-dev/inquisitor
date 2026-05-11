@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { HomeScreen } from "@/screens/HomeScreen";
 import { InteractScreen } from "@/screens/InteractScreen";
@@ -114,10 +115,12 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" />
-      <View style={styles.container}>{screen}</View>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <View style={styles.safe}>
+        <StatusBar style="light" translucent={false} />
+        <View style={styles.container}>{screen}</View>
+      </View>
+    </SafeAreaProvider>
   );
 }
 

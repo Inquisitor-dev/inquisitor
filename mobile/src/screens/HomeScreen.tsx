@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
@@ -43,20 +44,13 @@ function LandingButton({
 }
 
 export function HomeScreen({ navigation }: Props) {
-  const {
-    authToken,
-    userEmail,
-    sessionId,
-    currentDay,
-    difficulty,
-    scenarioType,
-    hydrateSession,
-    logout,
-    clearSession,
-  } = useGameStore();
+  const { authToken, sessionId, currentDay, difficulty, scenarioType, hydrateSession, logout, clearSession } =
+    useGameStore();
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [resuming, setResuming] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -107,7 +101,6 @@ export function HomeScreen({ navigation }: Props) {
 
   const handleResume = async () => {
     if (!sessionId) return;
-
     try {
       setResuming(true);
       navigation.navigate("Map");
@@ -124,84 +117,89 @@ export function HomeScreen({ navigation }: Props) {
       <View pointerEvents="none" style={styles.cornerBottomLeft} />
       <View pointerEvents="none" style={styles.cornerBottomRight} />
 
-      <View style={styles.soundStub}>
-        <Text style={styles.soundIcon}>🔊</Text>
-      </View>
+      <Pressable
+        onPress={() => setIsMuted((prev) => !prev)}
+        style={[styles.soundButton, { top: insets.top + 18 }]}
+      >
+        <Text style={styles.soundIcon}>{isMuted ? "🔇" : "🔊"}</Text>
+      </Pressable>
 
-      <View style={styles.hero}>
-        <View style={styles.seal}>
-          <View style={styles.sealOuter} />
-          <View style={styles.sealInner} />
-          <View style={styles.crossVertical} />
-          <View style={styles.crossHorizontal} />
-          <View style={styles.sealDiamondCenter} />
-          <View style={[styles.sealDiamond, styles.sealDiamondTop]} />
-          <View style={[styles.sealDiamond, styles.sealDiamondBottom]} />
-          <View style={[styles.sealDiamond, styles.sealDiamondLeft]} />
-          <View style={[styles.sealDiamond, styles.sealDiamondRight]} />
-        </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 62, paddingBottom: insets.bottom + 48 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.hero}>
+          <View style={styles.seal}>
+            <View style={styles.sealOuter} />
+            <View style={styles.sealInner} />
+            <View style={styles.crossVertical} />
+            <View style={styles.crossHorizontal} />
+            <View style={styles.sealDiamondCenter} />
+            <View style={[styles.sealDiamond, styles.sealDiamondTop]} />
+            <View style={[styles.sealDiamond, styles.sealDiamondBottom]} />
+            <View style={[styles.sealDiamond, styles.sealDiamondLeft]} />
+            <View style={[styles.sealDiamond, styles.sealDiamondRight]} />
+          </View>
 
-        <Text style={styles.eyebrow}>— ANNO DOMINI MCCXII —</Text>
-        <Text style={styles.title}>The Inquisitor</Text>
+          <Text style={styles.eyebrow}>— ANNO DOMINI MCCXII —</Text>
+          <Text style={styles.title}>The Inquisitor</Text>
 
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerIcon}>✦</Text>
-          <View style={styles.dividerLine} />
-        </View>
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerIcon}>✦</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
-        <Text style={styles.lead}>Bu köyde kimse göründüğü gibi değil.</Text>
-        <Text style={styles.description}>
-          Bu hikayenin kahramanı sen değilsin. Yetki, sabır ve soğuk kanlılıkla
-          donanmış şekilde köylüleri sorgula, çelişkileri ortaya çıkar ve nihai hükmünü
-          ver.
-        </Text>
-        <Text style={styles.slogan}>DINLE · ANALIZ ET · HUKUM VER</Text>
+          <Text style={styles.lead}>Bu köyde kimse göründüğü gibi değil.</Text>
+          <Text style={styles.description}>
+            Bu hikayenin kahramanı sen değilsin. Yetki, sabır ve soğuk kanlılıkla
+            donanmış şekilde köylüleri sorgula, çelişkileri ortaya çıkar ve nihai hükmünü
+            ver.
+          </Text>
+          <Text style={styles.slogan}>DINLE · ANALIZ ET · HUKUM VER</Text>
 
-        <View style={styles.cta}>
-          {sessionId ? (
+          <View style={styles.cta}>
+            {sessionId ? (
+              <LandingButton
+                disabled={loading || resuming}
+                label={
+                  resuming
+                    ? "Soruşturma yükleniyor..."
+                    : `Soruşturmaya Devam Et (Gün ${currentDay})`
+                }
+                onPress={handleResume}
+              />
+            ) : null}
+
             <LandingButton
-              disabled={loading || resuming}
-              label={resuming ? `Soruşturma yükleniyor...` : `Soruşturmaya Devam Et (Gün ${currentDay})`}
-              onPress={handleResume}
-            />
-          ) : null}
-
-          <LandingButton
-            disabled={loading || creating}
-            label={
-              creating
-                ? "Ashenmoor'a giden araba hazırlanıyor..."
-                : sessionId
-                  ? "Yeni Soruşturma Başlat"
-                  : "Soruşturmaya Başla"
-            }
-            onPress={() => {
-              if (sessionId) {
-                void handleCreateSession();
-              } else {
-                void handleCreateSession();
+              disabled={loading || creating}
+              label={
+                creating
+                  ? "Ashenmoor'a giden araba hazırlanıyor..."
+                  : sessionId
+                    ? "Yeni Soruşturma Başlat"
+                    : "Soruşturmaya Başla"
               }
-            }}
-            primary
-          />
+              onPress={() => {
+                void handleCreateSession();
+              }}
+              primary
+            />
 
-          <LandingButton
-            label={`Ajan: ${userEmail ?? "bilinmiyor"}`}
-            onPress={() => {}}
-            disabled
-          />
+            <LandingButton label="Hesaptan Çıkış Yap" onPress={logout} />
+            <Text style={styles.sessionNote}>Mobil soruşturma arayüzü · Expo Go build</Text>
+          </View>
 
-          <LandingButton label="Hesaptan Çıkış Yap" onPress={logout} />
-          <Text style={styles.sessionNote}>Mobil soruşturma arayüzü · Expo Go build</Text>
+          <View style={styles.bottomRule}>
+            <View style={styles.bottomRuleLine} />
+            <Text style={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</Text>
+            <View style={styles.bottomRuleLine} />
+          </View>
         </View>
-
-        <View style={styles.bottomRule}>
-          <View style={styles.bottomRuleLine} />
-          <Text style={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</Text>
-          <View style={styles.bottomRuleLine} />
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -210,22 +208,18 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     backgroundColor: inquisitorColors.bg,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
     overflow: "hidden",
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    alignItems: "center",
   },
   vignette: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "transparent",
-    shadowColor: "#000",
-    shadowOpacity: 0.9,
-    shadowRadius: 100,
-    elevation: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
-  soundStub: {
+  soundButton: {
     position: "absolute",
-    top: 18,
     right: 22,
     zIndex: 5,
     width: 50,
@@ -285,7 +279,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 430,
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 16,
   },
   seal: {
     width: 120,

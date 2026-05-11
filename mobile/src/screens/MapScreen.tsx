@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppModal } from "@/components/AppModal";
 import {
@@ -31,8 +32,8 @@ import type { NpcProfile } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
 
-const MAP_WIDTH = 1200;
-const MAP_HEIGHT = 1180;
+const MAP_WIDTH = 940;
+const MAP_HEIGHT = 920;
 
 export function MapScreen({ navigation }: Props) {
   const {
@@ -68,6 +69,7 @@ export function MapScreen({ navigation }: Props) {
   const [loadingLocationId, setLoadingLocationId] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<"none" | "end-day" | "notes">("none");
   const [isTimingOut, setIsTimingOut] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -245,7 +247,7 @@ export function MapScreen({ navigation }: Props) {
     <View style={styles.main}>
       <View pointerEvents="none" style={[styles.vignette, isNight && styles.nightVignette]} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <Pressable style={styles.backBtn} onPress={logout}>
           <Text style={styles.backArrow}>←</Text>
           <Text style={styles.backLabel}>Kaydet ve Çık</Text>
@@ -271,7 +273,10 @@ export function MapScreen({ navigation }: Props) {
       <ScrollView
         horizontal
         bounces={false}
-        contentContainerStyle={styles.mapScrollContent}
+        contentContainerStyle={[
+          styles.mapScrollContent,
+          { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 94 },
+        ]}
         showsHorizontalScrollIndicator={false}
       >
         <ImageBackground source={getMapAsset(scenarioType, timeOfDay)} style={styles.mapContainer}>
@@ -308,7 +313,7 @@ export function MapScreen({ navigation }: Props) {
         </ImageBackground>
       </ScrollView>
 
-      <View style={styles.actionBar}>
+      <View style={[styles.actionBar, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable style={styles.iconButton} onPress={() => setNotesVisible(true)}>
           <Text style={styles.actionIcon}>🗒️</Text>
           <Text style={styles.actionText}>Notlar</Text>

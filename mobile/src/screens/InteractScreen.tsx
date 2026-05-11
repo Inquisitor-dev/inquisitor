@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppModal } from "@/components/AppModal";
 import { getLocationLabel, getNpcProfile } from "@/data/gameContent";
@@ -49,6 +50,7 @@ export function InteractScreen({ navigation, route }: Props) {
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const [isInvestigating, setIsInvestigating] = useState(locationId === "crime_scene");
   const messageScrollRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
   const profile = useMemo(
     () => getNpcProfile(scenarioType, locationId),
@@ -242,7 +244,7 @@ export function InteractScreen({ navigation, route }: Props) {
     <ImageBackground source={getInteractAsset(locationId)} style={styles.main}>
       <View style={styles.overlay} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>Haritaya Dön</Text>
         </Pressable>
@@ -265,7 +267,14 @@ export function InteractScreen({ navigation, route }: Props) {
       </View>
 
       <View style={styles.chatColumn}>
-        <ScrollView ref={messageScrollRef} style={styles.messages} contentContainerStyle={styles.messageContent}>
+        <ScrollView
+          ref={messageScrollRef}
+          style={styles.messages}
+          contentContainerStyle={[
+            styles.messageContent,
+            { paddingBottom: insets.bottom + 12 },
+          ]}
+        >
           {messages.map((msg, index) => (
             <View
               key={`${index}-${msg.role}`}
@@ -315,7 +324,7 @@ export function InteractScreen({ navigation, route }: Props) {
           ) : null}
         </View>
 
-        <View style={styles.inputArea}>
+        <View style={[styles.inputArea, { paddingBottom: insets.bottom + 16 }]}>
           {dialoguesUsedToday >= maxDailyDialogues ? (
             <Text style={styles.limitReached}>Günlük sınırınıza ulaştınız.</Text>
           ) : (
