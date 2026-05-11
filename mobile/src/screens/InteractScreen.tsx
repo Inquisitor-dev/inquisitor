@@ -70,6 +70,7 @@ export function InteractScreen({ navigation, route }: Props) {
   );
   const canInvestigate =
     locationId === "crime_scene" || inventory.activeWarrants.includes(locationId);
+  const usesIllustratedBackdrop = scenarioType === "medieval";
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -295,8 +296,8 @@ export function InteractScreen({ navigation, route }: Props) {
     ]);
   };
 
-  return (
-    <ImageBackground source={getInteractAsset(locationId)} style={styles.main}>
+  const screenContent = (
+    <>
       <View style={styles.overlay} />
 
       <View style={[styles.header, { paddingTop: topInset + 10 }]}>
@@ -509,7 +510,15 @@ export function InteractScreen({ navigation, route }: Props) {
           ))}
         </ScrollView>
       </AppModal>
+    </>
+  );
+
+  return usesIllustratedBackdrop ? (
+    <ImageBackground source={getInteractAsset(locationId)} style={styles.main}>
+      {screenContent}
     </ImageBackground>
+  ) : (
+    <View style={styles.main}>{screenContent}</View>
   );
 }
 
