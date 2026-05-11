@@ -64,7 +64,6 @@ export function MapScreen({ navigation }: Props) {
     hydrateSession,
     setTruthReveal,
     setLocationClues,
-    logout,
   } = useGameStore();
 
   const [notesDraft, setNotesDraft] = useState(notes);
@@ -182,6 +181,26 @@ export function MapScreen({ navigation }: Props) {
     }
   };
 
+  const handleRetreat = async () => {
+    if (authToken && sessionId && notesDraft !== notes) {
+      try {
+        await api.updateNotes(authToken, sessionId, notesDraft);
+        setNotes(notesDraft);
+      } catch (error) {
+        Alert.alert(
+          "Notes could not be saved",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+        return;
+      }
+    }
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Home" }],
+    });
+  };
+
   const handleEndDay = async () => {
     if (!authToken || !sessionId) return;
 
@@ -259,7 +278,7 @@ export function MapScreen({ navigation }: Props) {
       <View pointerEvents="none" style={[styles.vignette, isNight && styles.nightVignette]} />
 
       <View style={[styles.header, { paddingTop: topInset + 10 }]}>
-        <Pressable style={[styles.backBtn, { top: topInset + 12 }]} onPress={logout}>
+        <Pressable style={[styles.backBtn, { top: topInset + 12 }]} onPress={handleRetreat}>
           <Text style={styles.backArrow}>←</Text>
           <Text style={styles.backLabel}>Kaydet ve Çık</Text>
         </Pressable>
