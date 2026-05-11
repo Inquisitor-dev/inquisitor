@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "The Inquisitor",
+    "slug": "the-inquisitor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "jsEngine": "hermes",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0b0a0f"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0a0f"
+      },
+      "edgeToEdgeEnabled": true
+    }
+  }
+}
