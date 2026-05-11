@@ -100,6 +100,7 @@ export function HomeScreen({ navigation }: Props) {
   const {
     authToken,
     userEmail,
+    isAdmin,
     sessionId,
     currentDay,
     dialoguesUsedToday,
@@ -296,6 +297,12 @@ export function HomeScreen({ navigation }: Props) {
     setIsMuted(next === 0 ? true : false);
   };
 
+  const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
+  const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
+  const effectiveEmail = accountSummary?.email ?? userEmail ?? "-";
+  const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
+  const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
+
   useEffect(() => {
     const loadAccountSummary = async () => {
       if (!settingsVisible || !authToken) return;
@@ -418,14 +425,14 @@ export function HomeScreen({ navigation }: Props) {
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>E-posta</Text>
-              <Text style={styles.infoValue}>{accountSummary?.email ?? userEmail ?? "-"}</Text>
+              <Text style={styles.infoValue}>{effectiveEmail}</Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Plan</Text>
               <Text style={styles.infoValue}>
-                {accountSummary?.isAdmin
+                {effectiveIsAdmin
                   ? "Admin"
-                  : accountSummary?.isPremium ?? isPremium
+                  : effectiveIsPremium
                     ? "Premium"
                     : "Ucretsiz"}
               </Text>
@@ -440,7 +447,9 @@ export function HomeScreen({ navigation }: Props) {
                         0,
                         accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount,
                       )} / ${accountSummary.maxSessionsPerDay === 999 ? "Sinirsiz" : accountSummary.maxSessionsPerDay}`
-                    : "-"}
+                    : effectiveIsAdmin
+                      ? "Sinirsiz / Sinirsiz"
+                      : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -453,7 +462,9 @@ export function HomeScreen({ navigation }: Props) {
                         0,
                         accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount,
                       )} / ${accountSummary.maxMessagesPerDay === 999 ? "Sinirsiz" : accountSummary.maxMessagesPerDay}`
-                    : `${Math.max(0, maxDailyDialogues - dialoguesUsedToday)} / ${maxDailyDialogues}`}
+                    : effectiveIsAdmin
+                      ? "Sinirsiz / Sinirsiz"
+                      : `${Math.max(0, maxDailyDialogues - dialoguesUsedToday)} / ${fallbackMaxMessages}`}
               </Text>
             </View>
           </View>

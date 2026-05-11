@@ -17,6 +17,8 @@ export default function HomePage() {
     setDifficulty,
     setScenarioType,
     authToken,
+    userEmail,
+    isAdmin,
     logout,
     hasHydrated,
     isPremium,
@@ -208,6 +210,12 @@ export default function HomePage() {
     }
   };
 
+  const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
+  const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
+  const effectiveEmail = accountSummary?.email ?? userEmail ?? '-';
+  const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
+  const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
+
   return (
     <main className={styles.main}>
       <div className={styles.settingsDock}>
@@ -226,14 +234,14 @@ export default function HomePage() {
               <div className={styles.accountCard}>
                 <div className={styles.accountRow}>
                   <span>E-posta</span>
-                  <strong>{accountSummary?.email || '-'}</strong>
+                  <strong>{effectiveEmail}</strong>
                 </div>
                 <div className={styles.accountRow}>
                   <span>Plan</span>
                   <strong>
-                    {accountSummary?.isAdmin
+                    {effectiveIsAdmin
                       ? 'Admin'
-                      : accountSummary?.isPremium ?? isPremium
+                      : effectiveIsPremium
                         ? 'Premium'
                         : 'Ucretsiz'}
                   </strong>
@@ -243,7 +251,9 @@ export default function HomePage() {
                   <strong>
                     {accountSummary
                       ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
-                      : '-'}
+                      : effectiveIsAdmin
+                        ? 'Sinirsiz / Sinirsiz'
+                        : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
                   </strong>
                 </div>
                 <div className={styles.accountRow}>
@@ -251,7 +261,9 @@ export default function HomePage() {
                   <strong>
                     {accountSummary
                       ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
-                      : '-'}
+                      : effectiveIsAdmin
+                        ? 'Sinirsiz / Sinirsiz'
+                        : `${fallbackMaxMessages} / ${fallbackMaxMessages}`}
                   </strong>
                 </div>
               </div>
