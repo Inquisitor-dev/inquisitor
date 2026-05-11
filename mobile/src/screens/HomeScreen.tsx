@@ -91,26 +91,39 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.kicker}>Mobile development plan</Text>
-        <Text style={styles.title}>Step 1 is live: the Expo app shell is ready.</Text>
+        <Text style={styles.kicker}>Case preparation</Text>
+        <Text style={styles.title}>Bir sonraki hukum icin dosya hazir.</Text>
         <Text style={styles.subtitle}>
-          Next we will wire the real interrogation flow, map interactions, and notes sync.
+          Buradan aktif sorusturmani surdurabilir ya da yeni bir dava acip koyun
+          dengelerini yeniden bozabilirsin.
         </Text>
       </View>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Current architecture</Text>
-        <Text style={styles.item}>Expo + React Native for cross-platform delivery</Text>
-        <Text style={styles.item}>Zustand persisted with AsyncStorage</Text>
-        <Text style={styles.item}>Shared backend contract through fetch-based services</Text>
-        <Text style={styles.item}>NPC fear and lie metrics removed from mobile state</Text>
+        <Text style={styles.panelEyebrow}>Field brief</Text>
+        <Text style={styles.sectionTitle}>Sorusturma profili</Text>
+        <Text style={styles.item}>Ajan: {userEmail ?? "Unknown"}</Text>
+        <Text style={styles.item}>Senaryo: {scenarioType}</Text>
+        <Text style={styles.item}>Zorluk: {difficulty}</Text>
+        <Text style={styles.item}>Kayitli oturum: {loading ? "Checking..." : sessionId ?? "None"}</Text>
       </Panel>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Player state</Text>
-        <Text style={styles.item}>Agent: {userEmail ?? "Unknown"}</Text>
-        <Text style={styles.item}>Active session: {loading ? "Checking..." : sessionId ?? "None"}</Text>
-        <Text style={styles.item}>Day / Time: {currentDay} / {timeOfDay}</Text>
+        <Text style={styles.panelEyebrow}>Clock and pressure</Text>
+        <Text style={styles.sectionTitle}>Sahadaki durum</Text>
+        <View style={styles.statRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Gun</Text>
+            <Text style={styles.statValue}>{currentDay}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Vakit</Text>
+            <Text style={styles.statValue}>{timeOfDay}</Text>
+          </View>
+        </View>
+        <Text style={styles.item}>
+          Aktif session varsa ayni case board uzerinden devam edeceksin.
+        </Text>
       </Panel>
 
       <PrimaryButton
@@ -127,7 +140,7 @@ export function HomeScreen({ navigation }: Props) {
         {sessionId ? "Resume investigation" : creating ? "Preparing case..." : "Start new investigation"}
       </PrimaryButton>
 
-      <PrimaryButton disabled={false} onPress={logout}>
+      <PrimaryButton disabled={false} onPress={logout} tone="ghost">
         Sign out
       </PrimaryButton>
     </Screen>
@@ -148,24 +161,57 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 30,
+    fontSize: 36,
     fontWeight: "800",
-    lineHeight: 36,
+    lineHeight: 42,
     marginBottom: spacing.sm,
+    fontFamily: "serif",
   },
   subtitle: {
     color: colors.textMuted,
     lineHeight: 22,
   },
+  panelEyebrow: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: spacing.xs,
+  },
   sectionTitle: {
     color: colors.text,
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   item: {
     color: colors.textMuted,
     lineHeight: 22,
     marginBottom: spacing.xs,
+  },
+  statRow: {
+    flexDirection: "row",
+    marginBottom: spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.panelStrong,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginRight: spacing.sm,
+  },
+  statLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+    textTransform: "uppercase",
+    marginBottom: spacing.xs,
+  },
+  statValue: {
+    color: colors.text,
+    fontSize: 26,
+    fontWeight: "800",
   },
 });

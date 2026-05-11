@@ -271,14 +271,14 @@ export function MapScreen({ navigation }: Props) {
     <>
       <Screen>
         <View style={styles.hero}>
-          <View style={styles.heroText}>
+        <View style={styles.heroText}>
             <Text style={styles.eyebrow}>{getScenarioTitle(scenarioType)}</Text>
             <Text style={styles.title}>
               {timeLabels[timeOfDay]} / Gun {currentDay}
             </Text>
             <Text style={styles.subtitle}>
-              Dikey mobil deneyim icin dokunmatik lokasyon kartlariyla sorusturma akisini
-              kuruyoruz.
+              Koyun her evi kapali ama her kapinin ardinda farkli bir catlak var. Hangi
+              izi once acacagina dikkat et.
             </Text>
           </View>
           <View style={styles.badges}>
@@ -296,13 +296,20 @@ export function MapScreen({ navigation }: Props) {
         </View>
 
         <Panel>
-          <Text style={styles.sectionTitle}>Harita Akislari</Text>
+          <Text style={styles.panelEyebrow}>Command table</Text>
+          <Text style={styles.sectionTitle}>Harita akislari</Text>
           <View style={styles.actionsRow}>
-            <PrimaryButton onPress={() => setNotesVisible(true)}>Notlari Ac</PrimaryButton>
-            <PrimaryButton onPress={() => setInventoryVisible(true)}>Envanter</PrimaryButton>
+            <PrimaryButton onPress={() => setNotesVisible(true)} tone="secondary">
+              Notlari Ac
+            </PrimaryButton>
+            <PrimaryButton onPress={() => setInventoryVisible(true)} tone="secondary">
+              Envanter
+            </PrimaryButton>
           </View>
           <View style={styles.actionsRow}>
-            <PrimaryButton onPress={() => setCondemnVisible(true)}>Mahkumu Sec</PrimaryButton>
+            <PrimaryButton onPress={() => setCondemnVisible(true)} tone="ghost">
+              Mahkumu Sec
+            </PrimaryButton>
             <PrimaryButton
               disabled={busyAction === "end-day"}
               onPress={handleEndDay}
@@ -333,7 +340,9 @@ export function MapScreen({ navigation }: Props) {
               ]}
             >
               <View style={styles.locationHead}>
-                <Text style={styles.locationIcon}>{location.icon}</Text>
+                <View style={styles.locationIconWrap}>
+                  <Text style={styles.locationIcon}>{location.icon}</Text>
+                </View>
                 <View style={styles.locationTitleWrap}>
                   <Text style={styles.locationName}>{location.name}</Text>
                   <Text style={styles.locationAction}>
@@ -347,7 +356,8 @@ export function MapScreen({ navigation }: Props) {
         </View>
 
         <Panel>
-          <Text style={styles.sectionTitle}>Durum Ozeti</Text>
+          <Text style={styles.panelEyebrow}>Case board</Text>
+          <Text style={styles.sectionTitle}>Durum ozeti</Text>
           <Text style={styles.body}>Toplanan not uzunlugu: {notes.length}</Text>
           <Text style={styles.body}>Kullanilan arama emri: {inventory.usedWarrants.length}</Text>
           <Text style={styles.body}>
@@ -457,12 +467,21 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 30,
+    fontSize: 38,
     fontWeight: "800",
+    fontFamily: "serif",
   },
   subtitle: {
     color: colors.textMuted,
     lineHeight: 22,
+  },
+  panelEyebrow: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: spacing.xs,
   },
   badges: {
     flexDirection: "row",
@@ -470,10 +489,10 @@ const styles = StyleSheet.create({
   },
   badge: {
     flex: 1,
-    backgroundColor: colors.panel,
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
+    borderColor: colors.accentSoft,
+    borderRadius: 20,
     padding: spacing.md,
     gap: spacing.xs,
   },
@@ -489,8 +508,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "800",
+    marginBottom: spacing.sm,
   },
   actionsRow: {
     flexDirection: "row",
@@ -503,8 +523,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panel,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 18,
-    padding: spacing.md,
+    borderRadius: 22,
+    padding: spacing.lg,
     gap: spacing.sm,
   },
   villagerCard: {
@@ -526,8 +546,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
   },
+  locationIconWrap: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.panelStrong,
+    borderWidth: 1,
+    borderColor: colors.accentSoft,
+  },
   locationIcon: {
-    fontSize: 28,
+    fontSize: 26,
   },
   locationTitleWrap: {
     flex: 1,
@@ -553,7 +583,7 @@ const styles = StyleSheet.create({
   },
   notesInput: {
     minHeight: 220,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.panelMuted,
@@ -568,7 +598,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panelMuted,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: spacing.md,
     gap: spacing.xs,
     marginBottom: spacing.sm,
@@ -577,7 +607,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#161419",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: spacing.md,
     gap: spacing.xs,
     marginBottom: spacing.sm,

@@ -7,12 +7,14 @@ import { spacing } from "@/theme/spacing";
 type PrimaryButtonProps = PropsWithChildren<{
   onPress: () => void;
   disabled?: boolean;
+  tone?: "primary" | "secondary" | "ghost";
 }>;
 
 export function PrimaryButton({
   children,
   onPress,
   disabled = false,
+  tone = "primary",
 }: PrimaryButtonProps) {
   return (
     <Pressable
@@ -20,11 +22,21 @@ export function PrimaryButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
+        tone === "secondary" && styles.buttonSecondary,
+        tone === "ghost" && styles.buttonGhost,
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
       ]}
     >
-      <Text style={styles.label}>{children}</Text>
+      <Text
+        style={[
+          styles.label,
+          tone === "secondary" && styles.labelSecondary,
+          tone === "ghost" && styles.labelGhost,
+        ]}
+      >
+        {children}
+      </Text>
     </Pressable>
   );
 }
@@ -33,15 +45,34 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 52,
-    borderRadius: 14,
+    minHeight: 54,
+    borderRadius: 16,
     backgroundColor: colors.accentStrong,
     paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.accentStrong,
+    marginBottom: spacing.sm,
+  },
+  buttonSecondary: {
+    backgroundColor: colors.panelStrong,
+    borderColor: colors.border,
+  },
+  buttonGhost: {
+    backgroundColor: "transparent",
+    borderColor: colors.accentSoft,
   },
   label: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+  },
+  labelSecondary: {
+    color: colors.text,
+  },
+  labelGhost: {
+    color: colors.accent,
   },
   pressed: {
     opacity: 0.9,

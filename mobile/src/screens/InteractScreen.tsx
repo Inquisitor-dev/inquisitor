@@ -283,7 +283,7 @@ export function InteractScreen({ navigation, route }: Props) {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Sorgu odasi</Text>
+        <Text style={styles.eyebrow}>Interrogation chamber</Text>
         <Text style={styles.title}>{locationName}</Text>
         <Text style={styles.subtitle}>
           Kalan sorgu hakki: {Math.max(0, maxDailyDialogues - dialoguesUsedToday)} /{" "}
@@ -306,13 +306,18 @@ export function InteractScreen({ navigation, route }: Props) {
       </View>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Saha Araclari</Text>
+        <Text style={styles.panelEyebrow}>Field tools</Text>
+        <Text style={styles.sectionTitle}>Saha araclari</Text>
         <View style={styles.toolbarRow}>
-          <PrimaryButton onPress={() => setNotesVisible(true)}>Notlar</PrimaryButton>
-          <PrimaryButton onPress={() => setInventoryVisible(true)}>Envanter</PrimaryButton>
+          <PrimaryButton onPress={() => setNotesVisible(true)} tone="secondary">
+            Notlar
+          </PrimaryButton>
+          <PrimaryButton onPress={() => setInventoryVisible(true)} tone="secondary">
+            Envanter
+          </PrimaryButton>
         </View>
         <View style={styles.toolbarRow}>
-          <PrimaryButton onPress={() => navigation.goBack()}>
+          <PrimaryButton onPress={() => navigation.goBack()} tone="ghost">
             Haritaya Don
           </PrimaryButton>
           <PrimaryButton onPress={handleToggleInvestigation}>
@@ -332,7 +337,8 @@ export function InteractScreen({ navigation, route }: Props) {
       </Panel>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Durum Ozeti</Text>
+        <Text style={styles.panelEyebrow}>Pressure report</Text>
+        <Text style={styles.sectionTitle}>Durum ozeti</Text>
         <Text style={styles.body}>
           Kullanilan sorgu hakki: {dialoguesUsedToday} / {maxDailyDialogues}
         </Text>
@@ -345,7 +351,8 @@ export function InteractScreen({ navigation, route }: Props) {
       </Panel>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Konusma Akisi</Text>
+        <Text style={styles.panelEyebrow}>Transcript</Text>
+        <Text style={styles.sectionTitle}>Konusma akisi</Text>
         {loading ? <Text style={styles.body}>Gecmis konusmalar yukleniyor...</Text> : null}
         {!loading && messages.length === 0 ? (
           <Text style={styles.body}>Bu lokasyonda henuz kayitli bir diyalog yok.</Text>
@@ -377,7 +384,8 @@ export function InteractScreen({ navigation, route }: Props) {
       </Panel>
 
       <Panel>
-        <Text style={styles.sectionTitle}>Soru Gonder</Text>
+        <Text style={styles.panelEyebrow}>Prompt</Text>
+        <Text style={styles.sectionTitle}>Soru gonder</Text>
         <TextInput
           multiline
           onChangeText={setDraft}
@@ -462,8 +470,9 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: "800",
+    fontFamily: "serif",
   },
   subtitle: {
     color: colors.textMuted,
@@ -472,8 +481,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     borderWidth: 1,
-    borderRadius: 20,
-    backgroundColor: colors.panel,
+    borderRadius: 24,
+    backgroundColor: colors.backgroundElevated,
     padding: spacing.lg,
   },
   sceneIcon: {
@@ -485,7 +494,7 @@ const styles = StyleSheet.create({
   },
   sceneTitle: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
   },
   sceneText: {
@@ -494,8 +503,17 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "700",
+    marginBottom: spacing.sm,
+  },
+  panelEyebrow: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: spacing.xs,
   },
   toolbarRow: {
     flexDirection: "row",
@@ -516,7 +534,7 @@ const styles = StyleSheet.create({
     maxHeight: 360,
   },
   messageBubble: {
-    borderRadius: 16,
+    borderRadius: 18,
     padding: spacing.md,
     gap: spacing.xs,
   },
@@ -538,7 +556,7 @@ const styles = StyleSheet.create({
   },
   input: {
     minHeight: 140,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.panelMuted,
@@ -553,7 +571,7 @@ const styles = StyleSheet.create({
   },
   notesInput: {
     minHeight: 240,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.panelMuted,
@@ -562,7 +580,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   inventoryCard: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.panelMuted,
@@ -570,7 +588,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   inventoryCardMuted: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: "#141218",

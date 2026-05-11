@@ -42,12 +42,12 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.72)",
+    backgroundColor: "rgba(6,4,3,0.82)",
   },
   sheet: {
     maxHeight: "88%",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     backgroundColor: colors.panel,
     borderTopWidth: 1,
     borderLeftWidth: 1,
@@ -60,6 +60,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: spacing.md,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   headerText: {
     flex: 1,
@@ -76,6 +79,12 @@ const styles = StyleSheet.create({
   },
   close: {
     alignSelf: "flex-start",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    backgroundColor: colors.panelStrong,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   closeText: {
     color: colors.accent,

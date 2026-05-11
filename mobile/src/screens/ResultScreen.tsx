@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { getLocationLabel } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
@@ -29,19 +30,20 @@ export function ResultScreen({ navigation, route }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.hero}>
+        <Text style={styles.eyebrow}>{won ? "Verdict recorded" : "Final report"}</Text>
         <Text style={[styles.title, won ? styles.titleWin : styles.titleLoss]}>{title}</Text>
         <Text style={styles.body}>{body}</Text>
       </View>
 
       {truthReveal ? (
-        <View style={styles.panel}>
+        <Panel>
           <Text style={styles.panelTitle}>Gerceklerin Ardindan</Text>
           <Text style={styles.panelText}>{truthReveal}</Text>
-        </View>
+        </Panel>
       ) : null}
 
       {locationClues && Object.keys(locationClues).length > 0 ? (
-        <View style={styles.panel}>
+        <Panel>
           <Text style={styles.panelTitle}>Gizli Ipuclari</Text>
           <View style={styles.clueList}>
             {Object.entries(locationClues).map(([locationId, clue]) => (
@@ -53,7 +55,7 @@ export function ResultScreen({ navigation, route }: Props) {
               </View>
             ))}
           </View>
-        </View>
+        </Panel>
       ) : null}
 
       <PrimaryButton
@@ -83,11 +85,19 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     alignItems: "center",
   },
+  eyebrow: {
+    color: colors.accent,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
   title: {
-    fontSize: 30,
+    fontSize: 38,
     fontWeight: "800",
     textAlign: "center",
     textTransform: "uppercase",
+    fontFamily: "serif",
   },
   titleWin: {
     color: "#b8860b",
@@ -100,14 +110,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     maxWidth: 720,
-  },
-  panel: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-    padding: spacing.lg,
-    gap: spacing.md,
   },
   panelTitle: {
     color: colors.text,
