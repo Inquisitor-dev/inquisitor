@@ -34,6 +34,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export const api = {
+  ping() {
+    return request<string>("/", {});
+  },
+
   sendCode(email: string, password?: string) {
     return request<{ success?: boolean; message?: string; error?: string }>(
       "/auth/send-code",

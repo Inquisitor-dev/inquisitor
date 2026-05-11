@@ -15,6 +15,8 @@ export function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingApi, setCheckingApi] = useState(false);
+  const [apiStatus, setApiStatus] = useState<null | "ok" | "error">(null);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -30,6 +32,23 @@ export function LoginScreen() {
       Alert.alert("Login failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCheckApi = async () => {
+    try {
+      setCheckingApi(true);
+      await api.ping();
+      setApiStatus("ok");
+      Alert.alert("Backend reachable", `Connected to ${env.apiBaseUrl}`);
+    } catch (error) {
+      setApiStatus("error");
+      Alert.alert(
+        "Backend unreachable",
+        `${env.apiBaseUrl}\n\n${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    } finally {
+      setCheckingApi(false);
     }
   };
 
@@ -49,6 +68,25 @@ export function LoginScreen() {
         <Text style={styles.apiHint}>
           API target: {env.apiBaseUrl} ({env.apiBaseUrlSource})
         </Text>
+        {env.apiBaseUrlSource === "fallback" ? (
+          <Text style={styles.warningText}>
+            Physical device test icin bu adresi genelde `mobile/.env` icinde LAN IP ile
+            override etmelisin.
+          </Text>
+        ) : null}
+        <Text
+          style={[
+            styles.statusText,
+            apiStatus === "ok" && styles.statusOk,
+            apiStatus === "error" && styles.statusError,
+          ]}
+        >
+          {apiStatus === "ok"
+            ? "Backend status: reachable"
+            : apiStatus === "error"
+              ? "Backend status: unreachable"
+              : "Backend status: not checked"}
+        </Text>
         <TextInput
           autoCapitalize="none"
           keyboardType="email-address"
@@ -66,6 +104,9 @@ export function LoginScreen() {
           style={styles.input}
           value={password}
         />
+        <PrimaryButton disabled={checkingApi} onPress={handleCheckApi}>
+          {checkingApi ? "Checking backend..." : "Check backend connection"}
+        </PrimaryButton>
         <PrimaryButton disabled={loading} onPress={handleLogin}>
           {loading ? "Signing in..." : "Open the case"}
         </PrimaryButton>
@@ -106,6 +147,22 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
+  },
+  warningText: {
+    color: colors.accent,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  statusText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  statusOk: {
+    color: colors.success,
+  },
+  statusError: {
+    color: colors.accentStrong,
   },
   input: {
     minHeight: 50,
