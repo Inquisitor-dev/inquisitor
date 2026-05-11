@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
@@ -34,10 +34,13 @@ import type { NpcProfile } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
 
-const MAP_WIDTH = 820;
-const MAP_HEIGHT = 920;
+const MAP_IMAGE_WIDTH = 2752;
+const MAP_IMAGE_HEIGHT = 1536;
+const MAP_WIDTH = 1400;
+const MAP_HEIGHT = Math.round((MAP_WIDTH * MAP_IMAGE_HEIGHT) / MAP_IMAGE_WIDTH);
 
 export function MapScreen({ navigation }: Props) {
+  const horizontalScrollRef = useRef<ScrollView>(null);
   const {
     authToken,
     sessionId,
@@ -71,6 +74,7 @@ export function MapScreen({ navigation }: Props) {
   const [loadingLocationId, setLoadingLocationId] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<"none" | "end-day" | "notes">("none");
   const [isTimingOut, setIsTimingOut] = useState(false);
+  const [didCenterMap, setDidCenterMap] = useState(false);
   const insets = useSafeAreaInsets();
   const topInset =
     Platform.OS === "android"
@@ -278,15 +282,27 @@ export function MapScreen({ navigation }: Props) {
       </View>
 
       <ScrollView
+        ref={horizontalScrollRef}
         horizontal
         bounces={false}
+        onLayout={(event) => {
+          if (didCenterMap) return;
+          const viewportWidth = event.nativeEvent.layout.width;
+          const centerOffset = Math.max(0, (MAP_WIDTH - viewportWidth) / 2);
+          horizontalScrollRef.current?.scrollTo({ x: centerOffset, animated: false });
+          setDidCenterMap(true);
+        }}
         contentContainerStyle={[
           styles.mapScrollContent,
           { paddingTop: topInset + 56, paddingBottom: bottomInset + 94 },
         ]}
         showsHorizontalScrollIndicator={false}
       >
-        <ImageBackground source={getMapAsset(scenarioType, timeOfDay)} style={styles.mapContainer}>
+        <ImageBackground
+          resizeMode="cover"
+          source={getMapAsset(scenarioType, timeOfDay)}
+          style={styles.mapContainer}
+        >
           {hotspots.map((spot) => {
             const location = locations.find((item) => item.id === spot.id);
             if (!location) return null;
@@ -529,6 +545,7 @@ const styles = StyleSheet.create({
   },
   mapScrollContent: {
     width: MAP_WIDTH,
+    minWidth: MAP_WIDTH,
   },
   mapContainer: {
     width: MAP_WIDTH,
