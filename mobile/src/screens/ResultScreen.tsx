@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { getLocationLabel } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { useGameStore } from "@/store/useGameStore";
 import { colors } from "@/theme/colors";
@@ -9,19 +10,9 @@ import { spacing } from "@/theme/spacing";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Result">;
 
-const locationNames: Record<string, string> = {
-  crime_scene: "Cinayet Mahalli",
-  tavern: "Taverna / Karakol",
-  church: "Kilise",
-  graveyard: "Mezarlik / Kaset Dukkani / Hurdalik",
-  mill: "Degirmen / Acik Hava Sinemasi / Robot Dukkani",
-  farm: "Ciftlik / Benzinlik / Kopru Alti",
-  clinic: "Klinik / Prefabrik Evler / Bar",
-};
-
 export function ResultScreen({ navigation, route }: Props) {
   const { won, message, reason } = route.params;
-  const { truthReveal, locationClues, clearSession } = useGameStore();
+  const { truthReveal, locationClues, scenarioType, clearSession } = useGameStore();
 
   const title = won
     ? "Sorusturma Basariyla Sonuclandi"
@@ -56,7 +47,7 @@ export function ResultScreen({ navigation, route }: Props) {
             {Object.entries(locationClues).map(([locationId, clue]) => (
               <View key={locationId} style={styles.clueRow}>
                 <Text style={styles.clueLocation}>
-                  {locationNames[locationId] ?? locationId}
+                  {getLocationLabel(scenarioType, locationId)}
                 </Text>
                 <Text style={styles.clueText}>{String(clue)}</Text>
               </View>

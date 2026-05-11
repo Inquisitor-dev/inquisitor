@@ -262,3 +262,12 @@ export function getNpcProfile(scenarioType: ScenarioType, npcId: string) {
     }
   );
 }
+
+export function getLocationLabel(scenarioType: ScenarioType, locationId: string) {
+  if (locationId === "crime_scene") {
+    return scenarioType === "medieval" ? "Cinayet Mahalli" : "Olay Yeri";
+  }
+
+  const locations = getVisibleLocations(scenarioType, "hard");
+  return locations.find((item) => item.id === locationId)?.name ?? locationId;
+}

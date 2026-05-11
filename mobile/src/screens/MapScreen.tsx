@@ -15,6 +15,7 @@ import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { Screen } from "@/components/Screen";
 import {
+  getLocationLabel,
   getScenarioNpcs,
   getScenarioTitle,
   getVisibleLocations,
@@ -391,14 +392,18 @@ export function MapScreen({ navigation }: Props) {
           {inventory.activeWarrants.map((warrant) => (
             <View key={`active-${warrant}`} style={styles.inventoryItem}>
               <Text style={styles.inventoryTitle}>Arama Izni</Text>
-              <Text style={styles.inventoryMeta}>{warrant}</Text>
+              <Text style={styles.inventoryMeta}>
+                {getLocationLabel(scenarioType, warrant)}
+              </Text>
               <Text style={styles.inventoryStatus}>Hazir</Text>
             </View>
           ))}
           {inventory.usedWarrants.map((warrant) => (
             <View key={`used-${warrant}`} style={styles.inventoryItemMuted}>
               <Text style={styles.inventoryTitle}>Arama Izni</Text>
-              <Text style={styles.inventoryMeta}>{warrant}</Text>
+              <Text style={styles.inventoryMeta}>
+                {getLocationLabel(scenarioType, warrant)}
+              </Text>
               <Text style={styles.inventoryStatusMuted}>Kullanildi</Text>
             </View>
           ))}

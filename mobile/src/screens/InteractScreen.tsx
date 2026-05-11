@@ -14,7 +14,7 @@ import { AppModal } from "@/components/AppModal";
 import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { Screen } from "@/components/Screen";
-import { getNpcProfile } from "@/data/gameContent";
+import { getLocationLabel, getNpcProfile } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
@@ -24,7 +24,7 @@ import type { NpcMessage } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Interact">;
 
-export function InteractScreen({ route }: Props) {
+export function InteractScreen({ navigation, route }: Props) {
   const { locationId, locationName } = route.params;
   const {
     authToken,
@@ -39,6 +39,8 @@ export function InteractScreen({ route }: Props) {
     consumeWarrant,
     setDialoguesUsed,
     setCurrentDay,
+    setTruthReveal,
+    setLocationClues,
   } = useGameStore();
   const [messages, setMessages] = useState<NpcMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -220,7 +222,9 @@ export function InteractScreen({ route }: Props) {
         result.grantedWarrants.forEach((warrant) => addWarrant(warrant));
         Alert.alert(
           "Arama izni alindi",
-          `${result.grantedWarrants.join(", ")} icin yeni arama izni kazandin.`,
+          `${result.grantedWarrants
+            .map((warrant) => getLocationLabel(scenarioType, warrant))
+            .join(", ")} icin yeni arama izni kazandin.`,
         );
       }
       if (result.reply) {
@@ -236,6 +240,44 @@ export function InteractScreen({ route }: Props) {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleCondemnCurrent = () => {
+    if (!authToken || !sessionId || locationId === "crime_scene") {
+      return;
+    }
+
+    Alert.alert(
+      "Nihai hukum",
+      `${profile.name} icin hukum vermek istedigine emin misin?`,
+      [
+        { text: "Vazgec", style: "cancel" },
+        {
+          text: "Mahkum et",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const result = await api.condemn(authToken, sessionId, locationId);
+              if (result.session?.truthReveal) {
+                setTruthReveal(result.session.truthReveal);
+              }
+              if (result.session?.locationClues) {
+                setLocationClues(result.session.locationClues);
+              }
+              navigation.replace("Result", {
+                won: Boolean(result.won),
+                message: result.message ?? "Karar uygulandi.",
+              });
+            } catch (error) {
+              Alert.alert(
+                "Hukum verilemedi",
+                error instanceof Error ? error.message : "Unknown error",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -270,15 +312,36 @@ export function InteractScreen({ route }: Props) {
           <PrimaryButton onPress={() => setInventoryVisible(true)}>Envanter</PrimaryButton>
         </View>
         <View style={styles.toolbarRow}>
+          <PrimaryButton onPress={() => navigation.goBack()}>
+            Haritaya Don
+          </PrimaryButton>
           <PrimaryButton onPress={handleToggleInvestigation}>
             {isInvestigating ? "Arastirmayi Bitir" : "Mekani Arastir"}
           </PrimaryButton>
         </View>
+        {!isInvestigating && locationId !== "crime_scene" ? (
+          <View style={styles.toolbarRow}>
+            <PrimaryButton onPress={handleCondemnCurrent}>Bu Supheliyi Mahkum Et</PrimaryButton>
+          </View>
+        ) : null}
         {!canInvestigate && locationId !== "crime_scene" ? (
           <Text style={styles.hintText}>
             Bu alani arastirmak icin once yetkili NPC'den arama izni almalisin.
           </Text>
         ) : null}
+      </Panel>
+
+      <Panel>
+        <Text style={styles.sectionTitle}>Durum Ozeti</Text>
+        <Text style={styles.body}>
+          Kullanilan sorgu hakki: {dialoguesUsedToday} / {maxDailyDialogues}
+        </Text>
+        <Text style={styles.body}>
+          Aktif arama izni: {inventory.activeWarrants.length}
+        </Text>
+        <Text style={styles.body}>
+          Kullanilmis arama izni: {inventory.usedWarrants.length}
+        </Text>
       </Panel>
 
       <Panel>
@@ -366,14 +429,18 @@ export function InteractScreen({ route }: Props) {
           {inventory.activeWarrants.map((warrant) => (
             <View key={`active-${warrant}`} style={styles.inventoryCard}>
               <Text style={styles.inventoryLabel}>Arama Izni</Text>
-              <Text style={styles.inventoryValue}>{warrant}</Text>
+              <Text style={styles.inventoryValue}>
+                {getLocationLabel(scenarioType, warrant)}
+              </Text>
               <Text style={styles.inventoryStatus}>Hazir</Text>
             </View>
           ))}
           {inventory.usedWarrants.map((warrant) => (
             <View key={`used-${warrant}`} style={styles.inventoryCardMuted}>
               <Text style={styles.inventoryLabel}>Arama Izni</Text>
-              <Text style={styles.inventoryValue}>{warrant}</Text>
+              <Text style={styles.inventoryValue}>
+                {getLocationLabel(scenarioType, warrant)}
+              </Text>
               <Text style={styles.inventoryStatusMuted}>Kullanildi</Text>
             </View>
           ))}
