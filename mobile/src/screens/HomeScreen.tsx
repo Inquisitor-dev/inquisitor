@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
 
 import { AppModal } from "@/components/AppModal";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
@@ -113,10 +114,12 @@ export function HomeScreen({ navigation }: Props) {
   const [creating, setCreating] = useState(false);
   const [resuming, setResuming] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.4);
   const [error, setError] = useState<string | null>(null);
   const [difficultyVisible, setDifficultyVisible] = useState(false);
   const [scenarioVisible, setScenarioVisible] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
+  const soundtrackRef = useRef<Audio.Sound | null>(null);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -145,6 +148,71 @@ export function HomeScreen({ navigation }: Props) {
 
     void bootstrap();
   }, [authToken, clearSession, hydrateSession]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const setupSoundtrack = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+          interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+        });
+
+        const { sound } = await Audio.Sound.createAsync(
+          require("../../assets/sounds/Main_Soundtrack.mp3"),
+          {
+            shouldPlay: true,
+            isLooping: true,
+            volume,
+            isMuted,
+          },
+        );
+
+        if (!mounted) {
+          await sound.unloadAsync();
+          return;
+        }
+
+        soundtrackRef.current = sound;
+      } catch (err) {
+        console.warn("Soundtrack could not start", err);
+      }
+    };
+
+    void setupSoundtrack();
+
+    return () => {
+      mounted = false;
+      const sound = soundtrackRef.current;
+      soundtrackRef.current = null;
+      if (sound) {
+        void sound.unloadAsync();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncSoundState = async () => {
+      const sound = soundtrackRef.current;
+      if (!sound) return;
+
+      try {
+        await sound.setStatusAsync({
+          volume,
+          isMuted,
+          shouldPlay: !isMuted,
+        });
+      } catch (err) {
+        console.warn("Soundtrack state could not update", err);
+      }
+    };
+
+    void syncSoundState();
+  }, [isMuted, volume]);
 
   const handleCreateSession = async (
     difficultyChoice: Difficulty = difficulty,
@@ -199,6 +267,21 @@ export function HomeScreen({ navigation }: Props) {
     setScenarioVisible(true);
   };
 
+  const changeVolume = (delta: number) => {
+    setVolume((prev) => {
+      const next = Math.max(0, Math.min(1, Number((prev + delta).toFixed(2))));
+      if (next > 0) {
+        setIsMuted(false);
+      }
+      return next;
+    });
+  };
+
+  const pickVolume = (next: number) => {
+    setVolume(next);
+    setIsMuted(next === 0 ? true : false);
+  };
+
   return (
     <View style={styles.main}>
       <View pointerEvents="none" style={styles.vignette} />
@@ -207,12 +290,46 @@ export function HomeScreen({ navigation }: Props) {
       <View pointerEvents="none" style={styles.cornerBottomLeft} />
       <View pointerEvents="none" style={styles.cornerBottomRight} />
 
-      <Pressable
-        onPress={() => setIsMuted((prev) => !prev)}
-        style={[styles.soundButton, { top: insets.top + 18 }]}
-      >
-        <Text style={styles.soundIcon}>{isMuted ? "MUTE" : "SOUND"}</Text>
-      </Pressable>
+      <View style={[styles.soundPanel, { top: insets.top + 18 }]}>
+        <Pressable
+          onPress={() => setIsMuted((prev) => !prev)}
+          style={({ pressed }) => [
+            styles.soundToggle,
+            pressed && styles.buttonPressed,
+          ]}
+        >
+          <Text style={styles.soundIcon}>{isMuted ? "MUTE" : "SOUND"}</Text>
+        </Pressable>
+
+        <View style={styles.volumeRow}>
+          <Pressable onPress={() => changeVolume(-0.2)} style={styles.volumeStepButton}>
+            <Text style={styles.volumeStepText}>-</Text>
+          </Pressable>
+
+          <View style={styles.volumeBars}>
+            {[0.2, 0.4, 0.6, 0.8, 1].map((step, index) => {
+              const active = !isMuted && volume >= step;
+              return (
+                <Pressable
+                  key={step}
+                  onPress={() => pickVolume(step)}
+                  style={[
+                    styles.volumeBar,
+                    active && styles.volumeBarActive,
+                    index === 4 && styles.volumeBarLast,
+                  ]}
+                />
+              );
+            })}
+          </View>
+
+          <Pressable onPress={() => changeVolume(0.2)} style={styles.volumeStepButton}>
+            <Text style={styles.volumeStepText}>+</Text>
+          </Pressable>
+        </View>
+
+        <Text style={styles.volumeLabel}>{Math.round((isMuted ? 0 : volume) * 100)}%</Text>
+      </View>
 
       <ScrollView
         contentContainerStyle={[
@@ -364,24 +481,75 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.3)",
   },
-  soundButton: {
+  soundPanel: {
     position: "absolute",
     right: 22,
     zIndex: 5,
-    minWidth: 64,
-    height: 50,
-    paddingHorizontal: 12,
-    borderRadius: 25,
+    width: 148,
+    padding: 10,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "rgba(138, 3, 3, 0.3)",
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  soundToggle: {
+    minHeight: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.25)",
+    backgroundColor: "rgba(255,255,255,0.03)",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 8,
   },
   soundIcon: {
     color: inquisitorColors.parchment,
     fontSize: 11,
     fontWeight: "700",
+    letterSpacing: 1,
+  },
+  volumeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  volumeStepButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(232,220,196,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  volumeStepText: {
+    color: inquisitorColors.parchment,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  volumeBars: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginHorizontal: 8,
+  },
+  volumeBar: {
+    flex: 1,
+    height: 10,
+    marginRight: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(232,220,196,0.18)",
+  },
+  volumeBarActive: {
+    backgroundColor: inquisitorColors.primary,
+  },
+  volumeBarLast: {
+    marginRight: 0,
+  },
+  volumeLabel: {
+    marginTop: 6,
+    color: inquisitorColors.muted,
+    fontSize: 11,
+    textAlign: "center",
     letterSpacing: 1,
   },
   cornerTopLeft: {
