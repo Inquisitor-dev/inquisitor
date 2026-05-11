@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
+  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,21 +12,17 @@ import {
 } from "react-native";
 
 import { AppModal } from "@/components/AppModal";
-import { Panel } from "@/components/Panel";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { Screen } from "@/components/Screen";
 import { getLocationLabel, getNpcProfile } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { getInteractAsset, inquisitorColors } from "@/theme/inquisitor";
 import type { NpcMessage } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Interact">;
 
 export function InteractScreen({ navigation, route }: Props) {
-  const { locationId, locationName } = route.params;
+  const { locationId } = route.params;
   const {
     authToken,
     sessionId,
@@ -59,12 +56,6 @@ export function InteractScreen({ navigation, route }: Props) {
   );
   const canInvestigate =
     locationId === "crime_scene" || inventory.activeWarrants.includes(locationId);
-  const scenarioAccent =
-    scenarioType === "modern"
-      ? "#3d556b"
-      : scenarioType === "cyberpunk"
-        ? "#0d6f6a"
-        : "#6a4a35";
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -74,7 +65,6 @@ export function InteractScreen({ navigation, route }: Props) {
     const timer = setTimeout(() => {
       messageScrollRef.current?.scrollToEnd({ animated: true });
     }, 60);
-
     return () => clearTimeout(timer);
   }, [loading, messages]);
 
@@ -88,31 +78,24 @@ export function InteractScreen({ navigation, route }: Props) {
       try {
         const history = await api.getHistory(authToken, sessionId, locationId);
         setMessages(history.history ?? []);
-        if (typeof history.dialoguesUsed === "number") {
-          setDialoguesUsed(history.dialoguesUsed);
-        }
-        if (typeof history.currentDay === "number") {
-          setCurrentDay(history.currentDay);
-        }
+        if (typeof history.dialoguesUsed === "number") setDialoguesUsed(history.dialoguesUsed);
+        if (typeof history.currentDay === "number") setCurrentDay(history.currentDay);
 
         if (!history.history || history.history.length === 0) {
           if (isInvestigating) {
             setMessages([
               {
                 role: "npc",
-                text: `*[Mekan: ${locationName}] Cevreyi taramaya basladin. Gizli ayrintilari ortaya cikarmak icin spesifik sorular sor.*`,
+                text: `*[Mekan: ${profile.name}] Etrafı araştırmaya başlıyorsunuz. Sadece detaylara odaklanın...*`,
               },
             ]);
           } else {
-            const greeting = await api.interact(
-              authToken,
-              sessionId,
-              locationId,
-              "__NEW_DAY_GREETING__",
-            );
-            if (greeting.reply) {
-              setMessages([{ role: "npc", text: greeting.reply }]);
-            }
+            setMessages([
+              {
+                role: "npc",
+                text: `*${profile.name} size şüpheyle bakıyor.*\n\n"Buraya neden geldiniz?"`,
+              },
+            ]);
           }
         }
       } catch (error) {
@@ -126,12 +109,10 @@ export function InteractScreen({ navigation, route }: Props) {
     };
 
     void bootstrap();
-  }, [authToken, isInvestigating, locationId, locationName, sessionId, setCurrentDay, setDialoguesUsed]);
+  }, [authToken, isInvestigating, locationId, profile.name, sessionId, setCurrentDay, setDialoguesUsed]);
 
   const handleSaveNotes = async () => {
-    if (!authToken || !sessionId) {
-      return;
-    }
+    if (!authToken || !sessionId) return;
 
     try {
       setSavingNotes(true);
@@ -151,10 +132,7 @@ export function InteractScreen({ navigation, route }: Props) {
   const handleToggleInvestigation = async () => {
     if (!isInvestigating) {
       if (!canInvestigate) {
-        Alert.alert(
-          "Arama izni gerekli",
-          "Bu mekani arastirmak icin once ilgili NPC'den arama izni almalisin.",
-        );
+        Alert.alert("Arama izni gerekli", "Önce arama izni almalısın.");
         return;
       }
 
@@ -163,7 +141,7 @@ export function InteractScreen({ navigation, route }: Props) {
         ...prev,
         {
           role: "npc",
-          text: `*[Arastirma Modu] ${locationName} icin fiziksel izleri incelemeye basladin.*`,
+          text: `*[Araştırma Modu] ${profile.name} için fiziksel izleri incelemeye başladın.*`,
         },
       ]);
       return;
@@ -174,39 +152,30 @@ export function InteractScreen({ navigation, route }: Props) {
       return;
     }
 
-    Alert.alert(
-      "Arastirmayi bitir",
-      "Arastirmayi bitirmek mevcut arama iznini tuketecek. Devam etmek istiyor musun?",
-      [
-        { text: "Vazgec", style: "cancel" },
-        {
-          text: "Bitir",
-          style: "destructive",
-          onPress: async () => {
-            if (!authToken || !sessionId) {
-              return;
-            }
-
-            try {
-              consumeWarrant(locationId);
-              await api.consumeWarrant(authToken, sessionId, locationId);
-              setIsInvestigating(false);
-            } catch (error) {
-              Alert.alert(
-                "Arastirma kapanamadi",
-                error instanceof Error ? error.message : "Unknown error",
-              );
-            }
-          },
+    Alert.alert("Araştırmayı bitir", "Bu izin tüketilecek. Emin misin?", [
+      { text: "Vazgeç", style: "cancel" },
+      {
+        text: "Bitir",
+        style: "destructive",
+        onPress: async () => {
+          if (!authToken || !sessionId) return;
+          try {
+            consumeWarrant(locationId);
+            await api.consumeWarrant(authToken, sessionId, locationId);
+            setIsInvestigating(false);
+          } catch (error) {
+            Alert.alert(
+              "Araştırma kapanamadı",
+              error instanceof Error ? error.message : "Unknown error",
+            );
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handleSend = async () => {
-    if (!draft.trim() || !authToken || !sessionId || sending) {
-      return;
-    }
+    if (!draft.trim() || !authToken || !sessionId || sending) return;
 
     try {
       setSending(true);
@@ -215,22 +184,21 @@ export function InteractScreen({ navigation, route }: Props) {
       setDraft("");
 
       const result = await api.interact(authToken, sessionId, locationId, playerMessage);
-      if (typeof result.dialoguesUsed === "number") {
-        setDialoguesUsed(result.dialoguesUsed);
-      }
-      if (result.grantedWarrants && result.grantedWarrants.length > 0) {
+      if (typeof result.dialoguesUsed === "number") setDialoguesUsed(result.dialoguesUsed);
+
+      if (result.grantedWarrants?.length) {
         result.grantedWarrants.forEach((warrant) => addWarrant(warrant));
         Alert.alert(
-          "Arama izni alindi",
-          `${result.grantedWarrants
+          "Arama izni alındı",
+          result.grantedWarrants
             .map((warrant) => getLocationLabel(scenarioType, warrant))
-            .join(", ")} icin yeni arama izni kazandin.`,
+            .join(", "),
         );
       }
-      if (result.reply) {
-        setMessages((prev) => [...prev, { role: "npc", text: result.reply ?? "" }]);
-      } else if (result.message) {
-        setMessages((prev) => [...prev, { role: "npc", text: result.message ?? "" }]);
+
+      const replyText = result.reply ?? result.message;
+      if (replyText) {
+        setMessages((prev) => [...prev, { role: "npc", text: replyText }]);
       }
     } catch (error) {
       Alert.alert(
@@ -243,372 +211,468 @@ export function InteractScreen({ navigation, route }: Props) {
   };
 
   const handleCondemnCurrent = () => {
-    if (!authToken || !sessionId || locationId === "crime_scene") {
-      return;
-    }
+    if (!authToken || !sessionId || locationId === "crime_scene") return;
 
-    Alert.alert(
-      "Nihai hukum",
-      `${profile.name} icin hukum vermek istedigine emin misin?`,
-      [
-        { text: "Vazgec", style: "cancel" },
-        {
-          text: "Mahkum et",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const result = await api.condemn(authToken, sessionId, locationId);
-              if (result.session?.truthReveal) {
-                setTruthReveal(result.session.truthReveal);
-              }
-              if (result.session?.locationClues) {
-                setLocationClues(result.session.locationClues);
-              }
-              navigation.replace("Result", {
-                won: Boolean(result.won),
-                message: result.message ?? "Karar uygulandi.",
-              });
-            } catch (error) {
-              Alert.alert(
-                "Hukum verilemedi",
-                error instanceof Error ? error.message : "Unknown error",
-              );
-            }
-          },
+    Alert.alert("Nihai Hüküm", `${profile.name} için hüküm vermek istiyor musun?`, [
+      { text: "Vazgeç", style: "cancel" },
+      {
+        text: "Mahkum et",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const result = await api.condemn(authToken, sessionId, locationId);
+            if (result.session?.truthReveal) setTruthReveal(result.session.truthReveal);
+            if (result.session?.locationClues) setLocationClues(result.session.locationClues);
+            navigation.replace("Result", {
+              won: Boolean(result.won),
+              message: result.message ?? "Karar uygulandı.",
+            });
+          } catch (error) {
+            Alert.alert(
+              "Hüküm verilemedi",
+              error instanceof Error ? error.message : "Unknown error",
+            );
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   return (
-    <Screen>
+    <ImageBackground source={getInteractAsset(locationId)} style={styles.main}>
+      <View style={styles.overlay} />
+
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Interrogation chamber</Text>
-        <Text style={styles.title}>{locationName}</Text>
-        <Text style={styles.subtitle}>
-          Kalan sorgu hakki: {Math.max(0, maxDailyDialogues - dialoguesUsedToday)} /{" "}
-          {maxDailyDialogues}
-        </Text>
-      </View>
+        <Pressable onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>Haritaya Dön</Text>
+        </Pressable>
 
-      <View style={[styles.sceneBanner, { borderColor: scenarioAccent }]}>
-        <Text style={styles.sceneIcon}>{isInvestigating ? "👁" : profile.icon}</Text>
-        <View style={styles.sceneCopy}>
-          <Text style={styles.sceneTitle}>
-            {isInvestigating ? "Fiziksel Cevre" : profile.name}
-          </Text>
-          <Text style={styles.sceneText}>
-            {isInvestigating
-              ? "Arastirma modunda nesnelere, izlere ve cevre detaylarina odaklan."
-              : `${profile.role} ile yuruyen sorgu. Celiskileri ortaya cikarmak icin ayrintili sorular sor.`}
-          </Text>
-        </View>
-      </View>
-
-      <Panel>
-        <Text style={styles.panelEyebrow}>Field tools</Text>
-        <Text style={styles.sectionTitle}>Saha araclari</Text>
-        <View style={styles.toolbarRow}>
-          <PrimaryButton onPress={() => setNotesVisible(true)} tone="secondary">
-            Notlar
-          </PrimaryButton>
-          <PrimaryButton onPress={() => setInventoryVisible(true)} tone="secondary">
-            Envanter
-          </PrimaryButton>
-        </View>
-        <View style={styles.toolbarRow}>
-          <PrimaryButton onPress={() => navigation.goBack()} tone="ghost">
-            Haritaya Don
-          </PrimaryButton>
-          <PrimaryButton onPress={handleToggleInvestigation}>
-            {isInvestigating ? "Arastirmayi Bitir" : "Mekani Arastir"}
-          </PrimaryButton>
-        </View>
-        {!isInvestigating && locationId !== "crime_scene" ? (
-          <View style={styles.toolbarRow}>
-            <PrimaryButton onPress={handleCondemnCurrent}>Bu Supheliyi Mahkum Et</PrimaryButton>
+        <View style={styles.npcInfo}>
+          <Text style={styles.npcIcon}>{isInvestigating ? "👁️" : profile.icon}</Text>
+          <View>
+            <Text style={styles.npcName}>
+              {isInvestigating ? "Fiziksel Çevre" : profile.name}
+            </Text>
+            <Text style={styles.npcTitle}>
+              {isInvestigating ? "Etrafınızdaki Dünya" : profile.role}
+            </Text>
           </View>
-        ) : null}
-        {!canInvestigate && locationId !== "crime_scene" ? (
-          <Text style={styles.hintText}>
-            Bu alani arastirmak icin once yetkili NPC'den arama izni almalisin.
-          </Text>
-        ) : null}
-      </Panel>
+        </View>
 
-      <Panel>
-        <Text style={styles.panelEyebrow}>Pressure report</Text>
-        <Text style={styles.sectionTitle}>Durum ozeti</Text>
-        <Text style={styles.body}>
-          Kullanilan sorgu hakki: {dialoguesUsedToday} / {maxDailyDialogues}
+        <Text style={styles.quota}>
+          Bugün kalan sorgu hakkınız: {Math.max(0, maxDailyDialogues - dialoguesUsedToday)}
         </Text>
-        <Text style={styles.body}>
-          Aktif arama izni: {inventory.activeWarrants.length}
-        </Text>
-        <Text style={styles.body}>
-          Kullanilmis arama izni: {inventory.usedWarrants.length}
-        </Text>
-      </Panel>
+      </View>
 
-      <Panel>
-        <Text style={styles.panelEyebrow}>Transcript</Text>
-        <Text style={styles.sectionTitle}>Konusma akisi</Text>
-        {loading ? <Text style={styles.body}>Gecmis konusmalar yukleniyor...</Text> : null}
-        {!loading && messages.length === 0 ? (
-          <Text style={styles.body}>Bu lokasyonda henuz kayitli bir diyalog yok.</Text>
-        ) : null}
-        <ScrollView
-          ref={messageScrollRef}
-          contentContainerStyle={styles.messageList}
-          style={styles.messageScroll}
-        >
-          {messages.map((item, index) => (
+      <View style={styles.chatColumn}>
+        <ScrollView ref={messageScrollRef} style={styles.messages} contentContainerStyle={styles.messageContent}>
+          {messages.map((msg, index) => (
             <View
-              key={`${index}-${item.role}`}
-              style={[
-                styles.messageBubble,
-                item.role === "player" ? styles.playerBubble : styles.npcBubble,
-              ]}
+              key={`${index}-${msg.role}`}
+              style={[styles.bubble, msg.role === "player" ? styles.playerBubbleWrap : styles.npcBubbleWrap]}
             >
-              <Text style={styles.messageRole}>
-                {item.role === "player"
-                  ? "Inquisitor"
-                  : isInvestigating
-                    ? "Anlatici"
-                    : locationName}
+              <Text style={styles.bubbleLabel}>
+                {msg.role === "player" ? "Inquisitor" : isInvestigating ? "Anlatıcı" : profile.name}
               </Text>
-              <Text style={styles.messageText}>{item.text}</Text>
+              <View style={[styles.bubbleBox, msg.role === "player" ? styles.playerBubble : styles.npcBubble]}>
+                <Text style={styles.bubbleText}>{msg.text}</Text>
+              </View>
             </View>
           ))}
-        </ScrollView>
-      </Panel>
 
-      <Panel>
-        <Text style={styles.panelEyebrow}>Prompt</Text>
-        <Text style={styles.sectionTitle}>Soru gonder</Text>
-        <TextInput
-          multiline
-          onChangeText={setDraft}
-          placeholder="Celiskiyi zorlayacak sorunu yaz..."
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
-          textAlignVertical="top"
-          value={draft}
-        />
-        <Text style={styles.characterCount}>{draft.length} / 200</Text>
-        <PrimaryButton
-          disabled={sending || dialoguesUsedToday >= maxDailyDialogues}
-          onPress={handleSend}
-        >
-          {sending ? "Gonderiliyor..." : "Soruyu Gonder"}
-        </PrimaryButton>
-      </Panel>
+          {loading ? (
+            <View style={[styles.bubble, styles.npcBubbleWrap]}>
+              <Text style={styles.bubbleLabel}>{isInvestigating ? "Anlatıcı" : profile.name}</Text>
+              <View style={[styles.bubbleBox, styles.npcBubble]}>
+                <Text style={styles.typingDots}>...</Text>
+              </View>
+            </View>
+          ) : null}
+        </ScrollView>
+
+        <View style={styles.mobileToolbar}>
+          <Pressable style={styles.toolBtn} onPress={() => setNotesVisible(true)}>
+            <Text style={styles.toolIcon}>📝</Text>
+            <Text style={styles.toolLabel}>Notlar</Text>
+          </Pressable>
+          <Pressable style={styles.toolBtn} onPress={() => setInventoryVisible(true)}>
+            <Text style={styles.toolIcon}>📜</Text>
+            <Text style={styles.toolLabel}>Envanter</Text>
+          </Pressable>
+          <Pressable
+            disabled={!isInvestigating && !canInvestigate}
+            onPress={handleToggleInvestigation}
+            style={[styles.toolBtn, (isInvestigating || canInvestigate) && styles.activeToolBtn]}
+          >
+            <Text style={styles.toolIcon}>{isInvestigating ? "⏹️" : "🔍"}</Text>
+            <Text style={styles.toolLabel}>{isInvestigating ? "Bitir" : "Mekanı Araştır"}</Text>
+          </Pressable>
+          {!isInvestigating && locationId !== "crime_scene" ? (
+            <Pressable style={[styles.toolBtn, styles.condemnToolBtn]} onPress={handleCondemnCurrent}>
+              <Text style={styles.toolIcon}>⚖️</Text>
+              <Text style={[styles.toolLabel, styles.condemnToolLabel]}>Hüküm Ver</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        <View style={styles.inputArea}>
+          {dialoguesUsedToday >= maxDailyDialogues ? (
+            <Text style={styles.limitReached}>Günlük sınırınıza ulaştınız.</Text>
+          ) : (
+            <>
+              <TextInput
+                multiline
+                onChangeText={(value) => setDraft(value.slice(0, 200))}
+                placeholder="Sorunuzu sorun..."
+                placeholderTextColor={inquisitorColors.dim}
+                style={styles.textarea}
+                value={draft}
+              />
+              <Text
+                style={[
+                  styles.characterCount,
+                  draft.length >= 200 && styles.characterCountDanger,
+                ]}
+              >
+                {draft.length}/200
+              </Text>
+              <Pressable
+                disabled={sending || !draft.trim()}
+                onPress={handleSend}
+                style={[styles.sendButton, (sending || !draft.trim()) && styles.sendButtonDisabled]}
+              >
+                <Text style={styles.sendButtonText}>Gönder</Text>
+              </Pressable>
+            </>
+          )}
+        </View>
+      </View>
 
       <AppModal
-        title="Notlar"
-        subtitle="Supheleri ve celiskileri burada saklayip session ile senkronlayabilirsin."
+        title="Engizisyoncunun Notları"
+        subtitle="Şüpheli davranışları buraya not et."
         visible={notesVisible}
         onClose={() => setNotesVisible(false)}
       >
         <TextInput
           multiline
           onChangeText={setNotesDraft}
-          placeholder="Suphelileri, cizelgeleri ve dikkat ceken detaylari yaz..."
-          placeholderTextColor={colors.textMuted}
+          placeholder="Şüpheli davranışları, çelişkileri ve analizlerini yaz..."
+          placeholderTextColor={inquisitorColors.dim}
           style={styles.notesInput}
           textAlignVertical="top"
           value={notesDraft}
         />
-        <PrimaryButton disabled={savingNotes} onPress={handleSaveNotes}>
-          {savingNotes ? "Kaydediliyor..." : "Notlari Kaydet"}
-        </PrimaryButton>
+        <Pressable onPress={handleSaveNotes} style={styles.modalActionButton}>
+          <Text style={styles.modalActionButtonText}>
+            {savingNotes ? "Kaydediliyor..." : "Anladım"}
+          </Text>
+        </Pressable>
       </AppModal>
 
       <AppModal
         title="Envanter"
-        subtitle="Hazir izinleri takip edip arastirma modunu buradan planlayabilirsin."
+        subtitle="Hazır ve kullanılmış izinler."
         visible={inventoryVisible}
         onClose={() => setInventoryVisible(false)}
       >
-        <View style={styles.messageList}>
+        <ScrollView>
           {inventory.activeWarrants.length === 0 && inventory.usedWarrants.length === 0 ? (
-            <Text style={styles.body}>Henuz bir izin veya esya toplanmadi.</Text>
+            <Text style={styles.emptyText}>Henüz bir eşyan yok.</Text>
           ) : null}
           {inventory.activeWarrants.map((warrant) => (
-            <View key={`active-${warrant}`} style={styles.inventoryCard}>
-              <Text style={styles.inventoryLabel}>Arama Izni</Text>
-              <Text style={styles.inventoryValue}>
-                {getLocationLabel(scenarioType, warrant)}
-              </Text>
-              <Text style={styles.inventoryStatus}>Hazir</Text>
+            <View key={`active-${warrant}`} style={styles.inventoryItem}>
+              <Text style={styles.inventoryIcon}>📜</Text>
+              <View style={styles.inventoryTextWrap}>
+                <Text style={styles.inventoryName}>Arama İzni</Text>
+                <Text style={styles.inventoryLocation}>{getLocationLabel(scenarioType, warrant)}</Text>
+              </View>
+              <Text style={styles.inventoryStatus}>(Hazır)</Text>
             </View>
           ))}
           {inventory.usedWarrants.map((warrant) => (
-            <View key={`used-${warrant}`} style={styles.inventoryCardMuted}>
-              <Text style={styles.inventoryLabel}>Arama Izni</Text>
-              <Text style={styles.inventoryValue}>
-                {getLocationLabel(scenarioType, warrant)}
-              </Text>
-              <Text style={styles.inventoryStatusMuted}>Kullanildi</Text>
+            <View key={`used-${warrant}`} style={[styles.inventoryItem, styles.inventoryItemUsed]}>
+              <Text style={styles.inventoryIcon}>📜</Text>
+              <View style={styles.inventoryTextWrap}>
+                <Text style={styles.inventoryName}>Arama İzni</Text>
+                <Text style={[styles.inventoryLocation, styles.inventoryLocationUsed]}>
+                  {getLocationLabel(scenarioType, warrant)}
+                </Text>
+              </View>
+              <Text style={styles.inventoryStatus}>(Kullanıldı)</Text>
             </View>
           ))}
-        </View>
+        </ScrollView>
       </AppModal>
-    </Screen>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    gap: spacing.xs,
-  },
-  eyebrow: {
-    color: colors.accent,
-    textTransform: "uppercase",
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
-  title: {
-    color: colors.text,
-    fontSize: 36,
-    fontWeight: "800",
-    fontFamily: "serif",
-  },
-  subtitle: {
-    color: colors.textMuted,
-  },
-  sceneBanner: {
-    flexDirection: "row",
-    gap: spacing.md,
-    borderWidth: 1,
-    borderRadius: 24,
-    backgroundColor: colors.backgroundElevated,
-    padding: spacing.lg,
-  },
-  sceneIcon: {
-    fontSize: 34,
-  },
-  sceneCopy: {
+  main: {
     flex: 1,
-    gap: spacing.xs,
+    backgroundColor: inquisitorColors.bg,
   },
-  sceneTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.65)",
   },
-  sceneText: {
-    color: colors.textMuted,
-    lineHeight: 21,
+  header: {
+    paddingTop: 18,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(232, 220, 196, 0.1)",
+    zIndex: 2,
   },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: spacing.sm,
-  },
-  panelEyebrow: {
-    color: colors.accent,
+  back: {
+    color: inquisitorColors.muted,
     fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  npcInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  npcIcon: {
+    fontSize: 30,
+    marginRight: 10,
+  },
+  npcName: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 18,
     fontWeight: "700",
+  },
+  npcTitle: {
+    color: inquisitorColors.muted,
+    fontSize: 11,
+    fontStyle: "italic",
+  },
+  quota: {
+    color: inquisitorColors.muted,
+    fontSize: 10,
+    textAlign: "center",
+  },
+  chatColumn: {
+    flex: 1,
+    zIndex: 2,
+  },
+  messages: {
+    flex: 1,
+  },
+  messageContent: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 12,
+  },
+  bubble: {
+    marginBottom: 16,
+    maxWidth: "92%",
+  },
+  playerBubbleWrap: {
+    alignSelf: "flex-end",
+  },
+  npcBubbleWrap: {
+    alignSelf: "flex-start",
+  },
+  bubbleLabel: {
+    color: inquisitorColors.muted,
+    fontSize: 10,
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    marginBottom: spacing.xs,
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
-  toolbarRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  hintText: {
-    color: colors.accent,
-    lineHeight: 21,
-  },
-  body: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  messageList: {
-    gap: spacing.sm,
-  },
-  messageScroll: {
-    maxHeight: 360,
-  },
-  messageBubble: {
-    borderRadius: 18,
-    padding: spacing.md,
-    gap: spacing.xs,
+  bubbleBox: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   playerBubble: {
-    backgroundColor: colors.accentStrong,
+    backgroundColor: inquisitorColors.primary,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 8,
   },
   npcBubble: {
-    backgroundColor: colors.panelMuted,
+    backgroundColor: "#111111",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(232,220,196,0.1)",
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
   },
-  messageRole: {
-    color: colors.text,
-    fontWeight: "700",
+  bubbleText: {
+    color: inquisitorColors.parchment,
+    fontSize: 15,
+    lineHeight: 26,
   },
-  messageText: {
-    color: colors.text,
-    lineHeight: 22,
+  typingDots: {
+    color: inquisitorColors.muted,
+    fontSize: 20,
+    letterSpacing: 2,
   },
-  input: {
-    minHeight: 140,
-    borderRadius: 18,
+  mobileToolbar: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "rgba(5,5,5,0.95)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(138, 3, 3, 0.3)",
+  },
+  toolBtn: {
+    minWidth: 72,
+    marginHorizontal: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.panelMuted,
-    color: colors.text,
-    padding: spacing.md,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.03)",
+  },
+  activeToolBtn: {
+    borderColor: inquisitorColors.primary,
+    backgroundColor: "rgba(138,3,3,0.15)",
+  },
+  condemnToolBtn: {
+    borderColor: "rgba(138,3,3,0.6)",
+    backgroundColor: "rgba(138,3,3,0.25)",
+  },
+  toolIcon: {
+    fontSize: 18,
+    marginBottom: 2,
+  },
+  toolLabel: {
+    color: inquisitorColors.muted,
+    fontSize: 9,
+    textAlign: "center",
+  },
+  condemnToolLabel: {
+    color: inquisitorColors.parchment,
+    fontWeight: "600",
+  },
+  inputArea: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 16,
+    backgroundColor: "rgba(17,17,17,0.82)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(232,220,196,0.1)",
+  },
+  textarea: {
+    minHeight: 86,
+    borderWidth: 1,
+    borderColor: "rgba(232,220,196,0.1)",
+    borderRadius: 4,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    color: inquisitorColors.parchment,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
     lineHeight: 22,
   },
   characterCount: {
-    color: colors.textMuted,
+    color: "#555555",
+    fontSize: 11,
     textAlign: "right",
-    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  characterCountDanger: {
+    color: inquisitorColors.primary,
+  },
+  sendButton: {
+    alignSelf: "flex-end",
+    width: 96,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: inquisitorColors.primary,
+    borderRadius: 4,
+  },
+  sendButtonDisabled: {
+    opacity: 0.4,
+  },
+  sendButtonText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  limitReached: {
+    color: inquisitorColors.primary,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   notesInput: {
-    minHeight: 240,
-    borderRadius: 18,
+    minHeight: 320,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.panelMuted,
-    color: colors.text,
-    padding: spacing.md,
-    lineHeight: 22,
+    borderColor: inquisitorColors.border,
+    borderRadius: 4,
+    color: inquisitorColors.parchment,
+    padding: 12,
+    fontSize: 16,
+    lineHeight: 28,
   },
-  inventoryCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.panelMuted,
-    padding: spacing.md,
-    gap: spacing.xs,
+  modalActionButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    backgroundColor: inquisitorColors.primary,
+    borderRadius: 2,
   },
-  inventoryCardMuted: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: "#141218",
-    padding: spacing.md,
-    gap: spacing.xs,
+  modalActionButtonText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
+  },
+  emptyText: {
+    color: inquisitorColors.muted,
+    textAlign: "center",
+  },
+  inventoryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: inquisitorColors.primary,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+  inventoryItemUsed: {
     opacity: 0.6,
   },
-  inventoryLabel: {
-    color: colors.text,
-    fontWeight: "700",
+  inventoryIcon: {
+    fontSize: 20,
+    marginRight: 10,
   },
-  inventoryValue: {
-    color: colors.textMuted,
+  inventoryTextWrap: {
+    flex: 1,
+  },
+  inventoryName: {
+    color: inquisitorColors.parchment,
+    fontWeight: "600",
+  },
+  inventoryLocation: {
+    color: inquisitorColors.primary,
+    fontSize: 12,
+  },
+  inventoryLocationUsed: {
+    color: inquisitorColors.muted,
   },
   inventoryStatus: {
-    color: colors.success,
-    fontWeight: "700",
-  },
-  inventoryStatusMuted: {
-    color: colors.textMuted,
-    fontWeight: "700",
+    color: inquisitorColors.muted,
+    fontSize: 11,
   },
 });

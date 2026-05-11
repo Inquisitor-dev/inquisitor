@@ -28,7 +28,7 @@ export function AppModal({
               {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
             </View>
             <Pressable onPress={onClose} style={styles.close}>
-              <Text style={styles.closeText}>Close</Text>
+              <Text style={styles.closeText}>×</Text>
             </Pressable>
           </View>
           <View style={styles.body}>{children}</View>
@@ -41,18 +41,16 @@ export function AppModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(6,4,3,0.82)",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.85)",
   },
   sheet: {
-    maxHeight: "88%",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    backgroundColor: colors.panel,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.border,
+    marginHorizontal: spacing.md,
+    maxHeight: "90%",
+    borderRadius: 4,
+    backgroundColor: "#0f0b09",
+    borderWidth: 1,
+    borderColor: "#3d342d",
     padding: spacing.lg,
     gap: spacing.md,
   },
@@ -62,7 +60,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: "#3d342d",
   },
   headerText: {
     flex: 1,
@@ -70,7 +68,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 22,
+    fontFamily: "serif",
+    fontSize: 24,
     fontWeight: "800",
   },
   subtitle: {
@@ -79,15 +78,16 @@ const styles = StyleSheet.create({
   },
   close: {
     alignSelf: "flex-start",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.panelStrong,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(232, 220, 196, 0.2)",
   },
   closeText: {
-    color: colors.accent,
+    color: colors.text,
     fontWeight: "700",
   },
   body: {

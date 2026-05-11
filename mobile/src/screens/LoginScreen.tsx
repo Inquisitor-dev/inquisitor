@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { Screen } from "@/components/Screen";
 import { env } from "@/config/env";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { inquisitorColors } from "@/theme/inquisitor";
 
 export function LoginScreen() {
   const setUser = useGameStore((state) => state.setUser);
@@ -53,26 +50,18 @@ export function LoginScreen() {
   };
 
   return (
-    <Screen>
+    <View style={styles.main}>
+      <View pointerEvents="none" style={styles.vignette} />
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>Mobile dossier</Text>
+        <Text style={styles.eyebrow}>Archive access</Text>
         <Text style={styles.title}>The Inquisitor</Text>
         <Text style={styles.body}>
-          Koyun ustune inen sessizligi yaracak kisi sensin. Giris yap, dosyayi ac ve
-          hakikatin hangi evde saklandigini ortaya cikar.
+          Ashenmoor'a dönmeden önce kayıt doğrulaması gerekiyor.
         </Text>
-        <View style={styles.heroCard}>
-          <Text style={styles.heroCardLabel}>Field protocol</Text>
-          <Text style={styles.heroCardText}>
-            Mobil surum dikey oynanis icin yeniden kuruluyor. Bu build Expo Go uzerinde
-            dogrudan case flow testine hazir.
-          </Text>
-        </View>
       </View>
 
-      <Panel>
-        <Text style={styles.panelEyebrow}>Archive access</Text>
-        <Text style={styles.panelTitle}>Engizisyon kaydina giris</Text>
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>Engizisyon kaydına giriş</Text>
         <Text style={styles.apiHint}>
           API target: {env.apiBaseUrl} ({env.apiBaseUrlSource})
         </Text>
@@ -100,14 +89,14 @@ export function LoginScreen() {
           keyboardType="email-address"
           onChangeText={setEmail}
           placeholder="E-mail"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={inquisitorColors.dim}
           style={styles.input}
           value={email}
         />
         <TextInput
           onChangeText={setPassword}
           placeholder="Password"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={inquisitorColors.dim}
           secureTextEntry
           style={styles.input}
           value={password}
@@ -118,114 +107,93 @@ export function LoginScreen() {
         <PrimaryButton disabled={loading} onPress={handleLogin}>
           {loading ? "Signing in..." : "Open the case"}
         </PrimaryButton>
-        <Text style={styles.footerNote}>
-          Ilk hedefimiz hizli test degil, atmosferi kuvvetli bir mobil sorusturma hissi.
-        </Text>
-      </Panel>
-    </Screen>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    backgroundColor: inquisitorColors.bg,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
   hero: {
-    paddingTop: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  heroCard: {
-    marginTop: spacing.lg,
-    padding: spacing.md,
-    borderRadius: 20,
-    backgroundColor: colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: colors.accentSoft,
-  },
-  heroCardLabel: {
-    color: colors.accent,
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    marginBottom: spacing.xs,
-  },
-  heroCardText: {
-    color: colors.textMuted,
-    fontSize: 14,
-    lineHeight: 21,
+    alignItems: "center",
+    marginBottom: 28,
   },
   eyebrow: {
-    color: colors.accent,
+    color: inquisitorColors.muted,
     fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
+    fontWeight: "500",
+    letterSpacing: 3,
     textTransform: "uppercase",
-    marginBottom: spacing.xs,
+    marginBottom: 14,
   },
   title: {
-    color: colors.text,
-    fontSize: 42,
-    fontWeight: "800",
-    lineHeight: 46,
-    marginBottom: spacing.sm,
+    color: inquisitorColors.parchment,
     fontFamily: "serif",
+    fontSize: 46,
+    fontWeight: "800",
+    marginBottom: 12,
   },
   body: {
-    color: colors.textMuted,
-    fontSize: 16,
-    lineHeight: 24,
+    color: inquisitorColors.muted,
+    fontSize: 15,
+    textAlign: "center",
   },
-  panelEyebrow: {
-    color: colors.accent,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: spacing.xs,
+  panel: {
+    backgroundColor: "#0f0b09",
+    borderWidth: 1,
+    borderColor: "#3d342d",
+    borderRadius: 4,
+    padding: 20,
   },
   panelTitle: {
-    color: colors.text,
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: spacing.sm,
+    marginBottom: 12,
   },
   apiHint: {
-    color: colors.textMuted,
+    color: inquisitorColors.muted,
     fontSize: 12,
     lineHeight: 18,
-    marginBottom: spacing.xs,
+    marginBottom: 6,
   },
   warningText: {
-    color: colors.accent,
+    color: inquisitorColors.primary,
     fontSize: 12,
     lineHeight: 18,
-    marginBottom: spacing.xs,
+    marginBottom: 6,
   },
   statusText: {
-    color: colors.textMuted,
+    color: inquisitorColors.muted,
     fontSize: 12,
     lineHeight: 18,
-    marginBottom: spacing.sm,
+    marginBottom: 12,
   },
   statusOk: {
-    color: colors.success,
+    color: "#7aba7a",
   },
   statusError: {
-    color: colors.accentStrong,
+    color: "#cc4444",
   },
   input: {
     minHeight: 54,
-    borderRadius: 16,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.panelMuted,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    borderColor: "rgba(232, 220, 196, 0.1)",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    color: inquisitorColors.parchment,
+    paddingHorizontal: 14,
+    marginBottom: 12,
     fontSize: 15,
-  },
-  footerNote: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: spacing.xs,
   },
 });

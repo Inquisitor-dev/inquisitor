@@ -1,27 +1,46 @@
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-import { Panel } from "@/components/Panel";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { Screen } from "@/components/Screen";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { inquisitorColors } from "@/theme/inquisitor";
 import type { SessionSnapshot } from "@/types/game";
 
 function isSessionSnapshot(value: unknown): value is SessionSnapshot {
-  return Boolean(
-    value &&
-      typeof value === "object" &&
-      "id" in value &&
-      typeof value.id === "string",
-  );
+  return Boolean(value && typeof value === "object" && "id" in value);
 }
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+
+function LandingButton({
+  label,
+  onPress,
+  disabled = false,
+  primary = false,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  primary?: boolean;
+}) {
+  return (
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        primary ? styles.primaryButton : styles.secondaryButton,
+        disabled && styles.buttonDisabled,
+        pressed && !disabled && styles.buttonPressed,
+      ]}
+    >
+      <Text style={[styles.buttonLabel, !primary && styles.secondaryButtonLabel]}>{label}</Text>
+      {primary ? <Text style={styles.buttonArrow}>→</Text> : null}
+    </Pressable>
+  );
+}
 
 export function HomeScreen({ navigation }: Props) {
   const {
@@ -29,15 +48,15 @@ export function HomeScreen({ navigation }: Props) {
     userEmail,
     sessionId,
     currentDay,
-    timeOfDay,
-    scenarioType,
     difficulty,
+    scenarioType,
     hydrateSession,
     logout,
     clearSession,
   } = useGameStore();
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [resuming, setResuming] = useState(false);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -64,12 +83,10 @@ export function HomeScreen({ navigation }: Props) {
     };
 
     void bootstrap();
-  }, [authToken, hydrateSession, clearSession]);
+  }, [authToken, clearSession, hydrateSession]);
 
   const handleCreateSession = async () => {
-    if (!authToken) {
-      return;
-    }
+    if (!authToken) return;
 
     try {
       setCreating(true);
@@ -88,130 +105,375 @@ export function HomeScreen({ navigation }: Props) {
     }
   };
 
+  const handleResume = async () => {
+    if (!sessionId) return;
+
+    try {
+      setResuming(true);
+      navigation.navigate("Map");
+    } finally {
+      setResuming(false);
+    }
+  };
+
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text style={styles.kicker}>Case preparation</Text>
-        <Text style={styles.title}>Bir sonraki hukum icin dosya hazir.</Text>
-        <Text style={styles.subtitle}>
-          Buradan aktif sorusturmani surdurabilir ya da yeni bir dava acip koyun
-          dengelerini yeniden bozabilirsin.
-        </Text>
+    <View style={styles.main}>
+      <View pointerEvents="none" style={styles.vignette} />
+      <View pointerEvents="none" style={styles.cornerTopLeft} />
+      <View pointerEvents="none" style={styles.cornerTopRight} />
+      <View pointerEvents="none" style={styles.cornerBottomLeft} />
+      <View pointerEvents="none" style={styles.cornerBottomRight} />
+
+      <View style={styles.soundStub}>
+        <Text style={styles.soundIcon}>🔊</Text>
       </View>
 
-      <Panel>
-        <Text style={styles.panelEyebrow}>Field brief</Text>
-        <Text style={styles.sectionTitle}>Sorusturma profili</Text>
-        <Text style={styles.item}>Ajan: {userEmail ?? "Unknown"}</Text>
-        <Text style={styles.item}>Senaryo: {scenarioType}</Text>
-        <Text style={styles.item}>Zorluk: {difficulty}</Text>
-        <Text style={styles.item}>Kayitli oturum: {loading ? "Checking..." : sessionId ?? "None"}</Text>
-      </Panel>
-
-      <Panel>
-        <Text style={styles.panelEyebrow}>Clock and pressure</Text>
-        <Text style={styles.sectionTitle}>Sahadaki durum</Text>
-        <View style={styles.statRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Gun</Text>
-            <Text style={styles.statValue}>{currentDay}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Vakit</Text>
-            <Text style={styles.statValue}>{timeOfDay}</Text>
-          </View>
+      <View style={styles.hero}>
+        <View style={styles.seal}>
+          <View style={styles.sealOuter} />
+          <View style={styles.sealInner} />
+          <View style={styles.crossVertical} />
+          <View style={styles.crossHorizontal} />
+          <View style={styles.sealDiamondCenter} />
+          <View style={[styles.sealDiamond, styles.sealDiamondTop]} />
+          <View style={[styles.sealDiamond, styles.sealDiamondBottom]} />
+          <View style={[styles.sealDiamond, styles.sealDiamondLeft]} />
+          <View style={[styles.sealDiamond, styles.sealDiamondRight]} />
         </View>
-        <Text style={styles.item}>
-          Aktif session varsa ayni case board uzerinden devam edeceksin.
+
+        <Text style={styles.eyebrow}>— ANNO DOMINI MCCXII —</Text>
+        <Text style={styles.title}>The Inquisitor</Text>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerIcon}>✦</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Text style={styles.lead}>Bu köyde kimse göründüğü gibi değil.</Text>
+        <Text style={styles.description}>
+          Bu hikayenin kahramanı sen değilsin. Yetki, sabır ve soğuk kanlılıkla
+          donanmış şekilde köylüleri sorgula, çelişkileri ortaya çıkar ve nihai hükmünü
+          ver.
         </Text>
-      </Panel>
+        <Text style={styles.slogan}>DINLE · ANALIZ ET · HUKUM VER</Text>
 
-      <PrimaryButton
-        disabled={loading || creating}
-        onPress={() => {
-          if (sessionId) {
-            navigation.navigate("Map");
-            return;
-          }
+        <View style={styles.cta}>
+          {sessionId ? (
+            <LandingButton
+              disabled={loading || resuming}
+              label={resuming ? `Soruşturma yükleniyor...` : `Soruşturmaya Devam Et (Gün ${currentDay})`}
+              onPress={handleResume}
+            />
+          ) : null}
 
-          void handleCreateSession();
-        }}
-      >
-        {sessionId ? "Resume investigation" : creating ? "Preparing case..." : "Start new investigation"}
-      </PrimaryButton>
+          <LandingButton
+            disabled={loading || creating}
+            label={
+              creating
+                ? "Ashenmoor'a giden araba hazırlanıyor..."
+                : sessionId
+                  ? "Yeni Soruşturma Başlat"
+                  : "Soruşturmaya Başla"
+            }
+            onPress={() => {
+              if (sessionId) {
+                void handleCreateSession();
+              } else {
+                void handleCreateSession();
+              }
+            }}
+            primary
+          />
 
-      <PrimaryButton disabled={false} onPress={logout} tone="ghost">
-        Sign out
-      </PrimaryButton>
-    </Screen>
+          <LandingButton
+            label={`Ajan: ${userEmail ?? "bilinmiyor"}`}
+            onPress={() => {}}
+            disabled
+          />
+
+          <LandingButton label="Hesaptan Çıkış Yap" onPress={logout} />
+          <Text style={styles.sessionNote}>Mobil soruşturma arayüzü · Expo Go build</Text>
+        </View>
+
+        <View style={styles.bottomRule}>
+          <View style={styles.bottomRuleLine} />
+          <Text style={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</Text>
+          <View style={styles.bottomRuleLine} />
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: spacing.md,
+  main: {
+    flex: 1,
+    backgroundColor: inquisitorColors.bg,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    overflow: "hidden",
   },
-  kicker: {
-    color: colors.accent,
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "transparent",
+    shadowColor: "#000",
+    shadowOpacity: 0.9,
+    shadowRadius: 100,
+    elevation: 1,
+  },
+  soundStub: {
+    position: "absolute",
+    top: 18,
+    right: 22,
+    zIndex: 5,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  soundIcon: {
+    color: inquisitorColors.parchment,
+    fontSize: 18,
+  },
+  cornerTopLeft: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    width: 48,
+    height: 48,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.5)",
+  },
+  cornerTopRight: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    width: 48,
+    height: 48,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.5)",
+  },
+  cornerBottomLeft: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    width: 48,
+    height: 48,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.5)",
+  },
+  cornerBottomRight: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 48,
+    height: 48,
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.5)",
+  },
+  hero: {
+    width: "100%",
+    maxWidth: 430,
+    alignItems: "center",
+    paddingVertical: 48,
+  },
+  seal: {
+    width: 120,
+    height: 120,
+    marginBottom: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sealOuter: {
+    position: "absolute",
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 1.5,
+    borderColor: inquisitorColors.primary,
+    borderStyle: "dashed",
+  },
+  sealInner: {
+    position: "absolute",
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.5)",
+  },
+  crossVertical: {
+    position: "absolute",
+    width: 1.5,
+    height: 78,
+    backgroundColor: inquisitorColors.primary,
+  },
+  crossHorizontal: {
+    position: "absolute",
+    width: 78,
+    height: 1.5,
+    backgroundColor: inquisitorColors.primary,
+  },
+  sealDiamondCenter: {
+    width: 10,
+    height: 10,
+    backgroundColor: inquisitorColors.primary,
+    transform: [{ rotate: "45deg" }],
+  },
+  sealDiamond: {
+    position: "absolute",
+    width: 9,
+    height: 9,
+    borderWidth: 1,
+    borderColor: inquisitorColors.primary,
+    transform: [{ rotate: "45deg" }],
+  },
+  sealDiamondTop: {
+    top: 14,
+  },
+  sealDiamondBottom: {
+    bottom: 14,
+  },
+  sealDiamondLeft: {
+    left: 14,
+  },
+  sealDiamondRight: {
+    right: 14,
+  },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 4,
+    color: inquisitorColors.muted,
     textTransform: "uppercase",
-    marginBottom: spacing.xs,
+    marginBottom: 18,
   },
   title: {
-    color: colors.text,
-    fontSize: 36,
-    fontWeight: "800",
-    lineHeight: 42,
-    marginBottom: spacing.sm,
     fontFamily: "serif",
+    fontSize: 54,
+    fontWeight: "900",
+    lineHeight: 58,
+    color: inquisitorColors.parchment,
+    marginBottom: 24,
+    textAlign: "center",
   },
-  subtitle: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  panelEyebrow: {
-    color: colors.accent,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: spacing.xs,
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: spacing.sm,
-  },
-  item: {
-    color: colors.textMuted,
-    lineHeight: 22,
-    marginBottom: spacing.xs,
-  },
-  statRow: {
+  divider: {
+    width: "100%",
+    maxWidth: 320,
     flexDirection: "row",
-    marginBottom: spacing.md,
+    alignItems: "center",
+    marginBottom: 24,
   },
-  statCard: {
+  dividerLine: {
     flex: 1,
-    backgroundColor: colors.panelStrong,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginRight: spacing.sm,
+    height: 1,
+    backgroundColor: "rgba(138, 3, 3, 0.4)",
   },
-  statLabel: {
-    color: colors.textMuted,
+  dividerIcon: {
+    color: inquisitorColors.primary,
+    fontSize: 10,
+    marginHorizontal: 14,
+  },
+  lead: {
+    fontFamily: "serif",
+    fontSize: 28,
+    fontStyle: "italic",
+    color: inquisitorColors.parchment,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  description: {
+    color: inquisitorColors.muted,
+    fontSize: 16,
+    lineHeight: 31,
+    textAlign: "center",
+    marginBottom: 22,
+  },
+  slogan: {
+    color: inquisitorColors.primary,
     fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 5,
     textTransform: "uppercase",
-    marginBottom: spacing.xs,
+    marginBottom: 36,
   },
-  statValue: {
-    color: colors.text,
-    fontSize: 26,
-    fontWeight: "800",
+  cta: {
+    width: "100%",
+    marginBottom: 40,
+  },
+  button: {
+    minHeight: 66,
+    borderRadius: 4,
+    paddingHorizontal: 22,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  primaryButton: {
+    backgroundColor: inquisitorColors.primary,
+    borderWidth: 1,
+    borderColor: inquisitorColors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "rgba(138, 3, 3, 0.3)",
+  },
+  buttonPressed: {
+    opacity: 0.92,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonLabel: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 19,
+    fontWeight: "700",
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+  },
+  secondaryButtonLabel: {
+    color: inquisitorColors.muted,
+    fontSize: 15,
+  },
+  buttonArrow: {
+    color: inquisitorColors.parchment,
+    fontSize: 20,
+    marginLeft: 10,
+  },
+  sessionNote: {
+    color: inquisitorColors.dim,
+    fontSize: 11,
+    textAlign: "center",
+    letterSpacing: 1,
+    marginTop: 2,
+  },
+  bottomRule: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bottomRuleLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(232, 220, 196, 0.1)",
+  },
+  bottomRuleText: {
+    color: inquisitorColors.dim,
+    fontSize: 10,
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
+    marginHorizontal: 12,
   },
 });

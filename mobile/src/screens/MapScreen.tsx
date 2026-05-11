@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
+  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,24 +12,27 @@ import {
 } from "react-native";
 
 import { AppModal } from "@/components/AppModal";
-import { Panel } from "@/components/Panel";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { Screen } from "@/components/Screen";
 import {
   getLocationLabel,
   getScenarioNpcs,
-  getScenarioTitle,
   getVisibleLocations,
   timeLabels,
 } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import {
+  getMapAsset,
+  getMapHotspots,
+  getScenarioPlaceTitle,
+  inquisitorColors,
+} from "@/theme/inquisitor";
 import type { NpcProfile } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
+
+const MAP_WIDTH = 1200;
+const MAP_HEIGHT = 1180;
 
 export function MapScreen({ navigation }: Props) {
   const {
@@ -54,6 +58,7 @@ export function MapScreen({ navigation }: Props) {
     hydrateSession,
     setTruthReveal,
     setLocationClues,
+    logout,
   } = useGameStore();
 
   const [notesDraft, setNotesDraft] = useState(notes);
@@ -70,18 +75,12 @@ export function MapScreen({ navigation }: Props) {
 
   useEffect(() => {
     const syncSession = async () => {
-      if (!authToken || !sessionId) {
-        return;
-      }
+      if (!authToken || !sessionId) return;
 
       try {
         const data = await api.getSession(authToken, sessionId);
-        if (data.scenarioType) {
-          setScenarioType(data.scenarioType);
-        }
-        if (data.difficulty) {
-          setDifficulty(data.difficulty);
-        }
+        if (data.scenarioType) setScenarioType(data.scenarioType);
+        if (data.difficulty) setDifficulty(data.difficulty);
         setWarrants(data.activeWarrants ?? [], data.usedWarrants ?? []);
         hydrateSession(data);
       } catch (error) {
@@ -93,14 +92,11 @@ export function MapScreen({ navigation }: Props) {
     };
 
     void syncSession();
-  }, [authToken, sessionId, hydrateSession, setDifficulty, setScenarioType, setWarrants]);
+  }, [authToken, hydrateSession, sessionId, setDifficulty, setScenarioType, setWarrants]);
 
   useEffect(() => {
     const runTimeout = async () => {
-      if (!authToken || !sessionId || isTimingOut) {
-        return;
-      }
-
+      if (!authToken || !sessionId || isTimingOut) return;
       if (currentDay >= 4 && timeOfDay >= 4) {
         try {
           setIsTimingOut(true);
@@ -125,19 +121,20 @@ export function MapScreen({ navigation }: Props) {
 
   const locations = useMemo(
     () => getVisibleLocations(scenarioType, difficulty),
-    [scenarioType, difficulty],
+    [difficulty, scenarioType],
   );
-
+  const hotspots = useMemo(
+    () => getMapHotspots(scenarioType, difficulty),
+    [difficulty, scenarioType],
+  );
   const villagers = useMemo(
     () => getScenarioNpcs(scenarioType, difficulty),
-    [scenarioType, difficulty],
+    [difficulty, scenarioType],
   );
+  const isNight = timeOfDay >= 4;
 
   const handleSaveNotes = async () => {
-    if (!authToken || !sessionId) {
-      return;
-    }
-
+    if (!authToken || !sessionId) return;
     try {
       setBusyAction("notes");
       await api.updateNotes(authToken, sessionId, notesDraft);
@@ -154,24 +151,14 @@ export function MapScreen({ navigation }: Props) {
   };
 
   const handleOpenLocation = async (locationId: string, locationName: string) => {
-    if (!authToken || !sessionId) {
-      return;
-    }
-
-    if (timeOfDay >= 4) {
-      Alert.alert("Gun kapandi", "Yeni bir yere gitmeden once gunu bitirmen gerekiyor.");
-      return;
-    }
+    if (!authToken || !sessionId || isNight) return;
 
     try {
       setLoadingLocationId(locationId);
       await api.advanceTime(authToken, sessionId);
       setTimeOfDay(Math.min(4, timeOfDay + 1));
       setSelectedNpc(locationId);
-      navigation.navigate("Interact", {
-        locationId,
-        locationName,
-      });
+      navigation.navigate("Interact", { locationId, locationName });
     } catch (error) {
       Alert.alert(
         "Location could not open",
@@ -183,9 +170,7 @@ export function MapScreen({ navigation }: Props) {
   };
 
   const handleEndDay = async () => {
-    if (!authToken || !sessionId) {
-      return;
-    }
+    if (!authToken || !sessionId) return;
 
     if (currentDay >= 4) {
       try {
@@ -224,32 +209,21 @@ export function MapScreen({ navigation }: Props) {
   };
 
   const handleCondemn = (npc: NpcProfile) => {
-    if (!authToken || !sessionId) {
-      return;
-    }
+    if (!authToken || !sessionId) return;
 
     Alert.alert(
-      "Engizisyon hukmu",
-      `${npc.name} icin nihai karari vermek istedigine emin misin? Bu secim geri alinamaz.`,
+      "Engizisyon Hükmü",
+      `${npc.name} isimli köylüyü ölüme mahkum etmek istediğine emin misin?`,
       [
-        { text: "Vazgec", style: "cancel" },
+        { text: "Vazgeç", style: "cancel" },
         {
-          text: "Mahkum et",
+          text: "Onayla",
           style: "destructive",
           onPress: async () => {
             try {
               const result = await api.condemn(authToken, sessionId, npc.id);
-              if (result.session?.truthReveal) {
-                setTruthReveal(result.session.truthReveal);
-              }
-              if (result.session?.locationClues) {
-                setLocationClues(result.session.locationClues);
-              }
-
-              Alert.alert(
-                result.won ? "Dogru hedef" : "Yanlis hedef",
-                result.message ?? "Karar uygulandi.",
-              );
+              if (result.session?.truthReveal) setTruthReveal(result.session.truthReveal);
+              if (result.session?.locationClues) setLocationClues(result.session.locationClues);
               setCondemnVisible(false);
               navigation.replace("Result", {
                 won: Boolean(result.won),
@@ -268,153 +242,164 @@ export function MapScreen({ navigation }: Props) {
   };
 
   return (
-    <>
-      <Screen>
-        <View style={styles.hero}>
-        <View style={styles.heroText}>
-            <Text style={styles.eyebrow}>{getScenarioTitle(scenarioType)}</Text>
-            <Text style={styles.title}>
-              {timeLabels[timeOfDay]} / Gun {currentDay}
-            </Text>
-            <Text style={styles.subtitle}>
-              Koyun her evi kapali ama her kapinin ardinda farkli bir catlak var. Hangi
-              izi once acacagina dikkat et.
-            </Text>
-          </View>
-          <View style={styles.badges}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeLabel}>Soru Hakki</Text>
-              <Text style={styles.badgeValue}>
-                {Math.max(0, maxDailyDialogues - dialoguesUsedToday)} / {maxDailyDialogues}
-              </Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeLabel}>Hazir Emir</Text>
-              <Text style={styles.badgeValue}>{inventory.activeWarrants.length}</Text>
-            </View>
-          </View>
-        </View>
+    <View style={styles.main}>
+      <View pointerEvents="none" style={[styles.vignette, isNight && styles.nightVignette]} />
 
-        <Panel>
-          <Text style={styles.panelEyebrow}>Command table</Text>
-          <Text style={styles.sectionTitle}>Harita akislari</Text>
-          <View style={styles.actionsRow}>
-            <PrimaryButton onPress={() => setNotesVisible(true)} tone="secondary">
-              Notlari Ac
-            </PrimaryButton>
-            <PrimaryButton onPress={() => setInventoryVisible(true)} tone="secondary">
-              Envanter
-            </PrimaryButton>
-          </View>
-          <View style={styles.actionsRow}>
-            <PrimaryButton onPress={() => setCondemnVisible(true)} tone="ghost">
-              Mahkumu Sec
-            </PrimaryButton>
-            <PrimaryButton
-              disabled={busyAction === "end-day"}
-              onPress={handleEndDay}
-            >
-              {busyAction === "end-day"
-                ? "Gun Kapaniyor..."
-                : currentDay >= 4
-                  ? "Sure Doldu"
-                  : "Gunu Bitir"}
-            </PrimaryButton>
-          </View>
-          {currentDay === 1 && timeOfDay < 4 ? (
-            <PrimaryButton onPress={() => handleOpenLocation("crime_scene", "Cinayet Mahalli")}>
-              Cinayet Mahalline Git
-            </PrimaryButton>
-          ) : null}
-        </Panel>
+      <View style={styles.header}>
+        <Pressable style={styles.backBtn} onPress={logout}>
+          <Text style={styles.backArrow}>←</Text>
+          <Text style={styles.backLabel}>Kaydet ve Çık</Text>
+        </Pressable>
 
-        <Text style={styles.sectionTitle}>Lokasyonlar</Text>
-        <View style={styles.cardList}>
-          {locations.map((location) => (
-            <Pressable
-              key={location.id}
-              onPress={() => handleOpenLocation(location.id, location.name)}
-              style={({ pressed }) => [
-                styles.locationCard,
-                pressed && styles.locationCardPressed,
-              ]}
-            >
-              <View style={styles.locationHead}>
-                <View style={styles.locationIconWrap}>
-                  <Text style={styles.locationIcon}>{location.icon}</Text>
-                </View>
-                <View style={styles.locationTitleWrap}>
-                  <Text style={styles.locationName}>{location.name}</Text>
-                  <Text style={styles.locationAction}>
-                    {loadingLocationId === location.id ? "Hazirlaniyor..." : location.actionLabel}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.locationDescription}>{location.description}</Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Panel>
-          <Text style={styles.panelEyebrow}>Case board</Text>
-          <Text style={styles.sectionTitle}>Durum ozeti</Text>
-          <Text style={styles.body}>Toplanan not uzunlugu: {notes.length}</Text>
-          <Text style={styles.body}>Kullanilan arama emri: {inventory.usedWarrants.length}</Text>
-          <Text style={styles.body}>
-            Hakikat ifsasi: {truthReveal ? "Hazir" : "Henüz acilmadi"}
+        <View style={styles.headerCenter}>
+          <Text style={styles.pageTitle}>{getScenarioPlaceTitle(scenarioType)}</Text>
+          <Text style={styles.pageSub}>
+            {timeLabels[timeOfDay]} — Gün {currentDay}
           </Text>
-        </Panel>
-      </Screen>
+        </View>
+
+        <View style={styles.sessionInfo}>
+          <View style={styles.stats}>
+            <View style={styles.sessionDot} />
+            <Text style={styles.limitText}>
+              Soru Hakkı: {maxDailyDialogues - dialoguesUsedToday <= 0 ? "0" : maxDailyDialogues - dialoguesUsedToday}/{maxDailyDialogues}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <ScrollView
+        horizontal
+        bounces={false}
+        contentContainerStyle={styles.mapScrollContent}
+        showsHorizontalScrollIndicator={false}
+      >
+        <ImageBackground source={getMapAsset(scenarioType, timeOfDay)} style={styles.mapContainer}>
+          {hotspots.map((spot) => {
+            const location = locations.find((item) => item.id === spot.id);
+            if (!location) return null;
+
+            return (
+              <Pressable
+                key={spot.id}
+                onPress={() => handleOpenLocation(location.id, location.name)}
+                style={[
+                  styles.hotspot,
+                  {
+                    top: `${spot.top}%`,
+                    left: `${spot.left}%`,
+                    width: `${spot.width}%`,
+                    height: `${spot.height}%`,
+                  },
+                ]}
+              >
+                <View style={[styles.mapLabel, isNight && styles.mapLabelLocked]}>
+                  <Text style={styles.mapLabelIcon}>{location.icon}</Text>
+                  <Text style={styles.mapLabelText}>
+                    {loadingLocationId === location.id ? "Gidiliyor..." : location.actionLabel}
+                  </Text>
+                  {!location || isNight ? (
+                    <Text style={styles.lockedText}>({isNight ? "Gece" : "Kapalı"})</Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            );
+          })}
+        </ImageBackground>
+      </ScrollView>
+
+      <View style={styles.actionBar}>
+        <Pressable style={styles.iconButton} onPress={() => setNotesVisible(true)}>
+          <Text style={styles.actionIcon}>🗒️</Text>
+          <Text style={styles.actionText}>Notlar</Text>
+        </Pressable>
+
+        <Pressable style={styles.iconButton} onPress={() => setInventoryVisible(true)}>
+          <Text style={styles.actionIcon}>🎒</Text>
+          <Text style={styles.actionText}>Envanter</Text>
+        </Pressable>
+
+        <Pressable style={styles.iconButton} onPress={() => setCondemnVisible(true)}>
+          <Text style={[styles.actionIcon, styles.condemnIcon]}>⚖️</Text>
+          <Text style={[styles.actionText, styles.condemnText]}>Mahkumu Seç</Text>
+        </Pressable>
+
+        {currentDay === 1 && !isNight ? (
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => handleOpenLocation("crime_scene", getLocationLabel(scenarioType, "crime_scene"))}
+          >
+            <Text style={styles.actionIcon}>🩸</Text>
+            <Text style={styles.actionText}>Mahal</Text>
+          </Pressable>
+        ) : null}
+
+        <Pressable
+          disabled={busyAction === "end-day"}
+          onPress={handleEndDay}
+          style={styles.iconButton}
+        >
+          <Text style={styles.actionIcon}>🛌</Text>
+          <Text style={styles.actionText}>
+            {busyAction === "end-day" ? "..." : "Dinlen"}
+          </Text>
+        </Pressable>
+      </View>
 
       <AppModal
         onClose={() => setNotesVisible(false)}
-        subtitle="Buradaki notlar session ile senkron tutuluyor."
-        title="Sorusturma Notlari"
+        subtitle="Gözlemlerini buraya not et."
+        title="Soruşturma Notları"
         visible={notesVisible}
       >
         <TextInput
           multiline
           onChangeText={setNotesDraft}
-          placeholder="Celiskileri, isimleri ve suphelerini yaz..."
-          placeholderTextColor={colors.textMuted}
+          placeholder="Gözlemlerini buraya not et..."
+          placeholderTextColor={inquisitorColors.dim}
           style={styles.notesInput}
           textAlignVertical="top"
           value={notesDraft}
         />
-        <PrimaryButton
-          disabled={busyAction === "notes"}
-          onPress={handleSaveNotes}
-        >
-          {busyAction === "notes" ? "Kaydediliyor..." : "Notlari Kaydet"}
-        </PrimaryButton>
+        <Pressable onPress={handleSaveNotes} style={styles.modalActionButton}>
+          <Text style={styles.modalActionButtonText}>
+            {busyAction === "notes" ? "Kaydediliyor..." : "Anladım"}
+          </Text>
+        </Pressable>
       </AppModal>
 
       <AppModal
         onClose={() => setInventoryVisible(false)}
-        subtitle="Hazir ve kullanilmis izinleri burada gorebilirsin."
+        subtitle="Hazır ve kullanılmış izinler."
         title="Envanter"
         visible={inventoryVisible}
       >
         <ScrollView style={styles.modalScroll}>
           {inventory.activeWarrants.length === 0 && inventory.usedWarrants.length === 0 ? (
-            <Text style={styles.body}>Henuz bir arama emri birikmedi.</Text>
+            <Text style={styles.emptyText}>Henüz bir eşyan yok.</Text>
           ) : null}
           {inventory.activeWarrants.map((warrant) => (
             <View key={`active-${warrant}`} style={styles.inventoryItem}>
-              <Text style={styles.inventoryTitle}>Arama Izni</Text>
-              <Text style={styles.inventoryMeta}>
-                {getLocationLabel(scenarioType, warrant)}
-              </Text>
-              <Text style={styles.inventoryStatus}>Hazir</Text>
+              <Text style={styles.inventoryIcon}>📜</Text>
+              <View style={styles.inventoryCopy}>
+                <Text style={styles.inventoryName}>Arama İzni</Text>
+                <Text style={styles.inventoryLocation}>
+                  {getLocationLabel(scenarioType, warrant)}
+                </Text>
+              </View>
+              <Text style={styles.inventoryStatus}>(Hazır)</Text>
             </View>
           ))}
           {inventory.usedWarrants.map((warrant) => (
-            <View key={`used-${warrant}`} style={styles.inventoryItemMuted}>
-              <Text style={styles.inventoryTitle}>Arama Izni</Text>
-              <Text style={styles.inventoryMeta}>
-                {getLocationLabel(scenarioType, warrant)}
-              </Text>
-              <Text style={styles.inventoryStatusMuted}>Kullanildi</Text>
+            <View key={`used-${warrant}`} style={[styles.inventoryItem, styles.inventoryItemUsed]}>
+              <Text style={styles.inventoryIcon}>📜</Text>
+              <View style={styles.inventoryCopy}>
+                <Text style={styles.inventoryName}>Arama İzni</Text>
+                <Text style={[styles.inventoryLocation, styles.inventoryLocationUsed]}>
+                  {getLocationLabel(scenarioType, warrant)}
+                </Text>
+              </View>
+              <Text style={styles.inventoryStatusUsed}>(Kullanıldı)</Text>
             </View>
           ))}
         </ScrollView>
@@ -422,210 +407,300 @@ export function MapScreen({ navigation }: Props) {
 
       <AppModal
         onClose={() => setCondemnVisible(false)}
-        subtitle="Bu secim hikayenin gidisatini kalici olarak etkiler."
-        title="Mahkumu Sec"
+        subtitle="Nihai kararın hikayenin sonunu belirleyecek."
+        title="Hüküm Verilecek Kişiyi Seç"
         visible={condemnVisible}
       >
         <ScrollView style={styles.modalScroll}>
-          <View style={styles.cardList}>
-            {villagers.map((villager) => (
-              <Pressable
-                key={villager.id}
-                onPress={() => handleCondemn(villager)}
-                style={({ pressed }) => [
-                  styles.villagerCard,
-                  pressed && styles.locationCardPressed,
-                ]}
-              >
-                <Text style={styles.locationIcon}>{villager.icon}</Text>
-                <View style={styles.locationTitleWrap}>
-                  <Text style={styles.locationName}>{villager.name}</Text>
-                  <Text style={styles.locationAction}>{villager.role}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
+          {villagers.map((villager) => (
+            <Pressable
+              key={villager.id}
+              onPress={() => handleCondemn(villager)}
+              style={styles.villagerItem}
+            >
+              <Text style={styles.villagerIcon}>{villager.icon}</Text>
+              <View style={styles.villagerInfo}>
+                <Text style={styles.villagerName}>{villager.name}</Text>
+                <Text style={styles.villagerRole}>{villager.role}</Text>
+              </View>
+            </Pressable>
+          ))}
         </ScrollView>
       </AppModal>
-    </>
+
+      {truthReveal ? <View style={styles.hiddenTruthFlag} /> : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    gap: spacing.md,
+  main: {
+    flex: 1,
+    backgroundColor: inquisitorColors.bg,
   },
-  heroText: {
-    gap: spacing.xs,
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+    backgroundColor: "rgba(0,0,0,0.18)",
   },
-  eyebrow: {
-    color: colors.accent,
-    fontSize: 13,
-    fontWeight: "700",
+  nightVignette: {
+    backgroundColor: "rgba(0,0,10,0.4)",
+  },
+  header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    paddingTop: 16,
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    backgroundColor: "rgba(0,0,0,0.92)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(138, 3, 3, 0.3)",
+    alignItems: "center",
+  },
+  backBtn: {
+    position: "absolute",
+    left: 8,
+    top: 18,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backArrow: {
+    color: inquisitorColors.muted,
+    fontSize: 12,
+    marginRight: 4,
+  },
+  backLabel: {
+    color: inquisitorColors.muted,
+    fontSize: 8,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  title: {
-    color: colors.text,
-    fontSize: 38,
-    fontWeight: "800",
+  headerCenter: {
+    alignItems: "center",
+  },
+  pageTitle: {
+    color: inquisitorColors.parchment,
     fontFamily: "serif",
+    fontSize: 22,
+    fontWeight: "700",
+    letterSpacing: 1,
   },
-  subtitle: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  panelEyebrow: {
-    color: colors.accent,
+  pageSub: {
+    color: inquisitorColors.primary,
     fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: spacing.xs,
+    fontWeight: "600",
+    fontStyle: "italic",
   },
-  badges: {
-    flexDirection: "row",
-    gap: spacing.sm,
+  sessionInfo: {
+    position: "absolute",
+    right: 8,
+    top: 20,
   },
-  badge: {
-    flex: 1,
-    backgroundColor: colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: colors.accentSoft,
-    borderRadius: 20,
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  badgeLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  badgeValue: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: spacing.sm,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  cardList: {
-    gap: spacing.sm,
-  },
-  locationCard: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 22,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  villagerCard: {
+  stats: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.panelMuted,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    padding: spacing.md,
-    gap: spacing.md,
   },
-  locationCardPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
+  sessionDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginRight: 6,
+    backgroundColor: inquisitorColors.primary,
   },
-  locationHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
+  limitText: {
+    color: inquisitorColors.muted,
+    fontSize: 8,
+    textTransform: "uppercase",
   },
-  locationIconWrap: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+  mapScrollContent: {
+    minWidth: "100%",
+  },
+  mapContainer: {
+    width: MAP_WIDTH,
+    height: MAP_HEIGHT,
+    justifyContent: "flex-end",
+  },
+  hotspot: {
+    position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.panelStrong,
+  },
+  mapLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: "rgba(138, 3, 3, 0.9)",
     borderWidth: 1,
-    borderColor: colors.accentSoft,
+    borderColor: inquisitorColors.parchment,
   },
-  locationIcon: {
-    fontSize: 26,
+  mapLabelLocked: {
+    backgroundColor: "rgba(10,5,5,0.9)",
+    borderColor: "#333333",
   },
-  locationTitleWrap: {
-    flex: 1,
-    gap: 2,
+  mapLabelIcon: {
+    fontSize: 14,
+    marginRight: 6,
   },
-  locationName: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  locationAction: {
-    color: colors.accent,
-    fontSize: 13,
+  mapLabelText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 10,
     fontWeight: "600",
   },
-  locationDescription: {
-    color: colors.textMuted,
-    lineHeight: 21,
+  lockedText: {
+    color: inquisitorColors.primary,
+    fontSize: 8,
+    marginLeft: 6,
   },
-  body: {
-    color: colors.textMuted,
-    lineHeight: 22,
+  actionBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 74,
+    zIndex: 100,
+    backgroundColor: "rgba(5,5,5,0.98)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(138, 3, 3, 0.6)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    paddingHorizontal: 4,
+  },
+  iconButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionIcon: {
+    fontSize: 20,
+    color: inquisitorColors.parchment,
+    marginBottom: 2,
+  },
+  actionText: {
+    fontSize: 8,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    color: inquisitorColors.parchment,
+    opacity: 0.8,
+  },
+  condemnIcon: {
+    color: "#ff4d4d",
+  },
+  condemnText: {
+    color: "#ff4d4d",
+    opacity: 1,
+    fontWeight: "700",
   },
   notesInput: {
-    minHeight: 220,
-    borderRadius: 18,
+    minHeight: 260,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.panelMuted,
-    color: colors.text,
-    padding: spacing.md,
-    lineHeight: 22,
+    borderColor: inquisitorColors.border,
+    borderRadius: 4,
+    backgroundColor: "transparent",
+    color: inquisitorColors.parchment,
+    padding: 12,
+    fontSize: 15,
+    lineHeight: 24,
+  },
+  modalActionButton: {
+    backgroundColor: inquisitorColors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 2,
+  },
+  modalActionButtonText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
   },
   modalScroll: {
     maxHeight: 420,
   },
+  emptyText: {
+    color: inquisitorColors.muted,
+    textAlign: "center",
+  },
   inventoryItem: {
-    backgroundColor: colors.panelMuted,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    padding: spacing.md,
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 10,
+    marginBottom: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: inquisitorColors.primary,
   },
-  inventoryItemMuted: {
-    backgroundColor: "#161419",
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    padding: spacing.md,
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-    opacity: 0.65,
+  inventoryItemUsed: {
+    opacity: 0.6,
   },
-  inventoryTitle: {
-    color: colors.text,
-    fontWeight: "700",
+  inventoryIcon: {
+    fontSize: 20,
   },
-  inventoryMeta: {
-    color: colors.textMuted,
+  inventoryCopy: {
+    flex: 1,
+  },
+  inventoryName: {
+    color: inquisitorColors.parchment,
+    fontWeight: "600",
+  },
+  inventoryLocation: {
+    color: inquisitorColors.primary,
+    fontSize: 12,
+  },
+  inventoryLocationUsed: {
+    color: inquisitorColors.muted,
   },
   inventoryStatus: {
-    color: colors.success,
-    fontWeight: "700",
+    color: inquisitorColors.muted,
+    fontSize: 11,
   },
-  inventoryStatusMuted: {
-    color: colors.textMuted,
-    fontWeight: "700",
+  inventoryStatusUsed: {
+    color: inquisitorColors.muted,
+    fontSize: 11,
+  },
+  villagerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    backgroundColor: "#251f1b",
+    borderWidth: 1,
+    borderColor: "#3d342d",
+    borderRadius: 6,
+    padding: 16,
+    marginBottom: 12,
+  },
+  villagerIcon: {
+    fontSize: 28,
+  },
+  villagerInfo: {
+    flex: 1,
+  },
+  villagerName: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  villagerRole: {
+    color: inquisitorColors.muted,
+    fontSize: 12,
+    fontStyle: "italic",
+  },
+  hiddenTruthFlag: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
   },
 });

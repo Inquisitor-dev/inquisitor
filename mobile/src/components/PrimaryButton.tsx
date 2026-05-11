@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors } from "@/theme/colors";
 import { spacing } from "@/theme/spacing";
+import { inquisitorColors } from "@/theme/inquisitor";
 
 type PrimaryButtonProps = PropsWithChildren<{
   onPress: () => void;
@@ -46,33 +46,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 54,
-    borderRadius: 16,
-    backgroundColor: colors.accentStrong,
+    borderRadius: 4,
+    backgroundColor: inquisitorColors.primary,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: colors.accentStrong,
+    borderColor: inquisitorColors.primary,
     marginBottom: spacing.sm,
   },
   buttonSecondary: {
-    backgroundColor: colors.panelStrong,
-    borderColor: colors.border,
+    backgroundColor: "transparent",
+    borderColor: "rgba(138, 3, 3, 0.3)",
   },
   buttonGhost: {
     backgroundColor: "transparent",
-    borderColor: colors.accentSoft,
+    borderColor: "rgba(232, 220, 196, 0.2)",
   },
   label: {
-    color: colors.text,
-    fontSize: 15,
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 0.7,
+    letterSpacing: 1.2,
   },
   labelSecondary: {
-    color: colors.text,
+    color: inquisitorColors.muted,
   },
   labelGhost: {
-    color: colors.accent,
+    color: inquisitorColors.parchment,
   },
   pressed: {
     opacity: 0.9,

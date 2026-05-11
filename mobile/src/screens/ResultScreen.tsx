@@ -1,13 +1,11 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Panel } from "@/components/Panel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { getLocationLabel } from "@/data/gameContent";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { useGameStore } from "@/store/useGameStore";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { inquisitorColors } from "@/theme/inquisitor";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Result">;
 
@@ -36,14 +34,14 @@ export function ResultScreen({ navigation, route }: Props) {
       </View>
 
       {truthReveal ? (
-        <Panel>
+        <View style={styles.panel}>
           <Text style={styles.panelTitle}>Gerceklerin Ardindan</Text>
           <Text style={styles.panelText}>{truthReveal}</Text>
-        </Panel>
+        </View>
       ) : null}
 
       {locationClues && Object.keys(locationClues).length > 0 ? (
-        <Panel>
+        <View style={styles.panel}>
           <Text style={styles.panelTitle}>Gizli Ipuclari</Text>
           <View style={styles.clueList}>
             {Object.entries(locationClues).map(([locationId, clue]) => (
@@ -55,7 +53,7 @@ export function ResultScreen({ navigation, route }: Props) {
               </View>
             ))}
           </View>
-        </Panel>
+        </View>
       ) : null}
 
       <PrimaryButton
@@ -76,19 +74,19 @@ export function ResultScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: spacing.lg,
-    backgroundColor: colors.background,
+    padding: 24,
+    backgroundColor: inquisitorColors.bg,
     justifyContent: "center",
-    gap: spacing.lg,
+    gap: 24,
   },
   hero: {
-    gap: spacing.md,
+    gap: 16,
     alignItems: "center",
   },
   eyebrow: {
-    color: colors.accent,
+    color: inquisitorColors.muted,
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "500",
     letterSpacing: 1.2,
     textTransform: "uppercase",
   },
@@ -103,42 +101,50 @@ const styles = StyleSheet.create({
     color: "#b8860b",
   },
   titleLoss: {
-    color: colors.accentStrong,
+    color: inquisitorColors.primary,
   },
   body: {
-    color: colors.textMuted,
+    color: inquisitorColors.muted,
     textAlign: "center",
     lineHeight: 24,
     maxWidth: 720,
   },
+  panel: {
+    backgroundColor: "#0f0b09",
+    borderWidth: 1,
+    borderColor: "#3d342d",
+    borderRadius: 4,
+    padding: 24,
+  },
   panelTitle: {
-    color: colors.text,
+    color: inquisitorColors.parchment,
     fontSize: 20,
+    fontFamily: "serif",
     fontWeight: "800",
     textAlign: "center",
   },
   panelText: {
-    color: colors.textMuted,
+    color: inquisitorColors.muted,
     lineHeight: 24,
     fontStyle: "italic",
   },
   clueList: {
-    gap: spacing.md,
+    gap: 16,
   },
   clueRow: {
-    gap: spacing.xs,
-    paddingBottom: spacing.sm,
+    gap: 6,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#2a1f1a",
   },
   clueLocation: {
-    color: colors.accent,
+    color: inquisitorColors.primary,
     fontWeight: "700",
     textTransform: "uppercase",
     fontSize: 12,
   },
   clueText: {
-    color: colors.textMuted,
+    color: inquisitorColors.muted,
     lineHeight: 22,
     fontStyle: "italic",
   },
