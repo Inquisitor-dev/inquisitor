@@ -8,6 +8,7 @@ export type InventoryState = {
 
 export type SessionSnapshot = {
   id: string;
+  currentDay?: number;
   day?: number;
   timeOfDay?: number;
   notes?: string | null;

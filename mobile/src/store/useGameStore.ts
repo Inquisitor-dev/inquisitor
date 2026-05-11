@@ -134,7 +134,7 @@ export const useGameStore = create<GameState>()(
       hydrateSession: (session) =>
         set({
           sessionId: session.id,
-          currentDay: session.day ?? 1,
+          currentDay: session.currentDay ?? session.day ?? 1,
           timeOfDay: session.timeOfDay ?? 0,
           dialoguesUsedToday: session.dialoguesUsedToday ?? 0,
           notes: session.notes ?? "",
