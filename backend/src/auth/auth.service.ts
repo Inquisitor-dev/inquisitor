@@ -102,7 +102,7 @@ export class AuthService implements OnModuleInit {
     return { message: 'Doğrulama kodu e-posta adresinize gönderildi.' };
   }
 
-  async verifyCode(email: string, code: string): Promise<{ token: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
+  async verifyCode(email: string, code: string): Promise<{ token: string; email: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.verificationCode || !user.codeExpiresAt) {
@@ -130,10 +130,10 @@ export class AuthService implements OnModuleInit {
     // JWT token üret
     const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
 
-    return { token, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
+    return { token, email: user.email, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
   }
 
-  async login(email: string, password: string): Promise<{ token: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
+  async login(email: string, password: string): Promise<{ token: string; email: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -154,7 +154,7 @@ export class AuthService implements OnModuleInit {
     }
 
     const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
-    return { token, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
+    return { token, email: user.email, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
   }
 
   // Günlük kotayı kontrol et ve gerekirse sıfırla

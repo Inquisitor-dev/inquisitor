@@ -31,6 +31,11 @@ type GameState = {
   locationClues: Record<string, string> | null;
   hasHydrated: boolean;
   setUser: (payload: AuthPayload) => void;
+  setAccountIdentity: (payload: {
+    email?: string | null;
+    isAdmin?: boolean;
+    isPremium?: boolean;
+  }) => void;
   setHasHydrated: (value: boolean) => void;
   setSessionId: (sessionId: string | null) => void;
   setDifficulty: (difficulty: Difficulty) => void;
@@ -92,6 +97,15 @@ export const useGameStore = create<GameState>()(
           isPremium,
           maxDailyDialogues: isPremium ? 100 : 30,
         }),
+
+      setAccountIdentity: ({ email, isAdmin, isPremium }) =>
+        set((state) => ({
+          userEmail: email ?? state.userEmail,
+          isAdmin: isAdmin ?? state.isAdmin,
+          isPremium: isPremium ?? state.isPremium,
+          maxDailyDialogues:
+            (isPremium ?? state.isPremium) ? 100 : 30,
+        })),
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setSessionId: (sessionId) => set({ sessionId }),

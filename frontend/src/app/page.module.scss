@@ -63,6 +63,19 @@
   margin-bottom: 14px;
 }
 
+.settingsBody {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settingsModal {
+  width: min(92vw, 760px);
+  max-width: 760px;
+  padding: 40px 36px 32px;
+}
+
 .settingsLabel {
   margin-bottom: 10px;
   color: #E8DCC4;
@@ -72,7 +85,7 @@
 }
 
 .accountCard {
-  padding: 12px 14px;
+  padding: 18px 20px;
   border-radius: 8px;
   border: 1px solid rgba(232, 220, 196, 0.08);
   background: rgba(255,255,255,0.03);
@@ -81,9 +94,9 @@
 .accountRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(232, 220, 196, 0.06);
 
   &:last-child {
@@ -95,13 +108,16 @@
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    flex: 0 0 140px;
   }
 
   strong {
     color: #E8DCC4;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     font-weight: 700;
     text-align: right;
+    flex: 1;
+    word-break: break-word;
   }
 }
 
@@ -699,6 +715,29 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
     padding: 20px 15px;
     max-height: 90vh;
     overflow-y: auto;
+  }
+
+  .settingsModal {
+    width: 100%;
+    max-width: 100% !important;
+    padding: 22px 16px 20px;
+  }
+
+  .accountCard {
+    padding: 14px 14px;
+  }
+
+  .accountRow {
+    gap: 10px;
+
+    span {
+      flex-basis: 92px;
+      font-size: 0.66rem;
+    }
+
+    strong {
+      font-size: 0.82rem;
+    }
   }
 
   .modalTitle {

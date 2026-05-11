@@ -221,89 +221,11 @@ export default function HomePage() {
       <div className={styles.settingsDock}>
         <button
           className={styles.settingsBtn}
-          onClick={() => setIsSettingsOpen((prev) => !prev)}
+          onClick={() => setIsSettingsOpen(true)}
           title="Ayarlar"
         >
           AYAR
         </button>
-
-        {isSettingsOpen && (
-          <div className={styles.settingsPanel}>
-            <div className={styles.settingsSection}>
-              <div className={styles.settingsLabel}>Hesap Detaylari</div>
-              <div className={styles.accountCard}>
-                <div className={styles.accountRow}>
-                  <span>E-posta</span>
-                  <strong>{effectiveEmail}</strong>
-                </div>
-                <div className={styles.accountRow}>
-                  <span>Plan</span>
-                  <strong>
-                    {effectiveIsAdmin
-                      ? 'Admin'
-                      : effectiveIsPremium
-                        ? 'Premium'
-                        : 'Ucretsiz'}
-                  </strong>
-                </div>
-                <div className={styles.accountRow}>
-                  <span>Kalan Oturum</span>
-                  <strong>
-                    {accountSummary
-                      ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
-                      : effectiveIsAdmin
-                        ? 'Sinirsiz / Sinirsiz'
-                        : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
-                  </strong>
-                </div>
-                <div className={styles.accountRow}>
-                  <span>Kalan Diyalog</span>
-                  <strong>
-                    {accountSummary
-                      ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
-                      : effectiveIsAdmin
-                        ? 'Sinirsiz / Sinirsiz'
-                        : `${fallbackMaxMessages} / ${fallbackMaxMessages}`}
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.settingsSection}>
-              <div className={styles.settingsLabel}>Ana Menu Muzigi</div>
-              <div className={styles.soundControls}>
-                <div className={styles.volumeWrapper}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={volume}
-                    onChange={(e) => setVolume(parseFloat(e.target.value))}
-                    className={styles.volumeSlider}
-                  />
-                </div>
-                <button
-                  className={styles.muteBtn}
-                  onClick={() => setIsMuted(!isMuted)}
-                  title={isMuted ? 'Sesi Ac' : 'Sesi Kapat'}
-                >
-                  {isMuted || volume === 0 ? 'MUTE' : 'SOUND'}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                logout();
-                router.push('/login');
-              }}
-              className={styles.settingsLogoutBtn}
-            >
-              Hesaptan Cikis Yap
-            </button>
-          </div>
-        )}
       </div>
 
       <div className={styles.vignette} />
@@ -513,6 +435,93 @@ export default function HomePage() {
             <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
               Anladim.
             </button>
+          </div>
+        </div>
+      )}
+
+      {isSettingsOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsSettingsOpen(false)}>
+          <div className={`${styles.modalContent} ${styles.settingsModal}`} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsSettingsOpen(false)}>
+              &times;
+            </button>
+            <h2 className={styles.modalTitle}>Ayarlar</h2>
+
+            <div className={styles.settingsBody}>
+              <div className={styles.settingsSection}>
+                <div className={styles.settingsLabel}>Hesap Detaylari</div>
+                <div className={styles.accountCard}>
+                  <div className={styles.accountRow}>
+                    <span>E-posta</span>
+                    <strong>{effectiveEmail}</strong>
+                  </div>
+                  <div className={styles.accountRow}>
+                    <span>Plan</span>
+                    <strong>
+                      {effectiveIsAdmin
+                        ? 'Admin'
+                        : effectiveIsPremium
+                          ? 'Premium'
+                          : 'Ucretsiz'}
+                    </strong>
+                  </div>
+                  <div className={styles.accountRow}>
+                    <span>Kalan Oturum</span>
+                    <strong>
+                      {accountSummary
+                        ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
+                        : effectiveIsAdmin
+                          ? 'Sinirsiz / Sinirsiz'
+                          : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
+                    </strong>
+                  </div>
+                  <div className={styles.accountRow}>
+                    <span>Kalan Diyalog</span>
+                    <strong>
+                      {accountSummary
+                        ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
+                        : effectiveIsAdmin
+                          ? 'Sinirsiz / Sinirsiz'
+                          : `${fallbackMaxMessages} / ${fallbackMaxMessages}`}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.settingsSection}>
+                <div className={styles.settingsLabel}>Ana Menu Muzigi</div>
+                <div className={styles.soundControls}>
+                  <div className={styles.volumeWrapper}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={volume}
+                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      className={styles.volumeSlider}
+                    />
+                  </div>
+                  <button
+                    className={styles.muteBtn}
+                    onClick={() => setIsMuted(!isMuted)}
+                    title={isMuted ? 'Sesi Ac' : 'Sesi Kapat'}
+                  >
+                    {isMuted || volume === 0 ? 'MUTE' : 'SOUND'}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  logout();
+                  router.push('/login');
+                }}
+                className={styles.settingsLogoutBtn}
+              >
+                Hesaptan Cikis Yap
+              </button>
+            </div>
           </div>
         </div>
       )}

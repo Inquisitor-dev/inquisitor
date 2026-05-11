@@ -111,6 +111,7 @@ export function HomeScreen({ navigation }: Props) {
     hydrateSession,
     logout,
     clearSession,
+    setAccountIdentity,
     setDifficulty,
     setScenarioType,
   } = useGameStore();
@@ -305,12 +306,17 @@ export function HomeScreen({ navigation }: Props) {
 
   useEffect(() => {
     const loadAccountSummary = async () => {
-      if (!settingsVisible || !authToken) return;
+      if ((!settingsVisible && userEmail) || !authToken) return;
 
       try {
         setAccountLoading(true);
         const summary = await api.getAccountSummary(authToken);
         setAccountSummary(summary);
+        setAccountIdentity({
+          email: summary.email,
+          isAdmin: summary.isAdmin,
+          isPremium: summary.isPremium,
+        });
       } catch (err) {
         console.warn("Account summary could not load", err);
       } finally {
@@ -319,7 +325,7 @@ export function HomeScreen({ navigation }: Props) {
     };
 
     void loadAccountSummary();
-  }, [authToken, settingsVisible]);
+  }, [authToken, setAccountIdentity, settingsVisible, userEmail]);
 
   return (
     <View style={styles.main}>

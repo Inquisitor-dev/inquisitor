@@ -24,7 +24,10 @@ export function LoginScreen() {
     try {
       setLoading(true);
       const result = await api.login(email.trim(), password);
-      setUser(result);
+      setUser({
+        ...result,
+        email: result.email ?? email.trim(),
+      });
     } catch (error) {
       Alert.alert("Login failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
