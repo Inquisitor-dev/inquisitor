@@ -3,8 +3,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
+  StatusBar as NativeStatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -51,6 +53,11 @@ export function InteractScreen({ navigation, route }: Props) {
   const [isInvestigating, setIsInvestigating] = useState(locationId === "crime_scene");
   const messageScrollRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
+  const topInset =
+    Platform.OS === "android"
+      ? Math.max(insets.top, NativeStatusBar.currentHeight ?? 0)
+      : insets.top;
+  const bottomInset = Math.max(insets.bottom, 18);
 
   const profile = useMemo(
     () => getNpcProfile(scenarioType, locationId),
@@ -244,7 +251,7 @@ export function InteractScreen({ navigation, route }: Props) {
     <ImageBackground source={getInteractAsset(locationId)} style={styles.main}>
       <View style={styles.overlay} />
 
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={[styles.header, { paddingTop: topInset + 10 }]}>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.back}>Haritaya Dön</Text>
         </Pressable>
@@ -272,7 +279,7 @@ export function InteractScreen({ navigation, route }: Props) {
           style={styles.messages}
           contentContainerStyle={[
             styles.messageContent,
-            { paddingBottom: insets.bottom + 12 },
+            { paddingBottom: bottomInset + 12 },
           ]}
         >
           {messages.map((msg, index) => (
@@ -324,7 +331,7 @@ export function InteractScreen({ navigation, route }: Props) {
           ) : null}
         </View>
 
-        <View style={[styles.inputArea, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.inputArea, { paddingBottom: bottomInset + 16 }]}>
           {dialoguesUsedToday >= maxDailyDialogues ? (
             <Text style={styles.limitReached}>Günlük sınırınıza ulaştınız.</Text>
           ) : (

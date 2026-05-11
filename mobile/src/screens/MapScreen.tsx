@@ -3,8 +3,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
+  StatusBar as NativeStatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -32,7 +34,7 @@ import type { NpcProfile } from "@/types/game";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
 
-const MAP_WIDTH = 940;
+const MAP_WIDTH = 820;
 const MAP_HEIGHT = 920;
 
 export function MapScreen({ navigation }: Props) {
@@ -70,6 +72,11 @@ export function MapScreen({ navigation }: Props) {
   const [busyAction, setBusyAction] = useState<"none" | "end-day" | "notes">("none");
   const [isTimingOut, setIsTimingOut] = useState(false);
   const insets = useSafeAreaInsets();
+  const topInset =
+    Platform.OS === "android"
+      ? Math.max(insets.top, NativeStatusBar.currentHeight ?? 0)
+      : insets.top;
+  const bottomInset = Math.max(insets.bottom, 18);
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -247,8 +254,8 @@ export function MapScreen({ navigation }: Props) {
     <View style={styles.main}>
       <View pointerEvents="none" style={[styles.vignette, isNight && styles.nightVignette]} />
 
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <Pressable style={styles.backBtn} onPress={logout}>
+      <View style={[styles.header, { paddingTop: topInset + 10 }]}>
+        <Pressable style={[styles.backBtn, { top: topInset + 12 }]} onPress={logout}>
           <Text style={styles.backArrow}>←</Text>
           <Text style={styles.backLabel}>Kaydet ve Çık</Text>
         </Pressable>
@@ -260,7 +267,7 @@ export function MapScreen({ navigation }: Props) {
           </Text>
         </View>
 
-        <View style={styles.sessionInfo}>
+        <View style={[styles.sessionInfo, { top: topInset + 14 }]}>
           <View style={styles.stats}>
             <View style={styles.sessionDot} />
             <Text style={styles.limitText}>
@@ -275,7 +282,7 @@ export function MapScreen({ navigation }: Props) {
         bounces={false}
         contentContainerStyle={[
           styles.mapScrollContent,
-          { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 94 },
+          { paddingTop: topInset + 56, paddingBottom: bottomInset + 94 },
         ]}
         showsHorizontalScrollIndicator={false}
       >
@@ -313,7 +320,7 @@ export function MapScreen({ navigation }: Props) {
         </ImageBackground>
       </ScrollView>
 
-      <View style={[styles.actionBar, { paddingBottom: insets.bottom + 10 }]}>
+      <View style={[styles.actionBar, { paddingBottom: bottomInset + 10 }]}>
         <Pressable style={styles.iconButton} onPress={() => setNotesVisible(true)}>
           <Text style={styles.actionIcon}>🗒️</Text>
           <Text style={styles.actionText}>Notlar</Text>
@@ -521,7 +528,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   mapScrollContent: {
-    minWidth: "100%",
+    width: MAP_WIDTH,
   },
   mapContainer: {
     width: MAP_WIDTH,
@@ -567,7 +574,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 74,
+    minHeight: 74,
     zIndex: 100,
     backgroundColor: "rgba(5,5,5,0.98)",
     borderTopWidth: 1,
@@ -576,6 +583,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
     paddingHorizontal: 4,
+    paddingTop: 4,
   },
   iconButton: {
     flex: 1,
