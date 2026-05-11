@@ -3,17 +3,69 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppModal } from "@/components/AppModal";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
 import { inquisitorColors } from "@/theme/inquisitor";
-import type { SessionSnapshot } from "@/types/game";
+import type { Difficulty, ScenarioType, SessionSnapshot } from "@/types/game";
 
 function isSessionSnapshot(value: unknown): value is SessionSnapshot {
   return Boolean(value && typeof value === "object" && "id" in value);
 }
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+
+const difficultyOptions: Array<{
+  id: Difficulty;
+  title: string;
+  count: string;
+  description: string;
+}> = [
+  {
+    id: "easy",
+    title: "Kolay",
+    count: "4 Supheli",
+    description: "Hanci, Peder, Mezarcı ve Degirmenci. Standart sorusturma deneyimi.",
+  },
+  {
+    id: "medium",
+    title: "Orta",
+    count: "5 Supheli",
+    description: "+ Ciftci Edmund. Artan supheli sayisiyla daha karmasik iliskiler.",
+  },
+  {
+    id: "hard",
+    title: "Zor",
+    count: "6 Supheli",
+    description: "+ Ciftci ve Doktor. Kalabaliklasan supheli listesiyle en karmasik hikaye.",
+  },
+];
+
+const scenarioOptions: Array<{
+  id: ScenarioType;
+  title: string;
+  description: string;
+}> = [
+  {
+    id: "medieval",
+    title: "Klasik Ortacag",
+    description:
+      "Ashenmoor Koyu. Engizisyon, batil inanclar ve karanlik sirlar. Standart dark fantasy deneyimi.",
+  },
+  {
+    id: "modern",
+    title: "Modern Amerikan Kasabasi",
+    description:
+      "Oakhaven. Yerel polis, cinayet dedektifleri ve supheli kasabalilar. Gerilim dolu true crime polisiyesi.",
+  },
+  {
+    id: "cyberpunk",
+    title: "Distopik Cyberpunk",
+    description:
+      "Neon Prime. Yozlasmis mega sirketler, siber gelistirmeler ve tech-noir bir bilimkurgu sorusturmasi.",
+  },
+];
 
 function LandingButton({
   label,
@@ -38,18 +90,33 @@ function LandingButton({
       ]}
     >
       <Text style={[styles.buttonLabel, !primary && styles.secondaryButtonLabel]}>{label}</Text>
-      {primary ? <Text style={styles.buttonArrow}>→</Text> : null}
+      {primary ? <Text style={styles.buttonArrow}>{"->"}</Text> : null}
     </Pressable>
   );
 }
 
 export function HomeScreen({ navigation }: Props) {
-  const { authToken, sessionId, currentDay, difficulty, scenarioType, hydrateSession, logout, clearSession } =
-    useGameStore();
+  const {
+    authToken,
+    sessionId,
+    currentDay,
+    difficulty,
+    scenarioType,
+    isPremium,
+    hydrateSession,
+    logout,
+    clearSession,
+    setDifficulty,
+    setScenarioType,
+  } = useGameStore();
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [resuming, setResuming] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [difficultyVisible, setDifficultyVisible] = useState(false);
+  const [scenarioVisible, setScenarioVisible] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -66,10 +133,10 @@ export function HomeScreen({ navigation }: Props) {
         } else {
           clearSession();
         }
-      } catch (error) {
+      } catch (err) {
         Alert.alert(
           "Session check failed",
-          error instanceof Error ? error.message : "Unknown error",
+          err instanceof Error ? err.message : "Unknown error",
         );
       } finally {
         setLoading(false);
@@ -79,23 +146,30 @@ export function HomeScreen({ navigation }: Props) {
     void bootstrap();
   }, [authToken, clearSession, hydrateSession]);
 
-  const handleCreateSession = async () => {
+  const handleCreateSession = async (
+    difficultyChoice: Difficulty = difficulty,
+    scenarioChoice: ScenarioType = scenarioType,
+  ) => {
     if (!authToken) return;
 
     try {
       setCreating(true);
-      const session = await api.createSession(authToken, difficulty, scenarioType);
+      setError(null);
+      setDifficulty(difficultyChoice);
+      setScenarioType(scenarioChoice);
+      const session = await api.createSession(authToken, difficultyChoice, scenarioChoice);
       if (isSessionSnapshot(session)) {
         hydrateSession(session);
         navigation.navigate("Map");
       }
-    } catch (error) {
-      Alert.alert(
-        "Could not start a session",
-        error instanceof Error ? error.message : "Unknown error",
-      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+      Alert.alert("Could not start a session", message);
     } finally {
       setCreating(false);
+      setDifficultyVisible(false);
+      setScenarioVisible(false);
     }
   };
 
@@ -107,6 +181,22 @@ export function HomeScreen({ navigation }: Props) {
     } finally {
       setResuming(false);
     }
+  };
+
+  const handleStart = () => {
+    if (isPremium) {
+      setError(null);
+      setDifficultyVisible(true);
+      return;
+    }
+
+    void handleCreateSession("easy", "medieval");
+  };
+
+  const handleDifficultySelect = (value: Difficulty) => {
+    setSelectedDifficulty(value);
+    setDifficultyVisible(false);
+    setScenarioVisible(true);
   };
 
   return (
@@ -121,7 +211,7 @@ export function HomeScreen({ navigation }: Props) {
         onPress={() => setIsMuted((prev) => !prev)}
         style={[styles.soundButton, { top: insets.top + 18 }]}
       >
-        <Text style={styles.soundIcon}>{isMuted ? "🔇" : "🔊"}</Text>
+        <Text style={styles.soundIcon}>{isMuted ? "MUTE" : "SOUND"}</Text>
       </Pressable>
 
       <ScrollView
@@ -144,20 +234,19 @@ export function HomeScreen({ navigation }: Props) {
             <View style={[styles.sealDiamond, styles.sealDiamondRight]} />
           </View>
 
-          <Text style={styles.eyebrow}>— ANNO DOMINI MCCXII —</Text>
+          <Text style={styles.eyebrow}>- ANNO DOMINI MCCXII -</Text>
           <Text style={styles.title}>The Inquisitor</Text>
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerIcon}>✦</Text>
+            <Text style={styles.dividerIcon}>*</Text>
             <View style={styles.dividerLine} />
           </View>
 
-          <Text style={styles.lead}>Bu köyde kimse göründüğü gibi değil.</Text>
+          <Text style={styles.lead}>Bu koyde kimse gorundugu gibi degil.</Text>
           <Text style={styles.description}>
-            Bu hikayenin kahramanı sen değilsin. Yetki, sabır ve soğuk kanlılıkla
-            donanmış şekilde köylüleri sorgula, çelişkileri ortaya çıkar ve nihai hükmünü
-            ver.
+            Bu hikayenin kahramani sen degilsin. Yetki, sabir ve soguk kanlilikla
+            koyluleri sorgula, celiskileri ortaya cikar ve nihai hukmunu ver.
           </Text>
           <Text style={styles.slogan}>DINLE · ANALIZ ET · HUKUM VER</Text>
 
@@ -167,8 +256,8 @@ export function HomeScreen({ navigation }: Props) {
                 disabled={loading || resuming}
                 label={
                   resuming
-                    ? "Soruşturma yükleniyor..."
-                    : `Soruşturmaya Devam Et (Gün ${currentDay})`
+                    ? "Sorusturma yukleniyor..."
+                    : `Sorusturmaya Devam Et (Gun ${currentDay})`
                 }
                 onPress={handleResume}
               />
@@ -178,19 +267,22 @@ export function HomeScreen({ navigation }: Props) {
               disabled={loading || creating}
               label={
                 creating
-                  ? "Ashenmoor'a giden araba hazırlanıyor..."
+                  ? "Ashenmoor'a giden araba hazirlaniyor..."
                   : sessionId
-                    ? "Yeni Soruşturma Başlat"
-                    : "Soruşturmaya Başla"
+                    ? "Yeni Sorusturma Baslat"
+                    : "Sorusturmaya Basla"
               }
-              onPress={() => {
-                void handleCreateSession();
-              }}
+              onPress={handleStart}
               primary
             />
 
-            <LandingButton label="Hesaptan Çıkış Yap" onPress={logout} />
-            <Text style={styles.sessionNote}>Mobil soruşturma arayüzü · Expo Go build</Text>
+            <LandingButton label="Hesaptan Cikis Yap" onPress={logout} />
+            {error ? <Text style={styles.errorBox}>{error}</Text> : null}
+            <Text style={styles.sessionNote}>
+              {isPremium
+                ? "Premium Surum · Gunluk 100 diyalog · Tum zorluklar ve evrenler"
+                : "Ucretsiz Surum · Gunluk 30 diyalog · Kolay / Ortacag"}
+            </Text>
           </View>
 
           <View style={styles.bottomRule}>
@@ -200,6 +292,60 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       </ScrollView>
+
+      <AppModal
+        title="Zorluk Seviyesi Sec"
+        subtitle="Masaustu surumundeki gibi sorusturmanin karmasikligini belirle."
+        visible={difficultyVisible}
+        onClose={() => setDifficultyVisible(false)}
+      >
+        <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+          {difficultyOptions.map((option) => (
+            <Pressable
+              key={option.id}
+              onPress={() => handleDifficultySelect(option.id)}
+              style={styles.selectionButton}
+            >
+              <View style={styles.selectionHeader}>
+                <Text style={styles.selectionTitle}>{option.title}</Text>
+                <Text style={styles.selectionMeta}>{option.count}</Text>
+              </View>
+              <Text style={styles.selectionDescription}>{option.description}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </AppModal>
+
+      <AppModal
+        title="Senaryo Evreni Sec"
+        subtitle="Klasik Ortacag, Modern Amerikan Kasabasi veya Distopik Cyberpunk."
+        visible={scenarioVisible}
+        onClose={() => setScenarioVisible(false)}
+      >
+        <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+          {scenarioOptions.map((option) => (
+            <Pressable
+              key={option.id}
+              disabled={creating || !selectedDifficulty}
+              onPress={() => {
+                if (!selectedDifficulty) return;
+                void handleCreateSession(selectedDifficulty, option.id);
+              }}
+              style={({ pressed }) => [
+                styles.selectionButton,
+                creating && styles.selectionButtonDisabled,
+                pressed && !creating && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.selectionTitle}>{option.title}</Text>
+              <Text style={styles.selectionDescription}>{option.description}</Text>
+            </Pressable>
+          ))}
+          {creating ? (
+            <Text style={styles.modalInfo}>Senaryo olusturuluyor, lutfen bekle...</Text>
+          ) : null}
+        </ScrollView>
+      </AppModal>
     </View>
   );
 }
@@ -222,8 +368,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 22,
     zIndex: 5,
-    width: 50,
+    minWidth: 64,
     height: 50,
+    paddingHorizontal: 12,
     borderRadius: 25,
     borderWidth: 1,
     borderColor: "rgba(138, 3, 3, 0.3)",
@@ -233,7 +380,9 @@ const styles = StyleSheet.create({
   },
   soundIcon: {
     color: inquisitorColors.parchment,
-    fontSize: 18,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
   },
   cornerTopLeft: {
     position: "absolute",
@@ -446,12 +595,69 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginLeft: 10,
   },
+  errorBox: {
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(138,3,3,0.4)",
+    backgroundColor: "rgba(138,3,3,0.15)",
+    color: "#e07070",
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: "center",
+  },
   sessionNote: {
     color: inquisitorColors.dim,
     fontSize: 11,
     textAlign: "center",
     letterSpacing: 1,
     marginTop: 2,
+  },
+  modalScroll: {
+    maxHeight: 420,
+  },
+  selectionButton: {
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#3d342d",
+    backgroundColor: "#191310",
+  },
+  selectionButtonDisabled: {
+    opacity: 0.6,
+  },
+  selectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  selectionTitle: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  selectionMeta: {
+    color: inquisitorColors.primary,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  selectionDescription: {
+    color: inquisitorColors.muted,
+    fontSize: 13,
+    lineHeight: 21,
+  },
+  modalInfo: {
+    color: inquisitorColors.dim,
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 4,
   },
   bottomRule: {
     width: "100%",
