@@ -604,7 +604,7 @@ export default function HomePage() {
                 className={`${styles.selectionBtn} ${styles.scenarioModern}`}
               >
                 <div>
-                  <span>Modern Amerikan Kasabasi</span>
+                  <span>90'lar Amerikan Kasabasi</span>
                 </div>
                 <p>
                   Oakhaven. Yerel polis, cinayet dedektifleri ve supheli kasabalilar.

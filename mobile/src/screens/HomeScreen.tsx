@@ -56,7 +56,7 @@ const scenarioOptions: Array<{
   },
   {
     id: "modern",
-    title: "Modern Amerikan Kasabasi",
+    title: "90'lar Amerikan Kasabasi",
     description:
       "Oakhaven. Yerel polis, cinayet dedektifleri ve supheli kasabalilar. Gerilim dolu true crime polisiyesi.",
   },
@@ -554,7 +554,7 @@ export function HomeScreen({ navigation }: Props) {
 
       <AppModal
         title="Senaryo Evreni Sec"
-        subtitle="Klasik Ortacag, Modern Amerikan Kasabasi veya Distopik Cyberpunk."
+        subtitle="Klasik Ortacag, 90'lar Amerikan Kasabasi veya Distopik Cyberpunk."
         visible={scenarioVisible}
         onClose={() => setScenarioVisible(false)}
       >
