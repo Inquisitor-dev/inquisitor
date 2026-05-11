@@ -68,7 +68,6 @@ export function AppNavigator() {
           headerStyle: { backgroundColor: colors.panel },
           headerTintColor: colors.text,
           contentStyle: { backgroundColor: colors.background },
-          animation: "fade",
         }}
       >
         {authToken ? (

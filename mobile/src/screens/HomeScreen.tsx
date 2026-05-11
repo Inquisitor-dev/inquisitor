@@ -136,7 +136,7 @@ export function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   header: {
-    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   kicker: {
     color: colors.accent,
@@ -144,12 +144,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1.2,
     textTransform: "uppercase",
+    marginBottom: spacing.xs,
   },
   title: {
     color: colors.text,
     fontSize: 30,
     fontWeight: "800",
     lineHeight: 36,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     color: colors.textMuted,
@@ -159,9 +161,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 18,
     fontWeight: "700",
+    marginBottom: spacing.xs,
   },
   item: {
     color: colors.textMuted,
     lineHeight: 22,
+    marginBottom: spacing.xs,
   },
 });
