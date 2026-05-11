@@ -51,6 +51,20 @@ async function requestText(path: string, options: RequestOptions = {}) {
 }
 
 export const api = {
+  getAccountSummary(token: string) {
+    return request<{
+      email: string;
+      isAdmin: boolean;
+      isPremium: boolean;
+      dailySessionCount: number;
+      dailyMessageCount: number;
+      maxSessionsPerDay: number;
+      maxMessagesPerDay: number;
+    }>("/auth/me", {
+      token,
+    });
+  },
+
   ping() {
     return requestText("/", {});
   },

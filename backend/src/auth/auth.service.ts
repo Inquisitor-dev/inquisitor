@@ -214,6 +214,33 @@ export class AuthService implements OnModuleInit {
     });
   }
 
+  async getAccountSummary(userId: string): Promise<{
+    email: string;
+    isAdmin: boolean;
+    isPremium: boolean;
+    dailySessionCount: number;
+    dailyMessageCount: number;
+    maxSessionsPerDay: number;
+    maxMessagesPerDay: number;
+  }> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+
+    const quota = await this.checkAndResetDailyQuota(userId);
+    const maxSessionsPerDay = quota.isAdmin ? 999 : quota.isPremium ? 5 : 2;
+    const maxMessagesPerDay = quota.isAdmin ? 999 : quota.isPremium ? 100 : 30;
+
+    return {
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isPremium: user.isPremium,
+      dailySessionCount: quota.dailySessionCount,
+      dailyMessageCount: quota.dailyMessageCount,
+      maxSessionsPerDay,
+      maxMessagesPerDay,
+    };
+  }
+
   // Premium aktivasyonu (simüle edilmiş ödeme)
   async activatePremium(userId: string, activationCode: string): Promise<{ success: boolean; message: string }> {
     const VALID_CODE = 'PREMIUM246741';

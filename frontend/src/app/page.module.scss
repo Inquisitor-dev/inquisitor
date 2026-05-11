@@ -71,6 +71,40 @@
   font-weight: 700;
 }
 
+.accountCard {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 220, 196, 0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.accountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(232, 220, 196, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    color: #8a7f72;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: #E8DCC4;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: right;
+  }
+}
+
 .soundControls {
   display: flex;
   align-items: center;

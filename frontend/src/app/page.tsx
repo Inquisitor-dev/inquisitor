@@ -34,6 +34,15 @@ export default function HomePage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.4);
+  const [accountSummary, setAccountSummary] = useState<null | {
+    email: string;
+    isAdmin: boolean;
+    isPremium: boolean;
+    dailySessionCount: number;
+    dailyMessageCount: number;
+    maxSessionsPerDay: number;
+    maxMessagesPerDay: number;
+  }>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -90,6 +99,27 @@ export default function HomePage() {
       setCheckingSession(false);
     }
   }, [authToken, hasHydrated]);
+
+  useEffect(() => {
+    const fetchAccountSummary = async () => {
+      if (!isSettingsOpen || !authToken) return;
+
+      try {
+        const res = await fetch('http://localhost:3001/auth/me', {
+          headers: { Authorization: `Bearer ${authToken}` },
+          cache: 'no-store',
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setAccountSummary(data);
+        }
+      } catch (err) {
+        console.error('Failed to load account summary', err);
+      }
+    };
+
+    void fetchAccountSummary();
+  }, [authToken, isSettingsOpen]);
 
   const handleResume = async () => {
     if (!activeSession) return;
@@ -191,6 +221,42 @@ export default function HomePage() {
 
         {isSettingsOpen && (
           <div className={styles.settingsPanel}>
+            <div className={styles.settingsSection}>
+              <div className={styles.settingsLabel}>Hesap Detaylari</div>
+              <div className={styles.accountCard}>
+                <div className={styles.accountRow}>
+                  <span>E-posta</span>
+                  <strong>{accountSummary?.email || '-'}</strong>
+                </div>
+                <div className={styles.accountRow}>
+                  <span>Plan</span>
+                  <strong>
+                    {accountSummary?.isAdmin
+                      ? 'Admin'
+                      : accountSummary?.isPremium ?? isPremium
+                        ? 'Premium'
+                        : 'Ucretsiz'}
+                  </strong>
+                </div>
+                <div className={styles.accountRow}>
+                  <span>Kalan Oturum</span>
+                  <strong>
+                    {accountSummary
+                      ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
+                      : '-'}
+                  </strong>
+                </div>
+                <div className={styles.accountRow}>
+                  <span>Kalan Diyalog</span>
+                  <strong>
+                    {accountSummary
+                      ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
+                      : '-'}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
             <div className={styles.settingsSection}>
               <div className={styles.settingsLabel}>Ana Menu Muzigi</div>
               <div className={styles.soundControls}>

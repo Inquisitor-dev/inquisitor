@@ -99,8 +99,11 @@ function LandingButton({
 export function HomeScreen({ navigation }: Props) {
   const {
     authToken,
+    userEmail,
     sessionId,
     currentDay,
+    dialoguesUsedToday,
+    maxDailyDialogues,
     difficulty,
     scenarioType,
     isPremium,
@@ -120,6 +123,16 @@ export function HomeScreen({ navigation }: Props) {
   const [scenarioVisible, setScenarioVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
+  const [accountSummary, setAccountSummary] = useState<null | {
+    email: string;
+    isAdmin: boolean;
+    isPremium: boolean;
+    dailySessionCount: number;
+    dailyMessageCount: number;
+    maxSessionsPerDay: number;
+    maxMessagesPerDay: number;
+  }>(null);
+  const [accountLoading, setAccountLoading] = useState(false);
   const soundtrackRef = useRef<Audio.Sound | null>(null);
   const insets = useSafeAreaInsets();
 
@@ -283,6 +296,24 @@ export function HomeScreen({ navigation }: Props) {
     setIsMuted(next === 0 ? true : false);
   };
 
+  useEffect(() => {
+    const loadAccountSummary = async () => {
+      if (!settingsVisible || !authToken) return;
+
+      try {
+        setAccountLoading(true);
+        const summary = await api.getAccountSummary(authToken);
+        setAccountSummary(summary);
+      } catch (err) {
+        console.warn("Account summary could not load", err);
+      } finally {
+        setAccountLoading(false);
+      }
+    };
+
+    void loadAccountSummary();
+  }, [authToken, settingsVisible]);
+
   return (
     <View style={styles.main}>
       <View pointerEvents="none" style={styles.vignette} />
@@ -382,6 +413,52 @@ export function HomeScreen({ navigation }: Props) {
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
       >
+        <View style={styles.settingsGroup}>
+          <Text style={styles.settingsHeading}>Hesap Detaylari</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>E-posta</Text>
+              <Text style={styles.infoValue}>{accountSummary?.email ?? userEmail ?? "-"}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Plan</Text>
+              <Text style={styles.infoValue}>
+                {accountSummary?.isAdmin
+                  ? "Admin"
+                  : accountSummary?.isPremium ?? isPremium
+                    ? "Premium"
+                    : "Ucretsiz"}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Kalan Oturum</Text>
+              <Text style={styles.infoValue}>
+                {accountLoading
+                  ? "Yukleniyor..."
+                  : accountSummary
+                    ? `${Math.max(
+                        0,
+                        accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount,
+                      )} / ${accountSummary.maxSessionsPerDay === 999 ? "Sinirsiz" : accountSummary.maxSessionsPerDay}`
+                    : "-"}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Kalan Diyalog</Text>
+              <Text style={styles.infoValue}>
+                {accountLoading
+                  ? "Yukleniyor..."
+                  : accountSummary
+                    ? `${Math.max(
+                        0,
+                        accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount,
+                      )} / ${accountSummary.maxMessagesPerDay === 999 ? "Sinirsiz" : accountSummary.maxMessagesPerDay}`
+                    : `${Math.max(0, maxDailyDialogues - dialoguesUsedToday)} / ${maxDailyDialogues}`}
+              </Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.settingsGroup}>
           <Text style={styles.settingsHeading}>Ana Menu Muzigi</Text>
           <Pressable
@@ -535,6 +612,36 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 12,
+  },
+  infoCard: {
+    borderWidth: 1,
+    borderColor: "rgba(232,220,196,0.08)",
+    borderRadius: 6,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(232,220,196,0.06)",
+  },
+  infoLabel: {
+    color: inquisitorColors.muted,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    flex: 1,
+  },
+  infoValue: {
+    color: inquisitorColors.parchment,
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 1,
+    textAlign: "right",
   },
   soundToggle: {
     minHeight: 38,
