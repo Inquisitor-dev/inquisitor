@@ -71,6 +71,7 @@ export function InteractScreen({ navigation, route }: Props) {
   const canInvestigate =
     locationId === "crime_scene" || inventory.activeWarrants.includes(locationId);
   const usesIllustratedBackdrop = scenarioType === "medieval";
+  const currentNpcKey = isInvestigating ? `narrator_${locationId}` : locationId;
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -92,7 +93,7 @@ export function InteractScreen({ navigation, route }: Props) {
       }
 
       try {
-        const history = await api.getHistory(authToken, sessionId, locationId);
+        const history = await api.getHistory(authToken, sessionId, currentNpcKey);
         setMessages(history.history ?? []);
         if (typeof history.dialoguesUsed === "number") {
           setDialoguesUsed(history.dialoguesUsed);
@@ -132,7 +133,7 @@ export function InteractScreen({ navigation, route }: Props) {
   }, [
     authToken,
     isInvestigating,
-    locationId,
+    currentNpcKey,
     profile.name,
     sessionId,
     setCurrentDay,
@@ -235,7 +236,7 @@ export function InteractScreen({ navigation, route }: Props) {
       setMessages((prev) => [...prev, { role: "player", text: playerMessage }]);
       setDraft("");
 
-      const result = await api.interact(authToken, sessionId, locationId, playerMessage);
+      const result = await api.interact(authToken, sessionId, currentNpcKey, playerMessage);
       if (typeof result.dialoguesUsed === "number") {
         setDialoguesUsed(result.dialoguesUsed);
       }
