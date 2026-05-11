@@ -164,4 +164,15 @@ export const api = {
       body: { location },
     });
   },
+
+  timeoutSession(token: string, sessionId: string) {
+    return request<{
+      success: boolean;
+      won: boolean;
+      message: string;
+    }>(`/game-sessions/${sessionId}/timeout`, {
+      method: "POST",
+      token,
+    });
+  },
 };

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -48,6 +49,7 @@ export function InteractScreen({ route }: Props) {
   const [notesVisible, setNotesVisible] = useState(false);
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const [isInvestigating, setIsInvestigating] = useState(locationId === "crime_scene");
+  const messageScrollRef = useRef<ScrollView>(null);
 
   const profile = useMemo(
     () => getNpcProfile(scenarioType, locationId),
@@ -65,6 +67,14 @@ export function InteractScreen({ route }: Props) {
   useEffect(() => {
     setNotesDraft(notes);
   }, [notes]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      messageScrollRef.current?.scrollToEnd({ animated: true });
+    }, 60);
+
+    return () => clearTimeout(timer);
+  }, [loading, messages]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -277,7 +287,11 @@ export function InteractScreen({ route }: Props) {
         {!loading && messages.length === 0 ? (
           <Text style={styles.body}>Bu lokasyonda henuz kayitli bir diyalog yok.</Text>
         ) : null}
-        <View style={styles.messageList}>
+        <ScrollView
+          ref={messageScrollRef}
+          contentContainerStyle={styles.messageList}
+          style={styles.messageScroll}
+        >
           {messages.map((item, index) => (
             <View
               key={`${index}-${item.role}`}
@@ -296,7 +310,7 @@ export function InteractScreen({ route }: Props) {
               <Text style={styles.messageText}>{item.text}</Text>
             </View>
           ))}
-        </View>
+        </ScrollView>
       </Panel>
 
       <Panel>
@@ -430,6 +444,9 @@ const styles = StyleSheet.create({
   },
   messageList: {
     gap: spacing.sm,
+  },
+  messageScroll: {
+    maxHeight: 360,
   },
   messageBubble: {
     borderRadius: 16,

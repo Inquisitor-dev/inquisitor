@@ -61,6 +61,7 @@ export function MapScreen({ navigation }: Props) {
   const [condemnVisible, setCondemnVisible] = useState(false);
   const [loadingLocationId, setLoadingLocationId] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<"none" | "end-day" | "notes">("none");
+  const [isTimingOut, setIsTimingOut] = useState(false);
 
   useEffect(() => {
     setNotesDraft(notes);
@@ -92,6 +93,34 @@ export function MapScreen({ navigation }: Props) {
 
     void syncSession();
   }, [authToken, sessionId, hydrateSession, setDifficulty, setScenarioType, setWarrants]);
+
+  useEffect(() => {
+    const runTimeout = async () => {
+      if (!authToken || !sessionId || isTimingOut) {
+        return;
+      }
+
+      if (currentDay >= 4 && timeOfDay >= 4) {
+        try {
+          setIsTimingOut(true);
+          const result = await api.timeoutSession(authToken, sessionId);
+          navigation.replace("Result", {
+            won: false,
+            message: result.message,
+            reason: "timeout",
+          });
+        } catch (error) {
+          Alert.alert(
+            "Session timeout failed",
+            error instanceof Error ? error.message : "Unknown error",
+          );
+          setIsTimingOut(false);
+        }
+      }
+    };
+
+    void runTimeout();
+  }, [authToken, currentDay, isTimingOut, navigation, sessionId, timeOfDay]);
 
   const locations = useMemo(
     () => getVisibleLocations(scenarioType, difficulty),
@@ -154,6 +183,26 @@ export function MapScreen({ navigation }: Props) {
 
   const handleEndDay = async () => {
     if (!authToken || !sessionId) {
+      return;
+    }
+
+    if (currentDay >= 4) {
+      try {
+        setBusyAction("end-day");
+        const result = await api.timeoutSession(authToken, sessionId);
+        navigation.replace("Result", {
+          won: false,
+          message: result.message,
+          reason: "timeout",
+        });
+      } catch (error) {
+        Alert.alert(
+          "Timeout could not be completed",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+      } finally {
+        setBusyAction("none");
+      }
       return;
     }
 
@@ -257,7 +306,11 @@ export function MapScreen({ navigation }: Props) {
               disabled={busyAction === "end-day"}
               onPress={handleEndDay}
             >
-              {busyAction === "end-day" ? "Gun Kapanıyor..." : "Gunu Bitir"}
+              {busyAction === "end-day"
+                ? "Gun Kapaniyor..."
+                : currentDay >= 4
+                  ? "Sure Doldu"
+                  : "Gunu Bitir"}
             </PrimaryButton>
           </View>
           {currentDay === 1 && timeOfDay < 4 ? (
