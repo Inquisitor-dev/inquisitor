@@ -19,6 +19,5 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-    gap: spacing.md,
   },
 });

@@ -117,8 +117,8 @@ export function LoginScreen() {
 
 const styles = StyleSheet.create({
   hero: {
-    gap: spacing.sm,
     paddingTop: spacing.md,
+    marginBottom: spacing.md,
   },
   eyebrow: {
     color: colors.accent,
@@ -126,12 +126,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1.2,
     textTransform: "uppercase",
+    marginBottom: spacing.xs,
   },
   title: {
     color: colors.text,
     fontSize: 32,
     fontWeight: "800",
     lineHeight: 38,
+    marginBottom: spacing.sm,
   },
   body: {
     color: colors.textMuted,
@@ -142,21 +144,25 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: "700",
+    marginBottom: spacing.xs,
   },
   apiHint: {
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
+    marginBottom: spacing.xs,
   },
   warningText: {
     color: colors.accent,
     fontSize: 12,
     lineHeight: 18,
+    marginBottom: spacing.xs,
   },
   statusText: {
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
+    marginBottom: spacing.sm,
   },
   statusOk: {
     color: colors.success,
@@ -172,5 +178,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panelMuted,
     color: colors.text,
     paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
   },
 });
