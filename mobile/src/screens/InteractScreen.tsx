@@ -3,7 +3,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Alert,
   ImageBackground,
+  Keyboard,
   KeyboardAvoidingView,
+  KeyboardEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -53,6 +55,7 @@ export function InteractScreen({ navigation, route }: Props) {
   const [notesVisible, setNotesVisible] = useState(false);
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const [isInvestigating, setIsInvestigating] = useState(locationId === "crime_scene");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const messageScrollRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
   const topInset =
@@ -134,6 +137,30 @@ export function InteractScreen({ navigation, route }: Props) {
     setCurrentDay,
     setDialoguesUsed,
   ]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const handleKeyboardShow = (event: KeyboardEvent) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    };
+
+    const handleKeyboardHide = () => {
+      setKeyboardHeight(0);
+    };
+
+    const showSub = Keyboard.addListener(showEvent, handleKeyboardShow);
+    const hideSub = Keyboard.addListener(hideEvent, handleKeyboardHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const androidKeyboardLift =
+    Platform.OS === "android" ? Math.max(0, keyboardHeight - bottomInset) : 0;
 
   const handleSaveNotes = async () => {
     if (!authToken || !sessionId) return;
@@ -375,10 +402,19 @@ export function InteractScreen({ navigation, route }: Props) {
         </View>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "position"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          enabled={Platform.OS === "ios"}
           keyboardVerticalOffset={topInset + 18}
         >
-          <View style={[styles.inputArea, { paddingBottom: bottomInset + 16 }]}>
+          <View
+            style={[
+              styles.inputArea,
+              {
+                paddingBottom: bottomInset + 16,
+                marginBottom: androidKeyboardLift,
+              },
+            ]}
+          >
             {dialoguesUsedToday >= maxDailyDialogues ? (
               <Text style={styles.limitReached}>Gunluk siniriniza ulastiniz.</Text>
             ) : (
