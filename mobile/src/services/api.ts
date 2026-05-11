@@ -33,9 +33,26 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return data as T;
 }
 
+async function requestText(path: string, options: RequestOptions = {}) {
+  const response = await fetch(`${env.apiBaseUrl}${path}`, {
+    method: options.method ?? "GET",
+    headers: {
+      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+    },
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(text || "The request failed. Please try again.");
+  }
+
+  return text;
+}
+
 export const api = {
   ping() {
-    return request<string>("/", {});
+    return requestText("/", {});
   },
 
   sendCode(email: string, password?: string) {
