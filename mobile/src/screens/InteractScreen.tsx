@@ -160,7 +160,7 @@ export function InteractScreen({ navigation, route }: Props) {
   }, []);
 
   const androidKeyboardLift =
-    Platform.OS === "android" ? Math.max(0, keyboardHeight - bottomInset + 8) : 0;
+    Platform.OS === "android" ? Math.max(0, keyboardHeight - bottomInset) : 0;
 
   const handleSaveNotes = async () => {
     if (!authToken || !sessionId) return;
@@ -305,7 +305,7 @@ export function InteractScreen({ navigation, route }: Props) {
         </Pressable>
 
         <View style={styles.npcInfo}>
-          <Text style={styles.npcIcon}>{isInvestigating ? "[]" : profile.icon}</Text>
+          <Text style={styles.npcIcon}>{isInvestigating ? "👁️" : profile.icon}</Text>
           <View>
             <Text style={styles.npcName}>
               {isInvestigating ? "Fiziksel Cevre" : profile.name}
@@ -327,7 +327,7 @@ export function InteractScreen({ navigation, route }: Props) {
           style={styles.messages}
           contentContainerStyle={[
             styles.messageContent,
-            { paddingBottom: bottomInset + 260 },
+            { paddingBottom: bottomInset + 12 },
           ]}
         >
           {messages.map((msg, index) => (
@@ -368,49 +368,53 @@ export function InteractScreen({ navigation, route }: Props) {
           ) : null}
         </ScrollView>
 
+        <View style={styles.mobileToolbar}>
+          <Pressable style={styles.toolBtn} onPress={() => setNotesVisible(true)}>
+            <Text style={styles.toolIcon}>📝</Text>
+            <Text style={styles.toolLabel}>Notlar</Text>
+          </Pressable>
+          <Pressable style={styles.toolBtn} onPress={() => setInventoryVisible(true)}>
+            <Text style={styles.toolIcon}>📜</Text>
+            <Text style={styles.toolLabel}>Envanter</Text>
+          </Pressable>
+          <Pressable
+            disabled={!isInvestigating && !canInvestigate}
+            onPress={handleToggleInvestigation}
+            style={[
+              styles.toolBtn,
+              (isInvestigating || canInvestigate) && styles.activeToolBtn,
+            ]}
+          >
+            <Text style={styles.toolIcon}>{isInvestigating ? "⏹️" : "🔍"}</Text>
+            <Text style={styles.toolLabel}>
+              {isInvestigating ? "Bitir" : "Mekani Arastir"}
+            </Text>
+          </Pressable>
+          {!isInvestigating && locationId !== "crime_scene" ? (
+            <Pressable
+              style={[styles.toolBtn, styles.condemnToolBtn]}
+              onPress={handleCondemnCurrent}
+            >
+              <Text style={styles.toolIcon}>⚖️</Text>
+              <Text style={[styles.toolLabel, styles.condemnToolLabel]}>Hukum Ver</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           enabled={Platform.OS === "ios"}
           keyboardVerticalOffset={topInset + 18}
-          style={[
-            styles.footerWrap,
-            Platform.OS === "android" && { bottom: androidKeyboardLift },
-          ]}
         >
-          <View style={styles.mobileToolbar}>
-            <Pressable style={styles.toolBtn} onPress={() => setNotesVisible(true)}>
-              <Text style={styles.toolIcon}>N</Text>
-              <Text style={styles.toolLabel}>Notlar</Text>
-            </Pressable>
-            <Pressable style={styles.toolBtn} onPress={() => setInventoryVisible(true)}>
-              <Text style={styles.toolIcon}>E</Text>
-              <Text style={styles.toolLabel}>Envanter</Text>
-            </Pressable>
-            <Pressable
-              disabled={!isInvestigating && !canInvestigate}
-              onPress={handleToggleInvestigation}
-              style={[
-                styles.toolBtn,
-                (isInvestigating || canInvestigate) && styles.activeToolBtn,
-              ]}
-            >
-              <Text style={styles.toolIcon}>{isInvestigating ? "X" : "A"}</Text>
-              <Text style={styles.toolLabel}>
-                {isInvestigating ? "Bitir" : "Mekani Arastir"}
-              </Text>
-            </Pressable>
-            {!isInvestigating && locationId !== "crime_scene" ? (
-              <Pressable
-                style={[styles.toolBtn, styles.condemnToolBtn]}
-                onPress={handleCondemnCurrent}
-              >
-                <Text style={styles.toolIcon}>H</Text>
-                <Text style={[styles.toolLabel, styles.condemnToolLabel]}>Hukum Ver</Text>
-              </Pressable>
-            ) : null}
-          </View>
-
-          <View style={[styles.inputArea, { paddingBottom: bottomInset + 16 }]}>
+          <View
+            style={[
+              styles.inputArea,
+              {
+                paddingBottom: bottomInset + 16,
+                marginBottom: androidKeyboardLift,
+              },
+            ]}
+          >
             {dialoguesUsedToday >= maxDailyDialogues ? (
               <Text style={styles.limitReached}>Gunluk siniriniza ulastiniz.</Text>
             ) : (
@@ -421,7 +425,6 @@ export function InteractScreen({ navigation, route }: Props) {
                   placeholder="Sorunuzu sorun..."
                   placeholderTextColor={inquisitorColors.dim}
                   style={styles.textarea}
-                  textAlignVertical="top"
                   value={draft}
                 />
                 <Text
@@ -482,7 +485,7 @@ export function InteractScreen({ navigation, route }: Props) {
           ) : null}
           {inventory.activeWarrants.map((warrant) => (
             <View key={`active-${warrant}`} style={styles.inventoryItem}>
-              <Text style={styles.inventoryIcon}>I</Text>
+              <Text style={styles.inventoryIcon}>📜</Text>
               <View style={styles.inventoryTextWrap}>
                 <Text style={styles.inventoryName}>Arama Izni</Text>
                 <Text style={styles.inventoryLocation}>
@@ -494,7 +497,7 @@ export function InteractScreen({ navigation, route }: Props) {
           ))}
           {inventory.usedWarrants.map((warrant) => (
             <View key={`used-${warrant}`} style={[styles.inventoryItem, styles.inventoryItemUsed]}>
-              <Text style={styles.inventoryIcon}>I</Text>
+              <Text style={styles.inventoryIcon}>📜</Text>
               <View style={styles.inventoryTextWrap}>
                 <Text style={styles.inventoryName}>Arama Izni</Text>
                 <Text style={[styles.inventoryLocation, styles.inventoryLocationUsed]}>
@@ -562,7 +565,6 @@ const styles = StyleSheet.create({
   chatColumn: {
     flex: 1,
     zIndex: 2,
-    position: "relative",
   },
   messages: {
     flex: 1,
@@ -616,12 +618,6 @@ const styles = StyleSheet.create({
     color: inquisitorColors.muted,
     fontSize: 20,
     letterSpacing: 2,
-  },
-  footerWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   mobileToolbar: {
     flexDirection: "row",
