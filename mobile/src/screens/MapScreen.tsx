@@ -201,6 +201,10 @@ export function MapScreen({ navigation }: Props) {
                 result.message ?? "Karar uygulandi.",
               );
               setCondemnVisible(false);
+              navigation.replace("Result", {
+                won: Boolean(result.won),
+                message: result.message ?? "Karar uygulandi.",
+              });
             } catch (error) {
               Alert.alert(
                 "Condemn failed",

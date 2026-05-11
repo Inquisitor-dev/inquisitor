@@ -7,6 +7,7 @@ import { HomeScreen } from "@/screens/HomeScreen";
 import { InteractScreen } from "@/screens/InteractScreen";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { MapScreen } from "@/screens/MapScreen";
+import { ResultScreen } from "@/screens/ResultScreen";
 import { useGameStore } from "@/store/useGameStore";
 
 export type RootStackParamList = {
@@ -16,6 +17,11 @@ export type RootStackParamList = {
   Interact: {
     locationId: string;
     locationName: string;
+  };
+  Result: {
+    won: boolean;
+    message: string;
+    reason?: "timeout";
   };
 };
 
@@ -81,6 +87,11 @@ export function AppNavigator() {
               component={InteractScreen}
               name="Interact"
               options={{ title: "Interrogation" }}
+            />
+            <Stack.Screen
+              component={ResultScreen}
+              name="Result"
+              options={{ title: "Verdict" }}
             />
           </>
         ) : (
