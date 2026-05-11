@@ -118,6 +118,7 @@ export function HomeScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [difficultyVisible, setDifficultyVisible] = useState(false);
   const [scenarioVisible, setScenarioVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const soundtrackRef = useRef<Audio.Sound | null>(null);
   const insets = useSafeAreaInsets();
@@ -290,46 +291,12 @@ export function HomeScreen({ navigation }: Props) {
       <View pointerEvents="none" style={styles.cornerBottomLeft} />
       <View pointerEvents="none" style={styles.cornerBottomRight} />
 
-      <View style={[styles.soundPanel, { top: insets.top + 18 }]}>
-        <Pressable
-          onPress={() => setIsMuted((prev) => !prev)}
-          style={({ pressed }) => [
-            styles.soundToggle,
-            pressed && styles.buttonPressed,
-          ]}
-        >
-          <Text style={styles.soundIcon}>{isMuted ? "MUTE" : "SOUND"}</Text>
-        </Pressable>
-
-        <View style={styles.volumeRow}>
-          <Pressable onPress={() => changeVolume(-0.2)} style={styles.volumeStepButton}>
-            <Text style={styles.volumeStepText}>-</Text>
-          </Pressable>
-
-          <View style={styles.volumeBars}>
-            {[0.2, 0.4, 0.6, 0.8, 1].map((step, index) => {
-              const active = !isMuted && volume >= step;
-              return (
-                <Pressable
-                  key={step}
-                  onPress={() => pickVolume(step)}
-                  style={[
-                    styles.volumeBar,
-                    active && styles.volumeBarActive,
-                    index === 4 && styles.volumeBarLast,
-                  ]}
-                />
-              );
-            })}
-          </View>
-
-          <Pressable onPress={() => changeVolume(0.2)} style={styles.volumeStepButton}>
-            <Text style={styles.volumeStepText}>+</Text>
-          </Pressable>
-        </View>
-
-        <Text style={styles.volumeLabel}>{Math.round((isMuted ? 0 : volume) * 100)}%</Text>
-      </View>
+      <Pressable
+        onPress={() => setSettingsVisible(true)}
+        style={[styles.settingsButton, { top: insets.top + 18 }]}
+      >
+        <Text style={styles.settingsIcon}>AYAR</Text>
+      </Pressable>
 
       <ScrollView
         contentContainerStyle={[
@@ -393,7 +360,6 @@ export function HomeScreen({ navigation }: Props) {
               primary
             />
 
-            <LandingButton label="Hesaptan Cikis Yap" onPress={logout} />
             {error ? <Text style={styles.errorBox}>{error}</Text> : null}
             <Text style={styles.sessionNote}>
               {isPremium
@@ -409,6 +375,65 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       </ScrollView>
+
+      <AppModal
+        title="Ayarlar"
+        subtitle="Ses kontrolu ve hesap islemleri."
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+      >
+        <View style={styles.settingsGroup}>
+          <Text style={styles.settingsHeading}>Ana Menu Muzigi</Text>
+          <Pressable
+            onPress={() => setIsMuted((prev) => !prev)}
+            style={({ pressed }) => [
+              styles.soundToggle,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Text style={styles.soundIcon}>{isMuted ? "MUTE" : "SOUND"}</Text>
+          </Pressable>
+
+          <View style={styles.volumeRow}>
+            <Pressable onPress={() => changeVolume(-0.2)} style={styles.volumeStepButton}>
+              <Text style={styles.volumeStepText}>-</Text>
+            </Pressable>
+
+            <View style={styles.volumeBars}>
+              {[0.2, 0.4, 0.6, 0.8, 1].map((step, index) => {
+                const active = !isMuted && volume >= step;
+                return (
+                  <Pressable
+                    key={step}
+                    onPress={() => pickVolume(step)}
+                    style={[
+                      styles.volumeBar,
+                      active && styles.volumeBarActive,
+                      index === 4 && styles.volumeBarLast,
+                    ]}
+                  />
+                );
+              })}
+            </View>
+
+            <Pressable onPress={() => changeVolume(0.2)} style={styles.volumeStepButton}>
+              <Text style={styles.volumeStepText}>+</Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.volumeLabel}>{Math.round((isMuted ? 0 : volume) * 100)}%</Text>
+        </View>
+
+        <Pressable
+          onPress={() => {
+            setSettingsVisible(false);
+            logout();
+          }}
+          style={styles.settingsLogoutButton}
+        >
+          <Text style={styles.settingsLogoutText}>Hesaptan Cikis Yap</Text>
+        </Pressable>
+      </AppModal>
 
       <AppModal
         title="Zorluk Seviyesi Sec"
@@ -481,16 +506,35 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.3)",
   },
-  soundPanel: {
+  settingsButton: {
     position: "absolute",
-    right: 22,
+    left: 22,
     zIndex: 5,
-    width: 148,
-    padding: 10,
-    borderRadius: 14,
+    minWidth: 62,
+    height: 42,
+    paddingHorizontal: 12,
+    borderRadius: 21,
     borderWidth: 1,
     borderColor: "rgba(138, 3, 3, 0.3)",
     backgroundColor: "rgba(0, 0, 0, 0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  settingsIcon: {
+    color: inquisitorColors.parchment,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  settingsGroup: {
+    marginBottom: 12,
+  },
+  settingsHeading: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
   },
   soundToggle: {
     minHeight: 38,
@@ -551,6 +595,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: "center",
     letterSpacing: 1,
+  },
+  settingsLogoutButton: {
+    minHeight: 52,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(232,220,196,0.12)",
+    backgroundColor: "rgba(138,3,3,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  settingsLogoutText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   cornerTopLeft: {
     position: "absolute",
