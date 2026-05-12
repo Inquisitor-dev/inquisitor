@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
 
 export default function PremiumPage() {
@@ -25,7 +26,7 @@ export default function PremiumPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:3001/auth/activate-premium', {
+      const res = await fetch(apiUrl('/auth/activate-premium'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

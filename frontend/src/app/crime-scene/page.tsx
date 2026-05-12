@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './crime-scene.module.scss';
 
@@ -50,7 +51,7 @@ export default function CrimeScenePage() {
   const handleNotesBlur = async () => {
     if (!sessionId) return;
     try {
-      await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+      await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes }),

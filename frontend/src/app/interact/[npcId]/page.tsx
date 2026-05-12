@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
 import AmbientAudio from '../../../components/AmbientAudio';
@@ -165,7 +166,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       setMessages([]);
 
       try {
-        const res = await fetch('http://localhost:3001/npcs/history', {
+        const res = await fetch(apiUrl('/npcs/history'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
           if (fetchedDay > 1 && !isInvestigating) {
             try {
-              const greetRes = await fetch('http://localhost:3001/npcs/interact', {
+              const greetRes = await fetch(apiUrl('/npcs/interact'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -233,7 +234,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           setCurrentDay(data.currentDay);
         }
 
-        const sessionRes = await fetch(`http://localhost:3001/game-sessions/${sessionId}`, {
+        const sessionRes = await fetch(apiUrl(`/game-sessions/${sessionId}`), {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         if (sessionRes.ok) {
@@ -268,7 +269,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3001/npcs/interact', {
+      const res = await fetch(apiUrl('/npcs/interact'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -330,7 +331,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     if (localNotes !== notes && sessionId) {
       setNotes(localNotes);
       try {
-        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -354,7 +355,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
-          const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
+          const res = await fetch(apiUrl(`/game-sessions/${sessionId}/condemn`), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -471,7 +472,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                         consumeWarrant(npcId);
                         setIsInvestigating(false);
                         try {
-                          await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                          await fetch(apiUrl(`/game-sessions/${sessionId}/consume-warrant`), {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
@@ -604,7 +605,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                         consumeWarrant(npcId);
                         setIsInvestigating(false);
                         try {
-                          await fetch(`http://localhost:3001/game-sessions/${sessionId}/consume-warrant`, {
+                          await fetch(apiUrl(`/game-sessions/${sessionId}/consume-warrant`), {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',

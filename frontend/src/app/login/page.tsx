@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
 
 export default function LoginPage() {
@@ -44,7 +45,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:3001/auth/login', {
+      const res = await fetch(apiUrl('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -71,7 +72,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:3001/auth/send-code', {
+      const res = await fetch(apiUrl('/auth/send-code'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -98,7 +99,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:3001/auth/verify', {
+      const res = await fetch(apiUrl('/auth/verify'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code }),

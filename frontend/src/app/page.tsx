@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../store/useGameStore';
 import styles from './page.module.scss';
 
@@ -82,7 +83,7 @@ export default function HomePage() {
       if (!authToken) return;
 
       try {
-        const res = await fetch('http://localhost:3001/game-sessions/active', {
+        const res = await fetch(apiUrl('/game-sessions/active'), {
           headers: { Authorization: `Bearer ${authToken}` },
           cache: 'no-store',
         });
@@ -107,7 +108,7 @@ export default function HomePage() {
       if (!isSettingsOpen || !authToken) return;
 
       try {
-        const res = await fetch('http://localhost:3001/auth/me', {
+        const res = await fetch(apiUrl('/auth/me'), {
           headers: { Authorization: `Bearer ${authToken}` },
           cache: 'no-store',
         });
@@ -152,7 +153,7 @@ export default function HomePage() {
     setIsScenarioOpen(false);
 
     try {
-      const res = await fetch('http://localhost:3001/game-sessions', {
+      const res = await fetch(apiUrl('/game-sessions'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

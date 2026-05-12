@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './map.module.scss';
 
@@ -301,7 +302,7 @@ export default function MapPage() {
     const fetchSession = async () => {
       if (sessionId && authToken) {
         try {
-          const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}`, {
+          const res = await fetch(apiUrl(`/game-sessions/${sessionId}`), {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
           const data = await res.json();
@@ -331,7 +332,7 @@ export default function MapPage() {
     if (sessionId && authToken) {
       try {
         const notes = useGameStore.getState().notes;
-        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -356,7 +357,7 @@ export default function MapPage() {
 
     setEndingDay(true);
     try {
-      await fetch(`http://localhost:3001/game-sessions/${sessionId}/end-day`, {
+      await fetch(apiUrl(`/game-sessions/${sessionId}/end-day`), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
@@ -372,7 +373,7 @@ export default function MapPage() {
     if (!sessionId || timeOfDay >= 4) return;
     setLoadingLoc(locId);
     try {
-      await fetch(`http://localhost:3001/game-sessions/${sessionId}/advance-time`, {
+      await fetch(apiUrl(`/game-sessions/${sessionId}/advance-time`), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
@@ -400,7 +401,7 @@ export default function MapPage() {
     if (localNotes !== notes && sessionId) {
       setNotes(localNotes);
       try {
-        await fetch(`http://localhost:3001/game-sessions/${sessionId}/notes`, {
+        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -418,7 +419,7 @@ export default function MapPage() {
     if (!sessionId) return;
     
     try {
-      const res = await fetch(`http://localhost:3001/game-sessions/${sessionId}/condemn`, {
+      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/condemn`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
