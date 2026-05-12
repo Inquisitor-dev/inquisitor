@@ -182,6 +182,27 @@ export function InteractScreen({ navigation, route }: Props) {
     }
   };
 
+  const handleCloseNotes = async () => {
+    if (notesDraft === notes || !authToken || !sessionId) {
+      setNotesVisible(false);
+      return;
+    }
+
+    try {
+      setSavingNotes(true);
+      await api.updateNotes(authToken, sessionId, notesDraft);
+      setNotes(notesDraft);
+      setNotesVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Notlar kaydedilemedi",
+        error instanceof Error ? error.message : "Unknown error",
+      );
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
   const handleToggleInvestigation = async () => {
     if (!isInvestigating) {
       if (!canInvestigate) {
@@ -457,7 +478,9 @@ export function InteractScreen({ navigation, route }: Props) {
         title="Engizisyoncunun Notlari"
         subtitle="Supheli davranislari buraya not et."
         visible={notesVisible}
-        onClose={() => setNotesVisible(false)}
+        onClose={() => {
+          void handleCloseNotes();
+        }}
       >
         <TextInput
           multiline
@@ -468,11 +491,6 @@ export function InteractScreen({ navigation, route }: Props) {
           textAlignVertical="top"
           value={notesDraft}
         />
-        <Pressable onPress={handleSaveNotes} style={styles.modalActionButton}>
-          <Text style={styles.modalActionButtonText}>
-            {savingNotes ? "Kaydediliyor..." : "Anladim"}
-          </Text>
-        </Pressable>
       </AppModal>
 
       <AppModal
@@ -732,21 +750,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     lineHeight: 28,
-  },
-  modalActionButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    backgroundColor: inquisitorColors.primary,
-    borderRadius: 2,
-  },
-  modalActionButtonText: {
-    color: inquisitorColors.parchment,
-    fontFamily: "serif",
-    fontSize: 16,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1.4,
   },
   emptyText: {
     color: inquisitorColors.muted,

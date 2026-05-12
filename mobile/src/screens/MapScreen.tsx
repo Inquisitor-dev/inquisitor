@@ -162,6 +162,27 @@ export function MapScreen({ navigation }: Props) {
     }
   };
 
+  const handleCloseNotes = async () => {
+    if (notesDraft === notes || !authToken || !sessionId) {
+      setNotesVisible(false);
+      return;
+    }
+
+    try {
+      setBusyAction("notes");
+      await api.updateNotes(authToken, sessionId, notesDraft);
+      setNotes(notesDraft);
+      setNotesVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Notes could not be saved",
+        error instanceof Error ? error.message : "Unknown error",
+      );
+    } finally {
+      setBusyAction("none");
+    }
+  };
+
   const handleOpenLocation = async (locationId: string, locationName: string) => {
     if (!authToken || !sessionId || isNight) return;
 
@@ -394,7 +415,9 @@ export function MapScreen({ navigation }: Props) {
       </View>
 
       <AppModal
-        onClose={() => setNotesVisible(false)}
+        onClose={() => {
+          void handleCloseNotes();
+        }}
         subtitle="Gözlemlerini buraya not et."
         title="Soruşturma Notları"
         visible={notesVisible}
@@ -408,11 +431,6 @@ export function MapScreen({ navigation }: Props) {
           textAlignVertical="top"
           value={notesDraft}
         />
-        <Pressable onPress={handleSaveNotes} style={styles.modalActionButton}>
-          <Text style={styles.modalActionButtonText}>
-            {busyAction === "notes" ? "Kaydediliyor..." : "Anladım"}
-          </Text>
-        </Pressable>
       </AppModal>
 
       <AppModal
@@ -656,21 +674,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 15,
     lineHeight: 24,
-  },
-  modalActionButton: {
-    backgroundColor: inquisitorColors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 2,
-  },
-  modalActionButtonText: {
-    color: inquisitorColors.parchment,
-    fontFamily: "serif",
-    fontSize: 16,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1.4,
   },
   modalScroll: {
     maxHeight: 420,
