@@ -124,6 +124,7 @@ export function HomeScreen({ navigation }: Props) {
   const [difficultyVisible, setDifficultyVisible] = useState(false);
   const [scenarioVisible, setScenarioVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [howToPlayVisible, setHowToPlayVisible] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
@@ -338,8 +339,9 @@ export function HomeScreen({ navigation }: Props) {
       <Pressable
         onPress={() => setSettingsVisible(true)}
         style={[styles.settingsButton, { top: insets.top + 18 }]}
+        accessibilityLabel="Ayarlar"
       >
-        <Text style={styles.settingsIcon}>AYAR</Text>
+        <Text style={styles.settingsIcon}>⚙</Text>
       </Pressable>
 
       <ScrollView
@@ -404,6 +406,11 @@ export function HomeScreen({ navigation }: Props) {
               primary
             />
 
+            <LandingButton
+              label="Nasil Oynanir?"
+              onPress={() => setHowToPlayVisible(true)}
+            />
+
             {error ? <Text style={styles.errorBox}>{error}</Text> : null}
             <Text style={styles.sessionNote}>
               {isPremium
@@ -419,6 +426,67 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       </ScrollView>
+
+      <AppModal
+        title="Sorusturma Kilavuzu"
+        visible={howToPlayVisible}
+        onClose={() => setHowToPlayVisible(false)}
+      >
+        <ScrollView style={styles.guideScroll} showsVerticalScrollIndicator={false}>
+          <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Temel Amac</Text>
+            <Text style={styles.guideText}>
+              Ashenmoor koyunde islenen gizemli bir cinayeti cozmekle gorevli bir
+              Engizisyon mufettisisin. 4 gunun var. Bu sure zarfinda dogru kisiyi
+              olume mahkum etmeli ve gercegi ortaya cikarmalisin.
+            </Text>
+          </View>
+
+          <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Zaman Yonetimi</Text>
+            <Text style={styles.guideText}>
+              Bir mekana her girdiginde vakit ilerler. Gece oldugunda herkes evine
+              cekilir ve gun biter.
+            </Text>
+          </View>
+
+          <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Arama Izinleri</Text>
+            <Text style={styles.guideText}>
+              Koyluleri sadece sorgulayarak degil, mekanlarini arayarak da kanit
+              bulabilirsin. Ama bir mekani aramak icin Peder Malachar'dan arama izni
+              almalisin.
+            </Text>
+          </View>
+
+          <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Not Tutma</Text>
+            <Text style={styles.guideText}>
+              Koylulerin soyledikleri celiskili olabilir. Onemli ipuclarini not
+              defterine kaydet.
+            </Text>
+          </View>
+
+          <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Nihai Hukum</Text>
+            <Text style={styles.guideText}>
+              Istedigin an haritadaki Mahkumu Sec butonuna basarak birini suclayabilirsin.
+              Yanlis kisiyi asarsan gercek katil aramizda dolasmaya devam eder.
+            </Text>
+          </View>
+
+          <View style={styles.guideTip}>
+            <Text style={styles.guideTipStrong}>Ipuucu:</Text>
+            <Text style={styles.guideTipText}>
+              Her yalan soyleyen koylu katil olmayabilir.
+            </Text>
+          </View>
+        </ScrollView>
+
+        <Pressable onPress={() => setHowToPlayVisible(false)} style={styles.modalActionButton}>
+          <Text style={styles.modalActionButtonText}>Anladim</Text>
+        </Pressable>
+      </AppModal>
 
       <AppModal
         title="Ayarlar"
@@ -604,9 +672,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 22,
     zIndex: 5,
-    minWidth: 62,
+    width: 44,
     height: 42,
-    paddingHorizontal: 12,
     borderRadius: 21,
     borderWidth: 1,
     borderColor: "rgba(138, 3, 3, 0.3)",
@@ -616,9 +683,9 @@ const styles = StyleSheet.create({
   },
   settingsIcon: {
     color: inquisitorColors.parchment,
-    fontSize: 11,
+    fontSize: 21,
     fontWeight: "700",
-    letterSpacing: 1,
+    lineHeight: 22,
   },
   settingsGroup: {
     marginBottom: 12,
@@ -1011,6 +1078,59 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     marginTop: 4,
+  },
+  guideScroll: {
+    maxHeight: 420,
+  },
+  guideSection: {
+    marginBottom: 20,
+  },
+  guideTitle: {
+    color: inquisitorColors.primary,
+    fontFamily: "serif",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  guideText: {
+    color: inquisitorColors.muted,
+    fontSize: 14,
+    lineHeight: 24,
+  },
+  guideTip: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "rgba(138, 3, 3, 0.1)",
+    borderLeftWidth: 2,
+    borderLeftColor: inquisitorColors.primary,
+    padding: 14,
+    marginTop: 8,
+  },
+  guideTipStrong: {
+    color: inquisitorColors.parchment,
+    fontWeight: "700",
+  },
+  guideTipText: {
+    color: inquisitorColors.muted,
+    flex: 1,
+    fontStyle: "italic",
+    lineHeight: 21,
+  },
+  modalActionButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    backgroundColor: inquisitorColors.primary,
+    borderRadius: 2,
+  },
+  modalActionButtonText: {
+    color: inquisitorColors.parchment,
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
   },
   bottomRule: {
     width: "100%",

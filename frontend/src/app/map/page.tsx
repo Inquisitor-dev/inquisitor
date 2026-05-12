@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './map.module.scss';
-import AmbientAudio from '../../components/AmbientAudio';
 
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
@@ -287,6 +286,7 @@ export default function MapPage() {
     onConfirm: () => {},
   });
   const [localNotes, setLocalNotes] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     setLocalNotes(notes);
@@ -314,6 +314,17 @@ export default function MapPage() {
     };
     if (hasHydrated) fetchSession();
   }, [authToken, router, sessionId, setScenarioType, setWarrants, hasHydrated]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const handleRetreat = async () => {
     // Notları sunucuya kaydet
@@ -370,6 +381,18 @@ export default function MapPage() {
     } catch (err) {
       console.error('Failed to advance time', err);
       setLoadingLoc(null);
+    }
+  };
+
+  const handleToggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Failed to toggle fullscreen', err);
     }
   };
 
@@ -458,7 +481,6 @@ export default function MapPage() {
 
   return (
     <main className={styles.main}>
-      <AmbientAudio timeOfDay={timeOfDay} type="map" />
       <div className={`${styles.vignette} ${isNight ? styles.nightVignette : ''}`} />
 
       {/* Header overlay */}
@@ -528,6 +550,26 @@ export default function MapPage() {
       {/* Action Bar (Bant) */}
       <footer className={styles.actionBar}>
         <div className={styles.actionGroup}>
+          <button className={styles.iconBtn} onClick={handleToggleFullscreen}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              {isFullscreen ? (
+                <>
+                  <path d="M9 15H5V19" />
+                  <path d="M15 9H19V5" />
+                  <path d="M5 15L10 10" />
+                  <path d="M19 9L14 14" />
+                </>
+              ) : (
+                <>
+                  <path d="M9 3H5V7" />
+                  <path d="M15 21H19V17" />
+                  <path d="M5 7L10 12" />
+                  <path d="M19 17L14 12" />
+                </>
+              )}
+            </svg>
+            <span>{isFullscreen ? 'Cik' : 'Tam Ekran'}</span>
+          </button>
           <button className={styles.iconBtn} onClick={() => setIsNotebookOpen(true)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
