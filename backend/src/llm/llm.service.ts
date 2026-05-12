@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
-import { getScenarioConfig } from '../scenarios/scenario-config';
+import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -136,7 +136,10 @@ CRITICAL RULES:
       .join('\n');
 
     const locationListText = locationDefinitions
-      .map((location) => `- "${location.id}" = ${location.name} (${location.description})`)
+      .map(
+        (location) =>
+          `- "${location.id}" = ${getLocalizedLocationLabel(scenarioType, location.id)} (${location.description})`,
+      )
       .join('\n');
 
     const npcIds = baseNpcs.map((n) => `"${n.id}"`).join(' | ');
@@ -146,7 +149,10 @@ CRITICAL RULES:
       .join(',\n');
 
     const locationCluesTemplate = locationDefinitions
-      .map((location) => `    "${location.id}": "Turkish description of a subtle clue hidden at ${location.id}..."`)
+      .map(
+        (location) =>
+          `    "${location.id}": "Turkish description of a subtle clue hidden at ${getLocalizedLocationLabel(scenarioType, location.id)}..."`,
+      )
       .join(',\n');
 
     const difficultyInstruction =
@@ -184,6 +190,7 @@ CLUE & MYSTERY RULES:
 3. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find. Written in dark literary Turkish.
 4. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
 5. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
+6. NEVER show the player English location names in parentheses or as translations. Use only the Turkish display names from the canonical list.
 
 Return a valid JSON object ONLY, in exactly this format:
 {

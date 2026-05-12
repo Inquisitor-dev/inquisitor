@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
-import { getScenarioConfig } from '../scenarios/scenario-config';
+import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 
 @Injectable()
 export class NpcsService {
@@ -70,8 +70,15 @@ export class NpcsService {
     const canonicalLocationIds = canonicalLocations
       .filter((location) => location.id !== 'crime_scene')
       .map((location) => location.id);
+    const localizedLocationList = canonicalLocations.map((location) => ({
+      ...location,
+      localizedName: getLocalizedLocationLabel(currentState.session.scenarioType, location.id),
+    }));
     const locationListText = canonicalLocations
-      .map((location) => `- ${location.id}: ${location.name} (${location.description})`)
+      .map((location) => {
+        const localizedName = getLocalizedLocationLabel(currentState.session.scenarioType, location.id);
+        return `- ${location.id}: ${localizedName} (${location.description})`;
+      })
       .join('\n');
     const rosterText = scenarioConfig.npcDefinitions
       .map((npc) => `- ${npc.id}: ${npc.name} (${npc.role})`)
@@ -92,7 +99,8 @@ STRICT CANON RULES:
 1. You must stay faithful to the canonical cast and canonical locations above.
 2. Do NOT invent new named jobs, workplaces, businesses, districts, or landmarks.
 3. Do NOT claim to have a different profession, workplace, or identity than the one assigned to you.
-4. If you mention a place, prefer the canonical location names above.
+4. If you mention a place, use ONLY the Turkish canonical display names above.
+5. NEVER show English location names, internal ids, or parenthetical translations such as "Degirmen (Mill)".
 `;
 
     const isNarrator = currentState.npc.id.startsWith('narrator_');
@@ -144,7 +152,7 @@ ${currentState.dynamicPrompt}`;
 - Canonical Searchable Location IDs: ${canonicalLocationIds.join(', ')}`;
 
       if (remaining > 0) {
-        warrantInfo += `\n\nIMPORTANT: You ARE ALLOWED to grant up to ${remaining} more search warrant(s) now. Only grant warrants for canonical location IDs from this list: ${canonicalLocationIds.join(', ')}. To grant, use [GRANT_WARRANT: location_id] tags.`;
+        warrantInfo += `\n\nIMPORTANT: You may grant up to ${remaining} more search warrant(s), but ONLY if the player clearly and directly asks for a search warrant / arama izni. Never grant one proactively, never grant one just because you suspect something, and never grant one in response to a generic question. Only grant warrants for canonical location IDs from this list: ${canonicalLocationIds.join(', ')}. To grant, use [GRANT_WARRANT: location_id] tags.`;
       } else {
         warrantInfo += `\n\nIMPORTANT: You have reached the limit of 2 warrants. Do NOT grant any more.`;
       }
@@ -167,6 +175,10 @@ ${currentState.dynamicPrompt}`;
     );
 
     let finalReply = llmResponse.reply;
+    const explicitWarrantRequest = this.isExplicitWarrantRequest(
+      userMessage,
+      localizedLocationList.map((location) => location.localizedName),
+    );
 
     const warrantMatches = Array.from(finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi));
     const newlyGranted: string[] = [];
@@ -175,7 +187,7 @@ ${currentState.dynamicPrompt}`;
       let issuedCount = currentState.session.warrantsIssued;
 
       for (const match of warrantMatches) {
-        if (issuedCount < 2) {
+        if (explicitWarrantRequest && issuedCount < 2) {
           const loc = match[1];
           if (
             canonicalLocationIds.includes(loc) &&
@@ -214,6 +226,33 @@ ${currentState.dynamicPrompt}`;
       reply: finalReply,
       grantedWarrants: newlyGranted,
     };
+  }
+
+  private isExplicitWarrantRequest(userMessage: string, localizedLocationNames: string[]) {
+    const normalized = userMessage
+      .toLocaleLowerCase('tr-TR')
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const warrantPatterns = [
+      /arama izni/,
+      /izin verir misin/,
+      /izin ver/,
+      /izni ver/,
+      /arama yapabilir miyim/,
+      /arastirabilir miyim/,
+      /araştırabilir miyim/,
+      /inceleyebilir miyim/,
+      /warrant/,
+    ];
+
+    const mentionsWarrantIntent = warrantPatterns.some((pattern) => pattern.test(normalized));
+    const mentionsKnownLocation = localizedLocationNames.some((name) =>
+      normalized.includes(name.toLocaleLowerCase('tr-TR')),
+    );
+
+    return mentionsWarrantIntent || (mentionsKnownLocation && normalized.includes('izin'));
   }
 
   async getNpcHistory(sessionId: string, npcId: string) {

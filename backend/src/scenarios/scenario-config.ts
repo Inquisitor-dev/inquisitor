@@ -23,6 +23,36 @@ export interface ScenarioConfig {
   locationDefinitions: ScenarioLocationDefinition[];
 }
 
+const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = {
+  medieval: {
+    crime_scene: 'Cinayet Mahalli',
+    tavern: 'Taverna',
+    church: 'Kilise',
+    graveyard: 'Mezarlik',
+    mill: 'Degirmen',
+    farm: 'Ciftlik',
+    clinic: 'Klinik',
+  },
+  modern: {
+    crime_scene: 'Olay Yeri',
+    tavern: 'Karakol',
+    church: 'Kilise',
+    graveyard: 'Kaset Dukkani',
+    mill: 'Acik Hava Sinemasi',
+    farm: 'Benzinlik',
+    clinic: 'Prefabrik Evler',
+  },
+  cyberpunk: {
+    crime_scene: 'Olay Yeri',
+    tavern: 'Polis Karakolu',
+    church: 'Lokanta',
+    graveyard: 'Hurdalik',
+    mill: 'Robot Dukkani',
+    farm: 'Kopru Alti',
+    clinic: 'Bar',
+  },
+};
+
 const MEDIEVAL_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'tavern',
@@ -229,6 +259,14 @@ export function getScenarioConfig(
     npcDefinitions,
     locationDefinitions,
   };
+}
+
+export function getLocalizedLocationLabel(
+  scenarioType: string,
+  locationId: string,
+): string {
+  const normalizedScenario = normalizeScenarioType(scenarioType);
+  return LOCALIZED_LOCATION_LABELS[normalizedScenario][locationId] ?? locationId;
 }
 
 function normalizeScenarioType(scenarioType: string): ScenarioType {
