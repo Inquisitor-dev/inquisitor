@@ -11,7 +11,7 @@ export class LlmService {
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
-    this.logger.log(`GEMINI_API_KEY: ${apiKey ? `âœ… Found (${apiKey.slice(0, 8)}...)` : 'âŒ MISSING!'}`);
+    this.logger.log(`GEMINI_API_KEY: ${apiKey ? `Found (${apiKey.slice(0, 8)}...)` : 'MISSING!'}`);
 
     this.openai = new OpenAI({
       apiKey: apiKey || 'no-key-provided',
@@ -28,7 +28,7 @@ export class LlmService {
   ): Promise<{ reply: string }> {
     try {
       const newDayInstruction = isNewDay
-        ? `\nIMPORTANT: This is a NEW DAY. The Inquisitor has returned. Do NOT greet them as a stranger. Acknowledge that you've met before. React naturally â€” perhaps warmer, colder, more nervous, or more guarded depending on your character and what was discussed yesterday.`
+        ? `\nIMPORTANT: This is a NEW DAY. The Inquisitor has returned. Do NOT greet them as a stranger. Acknowledge that you've met before. React naturally - perhaps warmer, colder, more nervous, or more guarded depending on your character and what was discussed yesterday.`
         : '';
 
       const systemPrompt = `You are ${npcName}, a character in a dark interrogation mystery game.
@@ -36,14 +36,16 @@ export class LlmService {
 CHARACTER BACKGROUND: ${npcPrompt}
 
 CRITICAL RULES:
-1. ALWAYS reply in natural, literary TURKISH (TÃ¼rkÃ§e). Speak smoothly, avoid translation-like phrasing.
+1. ALWAYS reply in natural, literary TURKISH (Turkce). Speak smoothly, avoid translation-like phrasing.
 2. Stay completely in character at all times.
 3. Never contradict the supplied identity, job, setting, or canonical location list.
-4. If your character is the CULPRIT, you must lie, deflect, and misdirect. Be clever but not obviously guilty.
-5. If your character is INNOCENT, answer truthfully about what you know, but you may still have your own smaller secrets.
-6. Your response MUST be a valid JSON object with this EXACT format:
+4. Follow any confession, confrontation, resistance, or truth-handling rules inside the supplied character background exactly.
+5. If your character is the CULPRIT, you must lie, deflect, and misdirect about the main crime. Be clever but not obviously guilty.
+6. If your character is NOT the culprit and the player accurately corners you about your true personal secret, you must confess that secret instead of looping forever in denial.
+7. Never confess to a crime your character did not commit.
+8. Your response MUST be a valid JSON object with this EXACT format:
 {"reply": "your Turkish response here"}
-7. Do NOT include any text outside the JSON object.${newDayInstruction}`;
+9. Do NOT include any text outside the JSON object.${newDayInstruction}`;
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -68,7 +70,9 @@ CRITICAL RULES:
           if (err?.status === 429 && retries < maxRetries) {
             retries++;
             const waitTime = Math.pow(2, retries) * 1500;
-            this.logger.warn(`API Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`);
+            this.logger.warn(
+              `API Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
+            );
             await delay(waitTime);
           } else {
             throw err;
@@ -107,16 +111,20 @@ CRITICAL RULES:
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
       this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
 
-      let errorMessage = 'Åu an sizinle konuÅŸmak istemiyorum... (Beklenmeyen Sistem HatasÄ±)';
+      let errorMessage = 'Su an sizinle konusmak istemiyorum... (Beklenmeyen Sistem Hatasi)';
       if (error?.status === 429) {
-        errorMessage = '*Karakter sessizliÄŸe bÃ¼rÃ¼nÃ¼yor...* (Sunucu aÅŸÄ±rÄ± yoÄŸun, lÃ¼tfen birazdan tekrar deneyin.)';
+        errorMessage =
+          '*Karakter sessizlige burunuyor...* (Sunucu asiri yogun, lutfen birazdan tekrar deneyin.)';
       }
 
       return { reply: errorMessage };
     }
   }
 
-  async generateSessionScenario(difficulty: string = 'easy', scenarioType: string = 'medieval'): Promise<{
+  async generateSessionScenario(
+    difficulty: string = 'easy',
+    scenarioType: string = 'medieval',
+  ): Promise<{
     scenario: string;
     truthReveal: string;
     culpritId: string;
@@ -181,11 +189,11 @@ YOUR TASK:
    - Every dynamic prompt must preserve that NPC's public identity exactly. Do NOT rename them, do NOT change their profession, and do NOT move them to another workplace.
 
 CRITICAL RULE:
-The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (TÃ¼rkÃ§e). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. DO NOT use clichÃ© or overly obvious clues that instantly give away the killer's profession (e.g. NO flour for the miller, NO holy water for the priest, NO dirt for the gravedigger). The mystery must be difficult to solve. Use subtle, psychological, or indirect clues. Red herrings (false clues pointing to innocent people) are highly encouraged.
+1. DO NOT use cliche or overly obvious clues that instantly give away the killer's profession (e.g. NO flour for the miller, NO holy water for the priest, NO dirt for the gravedigger). The mystery must be difficult to solve. Use subtle, psychological, or indirect clues. Red herrings (false clues pointing to innocent people) are highly encouraged.
 2. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 3. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find. Written in dark literary Turkish.
 4. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
@@ -205,7 +213,9 @@ ${locationCluesTemplate}
   }
 }`;
 
-    this.logger.log(`Calling Gemini API to generate dynamic scenario (difficulty: ${difficulty}, scenario: ${scenarioType})...`);
+    this.logger.log(
+      `Calling Gemini API to generate dynamic scenario (difficulty: ${difficulty}, scenario: ${scenarioType})...`,
+    );
 
     let response;
     let retries = 0;
@@ -223,7 +233,9 @@ ${locationCluesTemplate}
         if (err?.status === 429 && retries < maxRetries) {
           retries++;
           const waitTime = Math.pow(2, retries) * 1500;
-          this.logger.warn(`Scenario Generation Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`);
+          this.logger.warn(
+            `Scenario Generation Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
+          );
           await delay(waitTime);
         } else {
           throw err;

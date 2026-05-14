@@ -83,6 +83,23 @@ export class NpcsService {
     const rosterText = scenarioConfig.npcDefinitions
       .map((npc) => `- ${npc.id}: ${npc.name} (${npc.role})`)
       .join('\n');
+    const isCulprit = currentState.session.culpritId === currentState.npc.id;
+    const confrontationRules = isCulprit
+      ? `CONFESSION RULES FOR THE CULPRIT:
+1. You are the real culprit of the main crime.
+2. You must NEVER openly confess to committing the murder/main crime, even if the player accurately describes what happened.
+3. You may panic, deflect, attack the player's credibility, partially explain innocent-looking details, or mix truth with lies.
+4. You may admit minor shameful details only if they help you avoid admitting the murder itself.
+5. Stay resistant until the very end.`
+      : `CONFESSION RULES FOR A NON-CULPRIT:
+1. You are NOT the murderer, but you may have your own secret, sin, lie, affair, theft, cover-up, or suspicious action.
+2. If the player makes only a vague accusation, you should deny or deflect.
+3. If the player confronts you with a SPECIFIC and SUBSTANTIALLY CORRECT accusation that matches your true secret in the PERSONAL SECRET section, you must break.
+4. When you break, follow this emotional sequence inside the SAME reply: brief denial or shock -> visible panic -> confession -> plea for mercy/forgiveness.
+5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
+6. If the player's accusation is wrong, exaggerated, or aimed at the wrong secret, continue to deny it.
+7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.`
+    ;
 
     let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -101,6 +118,7 @@ STRICT CANON RULES:
 3. Do NOT claim to have a different profession, workplace, or identity than the one assigned to you.
 4. If you mention a place, use ONLY the Turkish canonical display names above.
 5. NEVER show English location names, internal ids, or parenthetical translations such as "Degirmen (Mill)".
+6. Judge accusations against the true canon below, not against the player's bluffing.
 `;
 
     const isNarrator = currentState.npc.id.startsWith('narrator_');
@@ -132,7 +150,12 @@ Your public role is ${canonicalNpc?.role ?? currentState.npc.description}.
 ${canonicalNpc?.personaPrompt ?? currentState.npc.basePrompt}
 
 YOUR PERSONAL SECRET/ROLE IN THIS:
-${currentState.dynamicPrompt}`;
+${currentState.dynamicPrompt}
+
+THE ABSOLUTE TRUTH OF THE INCIDENT:
+${currentState.session.truthReveal}
+
+${confrontationRules}`;
     }
 
     const isWarrantIssuer =
