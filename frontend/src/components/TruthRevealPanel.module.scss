@@ -1,0 +1,97 @@
+.panel {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #333;
+  padding: 24px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 16px;
+  font-size: 1.2rem;
+  color: #888;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.truthText {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #ccc;
+  font-style: italic;
+}
+
+.cluesPanel {
+  margin-top: 20px;
+  background: rgba(10, 5, 0, 0.7);
+  border: 1px solid #3a2510;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.cluesTitle {
+  margin: 0 0 20px;
+  font-size: 1.1rem;
+  color: #7a5c2e;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cluesList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.clueRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-bottom: 1px solid #2a1a08;
+  padding-bottom: 12px;
+}
+
+.clueLocation {
+  min-width: 150px;
+  font-weight: 700;
+  color: #7a5c2e;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.clueText {
+  color: #b8a898;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .panel,
+  .cluesPanel {
+    padding: 18px;
+  }
+
+  .title,
+  .cluesTitle {
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+  }
+
+  .clueRow {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .clueLocation {
+    min-width: 0;
+    padding-top: 0;
+  }
+}

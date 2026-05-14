@@ -1,122 +1,71 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { useGameStore } from '../../store/useGameStore';
+import { TruthRevealPanel } from '../../components/TruthRevealPanel';
 
 function ResultContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { reset, truthReveal, locationClues } = useGameStore();
-  
-  const locationNames: Record<string, string> = {
-    crime_scene: 'Cinayet Mahalli',
-    tavern: 'Taverna (Meyhane)',
-    church: 'Kilise',
-    graveyard: 'Mezarlik',
-    mill: 'Degirmen',
-  };
-  
+  const { reset, truthReveal, locationClues, scenarioType } = useGameStore();
+
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
 
   return (
-    <main style={{ 
-      minHeight: '100vh', 
-      background: 'radial-gradient(circle at center, #1a0505 0%, #000000 100%)',
-      color: '#e5d9c5',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      textAlign: 'center',
-      fontFamily: 'serif'
-    }}>
-      <h1 style={{ 
-        fontSize: '3rem', 
-        color: won ? '#b8860b' : '#8A0303',
-        marginBottom: '16px',
-        textTransform: 'uppercase',
-        letterSpacing: '4px'
-      }}>
-        {won ? 'Soruşturma Başarıyla Sonuçlandı' : 'Korkunç Bir Hata Yaptınız'}
+    <main
+      style={{
+        minHeight: '100vh',
+        background: 'radial-gradient(circle at center, #1a0505 0%, #000000 100%)',
+        color: '#e5d9c5',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        textAlign: 'center',
+        fontFamily: 'serif',
+      }}
+    >
+      <h1
+        style={{
+          fontSize: '3rem',
+          color: won ? '#b8860b' : '#8A0303',
+          marginBottom: '16px',
+          textTransform: 'uppercase',
+          letterSpacing: '4px',
+        }}
+      >
+        {won ? 'Sorusturma Basariyla Sonuclandi' : 'Korkunc Bir Hata Yaptiniz'}
       </h1>
 
-      <p style={{
-        fontSize: '1.25rem',
-        maxWidth: '600px',
-        lineHeight: 1.6,
-        marginBottom: '32px',
-        opacity: 0.9
-      }}>
-        {won 
-          ? `Mahkumiyet kararı verildi. ${message} Ashenmoor köyü karanlıktan arındı. Ancak Engizisyon'un işi asla bitmez.`
+      <p
+        style={{
+          fontSize: '1.25rem',
+          maxWidth: '600px',
+          lineHeight: 1.6,
+          marginBottom: '32px',
+          opacity: 0.9,
+        }}
+      >
+        {won
+          ? `Mahkumiyet karari verildi. ${message} Ashenmoor koyu karanliktan arindirildi. Ancak Engizisyon'un isi asla bitmez.`
           : searchParams.get('reason') === 'timeout'
-            ? `Verilen 3 günlük sürede köyü karanlıktan arındıramadınız. Engizisyon, başarısızlığa ve zayıflığa tahammül etmez. Kilise tarafından derhal görevden alındınız...`
-            : `Masum bir ruhu alevlere teslim ettiniz. Gerçek suçlu ise karanlıkta saklanmaya devam ediyor... Köyün kaderi mühürlendi.`
-        }
+            ? `Verilen 3 gunluk surede koyu karanliktan arindiramadiniz. Engizisyon, basarisizliga ve zayifliga tahammul etmez. Kilise tarafindan derhal gorevden alindiniz...`
+            : `Masum bir ruhu alevlere teslim ettiniz. Gercek suclu ise karanlikta saklanmaya devam ediyor... Koyun kaderi muhurlendi.`}
       </p>
 
-      {truthReveal && (
-        <div style={{
-          maxWidth: '800px',
-          background: 'rgba(0,0,0,0.6)',
-          border: '1px solid #333',
-          padding: '24px',
-          borderRadius: '8px',
-          marginBottom: '24px',
-          textAlign: 'left'
-        }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#888', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
-            Gerçeklerin Ardından
-          </h2>
-          <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#ccc', fontStyle: 'italic' }}>
-            {truthReveal}
-          </p>
+      {(truthReveal || (locationClues && Object.keys(locationClues).length > 0)) && (
+        <div style={{ maxWidth: '800px', marginBottom: '24px', width: '100%' }}>
+          <TruthRevealPanel
+            truthReveal={truthReveal}
+            locationClues={locationClues}
+            scenarioType={scenarioType}
+          />
         </div>
       )}
 
-      {locationClues && Object.keys(locationClues).length > 0 && (
-        <div style={{
-          maxWidth: '800px',
-          background: 'rgba(10,5,0,0.7)',
-          border: '1px solid #3a2510',
-          padding: '24px',
-          borderRadius: '8px',
-          marginBottom: '40px',
-          textAlign: 'left',
-          width: '100%'
-        }}>
-          <h2 style={{ fontSize: '1.1rem', color: '#7a5c2e', marginBottom: '20px', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
-            Gizli Ipuclari
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {Object.entries(locationClues).map(([locId, clue]) => (
-              <div key={locId} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', borderBottom: '1px solid #2a1a08', paddingBottom: '12px' }}>
-                <span style={{
-                  minWidth: '150px',
-                  fontWeight: 'bold',
-                  color: '#7a5c2e',
-                  fontSize: '0.8rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  paddingTop: '3px',
-                  flexShrink: 0
-                }}>
-                  {locationNames[locId] || locId}
-                </span>
-                <span style={{ color: '#b8a898', fontSize: '0.95rem', lineHeight: 1.6, fontStyle: 'italic' }}>
-                  {String(clue)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <button 
+      <button
         onClick={() => {
           reset();
           window.location.href = '/';
@@ -131,7 +80,7 @@ function ResultContent() {
           textTransform: 'uppercase',
           letterSpacing: '2px',
           fontFamily: 'inherit',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = won ? '#b8860b22' : '#8a030322';
@@ -140,7 +89,7 @@ function ResultContent() {
           e.currentTarget.style.background = 'transparent';
         }}
       >
-        Ana Ekrana Dön ve Yeni Soruşturma Başlat
+        Ana Ekrana Don ve Yeni Sorusturma Baslat
       </button>
     </main>
   );
@@ -148,7 +97,7 @@ function ResultContent() {
 
 export default function ResultPage() {
   return (
-    <Suspense fallback={<div>Sonuçlar Yükleniyor...</div>}>
+    <Suspense fallback={<div>Sonuclar Yukleniyor...</div>}>
       <ResultContent />
     </Suspense>
   );

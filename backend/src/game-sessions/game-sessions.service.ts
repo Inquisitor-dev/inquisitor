@@ -69,8 +69,7 @@ export class GameSessionsService {
     }
 
     this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
-    const { truthReveal: _, ...safeSession } = session;
-    return safeSession;
+    return session;
   }
 
   async endDay(sessionId: string) {
