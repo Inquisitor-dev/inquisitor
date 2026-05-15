@@ -24,7 +24,7 @@ export class NpcsService {
     if (!state) {
       const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
       const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
-      if (!npc || !session) throw new NotFoundException('NPC veya Session bulunamadÄ±.');
+      if (!npc || !session) throw new NotFoundException('NPC veya Session bulunamadi.');
 
       state = await this.prisma.sessionNpcState.create({
         data: {
@@ -64,7 +64,10 @@ export class NpcsService {
     }
 
     const currentState = state;
-    const scenarioConfig = getScenarioConfig(currentState.session.scenarioType, currentState.session.difficulty);
+    const scenarioConfig = getScenarioConfig(
+      currentState.session.scenarioType,
+      currentState.session.difficulty,
+    );
     const canonicalNpc = scenarioConfig.npcDefinitions.find((npc) => npc.id === currentState.npc.id);
     const canonicalLocations = scenarioConfig.locationDefinitions;
     const canonicalLocationIds = canonicalLocations
@@ -74,6 +77,7 @@ export class NpcsService {
       ...location,
       localizedName: getLocalizedLocationLabel(currentState.session.scenarioType, location.id),
     }));
+    const sessionLocationClues = (currentState.session.locationClues ?? {}) as Record<string, string>;
     const locationListText = canonicalLocations
       .map((location) => {
         const localizedName = getLocalizedLocationLabel(currentState.session.scenarioType, location.id);
@@ -98,8 +102,7 @@ export class NpcsService {
 4. When you break, follow this emotional sequence inside the SAME reply: brief denial or shock -> visible panic -> confession -> plea for mercy/forgiveness.
 5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
 6. If the player's accusation is wrong, exaggerated, or aimed at the wrong secret, continue to deny it.
-7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.`
-    ;
+7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.`;
 
     let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -126,6 +129,8 @@ STRICT CANON RULES:
     if (isNarrator) {
       const narratedLocationId = currentState.npc.id.replace('narrator_', '');
       const narratedLocation = canonicalLocations.find((location) => location.id === narratedLocationId);
+      const canonicalClueForLocation =
+        sessionLocationClues[narratedLocationId] || 'Bu mekan icin kayitli gizli ipucu yok.';
 
       combinedPrompt += `
 NARRATOR ROLE:
@@ -134,14 +139,18 @@ You are the objective environment narrator for ${narratedLocation?.name ?? narra
 THE ABSOLUTE TRUTH OF WHAT HAPPENED:
 ${currentState.session.truthReveal}
 
+CANONICAL HIDDEN CLUE FOR THIS LOCATION:
+${canonicalClueForLocation}
+
 INVESTIGATION RULES FOR NARRATOR:
 1. The player is searching the environment.
 2. If the player makes a GENERAL search, describe ONLY the general atmosphere and surface-level objects. DO NOT reveal hidden clues or secrets.
-3. If the player searches a SPECIFIC object or area, and if a clue would logically be hidden there based on the TRUTH, THEN describe a subtle physical clue.
-4. Do NOT make it easy. If they search the wrong spot, say there is nothing unusual.
-5. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
-6. Do NOT use clichÃ© or obvious professional clues. Make the clues subtle and cryptic.
-7. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.`;
+3. This canonical hidden clue is the ONLY major hidden evidence you may reveal for this location.
+4. If the player searches a SPECIFIC object or area that plausibly matches the canonical clue's hiding spot, reveal that exact clue or a very close paraphrase of it.
+5. If the player searches the wrong spot, say there is nothing unusual there. Do NOT invent a replacement clue.
+6. You may add atmospheric detail, but you must NEVER change the clue's object, location, or meaning.
+7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
+8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.`;
     } else {
       combinedPrompt += `
 PUBLIC IDENTITY:
@@ -160,7 +169,8 @@ ${confrontationRules}`;
 
     const isWarrantIssuer =
       (currentState.session.scenarioType === 'medieval' && currentState.npc.id === 'church') ||
-      ((currentState.session.scenarioType === 'modern' || currentState.session.scenarioType === 'cyberpunk') &&
+      ((currentState.session.scenarioType === 'modern' ||
+        currentState.session.scenarioType === 'cyberpunk') &&
         currentState.npc.id === 'tavern');
 
     if (isWarrantIssuer) {
@@ -186,7 +196,7 @@ ${confrontationRules}`;
     const isNewDay = isGreetingSignal || (historyData.length > 0 && todayHistory.length === 0);
 
     const effectiveMessage = isGreetingSignal
-      ? '[Engizisyoncu iÃ§eri giriyor. Sen onlarÄ± daha Ã¶nce gÃ¶rdÃ¼n. Yeni gÃ¼ne uygun bir ÅŸekilde selamla.]'
+      ? '[Engizisyoncu iceri giriyor. Sen onlari daha once gordun. Yeni gune uygun bir sekilde selamla.]'
       : userMessage;
 
     const llmResponse = await this.llm.generateNpcResponse(
@@ -203,7 +213,9 @@ ${confrontationRules}`;
       localizedLocationList.map((location) => location.localizedName),
     );
 
-    const warrantMatches = Array.from(finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi));
+    const warrantMatches = Array.from(
+      finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi),
+    );
     const newlyGranted: string[] = [];
 
     if (warrantMatches.length > 0) {
@@ -265,7 +277,7 @@ ${confrontationRules}`;
       /izni ver/,
       /arama yapabilir miyim/,
       /arastirabilir miyim/,
-      /araştırabilir miyim/,
+      /arastirabilir miyim/,
       /inceleyebilir miyim/,
       /warrant/,
     ];

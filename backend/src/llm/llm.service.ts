@@ -4,6 +4,14 @@ import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scena
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type ScenarioDraft = {
+  scenario: string;
+  truthReveal: string;
+  culpritId: string;
+  npcPrompts: Record<string, string>;
+  locationClues: Record<string, string>;
+};
+
 @Injectable()
 export class LlmService {
   private openai: OpenAI;
@@ -124,13 +132,7 @@ CRITICAL RULES:
   async generateSessionScenario(
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
-  ): Promise<{
-    scenario: string;
-    truthReveal: string;
-    culpritId: string;
-    npcPrompts: Record<string, string>;
-    locationClues: Record<string, string>;
-  }> {
+  ): Promise<ScenarioDraft> {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const {
       worldDescription,
@@ -195,10 +197,13 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 CLUE & MYSTERY RULES:
 1. DO NOT use cliche or overly obvious clues that instantly give away the killer's profession (e.g. NO flour for the miller, NO holy water for the priest, NO dirt for the gravedigger). The mystery must be difficult to solve. Use subtle, psychological, or indirect clues. Red herrings (false clues pointing to innocent people) are highly encouraged.
 2. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
-3. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find. Written in dark literary Turkish.
-4. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
-5. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
-6. NEVER show the player English location names in parentheses or as translations. Use only the Turkish display names from the canonical list.
+3. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
+4. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
+5. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth.
+6. Imagine the narrator will later reveal ONLY these canonical clues. So do NOT create optional alternates.
+7. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
+8. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
+9. NEVER show the player English location names in parentheses or as translations. Use only the Turkish display names from the canonical list.
 
 Return a valid JSON object ONLY, in exactly this format:
 {
@@ -256,14 +261,100 @@ ${locationCluesTemplate}
       const jsonStr = responseText.substring(firstBrace, lastBrace + 1);
 
       try {
-        return JSON.parse(jsonStr);
+        const draft = JSON.parse(jsonStr) as ScenarioDraft;
+        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions);
       } catch {
         const cleanedJson = jsonStr.replace(/,\s*([\]}])/g, '$1');
-        return JSON.parse(cleanedJson);
+        const draft = JSON.parse(cleanedJson) as ScenarioDraft;
+        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions);
       }
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
     }
+  }
+
+  private async reconcileScenarioConsistency(
+    draft: ScenarioDraft,
+    scenarioType: string,
+    locationDefinitions: Array<{ id: string; description: string }>,
+  ): Promise<ScenarioDraft> {
+    const locationChecklist = locationDefinitions
+      .map(
+        (location) =>
+          `- ${location.id}: ${getLocalizedLocationLabel(scenarioType, location.id)} (${location.description})`,
+      )
+      .join('\n');
+
+    const reviewPrompt = `You are a continuity editor for a detective game. Your job is to make the hidden truth and the canonical location clues perfectly consistent with each other.
+
+CANONICAL LOCATIONS:
+${locationChecklist}
+
+SCENARIO DRAFT JSON:
+${JSON.stringify(draft, null, 2)}
+
+CONTINUITY RULES:
+1. Keep the same culpritId.
+2. Keep the same overall mystery, motives, and NPC secret structure unless a small rewrite is needed for consistency.
+3. Ensure every canonical location has exactly one location clue.
+4. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
+5. The truthReveal paragraph must explain or support all location clues. If needed, rewrite truthReveal so those clues make sense.
+6. Do NOT invent alternate clues for the same location.
+7. Do NOT add non-canonical locations.
+8. Keep everything in natural, dark Turkish.
+
+Return a valid JSON object with the EXACT same top-level shape as the draft:
+{
+  "scenario": "...",
+  "truthReveal": "...",
+  "culpritId": "...",
+  "npcPrompts": { ... },
+  "locationClues": {
+    "locationId": "Single-sentence Turkish clue with exact spot and object"
+  }
+}`;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gemini-flash-latest',
+        messages: [{ role: 'user', content: reviewPrompt }],
+        temperature: 0.2,
+      });
+
+      const responseText = response?.choices?.[0]?.message?.content || '';
+      const firstBrace = responseText.indexOf('{');
+      const lastBrace = responseText.lastIndexOf('}');
+
+      if (firstBrace === -1 || lastBrace === -1) {
+        return draft;
+      }
+
+      const reviewed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1)) as ScenarioDraft;
+      return this.mergeScenarioDraftWithFallback(draft, reviewed, locationDefinitions.map((location) => location.id));
+    } catch (error) {
+      this.logger.warn(`Scenario continuity reconciliation failed, using draft as-is. ${error}`);
+      return draft;
+    }
+  }
+
+  private mergeScenarioDraftWithFallback(
+    draft: ScenarioDraft,
+    reviewed: ScenarioDraft,
+    canonicalLocationIds: string[],
+  ): ScenarioDraft {
+    const mergedClues: Record<string, string> = {};
+
+    for (const locationId of canonicalLocationIds) {
+      mergedClues[locationId] = reviewed.locationClues?.[locationId] || draft.locationClues?.[locationId] || '';
+    }
+
+    return {
+      scenario: reviewed.scenario || draft.scenario,
+      truthReveal: reviewed.truthReveal || draft.truthReveal,
+      culpritId: draft.culpritId,
+      npcPrompts: reviewed.npcPrompts || draft.npcPrompts,
+      locationClues: mergedClues,
+    };
   }
 }
