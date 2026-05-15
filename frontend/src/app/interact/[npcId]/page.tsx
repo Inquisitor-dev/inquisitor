@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
-import AmbientAudio from '../../../components/AmbientAudio';
 
 interface Message {
   role: 'player' | 'npc';
@@ -389,7 +388,6 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           : { backgroundImage: `url('/backgrounds/bg_${npcKey}.png')` }
       }
     >
-      <AmbientAudio timeOfDay={timeOfDay} type="interact" />
       <div className={styles.vignette} />
 
       <header className={styles.header}>
