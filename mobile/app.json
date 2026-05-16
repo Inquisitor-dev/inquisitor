@@ -21,6 +21,7 @@
     },
     "android": {
       "package": "com.berke355.theinquisitor",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#0b0a0f"
       },

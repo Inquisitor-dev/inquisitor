@@ -1,4 +1,4 @@
-import { env } from "@/config/env";
+import { getApiBaseUrl } from "@/config/apiBaseUrl";
 import type {
   Difficulty,
   NpcMessage,
@@ -13,7 +13,8 @@ type RequestOptions = {
 };
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${env.apiBaseUrl}${path}`, {
+  const baseUrl = await getApiBaseUrl();
+  const response = await fetch(`${baseUrl}${path}`, {
     method: options.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
@@ -34,7 +35,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 async function requestText(path: string, options: RequestOptions = {}) {
-  const response = await fetch(`${env.apiBaseUrl}${path}`, {
+  const baseUrl = await getApiBaseUrl();
+  const response = await fetch(`${baseUrl}${path}`, {
     method: options.method ?? "GET",
     headers: {
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),

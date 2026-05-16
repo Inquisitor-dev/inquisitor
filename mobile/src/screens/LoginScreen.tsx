@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { PrimaryButton } from "@/components/PrimaryButton";
+import {
+  clearApiBaseUrlOverride,
+  getApiBaseUrlConfig,
+  setApiBaseUrlOverride,
+} from "@/config/apiBaseUrl";
 import { env } from "@/config/env";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
@@ -13,7 +18,35 @@ export function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingApi, setCheckingApi] = useState(false);
+  const [savingApiTarget, setSavingApiTarget] = useState(false);
   const [apiStatus, setApiStatus] = useState<null | "ok" | "error">(null);
+  const [apiBaseUrl, setApiBaseUrl] = useState(env.apiBaseUrl);
+  const [apiBaseUrlInput, setApiBaseUrlInput] = useState(env.apiBaseUrl);
+  const [apiBaseUrlSource, setApiBaseUrlSource] = useState<
+    "env" | "fallback" | "override"
+  >(env.apiBaseUrlSource as "env" | "fallback");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadApiBaseUrl() {
+      const config = await getApiBaseUrlConfig();
+
+      if (!active) {
+        return;
+      }
+
+      setApiBaseUrl(config.apiBaseUrl);
+      setApiBaseUrlInput(config.apiBaseUrl);
+      setApiBaseUrlSource(config.apiBaseUrlSource);
+    }
+
+    void loadApiBaseUrl();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -40,15 +73,49 @@ export function LoginScreen() {
       setCheckingApi(true);
       await api.ping();
       setApiStatus("ok");
-      Alert.alert("Backend reachable", `Connected to ${env.apiBaseUrl}`);
+      Alert.alert("Backend reachable", `Connected to ${apiBaseUrl}`);
     } catch (error) {
       setApiStatus("error");
       Alert.alert(
         "Backend unreachable",
-        `${env.apiBaseUrl}\n\n${error instanceof Error ? error.message : "Unknown error"}`,
+        `${apiBaseUrl}\n\n${error instanceof Error ? error.message : "Unknown error"}`,
       );
     } finally {
       setCheckingApi(false);
+    }
+  };
+
+  const handleSaveApiTarget = async () => {
+    try {
+      setSavingApiTarget(true);
+      await setApiBaseUrlOverride(apiBaseUrlInput);
+      const config = await getApiBaseUrlConfig();
+      setApiBaseUrl(config.apiBaseUrl);
+      setApiBaseUrlInput(config.apiBaseUrl);
+      setApiBaseUrlSource(config.apiBaseUrlSource);
+      setApiStatus(null);
+      Alert.alert("API target saved", config.apiBaseUrl);
+    } catch (error) {
+      Alert.alert("Save failed", error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setSavingApiTarget(false);
+    }
+  };
+
+  const handleResetApiTarget = async () => {
+    try {
+      setSavingApiTarget(true);
+      await clearApiBaseUrlOverride();
+      const config = await getApiBaseUrlConfig();
+      setApiBaseUrl(config.apiBaseUrl);
+      setApiBaseUrlInput(config.apiBaseUrl);
+      setApiBaseUrlSource(config.apiBaseUrlSource);
+      setApiStatus(null);
+      Alert.alert("API target reset", config.apiBaseUrl);
+    } catch (error) {
+      Alert.alert("Reset failed", error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setSavingApiTarget(false);
     }
   };
 
@@ -59,16 +126,16 @@ export function LoginScreen() {
         <Text style={styles.eyebrow}>Archive access</Text>
         <Text style={styles.title}>The Inquisitor</Text>
         <Text style={styles.body}>
-          Ashenmoor'a dönmeden önce kayıt doğrulaması gerekiyor.
+          Ashenmoor'a donmeden once kayit dogrulamasi gerekiyor.
         </Text>
       </View>
 
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Engizisyon kaydına giriş</Text>
+        <Text style={styles.panelTitle}>Engizisyon kaydina giris</Text>
         <Text style={styles.apiHint}>
-          API target: {env.apiBaseUrl} ({env.apiBaseUrlSource})
+          API target: {apiBaseUrl} ({apiBaseUrlSource})
         </Text>
-        {env.apiBaseUrlSource === "fallback" ? (
+        {apiBaseUrlSource === "fallback" ? (
           <Text style={styles.warningText}>
             Physical device test icin bu adresi genelde `mobile/.env` icinde LAN IP ile
             override etmelisin.
@@ -87,6 +154,22 @@ export function LoginScreen() {
               ? "Backend status: unreachable"
               : "Backend status: not checked"}
         </Text>
+        <TextInput
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          onChangeText={setApiBaseUrlInput}
+          placeholder="http://192.168.1.2:3001"
+          placeholderTextColor={inquisitorColors.dim}
+          style={styles.input}
+          value={apiBaseUrlInput}
+        />
+        <PrimaryButton disabled={savingApiTarget} onPress={handleSaveApiTarget} tone="ghost">
+          {savingApiTarget ? "Saving target..." : "Save API target"}
+        </PrimaryButton>
+        <PrimaryButton disabled={savingApiTarget} onPress={handleResetApiTarget} tone="ghost">
+          Reset API target
+        </PrimaryButton>
         <TextInput
           autoCapitalize="none"
           keyboardType="email-address"
