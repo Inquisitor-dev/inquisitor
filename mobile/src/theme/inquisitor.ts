@@ -64,11 +64,11 @@ export function getMapAsset(scenarioType: ScenarioType, timeOfDay: number): Imag
 }
 
 export function getInteractAsset(locationId: string): ImageSourcePropType {
-  if (locationId === "church") return require("../../assets/backgrounds/bg_church.png");
+  if (locationId === "church") return require("../../assets/backgrounds/bg_church.jpg");
   if (locationId === "graveyard") return require("../../assets/backgrounds/bg_graveyard.png");
-  if (locationId === "mill") return require("../../assets/backgrounds/bg_mill.png");
-  if (locationId === "tavern") return require("../../assets/backgrounds/bg_tavern.png");
-  return require("../../assets/backgrounds/bg_crime_scene.png");
+  if (locationId === "mill") return require("../../assets/backgrounds/bg_mill.jpg");
+  if (locationId === "tavern") return require("../../assets/backgrounds/bg_tavern.jpg");
+  return require("../../assets/backgrounds/bg_crime_scene.jpg");
 }
 
 type MapHotspot = {

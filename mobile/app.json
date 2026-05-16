@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "jsEngine": "hermes",
+    "newArchEnabled": false,
+    "scheme": "theinquisitor",
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#0b0a0f"
@@ -14,13 +16,21 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.berke355.theinquisitor",
       "supportsTablet": false
     },
     "android": {
+      "package": "com.berke355.theinquisitor",
       "adaptiveIcon": {
         "backgroundColor": "#0b0a0f"
       },
       "edgeToEdgeEnabled": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "638bdfe1-41cc-4ede-b1b5-04e5c22c735b"
+      }
+    },
+    "owner": "berke355"
   }
 }
