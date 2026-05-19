@@ -19,7 +19,7 @@ export class LlmService {
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
-    this.logger.log(`GEMINI_API_KEY: ${apiKey ? `Found (${apiKey.slice(0, 8)}...)` : 'MISSING!'}`);
+    this.logger.log(`GEMINI_API_KEY: ${apiKey ? 'Loaded' : 'MISSING!'}`);
 
     this.openai = new OpenAI({
       apiKey: apiKey || 'no-key-provided',

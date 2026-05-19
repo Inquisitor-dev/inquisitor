@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: the-inquisitor-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: frankfurt
+    healthCheckPath: /
+    buildCommand: npm ci && npm run render:build
+    startCommand: npm run render:start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
