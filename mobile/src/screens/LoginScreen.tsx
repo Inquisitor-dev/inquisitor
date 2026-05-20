@@ -137,8 +137,8 @@ export function LoginScreen() {
         </Text>
         {apiBaseUrlSource === "fallback" ? (
           <Text style={styles.warningText}>
-            Physical device test icin bu adresi genelde `mobile/.env` icinde LAN IP ile
-            override etmelisin.
+            Varsayilan hedef su anda Render backend'ine ayarli. Istersen burada baska bir
+            API adresi de kullanabilirsin.
           </Text>
         ) : null}
         <Text
@@ -159,7 +159,7 @@ export function LoginScreen() {
           autoCorrect={false}
           keyboardType="url"
           onChangeText={setApiBaseUrlInput}
-          placeholder="http://192.168.1.2:3001"
+          placeholder="https://the-inquisitor-backend.onrender.com"
           placeholderTextColor={inquisitorColors.dim}
           style={styles.input}
           value={apiBaseUrlInput}

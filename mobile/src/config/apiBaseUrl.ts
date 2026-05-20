@@ -2,17 +2,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
 const API_BASE_URL_OVERRIDE_KEY = "api_base_url_override";
+const RENDER_API_BASE_URL = "https://the-inquisitor-backend.onrender.com";
 
 function getFallbackBaseUrl() {
   if (Platform.OS === "android") {
-    return "http://192.168.1.2:3001";
+    return RENDER_API_BASE_URL;
   }
 
   if (Platform.OS === "ios") {
-    return "http://localhost:3001";
+    return RENDER_API_BASE_URL;
   }
 
-  return "http://localhost:3001";
+  return RENDER_API_BASE_URL;
 }
 
 function normalizeBaseUrl(value: string) {
