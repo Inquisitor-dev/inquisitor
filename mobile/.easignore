@@ -7,5 +7,5 @@ dist-export
 coverage
 .git
 android.bak
-mobile
+/mobile
 build-view.json
