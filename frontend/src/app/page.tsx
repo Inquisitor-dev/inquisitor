@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../store/useGameStore';
-import { TruthRevealPanel } from '../components/TruthRevealPanel';
 import styles from './page.module.scss';
 
 export default function HomePage() {
@@ -40,12 +39,6 @@ export default function HomePage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.4);
-  const [showSessionPrelude, setShowSessionPrelude] = useState(false);
-  const [sessionPreludeData, setSessionPreludeData] = useState<{
-    truthReveal: string | null;
-    locationClues: Record<string, string> | null;
-    scenarioType: string;
-  } | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
     isAdmin: boolean;
@@ -146,8 +139,6 @@ export default function HomePage() {
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
       if (activeSession.notes) setNotes(activeSession.notes);
       if (activeSession.difficulty) setDifficulty(activeSession.difficulty);
-      setShowSessionPrelude(false);
-      setSessionPreludeData(null);
       setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
       router.push('/map');
     } catch (err) {
@@ -195,12 +186,7 @@ export default function HomePage() {
         }
         setTruthReveal(data.truthReveal ?? null);
         setLocationClues(data.locationClues ?? null);
-        setSessionPreludeData({
-          truthReveal: data.truthReveal ?? null,
-          locationClues: data.locationClues ?? null,
-          scenarioType,
-        });
-        setShowSessionPrelude(true);
+        router.push('/map');
         setLoading(false);
       } else {
         setError(
@@ -230,11 +216,6 @@ export default function HomePage() {
     }
   };
 
-  const handleEnterInvestigation = () => {
-    setShowSessionPrelude(false);
-    router.push('/map');
-  };
-
   const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
   const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
   const effectiveEmail = accountSummary?.email ?? userEmail ?? '-';
@@ -242,7 +223,7 @@ export default function HomePage() {
   const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
 
   return (
-    <main className={`${styles.main} ${showSessionPrelude ? styles.mainWithPrelude : ''}`}>
+    <main className={styles.main}>
       <div className={styles.settingsDock}>
         <button
           className={styles.settingsBtn}
@@ -270,27 +251,7 @@ export default function HomePage() {
       <div className={styles.cornerBotLeft} />
       <div className={styles.cornerBotRight} />
 
-      {showSessionPrelude && sessionPreludeData && (
-        <aside className={styles.sessionPrelude}>
-          <TruthRevealPanel
-            truthReveal={sessionPreludeData.truthReveal}
-            locationClues={sessionPreludeData.locationClues}
-            scenarioType={sessionPreludeData.scenarioType}
-          />
-          <button
-            onClick={handleEnterInvestigation}
-            className={styles.btnPrimary}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '18px' }}
-          >
-            <span>Sorusturmaya Devam Et</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </aside>
-      )}
-
-      <div className={`${styles.hero} ${showSessionPrelude ? styles.heroShifted : ''}`}>
+      <div className={styles.hero}>
         <div className={styles.seal}>
           <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
             <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
