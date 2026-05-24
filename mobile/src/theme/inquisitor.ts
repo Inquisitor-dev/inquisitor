@@ -47,25 +47,25 @@ export const textStyles = {
 
 export function getMapAsset(scenarioType: ScenarioType, timeOfDay: number): ImageSourcePropType {
   if (scenarioType === "modern") {
-    if (timeOfDay <= 1) return require("../../assets/map/town_map_morning.png");
-    if (timeOfDay <= 3) return require("../../assets/map/town_map_sunset.png");
-    return require("../../assets/map/town_map_night.png");
+    if (timeOfDay <= 1) return require("../../assets/map/town_map_morning.jpg");
+    if (timeOfDay <= 3) return require("../../assets/map/town_map_sunset.jpg");
+    return require("../../assets/map/town_map_night.jpg");
   }
 
   if (scenarioType === "cyberpunk") {
-    if (timeOfDay <= 1) return require("../../assets/map/cyberpunk_map_morning.png");
-    if (timeOfDay <= 3) return require("../../assets/map/cyberpunk_map_sunset.png");
-    return require("../../assets/map/cyberpunk_map_night.png");
+    if (timeOfDay <= 1) return require("../../assets/map/cyberpunk_map_morning.jpg");
+    if (timeOfDay <= 3) return require("../../assets/map/cyberpunk_map_sunset.jpg");
+    return require("../../assets/map/cyberpunk_map_night.jpg");
   }
 
-  if (timeOfDay <= 1) return require("../../assets/map/village_map_morning.png");
-  if (timeOfDay <= 3) return require("../../assets/map/village_map_sunset.png");
-  return require("../../assets/map/village_map.png");
+  if (timeOfDay <= 1) return require("../../assets/map/village_map_morning.jpg");
+  if (timeOfDay <= 3) return require("../../assets/map/village_map_sunset.jpg");
+  return require("../../assets/map/village_map.jpg");
 }
 
 export function getInteractAsset(locationId: string): ImageSourcePropType {
   if (locationId === "church") return require("../../assets/backgrounds/bg_church.jpg");
-  if (locationId === "graveyard") return require("../../assets/backgrounds/bg_graveyard.png");
+  if (locationId === "graveyard") return require("../../assets/backgrounds/bg_graveyard.jpg");
   if (locationId === "mill") return require("../../assets/backgrounds/bg_mill.jpg");
   if (locationId === "tavern") return require("../../assets/backgrounds/bg_tavern.jpg");
   return require("../../assets/backgrounds/bg_crime_scene.jpg");

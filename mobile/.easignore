@@ -6,3 +6,6 @@ dist-export
 *.out.log
 coverage
 .git
+android.bak
+mobile
+build-view.json
