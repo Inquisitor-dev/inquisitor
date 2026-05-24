@@ -81,6 +81,13 @@ export default function HomePage() {
   }, [authToken, hasHydrated, router]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
+    setTruthReveal(null);
+    setLocationClues(null);
+  }, [hasHydrated, setLocationClues, setTruthReveal]);
+
+  useEffect(() => {
     const checkActiveSession = async () => {
       if (!authToken) return;
 
@@ -139,6 +146,8 @@ export default function HomePage() {
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
       if (activeSession.notes) setNotes(activeSession.notes);
       if (activeSession.difficulty) setDifficulty(activeSession.difficulty);
+      setTruthReveal(null);
+      setLocationClues(null);
       setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
       router.push('/map');
     } catch (err) {
@@ -184,8 +193,8 @@ export default function HomePage() {
         if (data.scenario) {
           setScenario(data.scenario);
         }
-        setTruthReveal(data.truthReveal ?? null);
-        setLocationClues(data.locationClues ?? null);
+        setTruthReveal(null);
+        setLocationClues(null);
         router.push('/map');
         setLoading(false);
       } else {
