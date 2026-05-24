@@ -1,9 +1,2 @@
-*
-!mobile/
-!mobile/**
-mobile/node_modules
-mobile/.expo
-mobile/dist-export
-mobile/*.log
-mobile/*.err.log
-mobile/*.out.log
+backend/
+frontend/
