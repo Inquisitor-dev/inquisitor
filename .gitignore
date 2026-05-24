@@ -1,5 +1,25 @@
 node_modules/
 dist/
 .env
+.env.local
 .DS_Store
 mobile/.expo/
+mobile/android/
+
+# Log files
+*.log
+*.err.log
+*.out.log
+
+# Temp build dirs
+.mobile-build/
+mobile-build-temp/
+
+# Build artifacts
+mobile/build-view.json
+mobile/dist-export/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Duplicate dirs
+mobile/mobile/
