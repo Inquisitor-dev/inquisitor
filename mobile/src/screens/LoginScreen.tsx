@@ -132,44 +132,7 @@ export function LoginScreen() {
 
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Engizisyon kaydina giris</Text>
-        <Text style={styles.apiHint}>
-          API target: {apiBaseUrl} ({apiBaseUrlSource})
-        </Text>
-        {apiBaseUrlSource === "fallback" ? (
-          <Text style={styles.warningText}>
-            Varsayilan hedef su anda Render backend'ine ayarli. Istersen burada baska bir
-            API adresi de kullanabilirsin.
-          </Text>
-        ) : null}
-        <Text
-          style={[
-            styles.statusText,
-            apiStatus === "ok" && styles.statusOk,
-            apiStatus === "error" && styles.statusError,
-          ]}
-        >
-          {apiStatus === "ok"
-            ? "Backend status: reachable"
-            : apiStatus === "error"
-              ? "Backend status: unreachable"
-              : "Backend status: not checked"}
-        </Text>
-        <TextInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          onChangeText={setApiBaseUrlInput}
-          placeholder="https://the-inquisitor-backend.onrender.com"
-          placeholderTextColor={inquisitorColors.dim}
-          style={styles.input}
-          value={apiBaseUrlInput}
-        />
-        <PrimaryButton disabled={savingApiTarget} onPress={handleSaveApiTarget} tone="ghost">
-          {savingApiTarget ? "Saving target..." : "Save API target"}
-        </PrimaryButton>
-        <PrimaryButton disabled={savingApiTarget} onPress={handleResetApiTarget} tone="ghost">
-          Reset API target
-        </PrimaryButton>
+
         <TextInput
           autoCapitalize="none"
           keyboardType="email-address"
@@ -187,9 +150,7 @@ export function LoginScreen() {
           style={styles.input}
           value={password}
         />
-        <PrimaryButton disabled={checkingApi} onPress={handleCheckApi} tone="secondary">
-          {checkingApi ? "Checking backend..." : "Check backend connection"}
-        </PrimaryButton>
+
         <PrimaryButton disabled={loading} onPress={handleLogin}>
           {loading ? "Signing in..." : "Open the case"}
         </PrimaryButton>
