@@ -42,9 +42,9 @@ export function LoginScreen() {
 
     try {
       setLoading(true);
-      await api.sendCode(email.trim(), password);
+      const response = await api.sendCode(email.trim(), password);
       setAuthMode("verify");
-      Alert.alert("Kod Gönderildi", "Lütfen e-postanıza gelen doğrulama kodunu girin.");
+      Alert.alert("Kod Bilgisi", response.message || "Lütfen e-postanıza gelen doğrulama kodunu girin.");
     } catch (error) {
       Alert.alert("Kayıt Başarısız", error instanceof Error ? error.message : "Bilinmeyen hata");
     } finally {
