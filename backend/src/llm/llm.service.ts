@@ -195,7 +195,10 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. CRITICAL RULE FOR THE CRIME SCENE: The physical clue hidden at the 'crime_scene' MUST NOT point to a single suspect's profession (e.g., NO flour for the miller, NO holy water for the priest, NO VHS tape for a video store owner). Instead, the crime scene clue MUST be an object or trace that 3 or 4 suspects could logically possess, or there must be multiple different subtle clues, so that finding it only eliminates 1 or 2 people. If you do use a profession-specific item, it MUST be a planted RED HERRING pointing to an INNOCENT person.
+1. CRITICAL RULE FOR THE CRIME SCENE AND MURDER STYLE: You must randomly decide between two types of murder:
+A) PLANNED & COLD-BLOODED: The crime scene is relatively clean, organized, or staged. The physical clue left at the 'crime_scene' MUST be a planted RED HERRING pointing directly to an INNOCENT person (e.g. a profession-specific item belonging to someone else).
+B) FAST & HURRIED: The crime scene is messy, shows signs of struggle, or panic. The physical clue left at the 'crime_scene' MUST be a GENUINE clue accidentally left by the actual CULPRIT, with NO deception or planting involved.
+The 'scenario' text MUST clearly describe the state of the crime scene (messy vs clean) so the player can logically deduce whether the found clue is genuine or a planted red herring.
 2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there. It does not have to be related to the murder, but it should make them look guilty of *something*.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
