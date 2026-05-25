@@ -132,6 +132,9 @@ CRITICAL RULES:
   async generateSessionScenario(
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
+    culpritId: string,
+    murderStyle: string,
+    crimeSceneClueText: string,
   ): Promise<ScenarioDraft> {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const {
@@ -184,7 +187,7 @@ ${locationListText}
 
 YOUR TASK:
 1. Invent a specific, gruesome, or mysterious incident that happened recently.
-2. Randomly select exactly ONE of the ${baseNpcs.length} NPCs to be the GUILTY CULPRIT.
+2. The GUILTY CULPRIT for this session is strictly locked to: "${culpritId}". Do NOT choose anyone else.
 3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the ${baseNpcs.length} NPCs.
    - The guilty NPC's prompt must explain they did it and how they try to hide it.
    - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
@@ -195,15 +198,11 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. CRITICAL RULE FOR THE CRIME SCENE AND MURDER STYLE: You must randomly decide between two types of murder:
-A) PLANNED & COLD-BLOODED: The crime scene is relatively clean, organized, or staged. The physical clue left at the 'crime_scene' MUST be a planted RED HERRING pointing directly to an INNOCENT person (e.g. a profession-specific item belonging to someone else).
-B) FAST & HURRIED: The crime scene is messy, shows signs of struggle, or panic. The physical clue left at the 'crime_scene' MUST be a GENUINE clue accidentally left by the actual CULPRIT.
-CRITICAL ENFORCEMENT: If you chose B (FAST & HURRIED), you are FORBIDDEN from inventing your own crime scene clue. You MUST select EXACTLY ONE of the following vague clues and use it as the 'crime_scene' location clue:
-- "Yerde siyah, siradan bir kumas parcasi."
-- "Yerde camurlu, sekli bozulmus silik bir ayak izi."
-- "Kosede, uzerinde hicbir isaret veya arma bulunmayan dusmus siradan bir dugme."
-- "Yere dokulmus, nereden geldigi anlasilmayan birkac damla siradan mum lekesi."
-The 'scenario' text MUST be a general mystery hook and MUST NOT immediately reveal whether the scene is messy or clean. Instead, the 'crime_scene' entry in 'locationClues' MUST contain the description of the struggle/cleanliness along with the physical item clue. The player will only discover this state when they interrogate the crime scene narrator.
+1. CRITICAL RULE FOR THE CRIME SCENE AND MURDER STYLE: The murder style and the crime scene clue have been deterministically pre-selected for you by the game engine.
+- MURDER STYLE: ${murderStyle} (${murderStyle === 'HURRIED' ? 'The crime scene is messy, shows signs of struggle or panic. The physical clue is a GENUINE trace accidentally left by the culprit.' : 'The crime scene is relatively clean, organized, or staged. The physical clue is a planted RED HERRING pointing to an innocent person.'})
+- PRE-SELECTED CRIME SCENE CLUE: "${crimeSceneClueText}"
+You MUST use EXACTLY the PRE-SELECTED CRIME SCENE CLUE as the 'crime_scene' entry in your 'locationClues'. Do NOT invent your own clue for the crime scene.
+The 'scenario' text MUST be a general mystery hook and MUST NOT immediately reveal whether the scene is messy or clean. Instead, the 'crime_scene' entry in 'locationClues' MUST contain the description of the struggle/cleanliness along with the PRE-SELECTED CRIME SCENE CLUE.
 2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there. It does not have to be related to the murder, but it should make them look guilty of *something*.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
@@ -271,11 +270,11 @@ ${locationCluesTemplate}
 
       try {
         const draft = JSON.parse(jsonStr) as ScenarioDraft;
-        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions);
+        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions, culpritId, crimeSceneClueText);
       } catch {
         const cleanedJson = jsonStr.replace(/,\s*([\]}])/g, '$1');
         const draft = JSON.parse(cleanedJson) as ScenarioDraft;
-        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions);
+        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions, culpritId, crimeSceneClueText);
       }
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
@@ -287,6 +286,8 @@ ${locationCluesTemplate}
     draft: ScenarioDraft,
     scenarioType: string,
     locationDefinitions: Array<{ id: string; description: string }>,
+    culpritId: string,
+    crimeSceneClueText: string,
   ): Promise<ScenarioDraft> {
     const locationChecklist = locationDefinitions
       .map(
@@ -304,9 +305,9 @@ SCENARIO DRAFT JSON:
 ${JSON.stringify(draft, null, 2)}
 
 CONTINUITY RULES:
-1. Keep the same culpritId.
+1. The culpritId MUST strictly be "${culpritId}".
 2. Keep the same overall mystery, motives, and NPC secret structure unless a small rewrite is needed for consistency.
-3. Ensure every canonical location has exactly one location clue.
+3. Ensure every canonical location has exactly one location clue. The 'crime_scene' clue MUST strictly incorporate this pre-selected text: "${crimeSceneClueText}".
 4. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
 5. The truthReveal paragraph must explain or support all location clues. If needed, rewrite truthReveal so those clues make sense.
 6. Do NOT invent alternate clues for the same location.

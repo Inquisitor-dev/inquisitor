@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getScenarioConfig } from '../scenarios/scenario-config';
+import { SCENARIO_CLUES } from '../scenarios/clues-config';
 
 @Injectable()
 export class GameSessionsService {
@@ -15,12 +16,29 @@ export class GameSessionsService {
   async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy', scenarioType: string = 'medieval') {
     this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`);
 
-    const { scenario, truthReveal, culpritId, npcPrompts, locationClues } =
-      await this.llm.generateSessionScenario(difficulty, scenarioType);
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
 
-    this.logger.log(`Scenario generated. Culprit is: ${culpritId}`);
+    const culpritId = allowedNpcIds[Math.floor(Math.random() * allowedNpcIds.length)];
+    const isHurried = Math.random() < 0.6;
+    const murderStyle = isHurried ? 'HURRIED' : 'PLANNED';
+
+    const allClues = SCENARIO_CLUES[scenarioConfig.scenarioType];
+
+    const validClues = allClues.filter(c => 
+      isHurried ? c.associatedNpcIds.includes(culpritId) : !c.associatedNpcIds.includes(culpritId)
+    );
+
+    const selectedClue = validClues.length > 0 
+      ? validClues[Math.floor(Math.random() * validClues.length)]
+      : allClues[0];
+
+    this.logger.log(`Deterministically selected Culprit: ${culpritId}, Style: ${murderStyle}, Clue: ${selectedClue.id}`);
+
+    const { scenario, truthReveal, npcPrompts, locationClues } =
+      await this.llm.generateSessionScenario(difficulty, scenarioType, culpritId, murderStyle, selectedClue.clueText);
+
+    this.logger.log(`Scenario generated. Culprit is confirmed: ${culpritId}`);
 
     await this.prisma.gameSession.updateMany({
       where: {
