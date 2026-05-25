@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
@@ -125,6 +125,11 @@ export function HomeScreen({ navigation }: Props) {
   const [scenarioVisible, setScenarioVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [howToPlayVisible, setHowToPlayVisible] = useState(false);
+  const [premiumVisible, setPremiumVisible] = useState(false);
+  const [activationCode, setActivationCode] = useState("");
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const [premiumError, setPremiumError] = useState<string | null>(null);
+  const [premiumSuccess, setPremiumSuccess] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
@@ -255,6 +260,38 @@ export function HomeScreen({ navigation }: Props) {
       setCreating(false);
       setDifficultyVisible(false);
       setScenarioVisible(false);
+    }
+  };
+
+  const handleActivatePremium = async () => {
+    if (!activationCode.trim()) {
+      setPremiumError("Aktivasyon kodunu girin.");
+      return;
+    }
+    setPremiumLoading(true);
+    setPremiumError(null);
+    try {
+      const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://the-inquisitor-backend.onrender.com";
+      const response = await fetch(`${baseUrl}/auth/activate-premium`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ activationCode: activationCode.trim() }),
+      });
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        useGameStore.getState().setIsPremium(true);
+        setPremiumSuccess(true);
+      } else {
+        setPremiumError(data.message || "Aktivasyon basarisiz.");
+      }
+    } catch {
+      setPremiumError("Sunucuya baglanilamadi.");
+    } finally {
+      setPremiumLoading(false);
     }
   };
 
@@ -409,7 +446,7 @@ export function HomeScreen({ navigation }: Props) {
             {!effectiveIsPremium ? (
               <LandingButton
                 label="Premium'a Yukselt"
-                onPress={() => navigation.navigate("Premium")}
+                onPress={() => setPremiumVisible(true)}
               />
             ) : null}
 
@@ -488,6 +525,64 @@ export function HomeScreen({ navigation }: Props) {
         <Pressable onPress={() => setHowToPlayVisible(false)} style={styles.modalActionButton}>
           <Text style={styles.modalActionButtonText}>Anladim</Text>
         </Pressable>
+      </AppModal>
+
+      <AppModal
+        title={premiumSuccess ? "Premium Aktif" : "Premium Uyelik"}
+        subtitle={premiumSuccess ? "Tebrikler! Artik tum ozelliklere erisebilirsiniz." : "Tam Engizisyon Yetkisi"}
+        visible={premiumVisible}
+        onClose={() => setPremiumVisible(false)}
+      >
+        <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+          {!premiumSuccess ? (
+            <>
+              <View style={{ marginBottom: 24, padding: 16, backgroundColor: "rgba(218,165,32,0.05)", borderWidth: 1, borderColor: "rgba(218,165,32,0.2)", borderRadius: 4 }}>
+                <Text style={{ color: "#DAA520", fontSize: 12, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Premium Avantajlari</Text>
+                <Text style={{ color: "#aaa", fontSize: 13, lineHeight: 24 }}>⚡ Sunuculara oncelikli erisim</Text>
+                <Text style={{ color: "#aaa", fontSize: 13, lineHeight: 24 }}>🎯 Zorluk secimi (Orta & Zor modlar)</Text>
+                <Text style={{ color: "#aaa", fontSize: 13, lineHeight: 24 }}>🌍 Ek senaryolar (Modern & Cyberpunk)</Text>
+                <Text style={{ color: "#aaa", fontSize: 13, lineHeight: 24 }}>💬 Gunluk 100 diyalog hakki</Text>
+                <Text style={{ color: "#aaa", fontSize: 13, lineHeight: 24 }}>🔍 Gunluk 5 sorusturma hakki</Text>
+              </View>
+
+              <Text style={{ color: "#666", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Aktivasyon Kodu</Text>
+              <TextInput
+                style={{ backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", color: "#e5d9c5", padding: 12, borderRadius: 4, marginBottom: 16 }}
+                placeholder="Kodunuzu girin"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                value={activationCode}
+                onChangeText={setActivationCode}
+                autoCapitalize="none"
+              />
+
+              <Pressable
+                disabled={premiumLoading}
+                onPress={handleActivatePremium}
+                style={({ pressed }) => [
+                  { backgroundColor: "#DAA520", padding: 14, borderRadius: 4, alignItems: "center" },
+                  premiumLoading && { opacity: 0.5 },
+                  pressed && !premiumLoading && { opacity: 0.8 },
+                ]}
+              >
+                <Text style={{ color: "#000", fontWeight: "bold", letterSpacing: 1, fontSize: 13 }}>
+                  {premiumLoading ? "ISLENIYOR..." : "PREMIUM'U AKTIFLESTIR"}
+                </Text>
+              </Pressable>
+
+              {premiumError ? <Text style={{ marginTop: 16, padding: 8, backgroundColor: "rgba(138,3,3,0.15)", color: "#e07070", textAlign: "center", fontSize: 12 }}>{premiumError}</Text> : null}
+            </>
+          ) : (
+            <View style={{ alignItems: "center", paddingVertical: 20 }}>
+              <Text style={{ fontSize: 40, marginBottom: 16 }}>⭐</Text>
+              <Text style={{ color: "#e5d9c5", textAlign: "center", lineHeight: 24, marginBottom: 24 }}>
+                Aktivasyon basarili! Lutfen degisikliklerin gecerli olmasi icin uygulamayi yeniden baslatin veya "Hesaptan Cikis Yap" secenegi ile tekrar giris yapin.
+              </Text>
+              <Pressable onPress={() => setPremiumVisible(false)} style={{ backgroundColor: "#DAA520", padding: 14, borderRadius: 4, width: "100%", alignItems: "center" }}>
+                <Text style={{ color: "#000", fontWeight: "bold", letterSpacing: 1 }}>KAPAT</Text>
+              </Pressable>
+            </View>
+          )}
+        </ScrollView>
       </AppModal>
 
       <AppModal
