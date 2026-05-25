@@ -406,6 +406,13 @@ export function HomeScreen({ navigation }: Props) {
               onPress={() => setHowToPlayVisible(true)}
             />
 
+            {!effectiveIsPremium ? (
+              <LandingButton
+                label="Premium'a Yukselt"
+                onPress={() => navigation.navigate("Premium")}
+              />
+            ) : null}
+
             {error ? <Text style={styles.errorBox}>{error}</Text> : null}
             <Text style={styles.sessionNote}>
               {isPremium

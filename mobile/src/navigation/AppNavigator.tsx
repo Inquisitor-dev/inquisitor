@@ -7,6 +7,7 @@ import { HomeScreen } from "@/screens/HomeScreen";
 import { InteractScreen } from "@/screens/InteractScreen";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { MapScreen } from "@/screens/MapScreen";
+import { PremiumScreen } from "@/screens/PremiumScreen";
 import { ResultScreen } from "@/screens/ResultScreen";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -23,6 +24,7 @@ export type RootStackParamList = {
     message: string;
     reason?: "timeout";
   };
+  Premium: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -91,6 +93,11 @@ export function AppNavigator() {
               component={ResultScreen}
               name="Result"
               options={{ title: "Verdict" }}
+            />
+            <Stack.Screen
+              component={PremiumScreen}
+              name="Premium"
+              options={{ title: "Premium" }}
             />
           </>
         ) : (
