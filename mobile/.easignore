@@ -1,0 +1,10 @@
+node_modules
+.expo
+dist-export
+*.log
+*.err.log
+*.out.log
+coverage
+.git
+android.bak
+build-view.json

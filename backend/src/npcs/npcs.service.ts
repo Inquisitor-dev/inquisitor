@@ -150,7 +150,8 @@ INVESTIGATION RULES FOR NARRATOR:
 5. If the player searches the wrong spot, say there is nothing unusual there. Do NOT invent a replacement clue.
 6. You may add atmospheric detail, but you must NEVER change the clue's object, location, or meaning.
 7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
-8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.`;
+8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.
+9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.`;
     } else {
       combinedPrompt += `
 PUBLIC IDENTITY:

@@ -1,56 +1,22 @@
-import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, View, Pressable } from "react-native";
 
 import { PrimaryButton } from "@/components/PrimaryButton";
-import {
-  clearApiBaseUrlOverride,
-  getApiBaseUrlConfig,
-  setApiBaseUrlOverride,
-} from "@/config/apiBaseUrl";
-import { env } from "@/config/env";
 import { api } from "@/services/api";
 import { useGameStore } from "@/store/useGameStore";
 import { inquisitorColors } from "@/theme/inquisitor";
 
 export function LoginScreen() {
   const setUser = useGameStore((state) => state.setUser);
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [verifyCode, setVerifyCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingApi, setCheckingApi] = useState(false);
-  const [savingApiTarget, setSavingApiTarget] = useState(false);
-  const [apiStatus, setApiStatus] = useState<null | "ok" | "error">(null);
-  const [apiBaseUrl, setApiBaseUrl] = useState(env.apiBaseUrl);
-  const [apiBaseUrlInput, setApiBaseUrlInput] = useState(env.apiBaseUrl);
-  const [apiBaseUrlSource, setApiBaseUrlSource] = useState<
-    "env" | "fallback" | "override"
-  >(env.apiBaseUrlSource as "env" | "fallback");
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadApiBaseUrl() {
-      const config = await getApiBaseUrlConfig();
-
-      if (!active) {
-        return;
-      }
-
-      setApiBaseUrl(config.apiBaseUrl);
-      setApiBaseUrlInput(config.apiBaseUrl);
-      setApiBaseUrlSource(config.apiBaseUrlSource);
-    }
-
-    void loadApiBaseUrl();
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert("Missing fields", "Please enter both email and password.");
+      Alert.alert("Eksik bilgi", "Lütfen email ve şifre girin.");
       return;
     }
 
@@ -62,60 +28,48 @@ export function LoginScreen() {
         email: result.email ?? email.trim(),
       });
     } catch (error) {
-      Alert.alert("Login failed", error instanceof Error ? error.message : "Unknown error");
+      Alert.alert("Giriş Başarısız", error instanceof Error ? error.message : "Bilinmeyen hata");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCheckApi = async () => {
+  const handleSignup = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Eksik bilgi", "Lütfen email ve şifre girin.");
+      return;
+    }
+
     try {
-      setCheckingApi(true);
-      await api.ping();
-      setApiStatus("ok");
-      Alert.alert("Backend reachable", `Connected to ${apiBaseUrl}`);
+      setLoading(true);
+      await api.sendCode(email.trim(), password);
+      setAuthMode("verify");
+      Alert.alert("Kod Gönderildi", "Lütfen e-postanıza gelen doğrulama kodunu girin.");
     } catch (error) {
-      setApiStatus("error");
-      Alert.alert(
-        "Backend unreachable",
-        `${apiBaseUrl}\n\n${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      Alert.alert("Kayıt Başarısız", error instanceof Error ? error.message : "Bilinmeyen hata");
     } finally {
-      setCheckingApi(false);
+      setLoading(false);
     }
   };
 
-  const handleSaveApiTarget = async () => {
-    try {
-      setSavingApiTarget(true);
-      await setApiBaseUrlOverride(apiBaseUrlInput);
-      const config = await getApiBaseUrlConfig();
-      setApiBaseUrl(config.apiBaseUrl);
-      setApiBaseUrlInput(config.apiBaseUrl);
-      setApiBaseUrlSource(config.apiBaseUrlSource);
-      setApiStatus(null);
-      Alert.alert("API target saved", config.apiBaseUrl);
-    } catch (error) {
-      Alert.alert("Save failed", error instanceof Error ? error.message : "Unknown error");
-    } finally {
-      setSavingApiTarget(false);
+  const handleVerify = async () => {
+    if (!email.trim() || !verifyCode.trim()) {
+      Alert.alert("Eksik bilgi", "Lütfen doğrulama kodunu girin.");
+      return;
     }
-  };
 
-  const handleResetApiTarget = async () => {
     try {
-      setSavingApiTarget(true);
-      await clearApiBaseUrlOverride();
-      const config = await getApiBaseUrlConfig();
-      setApiBaseUrl(config.apiBaseUrl);
-      setApiBaseUrlInput(config.apiBaseUrl);
-      setApiBaseUrlSource(config.apiBaseUrlSource);
-      setApiStatus(null);
-      Alert.alert("API target reset", config.apiBaseUrl);
+      setLoading(true);
+      const result = await api.verify(email.trim(), verifyCode.trim());
+      setUser({
+        ...result,
+        email: result.email ?? email.trim(),
+      });
+      Alert.alert("Kayıt Tamamlandı", "Başarıyla giriş yaptınız.");
     } catch (error) {
-      Alert.alert("Reset failed", error instanceof Error ? error.message : "Unknown error");
+      Alert.alert("Doğrulama Başarısız", error instanceof Error ? error.message : "Bilinmeyen hata");
     } finally {
-      setSavingApiTarget(false);
+      setLoading(false);
     }
   };
 
@@ -126,12 +80,18 @@ export function LoginScreen() {
         <Text style={styles.eyebrow}>Archive access</Text>
         <Text style={styles.title}>The Inquisitor</Text>
         <Text style={styles.body}>
-          Ashenmoor'a donmeden once kayit dogrulamasi gerekiyor.
+          Ashenmoor'a dönmeden önce kayıt doğrulaması gerekiyor.
         </Text>
       </View>
 
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Engizisyon kaydina giris</Text>
+        <Text style={styles.panelTitle}>
+          {authMode === "login"
+            ? "Engizisyon kaydına giriş"
+            : authMode === "signup"
+              ? "Yeni Kayıt Oluştur"
+              : "E-posta Doğrulama"}
+        </Text>
 
         <TextInput
           autoCapitalize="none"
@@ -141,19 +101,63 @@ export function LoginScreen() {
           placeholderTextColor={inquisitorColors.dim}
           style={styles.input}
           value={email}
-        />
-        <TextInput
-          onChangeText={setPassword}
-          placeholder="Password"
-          placeholderTextColor={inquisitorColors.dim}
-          secureTextEntry
-          style={styles.input}
-          value={password}
+          editable={authMode !== "verify"}
         />
 
-        <PrimaryButton disabled={loading} onPress={handleLogin}>
-          {loading ? "Signing in..." : "Open the case"}
-        </PrimaryButton>
+        {authMode !== "verify" && (
+          <TextInput
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor={inquisitorColors.dim}
+            secureTextEntry
+            style={styles.input}
+            value={password}
+          />
+        )}
+
+        {authMode === "verify" && (
+          <TextInput
+            onChangeText={setVerifyCode}
+            placeholder="Doğrulama Kodu"
+            placeholderTextColor={inquisitorColors.dim}
+            keyboardType="number-pad"
+            style={styles.input}
+            value={verifyCode}
+          />
+        )}
+
+        {authMode === "login" && (
+          <>
+            <PrimaryButton disabled={loading} onPress={handleLogin}>
+              {loading ? "Giriş yapılıyor..." : "Open the case"}
+            </PrimaryButton>
+            <Pressable onPress={() => setAuthMode("signup")} style={styles.switchButton}>
+              <Text style={styles.switchText}>Hesabın yok mu? Kayıt Ol</Text>
+            </Pressable>
+          </>
+        )}
+
+        {authMode === "signup" && (
+          <>
+            <PrimaryButton disabled={loading} onPress={handleSignup}>
+              {loading ? "Kod gönderiliyor..." : "Kayıt Ol"}
+            </PrimaryButton>
+            <Pressable onPress={() => setAuthMode("login")} style={styles.switchButton}>
+              <Text style={styles.switchText}>Zaten hesabın var mı? Giriş Yap</Text>
+            </Pressable>
+          </>
+        )}
+
+        {authMode === "verify" && (
+          <>
+            <PrimaryButton disabled={loading} onPress={handleVerify}>
+              {loading ? "Doğrulanıyor..." : "Kodu Doğrula"}
+            </PrimaryButton>
+            <Pressable onPress={() => setAuthMode("signup")} style={styles.switchButton}>
+              <Text style={styles.switchText}>Geri dön</Text>
+            </Pressable>
+          </>
+        )}
       </View>
     </View>
   );
@@ -208,30 +212,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 12,
   },
-  apiHint: {
-    color: inquisitorColors.muted,
-    fontSize: 12,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  warningText: {
-    color: inquisitorColors.primary,
-    fontSize: 12,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  statusText: {
-    color: inquisitorColors.muted,
-    fontSize: 12,
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  statusOk: {
-    color: "#7aba7a",
-  },
-  statusError: {
-    color: "#cc4444",
-  },
   input: {
     minHeight: 54,
     borderRadius: 4,
@@ -242,5 +222,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 12,
     fontSize: 15,
+  },
+  switchButton: {
+    marginTop: 16,
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  switchText: {
+    color: inquisitorColors.primary,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

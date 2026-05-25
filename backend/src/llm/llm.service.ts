@@ -195,15 +195,16 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. DO NOT use cliche or overly obvious clues that instantly give away the killer's profession (e.g. NO flour for the miller, NO holy water for the priest, NO dirt for the gravedigger). The mystery must be difficult to solve. Use subtle, psychological, or indirect clues. Red herrings (false clues pointing to innocent people) are highly encouraged.
-2. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
-3. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
-4. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
-5. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth.
-6. Imagine the narrator will later reveal ONLY these canonical clues. So do NOT create optional alternates.
-7. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
-8. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
-9. NEVER show the player English location names in parentheses or as translations. Use only the Turkish display names from the canonical list.
+1. CRITICAL RULE FOR THE CRIME SCENE: The physical clue hidden at the 'crime_scene' MUST NOT point to a single suspect's profession (e.g., NO flour for the miller, NO holy water for the priest, NO VHS tape for a video store owner). Instead, the crime scene clue MUST be an object or trace that 3 or 4 suspects could logically possess, or there must be multiple different subtle clues, so that finding it only eliminates 1 or 2 people. If you do use a profession-specific item, it MUST be a planted RED HERRING pointing to an INNOCENT person.
+2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there. It does not have to be related to the murder, but it should make them look guilty of *something*.
+3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
+4. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
+5. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
+6. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth.
+7. Imagine the narrator will later reveal ONLY these canonical clues. So do NOT create optional alternates.
+8. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
+9. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
+10. NEVER show the player English location names in parentheses or as translations. Use only the Turkish display names from the canonical list.
 
 Return a valid JSON object ONLY, in exactly this format:
 {

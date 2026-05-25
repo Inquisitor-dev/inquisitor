@@ -269,13 +269,8 @@ export function HomeScreen({ navigation }: Props) {
   };
 
   const handleStart = () => {
-    if (isPremium) {
-      setError(null);
-      setDifficultyVisible(true);
-      return;
-    }
-
-    void handleCreateSession("easy", "medieval");
+    setError(null);
+    setDifficultyVisible(true);
   };
 
   const handleDifficultySelect = (value: Difficulty) => {
@@ -604,19 +599,29 @@ export function HomeScreen({ navigation }: Props) {
         onClose={() => setDifficultyVisible(false)}
       >
         <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-          {difficultyOptions.map((option) => (
-            <Pressable
-              key={option.id}
-              onPress={() => handleDifficultySelect(option.id)}
-              style={styles.selectionButton}
-            >
-              <View style={styles.selectionHeader}>
-                <Text style={styles.selectionTitle}>{option.title}</Text>
-                <Text style={styles.selectionMeta}>{option.count}</Text>
-              </View>
-              <Text style={styles.selectionDescription}>{option.description}</Text>
-            </Pressable>
-          ))}
+          {difficultyOptions.map((option) => {
+            const isLocked = !effectiveIsPremium && option.id !== "easy";
+            return (
+              <Pressable
+                key={option.id}
+                disabled={isLocked}
+                onPress={() => handleDifficultySelect(option.id)}
+                style={({ pressed }) => [
+                  styles.selectionButton,
+                  isLocked && styles.selectionButtonDisabled,
+                  pressed && !isLocked && styles.buttonPressed,
+                ]}
+              >
+                <View style={styles.selectionHeader}>
+                  <Text style={styles.selectionTitle}>
+                    {option.title} {isLocked ? "🔒 (Premium)" : ""}
+                  </Text>
+                  <Text style={styles.selectionMeta}>{option.count}</Text>
+                </View>
+                <Text style={styles.selectionDescription}>{option.description}</Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </AppModal>
 
@@ -627,24 +632,29 @@ export function HomeScreen({ navigation }: Props) {
         onClose={() => setScenarioVisible(false)}
       >
         <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-          {scenarioOptions.map((option) => (
-            <Pressable
-              key={option.id}
-              disabled={creating || !selectedDifficulty}
-              onPress={() => {
-                if (!selectedDifficulty) return;
-                void handleCreateSession(selectedDifficulty, option.id);
-              }}
-              style={({ pressed }) => [
-                styles.selectionButton,
-                creating && styles.selectionButtonDisabled,
-                pressed && !creating && styles.buttonPressed,
-              ]}
-            >
-              <Text style={styles.selectionTitle}>{option.title}</Text>
-              <Text style={styles.selectionDescription}>{option.description}</Text>
-            </Pressable>
-          ))}
+          {scenarioOptions.map((option) => {
+            const isLocked = !effectiveIsPremium && option.id !== "medieval";
+            return (
+              <Pressable
+                key={option.id}
+                disabled={creating || !selectedDifficulty || isLocked}
+                onPress={() => {
+                  if (!selectedDifficulty) return;
+                  void handleCreateSession(selectedDifficulty, option.id);
+                }}
+                style={({ pressed }) => [
+                  styles.selectionButton,
+                  (creating || isLocked) && styles.selectionButtonDisabled,
+                  pressed && !creating && !isLocked && styles.buttonPressed,
+                ]}
+              >
+                <Text style={styles.selectionTitle}>
+                  {option.title} {isLocked ? "🔒 (Premium)" : ""}
+                </Text>
+                <Text style={styles.selectionDescription}>{option.description}</Text>
+              </Pressable>
+            );
+          })}
           {creating ? (
             <Text style={styles.modalInfo}>Senaryo olusturuluyor, lutfen bekle...</Text>
           ) : null}
