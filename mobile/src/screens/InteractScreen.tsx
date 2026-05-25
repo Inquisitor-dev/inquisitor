@@ -400,19 +400,21 @@ export function InteractScreen({ navigation, route }: Props) {
             <Text style={styles.toolIcon}>📜</Text>
             <Text style={styles.toolLabel}>Envanter</Text>
           </Pressable>
-          <Pressable
-            disabled={!isInvestigating && !canInvestigate}
-            onPress={handleToggleInvestigation}
-            style={[
-              styles.toolBtn,
-              (isInvestigating || canInvestigate) && styles.activeToolBtn,
-            ]}
-          >
-            <Text style={styles.toolIcon}>{isInvestigating ? "⏹️" : "🔍"}</Text>
-            <Text style={styles.toolLabel}>
-              {isInvestigating ? "Bitir" : "Mekani Arastir"}
-            </Text>
-          </Pressable>
+          {locationId !== "crime_scene" ? (
+            <Pressable
+              disabled={!isInvestigating && !canInvestigate}
+              onPress={handleToggleInvestigation}
+              style={[
+                styles.toolBtn,
+                (isInvestigating || canInvestigate) && styles.activeToolBtn,
+              ]}
+            >
+              <Text style={styles.toolIcon}>{isInvestigating ? "⏹️" : "🔍"}</Text>
+              <Text style={styles.toolLabel}>
+                {isInvestigating ? "Bitir" : "Mekani Arastir"}
+              </Text>
+            </Pressable>
+          ) : null}
           {!isInvestigating && locationId !== "crime_scene" ? (
             <Pressable
               style={[styles.toolBtn, styles.condemnToolBtn]}

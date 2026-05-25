@@ -484,6 +484,13 @@ export function HomeScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.guideSection}>
+            <Text style={styles.guideTitle}>Cinayet Mahalli</Text>
+            <Text style={styles.guideText}>
+              Cinayet mahallini yalnizca 1. gun inceleyebilirsin. Ilerleyen gunlerde ceset kaldirilacagi icin oradan daha fazla ipucu elde edemezsin. Ilk gun olay yerini iyi arastirdigindan emin ol.
+            </Text>
+          </View>
+
+          <View style={styles.guideSection}>
             <Text style={styles.guideTitle}>Arama Izinleri</Text>
             <Text style={styles.guideText}>
               Koyluleri sadece sorgulayarak degil, mekanlarini arayarak da kanit
