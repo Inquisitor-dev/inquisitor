@@ -18,6 +18,9 @@ export class AuthService implements OnModuleInit {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS,
       },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 5000,
     });
   }
 
@@ -86,26 +89,31 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    // E-postayi gonder
-    await this.transporter.sendMail({
-      from: `"The Inquisitor" <${process.env.MAIL_USER}>`,
-      to: email,
-      subject: 'The Inquisitor - Dogrulama Kodunuz',
-      html: `
-        <div style="background:#0a0a0a;color:#e5d9c5;padding:40px;font-family:serif;max-width:480px;margin:auto;border:1px solid #2a2a2a;">
-          <h1 style="color:#8A0303;letter-spacing:3px;text-transform:uppercase;font-size:1.4rem;">The Inquisitor</h1>
-          <p style="color:#aaa;font-size:0.9rem;letter-spacing:2px;text-transform:uppercase;">- Engizisyon Davetiyesi -</p>
-          <hr style="border-color:#2a2a2a;margin:20px 0;"/>
-          <p>Ashenmoor'a adim atmak uzeresiniz. Kimliginizi kanitlamak icin asagidaki kodu kullanin:</p>
-          <div style="background:#1a0505;border:1px solid #8A0303;padding:20px;text-align:center;margin:24px 0;">
-            <span style="font-size:2.5rem;letter-spacing:12px;color:#e5d9c5;font-weight:bold;">${code}</span>
+    // E-postayi gonder (Timeout ekliyoruz cunku Render Free'de SMTP portlari kapali olabilir)
+    try {
+      await this.transporter.sendMail({
+        from: `"The Inquisitor" <${process.env.MAIL_USER}>`,
+        to: email,
+        subject: 'The Inquisitor - Dogrulama Kodunuz',
+        html: `
+          <div style="background:#0a0a0a;color:#e5d9c5;padding:40px;font-family:serif;max-width:480px;margin:auto;border:1px solid #2a2a2a;">
+            <h1 style="color:#8A0303;letter-spacing:3px;text-transform:uppercase;font-size:1.4rem;">The Inquisitor</h1>
+            <p style="color:#aaa;font-size:0.9rem;letter-spacing:2px;text-transform:uppercase;">- Engizisyon Davetiyesi -</p>
+            <hr style="border-color:#2a2a2a;margin:20px 0;"/>
+            <p>Ashenmoor'a adim atmak uzeresiniz. Kimliginizi kanitlamak icin asagidaki kodu kullanin:</p>
+            <div style="background:#1a0505;border:1px solid #8A0303;padding:20px;text-align:center;margin:24px 0;">
+              <span style="font-size:2.5rem;letter-spacing:12px;color:#e5d9c5;font-weight:bold;">${code}</span>
+            </div>
+            <p style="color:#666;font-size:0.8rem;">Bu kod 5 dakika gecerlidir. Eger bu istegi siz yapmadiysaniz bu e-postayi gormezden gelin.</p>
           </div>
-          <p style="color:#666;font-size:0.8rem;">Bu kod 5 dakika gecerlidir. Eger bu istegi siz yapmadiysaniz bu e-postayi gormezden gelin.</p>
-        </div>
-      `,
-    });
-
-    return { message: 'Dogrulama kodu e-posta adresinize gonderildi.' };
+        `,
+      });
+      return { message: 'Dogrulama kodu e-posta adresinize gonderildi.' };
+    } catch (error) {
+      console.warn('Mail gonderilemedi (SMTP portu kapali olabilir). Kod:', code, error);
+      // Render free tier'da test edebilmek icin kodu mesaja ekliyoruz
+      return { message: `(Test Modu) Mail gonderilemedi. Dogrulama Kodunuz: ${code}` };
+    }
   }
 
   async verifyCode(email: string, code: string): Promise<{ token: string; email: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
