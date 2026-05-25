@@ -268,28 +268,22 @@ export function HomeScreen({ navigation }: Props) {
       setPremiumError("Aktivasyon kodunu girin.");
       return;
     }
+    if (!authToken) return;
+
     setPremiumLoading(true);
     setPremiumError(null);
     try {
-      const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://the-inquisitor-backend.onrender.com";
-      const response = await fetch(`${baseUrl}/auth/activate-premium`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ activationCode: activationCode.trim() }),
-      });
-      const data = await response.json();
+      const data = await api.activatePremium(authToken, activationCode.trim());
       
-      if (response.ok && data.success) {
+      if (data.success) {
         useGameStore.getState().setIsPremium(true);
         setPremiumSuccess(true);
       } else {
         setPremiumError(data.message || "Aktivasyon basarisiz.");
       }
-    } catch {
-      setPremiumError("Sunucuya baglanilamadi.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Sunucuya baglanilamadi.";
+      setPremiumError(message);
     } finally {
       setPremiumLoading(false);
     }

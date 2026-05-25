@@ -113,6 +113,14 @@ export const api = {
     });
   },
 
+  activatePremium(token: string, activationCode: string) {
+    return request<{ success: boolean; message: string }>("/auth/activate-premium", {
+      method: "POST",
+      token,
+      body: { activationCode },
+    });
+  },
+
   createSession(token: string, difficulty: Difficulty, scenarioType: ScenarioType) {
     return request("/game-sessions", {
       method: "POST",
