@@ -197,7 +197,12 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 CLUE & MYSTERY RULES:
 1. CRITICAL RULE FOR THE CRIME SCENE AND MURDER STYLE: You must randomly decide between two types of murder:
 A) PLANNED & COLD-BLOODED: The crime scene is relatively clean, organized, or staged. The physical clue left at the 'crime_scene' MUST be a planted RED HERRING pointing directly to an INNOCENT person (e.g. a profession-specific item belonging to someone else).
-B) FAST & HURRIED: The crime scene is messy, shows signs of struggle, or panic. The physical clue left at the 'crime_scene' MUST be a GENUINE clue accidentally left by the actual CULPRIT, with NO deception or planting involved.
+B) FAST & HURRIED: The crime scene is messy, shows signs of struggle, or panic. The physical clue left at the 'crime_scene' MUST be a GENUINE clue accidentally left by the actual CULPRIT.
+CRITICAL ENFORCEMENT: If you chose B (FAST & HURRIED), you are FORBIDDEN from inventing your own crime scene clue. You MUST select EXACTLY ONE of the following vague clues and use it as the 'crime_scene' location clue:
+- "Yerde siyah, siradan bir kumas parcasi."
+- "Yerde camurlu, sekli bozulmus silik bir ayak izi."
+- "Kosede, uzerinde hicbir isaret veya arma bulunmayan dusmus siradan bir dugme."
+- "Yere dokulmus, nereden geldigi anlasilmayan birkac damla siradan mum lekesi."
 The 'scenario' text MUST be a general mystery hook and MUST NOT immediately reveal whether the scene is messy or clean. Instead, the 'crime_scene' entry in 'locationClues' MUST contain the description of the struggle/cleanliness along with the physical item clue. The player will only discover this state when they interrogate the crime scene narrator.
 2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there. It does not have to be related to the murder, but it should make them look guilty of *something*.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
