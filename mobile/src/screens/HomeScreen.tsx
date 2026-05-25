@@ -276,7 +276,7 @@ export function HomeScreen({ navigation }: Props) {
       const data = await api.activatePremium(authToken, activationCode.trim());
       
       if (data.success) {
-        useGameStore.getState().setIsPremium(true);
+        useGameStore.getState().setAccountIdentity({ isPremium: true });
         setPremiumSuccess(true);
       } else {
         setPremiumError(data.message || "Aktivasyon basarisiz.");
