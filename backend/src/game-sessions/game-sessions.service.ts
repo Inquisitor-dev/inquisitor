@@ -185,7 +185,7 @@ export class GameSessionsService {
       success: true,
       won,
       culpritId: session.culpritId,
-      message: won ? 'DoÄŸru kiÅŸiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
+      message: won ? 'Doğru kişiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
       session: updatedSession,
     };
   }
@@ -220,7 +220,7 @@ export class GameSessionsService {
     return {
       success: true,
       won: false,
-      message: 'ZamanÄ±nÄ±z doldu.',
+      message: 'Zamanınız doldu.',
       session: updatedSession,
     };
   }
