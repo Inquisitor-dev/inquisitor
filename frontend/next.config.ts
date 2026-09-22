@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    proxyTimeout: 300000,
+  },
   sassOptions: {
     includePaths: [path.join(process.cwd(), "src/styles")],
     silenceDeprecations: ["legacy-js-api"],

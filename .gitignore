@@ -24,3 +24,4 @@ frontend/tsconfig.tsbuildinfo
 # Duplicate dirs
 mobile/mobile/
 mobile/android.bak/
+ngrok.yml

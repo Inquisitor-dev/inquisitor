@@ -75,11 +75,11 @@ CRITICAL RULES:
           });
           break;
         } catch (err: any) {
-          if (err?.status === 429 && retries < maxRetries) {
+          if ((err?.status === 429 || err?.status >= 500) && retries < maxRetries) {
             retries++;
             const waitTime = Math.pow(2, retries) * 1500;
             this.logger.warn(
-              `API Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
+              `API Rate Limit or Server Error hit (${err?.status}). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
             );
             await delay(waitTime);
           } else {
@@ -243,11 +243,11 @@ ${locationCluesTemplate}
         });
         break;
       } catch (err: any) {
-        if (err?.status === 429 && retries < maxRetries) {
+        if ((err?.status === 429 || err?.status >= 500) && retries < maxRetries) {
           retries++;
           const waitTime = Math.pow(2, retries) * 1500;
           this.logger.warn(
-            `Scenario Generation Rate Limit hit (429). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
+            `Scenario Generation Rate Limit or Server Error hit (${err?.status}). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
           );
           await delay(waitTime);
         } else {
