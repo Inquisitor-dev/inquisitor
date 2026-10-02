@@ -834,6 +834,13 @@ export default function MapPage() {
       {/* Action Bar (Bant) */}
       <footer className={styles.actionBar}>
         <div className={styles.actionGroup}>
+          <Link href="/interior/tavern" className={styles.iconBtn} title="Mekanların İçini 360° İncele">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" opacity="0.3" />
+            </svg>
+            <span>Mekan Keşfi</span>
+          </Link>
           <button className={styles.iconBtn} onClick={handleToggleFullscreen}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               {isFullscreen ? (

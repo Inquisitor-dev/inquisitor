@@ -255,6 +255,33 @@ export class AuthService implements OnModuleInit {
     };
   }
 
+  async getAudioSettings(userId: string): Promise<{ musicVolume: number; musicMuted: boolean }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { musicVolume: true, musicMuted: true },
+    });
+    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+    return user;
+  }
+
+  async updateAudioSettings(
+    userId: string,
+    settings: { musicVolume?: unknown; musicMuted?: unknown },
+  ): Promise<{ musicVolume: number; musicMuted: boolean }> {
+    const data: { musicVolume?: number; musicMuted?: boolean } = {};
+    if (typeof settings.musicVolume === 'number' && Number.isFinite(settings.musicVolume)) {
+      data.musicVolume = Math.min(1, Math.max(0, settings.musicVolume));
+    }
+    if (typeof settings.musicMuted === 'boolean') {
+      data.musicMuted = settings.musicMuted;
+    }
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: { musicVolume: true, musicMuted: true },
+    });
+  }
+
   // Premium aktivasyonu (simule edilmis odeme)
   async activatePremium(userId: string, activationCode: string): Promise<{ success: boolean; message: string }> {
     const VALID_CODE = 'PREMIUM246741';
