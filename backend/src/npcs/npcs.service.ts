@@ -200,13 +200,23 @@ ${confrontationRules}`;
       ? '[Engizisyoncu iceri giriyor. Sen onlari daha once gordun. Yeni gune uygun bir sekilde selamla.]'
       : userMessage;
 
-    const llmResponse = await this.llm.generateNpcResponse(
-      canonicalNpc?.name ?? currentState.npc.name,
-      combinedPrompt,
-      chatHistory,
-      effectiveMessage,
-      isNewDay,
-    );
+    // Test modunda yapay zeka çağrılmaz; arama izni istenirse izin akışı da denenebilsin diye etiket eklenir
+    const llmResponse = currentState.session.isTestMode
+      ? {
+          reply: this.buildTestReply(
+            canonicalNpc?.name ?? currentState.npc.name,
+            isGreetingSignal,
+            userMessage,
+            localizedLocationList,
+          ),
+        }
+      : await this.llm.generateNpcResponse(
+          canonicalNpc?.name ?? currentState.npc.name,
+          combinedPrompt,
+          chatHistory,
+          effectiveMessage,
+          isNewDay,
+        );
 
     let finalReply = llmResponse.reply;
     const explicitWarrantRequest = this.isExplicitWarrantRequest(
@@ -262,6 +272,31 @@ ${confrontationRules}`;
       reply: finalReply,
       grantedWarrants: newlyGranted,
     };
+  }
+
+  private buildTestReply(
+    npcName: string,
+    isGreeting: boolean,
+    userMessage: string,
+    locations: { id: string; localizedName: string }[],
+  ) {
+    if (isGreeting) return `[TEST MODU] ${npcName} seni selamliyor.`;
+
+    const normalized = userMessage.toLocaleLowerCase('tr-TR');
+    const requested = locations.find(
+      (location) =>
+        location.id !== 'crime_scene' && normalized.includes(location.localizedName.toLocaleLowerCase('tr-TR')),
+    );
+    const warrantTag = requested ? ` [GRANT_WARRANT: ${requested.id}]` : '';
+    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptir.${warrantTag}`;
+  }
+
+  async isTestSession(sessionId: string): Promise<boolean> {
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      select: { isTestMode: true },
+    });
+    return session?.isTestMode ?? false;
   }
 
   private isExplicitWarrantRequest(userMessage: string, localizedLocationNames: string[]) {

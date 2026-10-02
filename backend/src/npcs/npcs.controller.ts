@@ -25,8 +25,8 @@ export class NpcsController {
     const userId: string = req.user.userId;
     const isGreeting = message === '__NEW_DAY_GREETING__';
 
-    // Selamlama sinyali değilse günlük mesaj kotasını kontrol et
-    if (!isGreeting) {
+    // Selamlama sinyali değilse günlük mesaj kotasını kontrol et (test oturumları kota harcamaz)
+    if (!isGreeting && !(await this.npcsService.isTestSession(sessionId))) {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
       const maxMessages = quota.isPremium ? 100 : 30;
       if (quota.dailyMessageCount >= maxMessages) {
