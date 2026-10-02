@@ -25,3 +25,5 @@ frontend/tsconfig.tsbuildinfo
 mobile/mobile/
 mobile/android.bak/
 ngrok.yml
+# Playwright MCP test çıktıları
+.playwright-mcp/
