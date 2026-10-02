@@ -21,8 +21,9 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Pan & Zoom State
+  // 2D Pan & Zoom State
   const [panX, setPanX] = useState<number>(0);
+  const [panY, setPanY] = useState<number>(0);
   const [zoom, setZoom] = useState<number>(1.0);
   const [activeHotspot, setActiveHotspot] = useState<InteriorHotspot | null>(null);
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
@@ -32,33 +33,48 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
   // Drag physics tracking refs
   const isDraggingRef = useRef<boolean>(false);
   const startMouseXRef = useRef<number>(0);
+  const startMouseYRef = useRef<number>(0);
   const startPanXRef = useRef<number>(0);
+  const startPanYRef = useRef<number>(0);
   const lastMouseXRef = useRef<number>(0);
+  const lastMouseYRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const velocityRef = useRef<number>(0);
+  const velocityXRef = useRef<number>(0);
+  const velocityYRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
   const totalDragDistanceRef = useRef<number>(0);
 
-  // Bounds for panning
+  // Compute 2D Bounds for panning
   const getPanBounds = useCallback(() => {
     if (!containerRef.current || !stageRef.current) {
-      return { min: -1000, max: 0 };
+      return { minX: -1000, maxX: 0, minY: -300, maxY: 0 };
     }
     const containerW = containerRef.current.clientWidth;
+    const containerH = containerRef.current.clientHeight;
     const stageW = stageRef.current.clientWidth * zoom;
-    const maxDelta = Math.max(0, stageW - containerW);
+    const stageH = stageRef.current.clientHeight * zoom;
+
+    const maxDeltaX = Math.max(0, stageW - containerW);
+    const maxDeltaY = Math.max(0, stageH - containerH);
+
     return {
-      min: -maxDelta,
-      max: 0,
+      minX: -maxDeltaX,
+      maxX: 0,
+      minY: -maxDeltaY,
+      maxY: 0,
     };
   }, [zoom]);
 
-  // Center view on mount
+  // Center & frame view comfortably on mount
   useEffect(() => {
     if (!containerRef.current || !stageRef.current) return;
     const bounds = getPanBounds();
-    const initialCenter = bounds.min / 2 + (locationData.initialPan || 0) * 10;
-    setPanX(Math.max(bounds.min, Math.min(bounds.max, initialCenter)));
+    const initialCenterX = bounds.minX / 2 + (locationData.initialPan || 0) * 10;
+    // Initial Y: frame slightly towards the bottom so the floor and tables are naturally visible!
+    const initialY = bounds.minY * 0.45;
+
+    setPanX(Math.max(bounds.minX, Math.min(bounds.maxX, initialCenterX)));
+    setPanY(Math.max(bounds.minY, Math.min(bounds.maxY, initialY)));
   }, [locationData, getPanBounds]);
 
   // ─── AMBIENT PARTICLE ENGINE (Floating Embers & Dust) ───────────────────
@@ -139,23 +155,41 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     };
   }, [locationData]);
 
-  // ─── INERTIA DECAY LOOP ────────────────────────────────────────────────
+  // ─── 2D INERTIA DECAY LOOP ─────────────────────────────────────────────
   const startInertia = useCallback(() => {
     const decay = () => {
-      if (Math.abs(velocityRef.current) > 0.15) {
-        velocityRef.current *= 0.92;
+      const vx = velocityXRef.current;
+      const vy = velocityYRef.current;
+      const speed = Math.sqrt(vx * vx + vy * vy);
+
+      if (speed > 0.15) {
+        velocityXRef.current *= 0.91;
+        velocityYRef.current *= 0.91;
+
+        const bounds = getPanBounds();
+
         setPanX((prev) => {
-          const bounds = getPanBounds();
-          const next = prev + velocityRef.current;
-          if (next > bounds.max || next < bounds.min) {
-            velocityRef.current *= 0.5; // Boundary bounce absorption
-            return Math.max(bounds.min, Math.min(bounds.max, next));
+          const next = prev + velocityXRef.current;
+          if (next > bounds.maxX || next < bounds.minX) {
+            velocityXRef.current *= 0.4;
+            return Math.max(bounds.minX, Math.min(bounds.maxX, next));
           }
           return next;
         });
+
+        setPanY((prev) => {
+          const next = prev + velocityYRef.current;
+          if (next > bounds.maxY || next < bounds.minY) {
+            velocityYRef.current *= 0.4;
+            return Math.max(bounds.minY, Math.min(bounds.maxY, next));
+          }
+          return next;
+        });
+
         animationFrameRef.current = requestAnimationFrame(decay);
       } else {
-        velocityRef.current = 0;
+        velocityXRef.current = 0;
+        velocityYRef.current = 0;
       }
     };
     animationFrameRef.current = requestAnimationFrame(decay);
@@ -164,24 +198,27 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
   // Update Compass Heading based on panX
   useEffect(() => {
     const bounds = getPanBounds();
-    const range = Math.abs(bounds.min - bounds.max) || 1;
-    const progress = Math.abs(panX - bounds.max) / range;
-    // Map to 90° (Doğu) -> 180° (Güney) -> 270° (Batı)
+    const range = Math.abs(bounds.minX - bounds.maxX) || 1;
+    const progress = Math.abs(panX - bounds.maxX) / range;
     const deg = Math.round(90 + progress * 180);
     setCompassHeading(deg);
   }, [panX, getPanBounds]);
 
-  // ─── MOUSE DRAG LISTENERS ──────────────────────────────────────────────
+  // ─── MOUSE DRAG LISTENERS (2D LOOK AROUND) ──────────────────────────────
   const handleMouseDown = (e: React.MouseEvent) => {
     if (activeHotspot) return;
     if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
     isDraggingRef.current = true;
     startMouseXRef.current = e.clientX;
+    startMouseYRef.current = e.clientY;
     startPanXRef.current = panX;
+    startPanYRef.current = panY;
     lastMouseXRef.current = e.clientX;
+    lastMouseYRef.current = e.clientY;
     lastTimeRef.current = performance.now();
-    velocityRef.current = 0;
+    velocityXRef.current = 0;
+    velocityYRef.current = 0;
     totalDragDistanceRef.current = 0;
     setHasInteracted(true);
   };
@@ -190,27 +227,28 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     if (!isDraggingRef.current) return;
 
     const deltaX = e.clientX - startMouseXRef.current;
-    totalDragDistanceRef.current += Math.abs(e.clientX - lastMouseXRef.current);
+    const deltaY = e.clientY - startMouseYRef.current;
+    totalDragDistanceRef.current += Math.hypot(
+      e.clientX - lastMouseXRef.current,
+      e.clientY - lastMouseYRef.current
+    );
 
     const now = performance.now();
     const dt = Math.max(1, now - lastTimeRef.current);
-    const instantaneousVel = ((e.clientX - lastMouseXRef.current) / dt) * 16;
-    velocityRef.current = instantaneousVel;
+    velocityXRef.current = ((e.clientX - lastMouseXRef.current) / dt) * 16;
+    velocityYRef.current = ((e.clientY - lastMouseYRef.current) / dt) * 16;
 
     lastMouseXRef.current = e.clientX;
+    lastMouseYRef.current = e.clientY;
     lastTimeRef.current = now;
 
     const bounds = getPanBounds();
-    const target = startPanXRef.current + deltaX;
+    const targetX = startPanXRef.current + deltaX;
+    const targetY = startPanYRef.current + deltaY;
 
-    // Soft elastic resistance outside bounds
-    if (target > bounds.max) {
-      setPanX(bounds.max + (target - bounds.max) * 0.25);
-    } else if (target < bounds.min) {
-      setPanX(bounds.min + (target - bounds.min) * 0.25);
-    } else {
-      setPanX(target);
-    }
+    // Apply with boundary clamping & subtle elastic resistance
+    setPanX(Math.max(bounds.minX - 40, Math.min(bounds.maxX + 40, targetX)));
+    setPanY(Math.max(bounds.minY - 30, Math.min(bounds.maxY + 30, targetY)));
   };
 
   const handleMouseUp = () => {
@@ -219,7 +257,7 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     startInertia();
   };
 
-  // ─── TOUCH CONTROLS (MOBILE & TABLET) ──────────────────────────────────
+  // ─── TOUCH CONTROLS (2D MOBILE & TABLET) ────────────────────────────────
   const handleTouchStart = (e: React.TouchEvent) => {
     if (activeHotspot || e.touches.length === 0) return;
     if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
@@ -227,10 +265,14 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     const touch = e.touches[0];
     isDraggingRef.current = true;
     startMouseXRef.current = touch.clientX;
+    startMouseYRef.current = touch.clientY;
     startPanXRef.current = panX;
+    startPanYRef.current = panY;
     lastMouseXRef.current = touch.clientX;
+    lastMouseYRef.current = touch.clientY;
     lastTimeRef.current = performance.now();
-    velocityRef.current = 0;
+    velocityXRef.current = 0;
+    velocityYRef.current = 0;
     totalDragDistanceRef.current = 0;
     setHasInteracted(true);
   };
@@ -240,18 +282,27 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     const touch = e.touches[0];
 
     const deltaX = touch.clientX - startMouseXRef.current;
-    totalDragDistanceRef.current += Math.abs(touch.clientX - lastMouseXRef.current);
+    const deltaY = touch.clientY - startMouseYRef.current;
+    totalDragDistanceRef.current += Math.hypot(
+      touch.clientX - lastMouseXRef.current,
+      touch.clientY - lastMouseYRef.current
+    );
 
     const now = performance.now();
     const dt = Math.max(1, now - lastTimeRef.current);
-    velocityRef.current = ((touch.clientX - lastMouseXRef.current) / dt) * 16;
+    velocityXRef.current = ((touch.clientX - lastMouseXRef.current) / dt) * 16;
+    velocityYRef.current = ((touch.clientY - lastMouseYRef.current) / dt) * 16;
 
     lastMouseXRef.current = touch.clientX;
+    lastMouseYRef.current = touch.clientY;
     lastTimeRef.current = now;
 
     const bounds = getPanBounds();
-    const target = startPanXRef.current + deltaX;
-    setPanX(Math.max(bounds.min - 40, Math.min(bounds.max + 40, target)));
+    const targetX = startPanXRef.current + deltaX;
+    const targetY = startPanYRef.current + deltaY;
+
+    setPanX(Math.max(bounds.minX - 40, Math.min(bounds.maxX + 40, targetX)));
+    setPanY(Math.max(bounds.minY - 30, Math.min(bounds.maxY + 30, targetY)));
   };
 
   const handleTouchEnd = () => {
@@ -265,20 +316,27 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     if (activeHotspot) return;
     e.preventDefault();
     const zoomDelta = e.deltaY < 0 ? 0.05 : -0.05;
-    setZoom((prev) => Math.max(1.0, Math.min(1.35, Number((prev + zoomDelta).toFixed(2)))));
+    setZoom((prev) => Math.max(0.85, Math.min(1.35, Number((prev + zoomDelta).toFixed(2)))));
   };
 
-  // ─── KEYBOARD NAVIGATION (A/D or Arrows) ────────────────────────────────
+  // ─── KEYBOARD NAVIGATION (WASD & Arrows) ────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeHotspot) return;
-      const step = 80;
+      const step = 70;
       const bounds = getPanBounds();
+
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        setPanX((prev) => Math.min(bounds.max, prev + step));
+        setPanX((prev) => Math.min(bounds.maxX, prev + step));
         setHasInteracted(true);
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        setPanX((prev) => Math.max(bounds.min, prev - step));
+        setPanX((prev) => Math.max(bounds.minX, prev - step));
+        setHasInteracted(true);
+      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+        setPanY((prev) => Math.min(bounds.maxY, prev + step));
+        setHasInteracted(true);
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        setPanY((prev) => Math.max(bounds.minY, prev - step));
         setHasInteracted(true);
       } else if (e.key === 'Escape') {
         setActiveHotspot(null);
@@ -291,7 +349,6 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
   // ─── HOTSPOT CLICK ─────────────────────────────────────────────────────
   const handleHotspotClick = (e: React.MouseEvent, hotspot: InteriorHotspot) => {
     e.stopPropagation();
-    // Drag threshold to prevent opening when panning
     if (totalDragDistanceRef.current > 8) return;
     setActiveHotspot(hotspot);
     setNoteAddedFeedback(false);
@@ -341,12 +398,12 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
     >
-      {/* ─── PANORAMIC STAGE ─── */}
+      {/* ─── PANORAMIC STAGE (2D TRANSLATE + SCALE) ─── */}
       <div
         ref={stageRef}
         className={styles.panoramaStage}
         style={{
-          transform: `translate3d(${panX}px, 0, 0) scale(${zoom})`,
+          transform: `translate3d(${panX}px, ${panY}px, 0) scale(${zoom})`,
         }}
       >
         <img
@@ -440,7 +497,7 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
           </button>
           <button
             className={styles.hudIconBtn}
-            onClick={() => setZoom((z) => Math.max(1.0, z - 0.1))}
+            onClick={() => setZoom((z) => Math.max(0.85, z - 0.1))}
             title="Uzaklaştır (Zoom Out)"
           >
             🔍-
@@ -450,7 +507,8 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
             onClick={() => {
               setZoom(1.0);
               const bounds = getPanBounds();
-              setPanX(bounds.min / 2);
+              setPanX(bounds.minX / 2);
+              setPanY(bounds.minY * 0.45);
             }}
             title="Açıyı Sıfırla"
           >
@@ -460,8 +518,8 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
 
         {!hasInteracted && (
           <div className={styles.dragHint}>
-            <span className={styles.handIcon}>👈👉</span>
-            <span>Etrafı incelemek için basılı tutup sağa/sola sürükleyin</span>
+            <span className={styles.handIcon}>👈👉👆👇</span>
+            <span>Basılı tutup sağa/sola ve yukarı/aşağı serbestçe sürükleyin</span>
           </div>
         )}
 

@@ -19,18 +19,19 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
-  width: 220vw; // Ekranın 2.2 katı genişliğinde ultra-panoramik alan
-  min-width: 2400px;
+  height: 115vh;
+  min-height: 100%;
+  width: max(145vw, 2200px);
   will-change: transform;
   transform-origin: center center;
-  transition: transform 0.05s linear;
+  transition: transform 0.04s linear;
 }
 
 .panoramaImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 85%; // Alt zemin, fıçılar ve masaları net gösterir
   pointer-events: none;
   display: block;
 }
