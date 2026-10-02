@@ -14,11 +14,11 @@ const MODELS = (process.env.GEMINI_MODELS || '')
 const MODEL_CHAIN = MODELS.length > 0 ? MODELS : DEFAULT_MODELS;
 const ATTEMPTS_PER_MODEL = 2;
 
+// Hata sınıfları `instanceof` ile tanınır: openai v6'da `err.name` sınıf adı değil, düz "Error" döner.
+// APIConnectionTimeoutError, APIConnectionError'ın alt sınıfıdır.
 const isRetryable = (err: any) =>
-  err?.status === 429 ||
-  err?.status >= 500 ||
-  err?.name === 'APIConnectionTimeoutError' ||
-  err?.name === 'APIConnectionError';
+  err?.status === 429 || err?.status >= 500 || err instanceof OpenAI.APIConnectionError;
+const isTimeout = (err: any) => err instanceof OpenAI.APIConnectionTimeoutError;
 
 type ScenarioDraft = {
   scenario: string;
@@ -63,7 +63,9 @@ export class LlmService {
         } catch (err: any) {
           lastError = err;
           if (!isRetryable(err)) throw err;
-          this.logger.warn(`[${label}] ${model} failed (${err?.status ?? err?.name}).`);
+          this.logger.warn(`[${label}] ${model} failed (${err?.status ?? err?.constructor?.name}).`);
+          // Zaman aşımında aynı modeli tekrar beklemek bir süre daha kaybettirir; doğrudan sıradakine geç
+          if (isTimeout(err)) break;
           if (attempt < ATTEMPTS_PER_MODEL) await delay(1500 * attempt);
         }
       }
@@ -143,7 +145,7 @@ CRITICAL RULES:
       return { reply };
     } catch (error: any) {
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
-      this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
+      this.logger.error(`Type: ${error?.constructor?.name}, Status: ${error?.status}, Code: ${error?.code}`);
 
       let errorMessage = 'Su an sizinle konusmak istemiyorum... (Beklenmeyen Sistem Hatasi)';
       if (error?.status === 429) {
