@@ -9,7 +9,7 @@ import styles from './crime-scene.module.scss';
 
 export default function CrimeScenePage() {
   const router = useRouter();
-  const { isAdmin, currentDay, timeOfDay, maxDailyDialogues, dialoguesUsedToday, scenario, notes, setNotes, sessionId } = useGameStore();
+  const { isAdmin, currentDay, timeOfDay, maxDailyDialogues, dialoguesUsedToday, scenario, notes, setNotes, sessionId, authToken } = useGameStore();
   
   const [inspected, setInspected] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
@@ -53,7 +53,10 @@ export default function CrimeScenePage() {
     try {
       await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
         body: JSON.stringify({ notes }),
       });
     } catch (err) {
