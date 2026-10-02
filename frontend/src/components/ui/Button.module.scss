@@ -1,0 +1,83 @@
+@use '../../styles/variables' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-title;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all $transition-normal;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  &--full {
+    width: 100%;
+  }
+
+  /* Sizes */
+  &--sm {
+    padding: $sp-sm $sp-md;
+    font-size: 0.8rem;
+  }
+  
+  &--md {
+    padding: 10px $sp-lg;
+    font-size: 0.9rem;
+  }
+  
+  &--lg {
+    padding: $sp-md $sp-xl;
+    font-size: 1rem;
+  }
+
+  /* Variants */
+  &--primary {
+    background-color: $primary;
+    color: $text-parchment;
+    border-color: $primary-dark;
+    
+    &:hover:not(:disabled) {
+      background-color: $primary-dark;
+      box-shadow: $shadow-red;
+    }
+  }
+
+  &--secondary {
+    background-color: transparent;
+    color: $text-parchment;
+    border-color: $border-color;
+    
+    &:hover:not(:disabled) {
+      border-color: $text-parchment;
+      background-color: rgba(232, 220, 196, 0.05);
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: $text-muted;
+    
+    &:hover:not(:disabled) {
+      color: $text-parchment;
+    }
+  }
+
+  &--danger {
+    background-color: transparent;
+    color: $primary;
+    border-color: $border-red;
+    
+    &:hover:not(:disabled) {
+      background-color: $primary-glow;
+      color: #fff;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
