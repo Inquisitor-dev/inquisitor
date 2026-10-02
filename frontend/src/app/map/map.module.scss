@@ -439,6 +439,50 @@
   box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
 }
 
+/* Harita görseliyle birebir örtüşen katman: `background-size: cover; background-position: center`
+   ile aynı hesap, bu yüzden içindeki yüzdeler görselin pikselleriyle eşleşir. */
+.imageViewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.imageLayer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, calc(100vh * var(--map-aspect)));
+  height: max(100vh, calc(100vw / var(--map-aspect)));
+  transform: translate(-50%, -50%);
+}
+
+.roadDebug {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+
+  polyline {
+    fill: none;
+    stroke: #ff00d4;
+    stroke-width: 4;
+  }
+
+  circle {
+    fill: #00e5ff;
+  }
+
+  text {
+    fill: #fff;
+    font-size: 22px;
+    paint-order: stroke;
+    stroke: #000;
+    stroke-width: 4px;
+  }
+}
+
 /* nightMap filter removed per user request */
 
 /* GÖRÜNMEZ BUTONLAR (HOTSPOTS) */

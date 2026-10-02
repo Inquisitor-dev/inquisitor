@@ -2,6 +2,7 @@ import { Controller, Post, Body, Param, Get, UseGuards, Request, ForbiddenExcept
 import { GameSessionsService } from './game-sessions.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
+import { isTestModeEnabled } from '../test-mode';
 
 @Controller('game-sessions')
 export class GameSessionsController {
@@ -18,16 +19,31 @@ export class GameSessionsController {
     return { session };
   }
 
+  @Get('test-mode')
+  @UseGuards(JwtAuthGuard)
+  testModeStatus() {
+    return { enabled: isTestModeEnabled() };
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async createSession(
     @Request() req: any, 
     @Body('difficulty') difficulty?: string,
-    @Body('scenarioType') scenarioType?: string
+    @Body('scenarioType') scenarioType?: string,
+    @Body('testMode') testMode?: boolean,
   ) {
     const userId: string = req.user.userId;
     const diff = difficulty || 'easy';
     const sType = scenarioType || 'medieval';
+
+    // Yapay zekasız test oturumu: kota ve Premium kısıtları uygulanmaz, sayaç artmaz
+    if (testMode === true) {
+      if (!isTestModeEnabled()) {
+        throw new ForbiddenException('Test modu bu sunucuda kapali.');
+      }
+      return this.gameSessionsService.createSession(userId, diff, sType, true);
+    }
 
     // Günlük kota kontrolü
     const quota = await this.authService.checkAndResetDailyQuota(userId);

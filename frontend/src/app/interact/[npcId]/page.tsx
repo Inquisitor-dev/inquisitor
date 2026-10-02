@@ -193,7 +193,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             try {
               const greetRes = await fetch(apiUrl('/npcs/interact'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${authToken}`,
+                },
                 body: JSON.stringify({
                   sessionId,
                   npcId: currentNpcKey,
@@ -391,9 +394,26 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       <div className={styles.vignette} />
 
       <header className={styles.header}>
-        <Link href="/map" className={styles.back}>
-          Haritaya Don
-        </Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Link href="/map" className={styles.back}>
+            Haritaya Don
+          </Link>
+          <Link 
+            href={`/interior/${npcKey}`} 
+            className={styles.back}
+            style={{ 
+              backgroundColor: 'rgba(138, 3, 3, 0.4)', 
+              borderColor: 'rgba(138, 3, 3, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="Mekanın içini 360° inceleyin"
+          >
+            <span>🧭</span>
+            <span>Mekanı İncele (360°)</span>
+          </Link>
+        </div>
 
         <div className={styles.npcInfo}>
           <span className={styles.npcIcon}>{isInvestigating ? '👁️' : profile.icon}</span>

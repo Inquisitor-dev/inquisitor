@@ -13,8 +13,15 @@ export class GameSessionsService {
     private readonly llm: LlmService,
   ) {}
 
-  async createSession(userId: string = 'demo-user-001', difficulty: string = 'easy', scenarioType: string = 'medieval') {
-    this.logger.log(`Creating new dynamic session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`);
+  async createSession(
+    userId: string = 'demo-user-001',
+    difficulty: string = 'easy',
+    scenarioType: string = 'medieval',
+    testMode = false,
+  ) {
+    this.logger.log(
+      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`,
+    );
 
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
@@ -35,8 +42,9 @@ export class GameSessionsService {
 
     this.logger.log(`Deterministically selected Culprit: ${culpritId}, Style: ${murderStyle}, Clue: ${selectedClue.id}`);
 
-    const { scenario, truthReveal, npcPrompts, locationClues } =
-      await this.llm.generateSessionScenario(difficulty, scenarioType, culpritId, murderStyle, selectedClue.clueText);
+    const { scenario, truthReveal, npcPrompts, locationClues } = testMode
+      ? this.buildTestScenario(scenarioConfig, culpritId, selectedClue.clueText)
+      : await this.llm.generateSessionScenario(difficulty, scenarioType, culpritId, murderStyle, selectedClue.clueText);
 
     this.logger.log(`Scenario generated. Culprit is confirmed: ${culpritId}`);
 
@@ -60,6 +68,7 @@ export class GameSessionsService {
         locationClues,
         culpritId,
         status: 'ACTIVE',
+        isTestMode: testMode,
       },
     });
 
@@ -88,6 +97,27 @@ export class GameSessionsService {
 
     this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
     return session;
+  }
+
+  // Test modu: yapay zeka çağrılmadan, senaryo ayarlarından basit bir yer tutucu hikaye kurar
+  private buildTestScenario(
+    scenarioConfig: ReturnType<typeof getScenarioConfig>,
+    culpritId: string,
+    crimeSceneClueText: string,
+  ) {
+    const culprit = scenarioConfig.npcDefinitions.find((npc) => npc.id === culpritId);
+    const locationClues: Record<string, string> = {};
+    for (const location of scenarioConfig.locationDefinitions) {
+      if (location.id === 'crime_scene') continue;
+      locationClues[location.id] = `[TEST MODU] ${location.id} icin yer tutucu ipucu.`;
+    }
+
+    return {
+      scenario: `[TEST MODU] Bu oturum yapay zeka kullanmadan olusturuldu. Hikaye uretilmedi. Olay yeri izi: ${crimeSceneClueText}`,
+      truthReveal: `[TEST MODU] Sucluyu rastgele secilen ${culprit?.name ?? culpritId} oldugu varsayildi.`,
+      npcPrompts: {} as Record<string, string>,
+      locationClues,
+    };
   }
 
   async endDay(sessionId: string) {

@@ -4,6 +4,22 @@ import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scena
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Sırayla denenecek modeller. İlki yoğunluk (503/429) ya da zaman aşımı nedeniyle
+// cevap veremezse bir sonrakine geçilir. GEMINI_MODELS ile virgülle ayrılmış liste verilebilir.
+const DEFAULT_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-flash-lite-latest'];
+const MODELS = (process.env.GEMINI_MODELS || '')
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean);
+const MODEL_CHAIN = MODELS.length > 0 ? MODELS : DEFAULT_MODELS;
+const ATTEMPTS_PER_MODEL = 2;
+
+// Hata sınıfları `instanceof` ile tanınır: openai v6'da `err.name` sınıf adı değil, düz "Error" döner.
+// APIConnectionTimeoutError, APIConnectionError'ın alt sınıfıdır.
+const isRetryable = (err: any) =>
+  err?.status === 429 || err?.status >= 500 || err instanceof OpenAI.APIConnectionError;
+const isTimeout = (err: any) => err instanceof OpenAI.APIConnectionTimeoutError;
+
 type ScenarioDraft = {
   scenario: string;
   truthReveal: string;
@@ -24,7 +40,39 @@ export class LlmService {
     this.openai = new OpenAI({
       apiKey: apiKey || 'no-key-provided',
       baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      maxRetries: 0, // tekrar denemeleri ve model değişimini createCompletion yönetir
     });
+  }
+
+  // Model zincirini sırayla dener; her model için kısa bir tekrar denemesi yapar
+  private async createCompletion(
+    params: { messages: { role: string; content: string }[]; temperature: number },
+    label: string,
+    timeoutMs: number,
+  ) {
+    let lastError: any;
+
+    for (const model of MODEL_CHAIN) {
+      for (let attempt = 1; attempt <= ATTEMPTS_PER_MODEL; attempt++) {
+        try {
+          this.logger.log(`[${label}] Calling ${model} (attempt ${attempt}/${ATTEMPTS_PER_MODEL})`);
+          return await this.openai.chat.completions.create(
+            { model, messages: params.messages as any, temperature: params.temperature },
+            { timeout: timeoutMs },
+          );
+        } catch (err: any) {
+          lastError = err;
+          if (!isRetryable(err)) throw err;
+          this.logger.warn(`[${label}] ${model} failed (${err?.status ?? err?.constructor?.name}).`);
+          // Zaman aşımında aynı modeli tekrar beklemek bir süre daha kaybettirir; doğrudan sıradakine geç
+          if (isTimeout(err)) break;
+          if (attempt < ATTEMPTS_PER_MODEL) await delay(1500 * attempt);
+        }
+      }
+      this.logger.warn(`[${label}] Switching away from ${model}.`);
+    }
+
+    throw lastError;
   }
 
   async generateNpcResponse(
@@ -61,32 +109,12 @@ CRITICAL RULES:
         { role: 'user', content: userMessage },
       ];
 
-      let response;
-      let retries = 0;
-      const maxRetries = 3;
-
-      while (retries <= maxRetries) {
-        try {
-          this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
-          response = await this.openai.chat.completions.create({
-            model: 'gemini-flash-latest',
-            messages: messages as any,
-            temperature: 0.7,
-          });
-          break;
-        } catch (err: any) {
-          if ((err?.status === 429 || err?.status >= 500) && retries < maxRetries) {
-            retries++;
-            const waitTime = Math.pow(2, retries) * 1500;
-            this.logger.warn(
-              `API Rate Limit or Server Error hit (${err?.status}). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
-            );
-            await delay(waitTime);
-          } else {
-            throw err;
-          }
-        }
-      }
+      this.logger.log(`Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`);
+      const response = await this.createCompletion(
+        { messages, temperature: 0.7 },
+        `NPC ${npcName}`,
+        30_000,
+      );
 
       const responseText = response?.choices?.[0]?.message?.content || '';
       this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
@@ -117,7 +145,7 @@ CRITICAL RULES:
       return { reply };
     } catch (error: any) {
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
-      this.logger.error(`Status: ${error?.status}, Code: ${error?.code}`);
+      this.logger.error(`Type: ${error?.constructor?.name}, Status: ${error?.status}, Code: ${error?.code}`);
 
       let errorMessage = 'Su an sizinle konusmak istemiyorum... (Beklenmeyen Sistem Hatasi)';
       if (error?.status === 429) {
@@ -230,31 +258,11 @@ ${locationCluesTemplate}
       `Calling Gemini API to generate dynamic scenario (difficulty: ${difficulty}, scenario: ${scenarioType})...`,
     );
 
-    let response;
-    let retries = 0;
-    const maxRetries = 3;
-
-    while (retries <= maxRetries) {
-      try {
-        response = await this.openai.chat.completions.create({
-          model: 'gemini-flash-latest',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.9,
-        });
-        break;
-      } catch (err: any) {
-        if ((err?.status === 429 || err?.status >= 500) && retries < maxRetries) {
-          retries++;
-          const waitTime = Math.pow(2, retries) * 1500;
-          this.logger.warn(
-            `Scenario Generation Rate Limit or Server Error hit (${err?.status}). Retrying ${retries}/${maxRetries} in ${waitTime}ms...`,
-          );
-          await delay(waitTime);
-        } else {
-          throw err;
-        }
-      }
-    }
+    const response = await this.createCompletion(
+      { messages: [{ role: 'user', content: prompt }], temperature: 0.9 },
+      'Scenario',
+      90_000,
+    );
 
     const responseText = response?.choices?.[0]?.message?.content || '';
 
@@ -326,11 +334,11 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
 }`;
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gemini-flash-latest',
-        messages: [{ role: 'user', content: reviewPrompt }],
-        temperature: 0.2,
-      });
+      const response = await this.createCompletion(
+        { messages: [{ role: 'user', content: reviewPrompt }], temperature: 0.2 },
+        'Scenario review',
+        90_000,
+      );
 
       const responseText = response?.choices?.[0]?.message?.content || '';
       const firstBrace = responseText.indexOf('{');
