@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Request, Get, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt.guard';
 
@@ -55,5 +55,22 @@ export class AuthController {
   async me(@Request() req: any) {
     const userId: string = req.user.userId;
     return this.authService.getAccountSummary(userId);
+  }
+
+  // Ana menü müziği ayarları hesapta saklanır
+  @Get('audio-settings')
+  @UseGuards(JwtAuthGuard)
+  async getAudioSettings(@Request() req: any) {
+    return this.authService.getAudioSettings(req.user.userId);
+  }
+
+  @Patch('audio-settings')
+  @UseGuards(JwtAuthGuard)
+  async updateAudioSettings(
+    @Request() req: any,
+    @Body('musicVolume') musicVolume?: unknown,
+    @Body('musicMuted') musicMuted?: unknown,
+  ) {
+    return this.authService.updateAudioSettings(req.user.userId, { musicVolume, musicMuted });
   }
 }
