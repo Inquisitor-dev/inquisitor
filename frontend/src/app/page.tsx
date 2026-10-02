@@ -1,657 +1,304 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
-import { useGameStore } from '../store/useGameStore';
 import styles from './page.module.scss';
 
-export default function HomePage() {
+export default function LandingPage() {
   const router = useRouter();
-  const {
-    setSessionId,
-    setScenario,
-    setCurrentDay,
-    setTimeOfDay,
-    setNotes,
-    setWarrants,
-    setDifficulty,
-    setScenarioType,
-    setTruthReveal,
-    setLocationClues,
-    authToken,
-    userEmail,
-    isAdmin,
-    logout,
-    hasHydrated,
-    isPremium,
-  } = useGameStore();
-
-  const [loading, setLoading] = useState(false);
-  const [resumeLoading, setResumeLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
-  const [isDifficultyOpen, setIsDifficultyOpen] = useState(false);
-  const [isScenarioOpen, setIsScenarioOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeSession, setActiveSession] = useState<any>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.4);
-  const [accountSummary, setAccountSummary] = useState<null | {
-    email: string;
-    isAdmin: boolean;
-    isPremium: boolean;
-    dailySessionCount: number;
-    dailyMessageCount: number;
-    maxSessionsPerDay: number;
-    maxMessagesPerDay: number;
-  }>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio('/sounds/Main_Soundtrack.mp3');
-      audioRef.current.loop = true;
-    }
-
-    audioRef.current.volume = volume;
-
-    if (isMuted || volume === 0) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch((err) => console.log('Audio play failed:', err));
-    }
-  }, [isMuted, volume]);
-
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+    const handleScroll = () => {
+      if (headerRef.current) {
+        if (window.scrollY > 50) {
+          headerRef.current.style.padding = '10px 0';
+          headerRef.current.style.background = 'rgba(5, 5, 5, 0.95)';
+        } else {
+          headerRef.current.style.padding = '20px 0';
+          headerRef.current.style.background = 'rgba(5, 5, 5, 0.85)';
+        }
       }
     };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (hasHydrated && !authToken) {
-      router.push('/login');
-    }
-  }, [authToken, hasHydrated, router]);
-
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    setTruthReveal(null);
-    setLocationClues(null);
-  }, [hasHydrated, setLocationClues, setTruthReveal]);
-
-  useEffect(() => {
-    const checkActiveSession = async () => {
-      if (!authToken) return;
-
-      try {
-        const res = await fetch(apiUrl('/game-sessions/active'), {
-          headers: { Authorization: `Bearer ${authToken}` },
-          cache: 'no-store',
-        });
-        const data = await res.json();
-        setActiveSession(data.session ?? null);
-      } catch (err) {
-        console.error('Failed to check active session', err);
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-
-    if (hasHydrated && authToken) {
-      void checkActiveSession();
-    } else if (hasHydrated) {
-      setCheckingSession(false);
-    }
-  }, [authToken, hasHydrated]);
-
-  useEffect(() => {
-    const fetchAccountSummary = async () => {
-      if (!isSettingsOpen || !authToken) return;
-
-      try {
-        const res = await fetch(apiUrl('/auth/me'), {
-          headers: { Authorization: `Bearer ${authToken}` },
-          cache: 'no-store',
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setAccountSummary(data);
-        }
-      } catch (err) {
-        console.error('Failed to load account summary', err);
-      }
-    };
-
-    void fetchAccountSummary();
-  }, [authToken, isSettingsOpen]);
-
-  const handleResume = async () => {
-    if (!activeSession) return;
-
-    setResumeLoading(true);
-
-    try {
-      setSessionId(activeSession.id);
-      if (activeSession.scenarioType) setScenarioType(activeSession.scenarioType);
-      if (activeSession.scenario) setScenario(activeSession.scenario);
-      if (activeSession.currentDay) setCurrentDay(activeSession.currentDay);
-      if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
-      if (activeSession.notes) setNotes(activeSession.notes);
-      if (activeSession.difficulty) setDifficulty(activeSession.difficulty);
-      setTruthReveal(null);
-      setLocationClues(null);
-      setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
-      router.push('/map');
-    } catch (err) {
-      console.error('Failed to resume session', err);
-      setResumeLoading(false);
-    }
-  };
-
-  const startWithDifficultyAndScenario = async (difficulty: string, scenarioType: string) => {
-    if (!authToken) return;
-
-    setLoading(true);
-    setError(null);
-    setIsScenarioOpen(false);
-
-    try {
-      const res = await fetch(apiUrl('/game-sessions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ difficulty, scenarioType }),
-      });
-      const data = await res.json();
-
-      if (res.status === 401) {
-        logout();
-        router.push('/login');
-        return;
-      }
-
-      if (res.status === 403) {
-        setError(data.message || 'Gunluk sorusturma limitine ulastiniz.');
-        setLoading(false);
-        return;
-      }
-
-      if (data.id) {
-        setSessionId(data.id);
-        setDifficulty(difficulty);
-        setScenarioType(scenarioType);
-        if (data.scenario) {
-          setScenario(data.scenario);
-        }
-        setTruthReveal(null);
-        setLocationClues(null);
-        router.push('/map');
-        setLoading(false);
-      } else {
-        setError(
-          data.message ||
-            'Yapay zeka su an mesgul veya bir hata olustu. Lutfen biraz bekleyip tekrar deneyin.',
-        );
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('Failed to start session', err);
-      setError('Sunucuya baglanilamadi. Backend servisinin calistigindan emin olun.');
-      setLoading(false);
-    }
-  };
-
-  const handleDifficultySelect = (diff: string) => {
-    setSelectedDifficulty(diff);
-    setIsDifficultyOpen(false);
-    setIsScenarioOpen(true);
-  };
-
-  const handleStart = () => {
-    if (isPremium) {
-      setIsDifficultyOpen(true);
-    } else {
-      void startWithDifficultyAndScenario('easy', 'medieval');
-    }
-  };
-
-  const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
-  const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
-  const effectiveEmail = accountSummary?.email ?? userEmail ?? '-';
-  const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
-  const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
-
   return (
-    <main className={styles.main}>
-      <div className={styles.settingsDock}>
-        <button
-          className={styles.settingsBtn}
-          onClick={() => setIsSettingsOpen(true)}
-          title="Ayarlar"
-          aria-label="Ayarlar"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 8.75A3.25 3.25 0 1 0 12 15.25A3.25 3.25 0 1 0 12 8.75Z" stroke="currentColor" strokeWidth="1.7" />
-            <path d="M19.4 15A1 1 0 0 0 19.6 16.1L19.65 16.15A1 1 0 0 1 19.65 17.56L17.56 19.65A1 1 0 0 1 16.15 19.65L16.1 19.6A1 1 0 0 0 15 19.4A1 1 0 0 0 14.4 20.32V20.5A1 1 0 0 1 13.4 21.5H10.6A1 1 0 0 1 9.6 20.5V20.32A1 1 0 0 0 9 19.4A1 1 0 0 0 7.9 19.6L7.85 19.65A1 1 0 0 1 6.44 19.65L4.35 17.56A1 1 0 0 1 4.35 16.15L4.4 16.1A1 1 0 0 0 4.6 15A1 1 0 0 0 3.68 14.4H3.5A1 1 0 0 1 2.5 13.4V10.6A1 1 0 0 1 3.5 9.6H3.68A1 1 0 0 0 4.6 9A1 1 0 0 0 4.4 7.9L4.35 7.85A1 1 0 0 1 4.35 6.44L6.44 4.35A1 1 0 0 1 7.85 4.35L7.9 4.4A1 1 0 0 0 9 4.6A1 1 0 0 0 9.6 3.68V3.5A1 1 0 0 1 10.6 2.5H13.4A1 1 0 0 1 14.4 3.5V3.68A1 1 0 0 0 15 4.6A1 1 0 0 0 16.1 4.4L16.15 4.35A1 1 0 0 1 17.56 4.35L19.65 6.44A1 1 0 0 1 19.65 7.85L19.6 7.9A1 1 0 0 0 19.4 9A1 1 0 0 0 20.32 9.6H20.5A1 1 0 0 1 21.5 10.6V13.4A1 1 0 0 1 20.5 14.4H20.32A1 1 0 0 0 19.4 15Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-
-      <div className={styles.vignette} />
-
-      <div className={styles.particles}>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <span key={i} className={styles.particle} style={{ '--i': i } as React.CSSProperties} />
-        ))}
-      </div>
-
-      <div className={styles.cornerTopLeft} />
-      <div className={styles.cornerTopRight} />
-      <div className={styles.cornerBotLeft} />
-      <div className={styles.cornerBotRight} />
-
-      <div className={styles.hero}>
-        <div className={styles.seal}>
-          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
-            <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
-            <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5" />
-            <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5" />
-            <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5" />
-            <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)" />
-            <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)" />
-            <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)" />
-            <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)" />
-            <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)" />
-          </svg>
+    <div className={styles.landingContainer}>
+      <header ref={headerRef}>
+        <div className={styles.container}>
+          <nav>
+            <a href="#ana-sayfa" className={styles.logoContainer}>
+              <div className={styles.stampContainer}>
+                <img
+                  src="/logo/favicon.png"
+                  alt="Damga"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/logo/logo.png';
+                  }}
+                />
+              </div>
+              <div className={styles.logoText}>
+                The <span>Inquisitor</span>
+              </div>
+            </a>
+            <div className={styles.navLinks}>
+              <a href="#ozellikler">Özellikler</a>
+              <a href="#nasil-oynanir">Nasıl Oynanır</a>
+              <a href="#paketler">Paketler</a>
+              <button
+                className={styles.btn}
+                style={{ padding: '8px 20px', fontSize: '0.9rem' }}
+                onClick={() => router.push('/menu')}
+              >
+                Hemen Başla
+              </button>
+            </div>
+          </nav>
         </div>
+      </header>
 
-        <div className={styles.eyebrow}>- ANNO DOMINI MCCXII -</div>
-        <h1 className={styles.title}>The Inquisitor</h1>
-
-        <div className={styles.divider}>
-          <span className={styles.dividerLine} />
-          <span className={styles.dividerIcon}>*</span>
-          <span className={styles.dividerLine} />
+      <section className={styles.hero} id="ana-sayfa">
+        <div className={styles.heroContent}>
+          <h1>The Inquısıtor</h1>
+          <h2>Dinle. Analiz et. Hüküm ver.</h2>
+          <p>
+            Sen bu hikayenin kahramanı değilsin. Sen engizitörsün. Sıradan bir
+            oyun oynamıyorsun, kararlarınla sanal bir cemaatin kaderini belirleyen
+            mutlak bir yargıçsın.
+          </p>
+          <button className={styles.btn} onClick={() => router.push('/menu')}>
+            Sorguyu Başlat
+          </button>
         </div>
+      </section>
 
-        <p className={styles.lead}>Bu koyde kimse gorundugu gibi degil.</p>
+      <section className={styles.features} id="ozellikler">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <h2>Sıradan Bir Oyun Değil.</h2>
+            <p>
+              NPC'ler önceden yazılmış satırları okumaz. Düşünürler. Hatırlarlar.
+              Ve en önemlisi... Yalan söylerler.
+            </p>
+          </div>
 
-        <p className={styles.description}>
-          Bu hikayenin kahramani sen degilsin. Yetki, sabir ve soguk kanlilikla
-          donanmis bir sekilde yapay zeka tarafindan yonetilen koyluleri sorgula,
-          yalanlarini ortaya cikar, gizli ittifaklari coz ve nihai hukmunu ver.
-        </p>
+          <div className={styles.featureGrid}>
+            <div className={styles.featureCard}>
+              <div
+                className={styles.featureBg}
+                style={{ backgroundImage: "url('/stories/story4.png')" }}
+              ></div>
+              <div className={styles.featureOverlay}></div>
+              <div className={styles.featureContent}>
+                <h3>Dinamik AI Ajanları</h3>
+                <p>
+                  Karakterler kendi bağımsız hafızalarına, yalan söyleme eğilimlerine
+                  ve gizli korku seviyelerine sahiptir. Her birinin kendi ajandası var.
+                </p>
+              </div>
+            </div>
 
-        <div className={styles.slogan}>Dinle · Analiz Et · Hukum Ver</div>
+            <div className={styles.featureCard}>
+              <div
+                className={styles.featureBg}
+                style={{ backgroundImage: "url('/stories/story5.png')" }}
+              ></div>
+              <div className={styles.featureOverlay}></div>
+              <div className={styles.featureContent}>
+                <h3>Çapraz Sorgu Mekaniği</h3>
+                <p>
+                  İstediğini sor. Hikayeleri karşılaştır. Çelişkileri açığa çıkar
+                  ve manipülatif şüphelileri köşeye sıkıştır.
+                </p>
+              </div>
+            </div>
 
-        <div className={styles.cta}>
-          {activeSession && !checkingSession && (
-            <button
-              onClick={handleResume}
-              disabled={resumeLoading}
-              className={styles.btnPrimary}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                marginBottom: '12px',
-                background: 'rgba(232, 220, 196, 0.08)',
-                border: '1px solid rgba(232, 220, 196, 0.3)',
-                color: '#E8DCC4',
-              }}
-            >
-              {resumeLoading ? (
-                <span>Sorusturmaya donuluyor...</span>
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>Sorusturmaya Devam Et (Gun {activeSession.currentDay})</span>
-                </>
-              )}
-            </button>
-          )}
+            <div className={styles.featureCard}>
+              <div
+                className={styles.featureBg}
+                style={{ backgroundImage: "url('/stories/story6.png')" }}
+              ></div>
+              <div className={styles.featureOverlay}></div>
+              <div className={styles.featureContent}>
+                <h3>Psikolojik Gerilim</h3>
+                <p>
+                  Yanlış kişiyi suçlarsan... veya fazla merhametli davranırsan,
+                  bütün köy sana karşı ayaklanabilir. Tansiyon hep yüksek.
+                </p>
+              </div>
+            </div>
 
-          <button
-            onClick={handleStart}
-            disabled={loading}
-            className={styles.btnPrimary}
-            style={{ width: '100%', justifyContent: 'center' }}
+            <div className={styles.featureCard}>
+              <div
+                className={styles.featureBg}
+                style={{ backgroundImage: "url('/stories/story8.png')" }}
+              ></div>
+              <div className={styles.featureOverlay}></div>
+              <div className={styles.featureContent}>
+                <h3>Asla Aynı Hikaye Değil</h3>
+                <p>
+                  Her oturum, arka plandaki yapay zeka tarafından yeni yalanlar ve
+                  yeni gerçeklerle tekrar örülür. Sonsuz tekrar oynanabilirlik.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.mechanics} id="nasil-oynanir">
+        <div className={styles.container}>
+          <div className={styles.mechanicsContent}>
+            <div className={styles.mechText}>
+              <h2>Köyde Kimse Göründüğü Gibi Değil.</h2>
+              <p>
+                Etkileşimli köy haritası üzerinden farklı mekanları ziyaret et.
+                Taverna, Kilise, Mezarlık... Her mekan başka bir sır saklıyor.
+              </p>
+              <p>
+                Karşılaştığın karakterlerle doğal dilde konuş. İfadelerindeki
+                açıkları yakala ve gerçek cadıları bulmak için zekanı kullan.
+              </p>
+              <p>
+                Sadece oynamakla kalma, oyun sonunda ajanların davranış
+                algoritmalarını (korku, sadakat) detaylı raporlarla analiz et.
+              </p>
+            </div>
+            <div className={styles.mechImages}>
+              <div
+                className={styles.mechImg}
+                style={{ backgroundImage: "url('/stories/story7.png')" }}
+              ></div>
+              <div
+                className={styles.mechImg}
+                style={{ backgroundImage: "url('/stories/story3.png')" }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.pricing} id="paketler">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <h2>Cemaatin Kaderi</h2>
+            <p>
+              Deneyimini seç ve sorguya başla. İndirme gerektirmez, doğrudan
+              tarayıcında oynayabilirsin.
+            </p>
+          </div>
+
+          <div className={styles.pricingCards}>
+            <div className={styles.priceCard}>
+              <h3>Aday Engizitör</h3>
+              <div className={styles.price}>Ücretsiz</div>
+              <ul className={styles.featuresList}>
+                <li>Temel Köy Haritası (Kilise, Taverna vb.)</li>
+                <li>5 Aktif Yapay Zeka Ajanı (NPC)</li>
+                <li>Günde 1 Oyun Oturumu</li>
+                <li>Maksimum 40 Diyalog Limiti</li>
+                <li>Temel İstatistikler ve Oyun Raporu</li>
+              </ul>
+              <button
+                className={styles.btn}
+                style={{ width: '100%', borderColor: 'rgba(232, 220, 196, 0.3)', background: 'transparent' }}
+                onClick={() => router.push('/menu')}
+              >
+                Köyü Ziyaret Et
+              </button>
+            </div>
+
+            <div className={`${styles.priceCard} ${styles.premium}`}>
+              <h3>Baş Engizitör</h3>
+              <div className={styles.price}>
+                $4.99 <span>/ ay</span>
+              </div>
+              <ul className={styles.featuresList}>
+                <li>Sınırsız Etkileşim ve Token Limiti Yok</li>
+                <li>Genişletilmiş Köy Halkı (15+ AI Karakter)</li>
+                <li>AI Davranışları İçin Derin Analitik Raporu</li>
+                <li>Farklı Fantastik Senaryolar</li>
+                <li>Sunuculara Öncelikli ve Hızlı Erişim</li>
+              </ul>
+              <button
+                className={styles.btn}
+                style={{ width: '100%' }}
+                onClick={() => router.push('/premium')}
+              >
+                Gerçek Deneyime Başla
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div className={styles.container}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '15px',
+              marginBottom: '20px',
+            }}
           >
-            {loading ? (
-              <span>Ashenmoor'a giden araba hazirlaniyor...</span>
-            ) : (
-              <>
-                <span>{activeSession ? 'Yeni Sorusturma Baslat' : 'Sorusturmaya Basla'}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={() => setIsHowToPlayOpen(true)}
-            className={styles.btnSecondary}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
-          >
-            <span>Nasil Oynanir?</span>
-          </button>
-
-          {!isPremium && (
-            <button
-              onClick={() => router.push('/premium')}
-              className={styles.btnSecondary}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                marginTop: '12px',
-                borderColor: 'rgba(218, 165, 32, 0.4)',
-                color: '#DAA520',
-              }}
-            >
-              <span>Premium'a Yukselt</span>
-            </button>
-          )}
-
-          {error && (
             <div
               style={{
-                marginTop: '12px',
-                padding: '12px 16px',
-                background: 'rgba(138,3,3,0.15)',
-                border: '1px solid rgba(138,3,3,0.4)',
-                color: '#e07070',
-                fontSize: '0.85rem',
-                lineHeight: 1.5,
-                textAlign: 'center',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {error}
-            </div>
-          )}
-
-          <div className={styles.sessionNote}>
-            {isPremium
-              ? 'Premium Surum · Gunluk 100 diyalog · 5 sorusturma hakki'
-              : 'Ucretsiz Surum · Gunluk 30 diyalog hakki'}
-          </div>
-        </div>
-
-        <div className={styles.bottomRule}>
-          <span />
-          <span className={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</span>
-          <span />
-        </div>
-      </div>
-
-      {isHowToPlayOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsHowToPlayOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsHowToPlayOpen(false)}>
-              &times;
-            </button>
-            <h2 className={styles.modalTitle}>Sorusturma Kilavuzu</h2>
-
-            <div className={styles.modalScroll}>
-              <section className={styles.guideSection}>
-                <h3>Temel Amac</h3>
-                <p>
-                  Ashenmoor koyunde islenen gizemli bir cinayeti cozmekle gorevli bir
-                  Engizisyon mufettisisin. 4 gunun var. Bu sure zarfinda dogru kisiyi
-                  olume mahkum etmeli ve gercegi ortaya cikarmalisin.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Zaman Yonetimi</h3>
-                <p>
-                  Bir mekana her girdiginde vakit ilerler. Gece oldugunda herkes evine
-                  cekilir ve gun biter.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Arama Izinleri</h3>
-                <p>
-                  Koyluleri sadece sorgulayarak degil, mekanlarini arayarak da kanit
-                  bulabilirsin. Ama bir mekani aramak icin Peder Malachar'dan arama izni
-                  almalisin.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Not Tutma</h3>
-                <p>
-                  Koylulerin soyledikleri celiskili olabilir. Onemli ipuclarini not
-                  defterine kaydet.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Nihai Hukum</h3>
-                <p>
-                  Istedigin an haritadaki Mahkumu Sec butonuna basarak birini suclayabilirsin.
-                  Yanlis kisiyi asarsan gercek katil aramizda dolasmaya devam eder.
-                </p>
-              </section>
-
-              <div className={styles.guideTip}>
-                <strong>Ipuucu:</strong> Her yalan soyleyen koylu katil olmayabilir.
-              </div>
-            </div>
-
-            <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
-              Anladim.
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isSettingsOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsSettingsOpen(false)}>
-          <div className={`${styles.modalContent} ${styles.settingsModal}`} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsSettingsOpen(false)}>
-              &times;
-            </button>
-            <h2 className={styles.modalTitle}>Ayarlar</h2>
-
-            <div className={styles.settingsBody}>
-              <div className={styles.settingsSection}>
-                <div className={styles.settingsLabel}>Hesap Detaylari</div>
-                <div className={styles.accountCard}>
-                  <div className={styles.accountRow}>
-                    <span>E-posta</span>
-                    <strong>{effectiveEmail}</strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Plan</span>
-                    <strong>
-                      {effectiveIsAdmin
-                        ? 'Admin'
-                        : effectiveIsPremium
-                          ? 'Premium'
-                          : 'Ucretsiz'}
-                    </strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Kalan Oturum</span>
-                    <strong>
-                      {accountSummary
-                        ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
-                        : effectiveIsAdmin
-                          ? 'Sinirsiz / Sinirsiz'
-                          : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
-                    </strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Kalan Diyalog</span>
-                    <strong>
-                      {accountSummary
-                        ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
-                        : effectiveIsAdmin
-                          ? 'Sinirsiz / Sinirsiz'
-                          : `${fallbackMaxMessages} / ${fallbackMaxMessages}`}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.settingsSection}>
-                <div className={styles.settingsLabel}>Ana Menu Muzigi</div>
-                <div className={styles.soundControls}>
-                  <div className={styles.volumeWrapper}>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={volume}
-                      onChange={(e) => setVolume(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                    />
-                  </div>
-                  <button
-                    className={styles.muteBtn}
-                    onClick={() => setIsMuted(!isMuted)}
-                    title={isMuted ? 'Sesi Ac' : 'Sesi Kapat'}
-                  >
-                    {isMuted || volume === 0 ? 'MUTE' : 'SOUND'}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  logout();
-                  router.push('/login');
+              <img
+                src="/logo/favicon.png"
+                alt="The Inquisitor Logo"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/logo/logo.png';
                 }}
-                className={styles.settingsLogoutBtn}
-              >
-                Hesaptan Cikis Yap
-              </button>
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'left center',
+                  marginBottom: '0',
+                }}
+              />
             </div>
+            <span
+              style={{
+                fontFamily: "var(--font-headings)",
+                fontSize: '2rem',
+                color: 'var(--color-primary)',
+                fontWeight: 700,
+              }}
+            >
+              The <span style={{ color: 'var(--color-text)' }}>Inquisitor</span>
+            </span>
+          </div>
+          <p>LISTEN. ANALYZE. CONDEMN.</p>
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: '0.85rem',
+              opacity: 0.5,
+              marginTop: '5px',
+            }}
+          >
+            Her sorgu bir iz bırakır.
+          </p>
+          <div className={styles.copyright}>
+            &copy; 2026 Inquisitor AI. Tüm Hakları Saklıdır. Kurucu: Berke Çakıroğlu
           </div>
         </div>
-      )}
-
-      {isDifficultyOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsDifficultyOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsDifficultyOpen(false)}>
-              &times;
-            </button>
-            <h2 className={styles.modalTitle}>Zorluk Seviyesi Sec</h2>
-
-            <div className={styles.selectionList}>
-              <button
-                onClick={() => handleDifficultySelect('easy')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyEasy}`}
-              >
-                <div>
-                  <span>Kolay</span>
-                  <span>4 Supheli</span>
-                </div>
-                <p>Hanci, Peder, Mezarcı ve Degirmenci. Standart sorusturma deneyimi.</p>
-              </button>
-
-              <button
-                onClick={() => handleDifficultySelect('medium')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyMedium}`}
-              >
-                <div>
-                  <span>Orta</span>
-                  <span>5 Supheli</span>
-                </div>
-                <p>+ Ciftci Edmund. Artan supheli sayisiyla daha karmasik iliskiler.</p>
-              </button>
-
-              <button
-                onClick={() => handleDifficultySelect('hard')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyHard}`}
-              >
-                <div>
-                  <span>Zor</span>
-                  <span>6 Supheli</span>
-                </div>
-                <p>+ Ciftci ve Doktor. Kalabaliklasan supheli listesiyle en karmasik hikaye.</p>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isScenarioOpen && selectedDifficulty && (
-        <div className={styles.modalOverlay} onClick={() => setIsScenarioOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>
-              &times;
-            </button>
-            <h2 className={styles.modalTitle}>Senaryo Evreni Sec</h2>
-
-            <div className={styles.selectionList}>
-              <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'medieval')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.scenarioMedieval}`}
-              >
-                <div>
-                  <span>Klasik Ortacag</span>
-                </div>
-                <p>
-                  Ashenmoor Koyu. Engizisyon, bati inanc ve karanlik sirlar. Standart karanlik
-                  fantezi deneyimi.
-                </p>
-              </button>
-
-              <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'modern')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.scenarioModern}`}
-              >
-                <div>
-                  <span>90'lar Amerikan Kasabasi</span>
-                </div>
-                <p>
-                  Oakhaven. Yerel polis, cinayet dedektifleri ve supheli kasabalilar.
-                </p>
-              </button>
-
-              <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'cyberpunk')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.scenarioCyberpunk}`}
-              >
-                <div>
-                  <span>Distopik Cyberpunk</span>
-                </div>
-                <p>
-                  Neon Prime. Yozlasmis mega sirketler, siber gelistirmeler ve tech-noir bilimkurgu.
-                </p>
-              </button>
-            </div>
-
-            {loading && (
-              <p style={{ textAlign: 'center', color: '#888', marginTop: '16px', fontSize: '0.85rem' }}>
-                Senaryo olusturuluyor, lutfen bekleyin...
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </main>
+      </footer>
+    </div>
   );
 }
