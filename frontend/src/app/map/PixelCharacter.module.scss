@@ -1,0 +1,102 @@
+/* PixelCharacter.module.scss */
+
+.player {
+  position: absolute;
+  z-index: 15;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Günün saatine göre karakterin rengi ve gölgelerin koyuluğu */
+.day {
+  --sprite-light: brightness(0.94) saturate(0.82) contrast(0.96);
+  --cast-opacity: 0.5;
+  --contact-opacity: 0.8;
+}
+
+.dusk {
+  --sprite-light: brightness(0.82) saturate(0.78) sepia(0.28) hue-rotate(-12deg) contrast(0.95);
+  --cast-opacity: 0.42;
+  --contact-opacity: 0.8;
+}
+
+.night {
+  --sprite-light: brightness(0.66) saturate(0.35) contrast(0.95);
+  --cast-opacity: 0.22;
+  --contact-opacity: 0.85;
+}
+
+/* Pixel-art: keskin büyütme, boyalı arka plana yaklaşması için çok hafif yumuşatma ve yumuşak kontur */
+.pixelated {
+  --sprite-extra: blur(0.3px) drop-shadow(0 0 1px rgba(0, 0, 0, 0.35));
+
+  .sprite,
+  .castShadow {
+    image-rendering: pixelated;
+  }
+}
+
+/* Boyalı sprite zaten haritanın paletinde; renkleri daha az değiştirilir.
+   Gece siyah palto koyu zemine karışmasın diye çok hafif soğuk bir kenar ışığı alır. */
+.painted {
+  --sprite-extra: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+
+  &.day {
+    --sprite-light: brightness(1.05) contrast(1.05);
+  }
+
+  &.dusk {
+    --sprite-light: brightness(0.95) saturate(0.9) sepia(0.15);
+  }
+
+  &.night {
+    --sprite-light: brightness(0.85) saturate(0.6);
+    --sprite-extra: drop-shadow(0 0 1px rgba(170, 185, 210, 0.35));
+  }
+}
+
+.sprite,
+.castShadow {
+  position: absolute;
+  left: 0;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+.sprite {
+  transform: translateX(-50%);
+  filter: var(--sprite-light) var(--sprite-extra);
+}
+
+/* Siluet yere yatırılır: önce dikeyde ezilip ayakların altına çevrilir, sonra sağa eğilir */
+.castShadow {
+  transform-origin: 50% calc(100% - var(--foot-offset));
+  transform: translateX(-50%) skewX(42deg) scaleY(-0.32);
+  filter: brightness(0) blur(1.2px);
+  opacity: var(--cast-opacity);
+}
+
+/* Ayakların hemen altında küçük, yumuşak temas gölgesi */
+.contactShadow {
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 45%, transparent 72%);
+  opacity: var(--contact-opacity);
+}
+
+/* Yürüme şeridinin karelerini sırayla oynatır.
+   `prefers-reduced-motion` durumunda bile kapatılmaz: karakter haritada yine ilerlediği için
+   kareler durursa hareket azalmaz, sadece karakter yerde kayıyormuş gibi görünür. */
+.animated {
+  animation: playFrames var(--cycle) steps(var(--frames)) infinite;
+}
+
+@keyframes playFrames {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(-1 * var(--sheet-width)); }
+}

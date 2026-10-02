@@ -193,7 +193,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             try {
               const greetRes = await fetch(apiUrl('/npcs/interact'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${authToken}`,
+                },
                 body: JSON.stringify({
                   sessionId,
                   npcId: currentNpcKey,
