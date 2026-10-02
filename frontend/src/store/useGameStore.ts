@@ -27,6 +27,7 @@ interface GameState {
   };
   truthReveal: string | null;
   locationClues: Record<string, string> | null;
+  lastLocationId: string | null;
   hasHydrated: boolean;
 
   setUser: (email: string, userId: string, token: string, isAdmin: boolean, isPremium: boolean) => void;
@@ -52,6 +53,7 @@ interface GameState {
   consumeWarrant: (location: string) => void;
   setTruthReveal: (truth: string | null) => void;
   setLocationClues: (clues: Record<string, string> | null) => void;
+  setLastLocationId: (id: string | null) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -79,6 +81,7 @@ export const useGameStore = create<GameState>()(
       inventory: { activeWarrants: [], usedWarrants: [] },
       truthReveal: null,
       locationClues: null,
+      lastLocationId: null,
       hasHydrated: false,
 
       setUser: (email, userId, token, isAdmin, isPremium) => set({ 
@@ -111,9 +114,13 @@ export const useGameStore = create<GameState>()(
         inventory: { activeWarrants: [], usedWarrants: [] },
         truthReveal: null,
         locationClues: null,
+        lastLocationId: null,
       }),
 
-      setSessionId: (id) => set({ sessionId: id }),
+      // Yeni oturumda karakter tekrar başlangıç noktasından yola çıkar
+      setSessionId: (id) => set((state) =>
+        state.sessionId === id ? { sessionId: id } : { sessionId: id, lastLocationId: null }
+      ),
       setDifficulty: (d) => set({ difficulty: d }),
       setScenarioType: (s) => set({ scenarioType: s }),
       setSelectedNpc: (npcId) => set({ selectedNpcId: npcId }),
@@ -187,6 +194,7 @@ export const useGameStore = create<GameState>()(
         inventory: { activeWarrants: [], usedWarrants: [] },
         truthReveal: null,
         locationClues: null,
+        lastLocationId: null,
       }),
 
       setWarrants: (active, used) => set({
@@ -210,6 +218,8 @@ export const useGameStore = create<GameState>()(
       setTruthReveal: (truth) => set({ truthReveal: truth }),
 
       setLocationClues: (clues) => set({ locationClues: clues }),
+
+      setLastLocationId: (id) => set({ lastLocationId: id }),
     }),
     {
       name: 'inquisitor-storage',
