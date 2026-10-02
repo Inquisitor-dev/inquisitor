@@ -1,0 +1,15 @@
+@use '../../styles/variables' as *;
+
+.card {
+  background-color: $bg-card;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: $sp-lg;
+  color: $text-parchment;
+  box-shadow: $shadow-card;
+  
+  &--glow {
+    border-color: $border-red;
+    box-shadow: $shadow-red;
+  }
+}
