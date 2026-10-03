@@ -6,9 +6,9 @@
   position: relative;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
   background:
     radial-gradient(ellipse 80% 60% at 50% 10%, rgba(138, 3, 3, 0.12) 0%, transparent 70%),
     radial-gradient(ellipse 60% 40% at 50% 90%, rgba(138, 3, 3, 0.06) 0%, transparent 70%),
@@ -798,12 +798,14 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 .leftCol {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  gap: 20px;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .rightCol {
-  flex: 1;
+  flex: 2;
   display: flex;
   align-items: stretch;
 }
@@ -953,5 +955,118 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
 .navIcon {
   font-size: 1.5rem;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  background: rgba(5, 5, 5, 0.85);
+  border-bottom: 1px solid rgba(138, 3, 3, 0.3);
+  z-index: 100;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.navTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #E8DCC4;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.currency {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(218, 165, 32, 0.1);
+  border: 1px solid rgba(218, 165, 32, 0.4);
+  border-radius: 20px;
+  color: #DAA520;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.currencyIcon {
+  font-size: 1.1rem;
+}
+
+/* LEADERBOARD */
+.leaderboardPanel {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(138, 3, 3, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderboardTitle {
+  font-family: 'Playfair Display', serif;
+  color: #E8DCC4;
+  font-size: 1.1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(138, 3, 3, 0.3);
+  padding-bottom: 8px;
+}
+
+.leaderboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboardItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(20, 5, 5, 0.4);
+  border-radius: 6px;
+  border: 1px solid rgba(138, 3, 3, 0.1);
+}
+
+.lbRank {
+  color: #DAA520;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.lbName {
+  color: #8a7f72;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  flex: 1;
+  margin-left: 12px;
+}
+
+.lbScore {
+  color: #E8DCC4;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
