@@ -398,6 +398,8 @@ export default function HomePage() {
       <div className={styles.cornerBotLeft} />
       <div className={styles.cornerBotRight} />
 
+      <div style={{ height: '140px', width: '100%', flexShrink: 0 }} />
+
       <div className={styles.layoutContainer}>
         {/* SOL KOLON: KARAKTER & LEADERBOARD */}
         <div className={styles.leftCol}>
