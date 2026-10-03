@@ -20,14 +20,14 @@
   top: 70px;
   left: 0;
   right: 0;
-  height: 55vh;
+  height: 85vh;
   background-size: cover;
-  background-position: center 30%;
+  background-position: center 35%;
   z-index: 0;
-  opacity: 0.35;
+  opacity: 0.65;
   pointer-events: none;
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0) 100%);
 }
 
 .settingsDock {
@@ -829,11 +829,14 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   margin: 0 auto;
   gap: 40px;
   padding: 40px;
+  /* Navbar ile paneller arasında harita görselinin net görüneceği geniş boşluk */
+  padding-top: 35vh;
   
   @media (max-width: 900px) {
     flex-direction: column;
     height: auto;
     padding: 20px;
+    padding-top: 25vh;
   }
 }
 

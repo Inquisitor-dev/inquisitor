@@ -398,7 +398,7 @@ export default function HomePage() {
       <div className={styles.cornerBotLeft} />
       <div className={styles.cornerBotRight} />
 
-      <div className={styles.layoutContainer} style={{ paddingTop: '160px' }}>
+      <div className={styles.layoutContainer}>
         {/* SOL KOLON: KARAKTER & LEADERBOARD */}
         <div className={styles.leftCol}>
           <div className={styles.characterPanel}>
