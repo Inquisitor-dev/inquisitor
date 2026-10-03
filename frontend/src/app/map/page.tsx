@@ -402,7 +402,7 @@ export default function MapPage() {
 
   useEffect(() => {
     if (hasHydrated && !authToken) {
-      router.push('/login');
+      router.push('/');
       return;
     }
 

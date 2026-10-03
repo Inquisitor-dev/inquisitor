@@ -68,7 +68,7 @@ function ResultContent() {
       <button
         onClick={() => {
           reset();
-          window.location.href = '/';
+          window.location.href = '/menu';
         }}
         style={{
           background: 'transparent',

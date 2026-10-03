@@ -27,3 +27,6 @@ mobile/android.bak/
 ngrok.yml
 # Playwright MCP test çıktıları
 .playwright-mcp/
+
+# Antigravity Customizations
+.agents/mcp_config.json

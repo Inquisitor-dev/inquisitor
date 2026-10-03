@@ -1,0 +1,234 @@
+.container {
+  min-height: 100vh;
+  background-color: #0a0807;
+  color: #e5d9c5;
+  font-family: 'Inter', sans-serif;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(138, 3, 3, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 60px;
+  border-bottom: 1px solid rgba(138, 3, 3, 0.3);
+  padding-bottom: 20px;
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #8A0303;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 30px rgba(138, 3, 3, 0.4);
+}
+
+.tokenBalance {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(218, 165, 32, 0.1);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-family: 'Playfair Display', serif;
+  
+  .tokenIcon {
+    font-size: 1.5rem;
+  }
+  
+  .tokenAmount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #DAA520;
+  }
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #8a7f72;
+  text-decoration: none;
+  font-family: 'Playfair Display', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #E8DCC4;
+  }
+}
+
+.section {
+  margin-bottom: 60px;
+}
+
+.sectionTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #E8DCC4;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(138, 3, 3, 0.5), transparent);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(138, 3, 3, 0.2);
+  border-radius: 4px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: #8A0303;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(138, 3, 3, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(138, 3, 3, 0.5);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: #E8DCC4;
+  margin: 0;
+}
+
+.cardBadge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: rgba(138, 3, 3, 0.2);
+  color: #e5d9c5;
+  border: 1px solid rgba(138, 3, 3, 0.5);
+}
+
+.cardDesc {
+  color: #8a7f72;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 20px;
+}
+
+.price {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: #DAA520;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buyBtn {
+  background: #8A0303;
+  color: #E8DCC4;
+  border: none;
+  padding: 10px 24px;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #a00;
+    box-shadow: 0 0 15px rgba(138, 3, 3, 0.4);
+  }
+  
+  &:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.ownedBtn {
+  background: transparent;
+  color: #8a7f72;
+  border: 1px solid #333;
+  padding: 10px 24px;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
+  cursor: default;
+}

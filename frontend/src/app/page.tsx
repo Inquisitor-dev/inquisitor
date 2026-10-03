@@ -8,7 +8,13 @@ import styles from './page.module.scss';
 export default function LandingPage() {
   const router = useRouter();
   const headerRef = useRef<HTMLElement>(null);
-  const { authToken } = useGameStore();
+  const { authToken, hasHydrated } = useGameStore();
+
+  useEffect(() => {
+    if (hasHydrated && authToken) {
+      router.push('/menu');
+    }
+  }, [hasHydrated, authToken, router]);
 
   const handleStart = () => {
     if (authToken) {
@@ -61,7 +67,7 @@ export default function LandingPage() {
               <button
                 className={styles.btn}
                 style={{ padding: '8px 20px', fontSize: '0.9rem' }}
-                onClick={() => router.push('/menu')}
+                onClick={handleStart}
               >
                 Hemen Başla
               </button>
