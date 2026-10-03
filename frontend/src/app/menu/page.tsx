@@ -161,7 +161,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (hasHydrated && !authToken) {
-      router.push('/login');
+      router.push('/');
     }
   }, [authToken, hasHydrated, router]);
 
@@ -264,7 +264,7 @@ export default function HomePage() {
 
       if (res.status === 401) {
         logout();
-        router.push('/login');
+        router.push('/');
         return;
       }
 
@@ -636,7 +636,7 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   logout();
-                  router.push('/login');
+                  router.push('/');
                 }}
                 className={styles.settingsLogoutBtn}
               >

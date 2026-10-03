@@ -150,7 +150,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   useEffect(() => {
     if (hasHydrated && !authToken) {
-      router.push('/login');
+      router.push('/');
     }
   }, [authToken, router, hasHydrated]);
 
