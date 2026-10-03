@@ -463,6 +463,27 @@ export default function HomePage() {
             </button>
           )}
 
+          <button
+            onClick={() => router.push('/community')}
+            className={styles.btnSecondary}
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              marginTop: '12px',
+              borderColor: 'rgba(138, 3, 3, 0.5)',
+              color: '#E8DCC4',
+              background: 'rgba(138, 3, 3, 0.1)',
+            }}
+            title="Topluluk hikaye yazarı ve geri bildirim merkezi"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginRight: '8px' }}>
+              <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+            <span>Topluluk & Vaka Yazarı (Geçici Test Menüsü)</span>
+          </button>
+
           {error && (
             <div
               style={{
