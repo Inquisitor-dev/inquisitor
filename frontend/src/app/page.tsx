@@ -8,7 +8,13 @@ import styles from './page.module.scss';
 export default function LandingPage() {
   const router = useRouter();
   const headerRef = useRef<HTMLElement>(null);
-  const { authToken } = useGameStore();
+  const { authToken, hasHydrated } = useGameStore();
+
+  useEffect(() => {
+    if (hasHydrated && authToken) {
+      router.push('/menu');
+    }
+  }, [hasHydrated, authToken, router]);
 
   const handleStart = () => {
     if (authToken) {
