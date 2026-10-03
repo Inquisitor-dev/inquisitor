@@ -6,7 +6,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Sırayla denenecek modeller. İlki yoğunluk (503/429) ya da zaman aşımı nedeniyle
 // cevap veremezse bir sonrakine geçilir. GEMINI_MODELS ile virgülle ayrılmış liste verilebilir.
-const DEFAULT_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-flash-lite-latest'];
+const DEFAULT_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash-latest'];
 const MODELS = (process.env.GEMINI_MODELS || '')
   .split(',')
   .map((m) => m.trim())
@@ -17,7 +17,7 @@ const ATTEMPTS_PER_MODEL = 2;
 // Hata sınıfları `instanceof` ile tanınır: openai v6'da `err.name` sınıf adı değil, düz "Error" döner.
 // APIConnectionTimeoutError, APIConnectionError'ın alt sınıfıdır.
 const isRetryable = (err: any) =>
-  err?.status === 429 || err?.status >= 500 || err instanceof OpenAI.APIConnectionError;
+  err?.status === 404 || err?.status === 429 || err?.status >= 500 || err instanceof OpenAI.APIConnectionError;
 const isTimeout = (err: any) => err instanceof OpenAI.APIConnectionTimeoutError;
 
 type ScenarioDraft = {
@@ -64,8 +64,8 @@ export class LlmService {
           lastError = err;
           if (!isRetryable(err)) throw err;
           this.logger.warn(`[${label}] ${model} failed (${err?.status ?? err?.constructor?.name}).`);
-          // Zaman aşımında aynı modeli tekrar beklemek bir süre daha kaybettirir; doğrudan sıradakine geç
-          if (isTimeout(err)) break;
+          // Zaman aşımında veya 404'te aynı modeli tekrar beklemek anlamsız; doğrudan sıradakine geç
+          if (isTimeout(err) || err?.status === 404) break;
           if (attempt < ATTEMPTS_PER_MODEL) await delay(1500 * attempt);
         }
       }
