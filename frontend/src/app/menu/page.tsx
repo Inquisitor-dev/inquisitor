@@ -343,154 +343,92 @@ export default function HomePage() {
       <div className={styles.cornerBotLeft} />
       <div className={styles.cornerBotRight} />
 
-      <div className={styles.hero}>
-        <div className={styles.seal}>
-          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
-            <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
-            <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5" />
-            <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5" />
-            <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5" />
-            <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)" />
-            <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)" />
-            <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)" />
-            <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)" />
-            <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)" />
-          </svg>
-        </div>
-
-        <div className={styles.eyebrow}>- ANNO DOMINI MCCXII -</div>
-        <h1 className={styles.title}>The Inquisitor</h1>
-
-        <div className={styles.divider}>
-          <span className={styles.dividerLine} />
-          <span className={styles.dividerIcon}>*</span>
-          <span className={styles.dividerLine} />
-        </div>
-
-        <p className={styles.lead}>Bu koyde kimse gorundugu gibi degil.</p>
-
-        <p className={styles.description}>
-          Bu hikayenin kahramani sen degilsin. Yetki, sabir ve soguk kanlilikla
-          donanmis bir sekilde yapay zeka tarafindan yonetilen koyluleri sorgula,
-          yalanlarini ortaya cikar, gizli ittifaklari coz ve nihai hukmunu ver.
-        </p>
-
-        <div className={styles.slogan}>Dinle · Analiz Et · Hukum Ver</div>
-
-        <div className={styles.cta}>
-          {activeSession && !checkingSession && (
-            <button
-              onClick={handleResume}
-              disabled={resumeLoading}
-              className={styles.btnPrimary}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                marginBottom: '12px',
-                background: 'rgba(232, 220, 196, 0.08)',
-                border: '1px solid rgba(232, 220, 196, 0.3)',
-                color: '#E8DCC4',
-              }}
-            >
-              {resumeLoading ? (
-                <span>Sorusturmaya donuluyor...</span>
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>Sorusturmaya Devam Et (Gun {activeSession.currentDay})</span>
-                </>
-              )}
-            </button>
-          )}
-
-          <button
-            onClick={handleStart}
-            disabled={loading}
-            className={styles.btnPrimary}
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            {loading ? (
-              <span>Ashenmoor'a giden araba hazirlaniyor...</span>
-            ) : (
-              <>
-                <span>{activeSession ? 'Yeni Sorusturma Baslat' : 'Sorusturmaya Basla'}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </>
-            )}
-          </button>
-
-          {testModeAvailable && (
-            <button
-              onClick={() => {
-                // Test modunda tüm zorluk ve senaryolar açık; hikaye üretilmez, kota harcanmaz
-                setIsTestModeStart(true);
-                setIsDifficultyOpen(true);
-              }}
-              disabled={loading}
-              className={styles.btnSecondary}
-              style={{ width: '100%', justifyContent: 'center', marginTop: '12px', borderStyle: 'dashed' }}
-              title="Yapay zeka kullanmadan oyun akisini dene"
-            >
-              <span>Test Modu (Yapay Zekasiz)</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => setIsHowToPlayOpen(true)}
-            className={styles.btnSecondary}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
-          >
-            <span>Nasil Oynanir?</span>
-          </button>
-
-          {!isPremium && (
-            <button
-              onClick={() => router.push('/premium')}
-              className={styles.btnSecondary}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                marginTop: '12px',
-                borderColor: 'rgba(218, 165, 32, 0.4)',
-                color: '#DAA520',
-              }}
-            >
-              <span>Premium'a Yukselt</span>
-            </button>
-          )}
-
-          {error && (
-            <div
-              style={{
-                marginTop: '12px',
-                padding: '12px 16px',
-                background: 'rgba(138,3,3,0.15)',
-                border: '1px solid rgba(138,3,3,0.4)',
-                color: '#e07070',
-                fontSize: '0.85rem',
-                lineHeight: 1.5,
-                textAlign: 'center',
-              }}
-            >
-              {error}
+      <div className={styles.layoutContainer}>
+        {/* SOL KOLON: KARAKTER */}
+        <div className={styles.leftCol}>
+          <div className={styles.characterPanel}>
+            <div className={styles.characterPlaceholder}>
+              <div className={styles.placeholderBox}>
+                <span>[2D Karakter Görseli Gelecek]</span>
+              </div>
             </div>
-          )}
-
-          <div className={styles.sessionNote}>
-            {isPremium
-              ? 'Premium Surum · Gunluk 100 diyalog · 5 sorusturma hakki'
-              : 'Ucretsiz Surum · Gunluk 30 diyalog hakki'}
+            <div className={styles.characterInfo}>
+              <h2>Çaylak Engizitör</h2>
+              <p>Varsayılan Kıyafetler (Ücretsiz)</p>
+            </div>
           </div>
         </div>
 
-        <div className={styles.bottomRule}>
-          <span />
-          <span className={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</span>
-          <span />
+        {/* SAĞ KOLON: HİKAYE VE MENÜ */}
+        <div className={styles.rightCol}>
+          <div className={styles.storyPanel}>
+            <div className={styles.seal}>
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
+                <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
+                <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5" />
+                <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5" />
+                <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5" />
+                <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)" />
+                <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)" />
+                <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)" />
+                <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)" />
+                <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)" />
+              </svg>
+            </div>
+
+            <div className={styles.eyebrow}>- ANNO DOMINI MCCXII -</div>
+            <h1 className={styles.title}>The Inquisitor</h1>
+            <div className={styles.divider}>
+              <span className={styles.dividerLine} />
+              <span className={styles.dividerIcon}>*</span>
+              <span className={styles.dividerLine} />
+            </div>
+
+            {/* Seçili Hikaye Kartı */}
+            <div className={styles.activeStoryCard}>
+              <h3 className={styles.storyName}>Medieval Era - Ashenmoor</h3>
+              <span className={styles.difficultyBadge}>Kolay Zorluk (Ücretsiz)</span>
+              <p className={styles.storyDesc}>Varsayılan Başlangıç Hikayesi</p>
+              
+              <div className={styles.storyCta}>
+                {activeSession && !checkingSession && (
+                  <button onClick={handleResume} disabled={resumeLoading} className={styles.btnPrimary}>
+                    {resumeLoading ? 'Dönülüyor...' : `Soruşturmaya Devam Et (Gün ${activeSession.currentDay})`}
+                  </button>
+                )}
+                <button onClick={handleStart} disabled={loading} className={styles.btnPrimary}>
+                  {loading ? 'Hazırlanıyor...' : (activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla')}
+                </button>
+                <button className={styles.btnSecondary} onClick={() => alert('Başka hikaye seç menüsü Faz 3\'te eklenecek.')}>
+                  Başka Hikaye Seç
+                </button>
+              </div>
+              
+              {testModeAvailable && (
+                <button onClick={() => { setIsTestModeStart(true); setIsDifficultyOpen(true); }} className={styles.btnSecondary} style={{ width: '100%', marginTop: '12px', borderStyle: 'dashed' }}>
+                  Test Modu (Yapay Zekasız)
+                </button>
+              )}
+            </div>
+
+            {/* Alt Menüler (Market & Community) */}
+            <div className={styles.bottomNavGroup}>
+              <button className={styles.navBtnMarket} onClick={() => router.push('/market')}>
+                <span className={styles.navIcon}>🪙</span>
+                Market (Hikaye & Kozmetik)
+              </button>
+              <button className={styles.navBtnCommunity} onClick={() => router.push('/community')}>
+                <span className={styles.navIcon}>📜</span>
+                Community (Kendi Hikayeni Oluştur)
+              </button>
+            </div>
+
+            <div className={styles.bottomRule}>
+              <span />
+              <span className={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</span>
+              <span />
+            </div>
+          </div>
         </div>
       </div>
 
