@@ -250,7 +250,6 @@ export default function HomePage() {
 
     setLoading(true);
     setError(null);
-    setIsScenarioOpen(false);
 
     try {
       const res = await fetch(apiUrl('/game-sessions'), {
