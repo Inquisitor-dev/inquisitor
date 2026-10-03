@@ -84,7 +84,7 @@ export default function PremiumPage() {
             ✓ Ek senaryolar (Modern & Cyberpunk)
           </div>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/menu')}
             style={{
               width: '100%',
               background: '#DAA520',
@@ -257,7 +257,7 @@ export default function PremiumPage() {
 
         {/* Back */}
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/menu')}
           style={{
             width: '100%',
             background: 'transparent',

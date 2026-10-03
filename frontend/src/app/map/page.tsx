@@ -451,7 +451,7 @@ export default function MapPage() {
         console.error('Failed to save notes', e);
       }
     }
-    router.push('/');
+    router.push('/menu');
   };
 
   const handleEndDay = async () => {

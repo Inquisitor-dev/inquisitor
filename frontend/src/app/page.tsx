@@ -2,11 +2,21 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGameStore } from '@/store/useGameStore';
 import styles from './page.module.scss';
 
 export default function LandingPage() {
   const router = useRouter();
   const headerRef = useRef<HTMLElement>(null);
+  const { authToken } = useGameStore();
+
+  const handleStart = () => {
+    if (authToken) {
+      router.push('/menu');
+    } else {
+      router.push('/login');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,7 +79,7 @@ export default function LandingPage() {
             oyun oynamıyorsun, kararlarınla sanal bir cemaatin kaderini belirleyen
             mutlak bir yargıçsın.
           </p>
-          <button className={styles.btn} onClick={() => router.push('/menu')}>
+          <button className={styles.btn} onClick={handleStart}>
             Sorguyu Başlat
           </button>
         </div>
@@ -89,7 +99,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story4.png')" }}
+                style={{ backgroundImage: "url('/stories/story4.jpg')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -104,7 +114,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story5.png')" }}
+                style={{ backgroundImage: "url('/stories/story5.jpg')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -119,7 +129,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story6.png')" }}
+                style={{ backgroundImage: "url('/stories/story6.jpg')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -134,7 +144,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story8.png')" }}
+                style={{ backgroundImage: "url('/stories/story8.jpg')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -170,11 +180,11 @@ export default function LandingPage() {
             <div className={styles.mechImages}>
               <div
                 className={styles.mechImg}
-                style={{ backgroundImage: "url('/stories/story7.png')" }}
+                style={{ backgroundImage: "url('/stories/story7.jpg')" }}
               ></div>
               <div
                 className={styles.mechImg}
-                style={{ backgroundImage: "url('/stories/story3.png')" }}
+                style={{ backgroundImage: "url('/stories/story3.jpg')" }}
               ></div>
             </div>
           </div>
@@ -205,7 +215,7 @@ export default function LandingPage() {
               <button
                 className={styles.btn}
                 style={{ width: '100%', borderColor: 'rgba(232, 220, 196, 0.3)', background: 'transparent' }}
-                onClick={() => router.push('/menu')}
+                onClick={handleStart}
               >
                 Köyü Ziyaret Et
               </button>

@@ -37,8 +37,14 @@ export default function HomePage() {
   const [activeSession, setActiveSession] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
+  const [testModeAvailable, setTestModeAvailable] = useState(false);
+  const [isTestModeStart, setIsTestModeStart] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.4);
+  // Müzik ayarları hesaptan yüklenene kadar çalma: yoksa kısılmış ses bir an varsayılan seviyede patlar
+  const [audioSettingsLoaded, setAudioSettingsLoaded] = useState(false);
+  const saveAudioTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
     isAdmin: boolean;
@@ -50,7 +56,78 @@ export default function HomePage() {
   }>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Ses seviyesi ve sessiz ayarı hesapta saklanır; menüye her girişte oradan okunur
   useEffect(() => {
+    if (!hasHydrated || !authToken) return;
+    let cancelled = false;
+
+    const loadAudioSettings = async () => {
+      try {
+        const res = await fetch(apiUrl('/auth/audio-settings'), {
+          headers: { Authorization: `Bearer ${authToken}` },
+          cache: 'no-store',
+        });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          if (typeof data.musicVolume === 'number') setVolume(data.musicVolume);
+          if (typeof data.musicMuted === 'boolean') setIsMuted(data.musicMuted);
+        }
+      } catch (err) {
+        console.error('Failed to load audio settings', err);
+      } finally {
+        if (!cancelled) setAudioSettingsLoaded(true);
+      }
+    };
+
+    void loadAudioSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, hasHydrated]);
+
+  useEffect(() => {
+    if (!hasHydrated || !authToken) return;
+    let cancelled = false;
+    fetch(apiUrl('/game-sessions/test-mode'), {
+      headers: { Authorization: `Bearer ${authToken}` },
+      cache: 'no-store',
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.enabled) setTestModeAvailable(true);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, hasHydrated]);
+
+  const saveAudioSettings = (settings: { musicVolume?: number; musicMuted?: boolean }) => {
+    if (!authToken) return;
+    // Kaydırıcı sürüklenirken her adımda istek atmamak için kısa bir gecikmeyle kaydedilir
+    if (saveAudioTimer.current) clearTimeout(saveAudioTimer.current);
+    saveAudioTimer.current = setTimeout(() => {
+      fetch(apiUrl('/auth/audio-settings'), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify(settings),
+      }).catch((err) => console.error('Failed to save audio settings', err));
+    }, 400);
+  };
+
+  const handleVolumeChange = (value: number) => {
+    setVolume(value);
+    saveAudioSettings({ musicVolume: value, musicMuted: isMuted });
+  };
+
+  const handleMuteToggle = () => {
+    const next = !isMuted;
+    setIsMuted(next);
+    saveAudioSettings({ musicVolume: volume, musicMuted: next });
+  };
+
+  useEffect(() => {
+    if (!audioSettingsLoaded) return;
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/Main_Soundtrack.mp3');
       audioRef.current.loop = true;
@@ -63,10 +140,11 @@ export default function HomePage() {
     } else {
       audioRef.current.play().catch((err) => console.log('Audio play failed:', err));
     }
-  }, [isMuted, volume]);
+  }, [audioSettingsLoaded, isMuted, volume]);
 
   useEffect(() => {
     return () => {
+      if (saveAudioTimer.current) clearTimeout(saveAudioTimer.current);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -156,7 +234,11 @@ export default function HomePage() {
     }
   };
 
-  const startWithDifficultyAndScenario = async (difficulty: string, scenarioType: string) => {
+  const startWithDifficultyAndScenario = async (
+    difficulty: string,
+    scenarioType: string,
+    testMode = isTestModeStart,
+  ) => {
     if (!authToken) return;
 
     setLoading(true);
@@ -170,7 +252,7 @@ export default function HomePage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ difficulty, scenarioType }),
+        body: JSON.stringify({ difficulty, scenarioType, testMode }),
       });
       const data = await res.json();
 
@@ -218,6 +300,7 @@ export default function HomePage() {
   };
 
   const handleStart = () => {
+    setIsTestModeStart(false);
     if (isPremium) {
       setIsDifficultyOpen(true);
     } else {
@@ -339,6 +422,22 @@ export default function HomePage() {
               </>
             )}
           </button>
+
+          {testModeAvailable && (
+            <button
+              onClick={() => {
+                // Test modunda tüm zorluk ve senaryolar açık; hikaye üretilmez, kota harcanmaz
+                setIsTestModeStart(true);
+                setIsDifficultyOpen(true);
+              }}
+              disabled={loading}
+              className={styles.btnSecondary}
+              style={{ width: '100%', justifyContent: 'center', marginTop: '12px', borderStyle: 'dashed' }}
+              title="Yapay zeka kullanmadan oyun akisini dene"
+            >
+              <span>Test Modu (Yapay Zekasiz)</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsHowToPlayOpen(true)}
@@ -517,13 +616,13 @@ export default function HomePage() {
                       max="1"
                       step="0.01"
                       value={volume}
-                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
                       className={styles.volumeSlider}
                     />
                   </div>
                   <button
                     className={styles.muteBtn}
-                    onClick={() => setIsMuted(!isMuted)}
+                    onClick={handleMuteToggle}
                     title={isMuted ? 'Sesi Ac' : 'Sesi Kapat'}
                   >
                     {isMuted || volume === 0 ? 'MUTE' : 'SOUND'}
@@ -600,7 +699,9 @@ export default function HomePage() {
             <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>
               &times;
             </button>
-            <h2 className={styles.modalTitle}>Senaryo Evreni Sec</h2>
+            <h2 className={styles.modalTitle}>
+              Senaryo Evreni Sec{isTestModeStart ? ' (Test Modu)' : ''}
+            </h2>
 
             <div className={styles.selectionList}>
               <button

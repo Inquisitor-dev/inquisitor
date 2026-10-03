@@ -33,7 +33,7 @@ export default function LoginPage() {
   // Zaten giriş yapılmışsa ana sayfaya at
   useEffect(() => {
     if (hasHydrated && authToken) {
-      router.push('/');
+      router.push('/menu');
     }
   }, [hasHydrated, authToken, router]);
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok && data.token) {
         setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
-        router.push('/');
+        router.push('/menu');
       } else {
         setError(data.message || data.error || 'Giriş başarısız.');
       }
@@ -107,7 +107,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok && data.token) {
         setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
-        router.push('/');
+        router.push('/menu');
       } else {
         setError(data.message || data.error || 'Geçersiz kod.');
       }
