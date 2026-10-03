@@ -346,8 +346,21 @@ export default function HomePage() {
   const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
   const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
 
+  const getMapImage = (story: string) => {
+    switch (story) {
+      case 'modern': return '/map/town_map_night.png';
+      case 'cyberpunk': return '/map/cyberpunk_map_night.png';
+      case 'medieval':
+      default: return '/map/village_map.png';
+    }
+  };
+
   return (
     <main className={styles.main}>
+      <div 
+        className={styles.dynamicBg} 
+        style={{ backgroundImage: `url('${getMapImage(selectedStory)}')` }}
+      />
       <nav className={styles.navbar}>
         <div className={styles.navLeft}>
           <img src="/logo/favicon.png" alt="Inquisitor Logo" className={styles.logo} />
@@ -427,28 +440,6 @@ export default function HomePage() {
         {/* SAĞ KOLON: HİKAYE VE MENÜ */}
         <div className={styles.rightCol}>
           <div className={styles.storyPanel}>
-            <div className={styles.seal}>
-              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sealSvg}>
-                <circle cx="60" cy="60" r="55" stroke="#8A0303" strokeWidth="1.5" strokeDasharray="4 3" />
-                <circle cx="60" cy="60" r="45" stroke="#8A0303" strokeWidth="0.5" opacity="0.5" />
-                <line x1="60" y1="20" x2="60" y2="100" stroke="#8A0303" strokeWidth="1.5" />
-                <line x1="20" y1="60" x2="100" y2="60" stroke="#8A0303" strokeWidth="1.5" />
-                <rect x="56" y="56" width="8" height="8" fill="#8A0303" transform="rotate(45 60 60)" />
-                <rect x="56" y="16" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 20)" />
-                <rect x="56" y="96" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 60 100)" />
-                <rect x="16" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 20 60)" />
-                <rect x="96" y="56" width="8" height="8" fill="none" stroke="#8A0303" strokeWidth="1" transform="rotate(45 100 60)" />
-              </svg>
-            </div>
-
-            <div className={styles.eyebrow}>- ANNO DOMINI MCCXII -</div>
-            <h1 className={styles.title}>The Inquisitor</h1>
-            <div className={styles.divider}>
-              <span className={styles.dividerLine} />
-              <span className={styles.dividerIcon}>*</span>
-              <span className={styles.dividerLine} />
-            </div>
-
             {/* Seçili Hikaye Kartı */}
             <div className={styles.activeStoryCard}>
               <h3 className={styles.storyName}>{STORY_DETAILS[selectedStory]?.title}</h3>
