@@ -357,10 +357,12 @@ export default function HomePage() {
         {/* SOL KOLON: KARAKTER & LEADERBOARD */}
         <div className={styles.leftCol}>
           <div className={styles.characterPanel}>
-            <div className={styles.characterPlaceholder}>
-              <div className={styles.placeholderBox}>
-                <span>[2D Karakter Görseli Gelecek]</span>
-              </div>
+            <div className={styles.characterDisplay}>
+              <img 
+                src="/characters/inquisitor2/idle/south.png" 
+                alt="Inquisitor Character" 
+                className={styles.characterSprite}
+              />
             </div>
             <div className={styles.characterInfo}>
               <h2>Çaylak Engizitör</h2>

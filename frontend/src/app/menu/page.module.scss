@@ -782,8 +782,7 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   display: flex;
   width: 100%;
   max-width: 1200px;
-  height: 80vh;
-  min-height: 600px;
+  min-height: calc(100vh - 100px);
   margin: 0 auto;
   gap: 40px;
   padding: 40px;
@@ -812,6 +811,7 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
 /* SOL KOLON - KARAKTER */
 .characterPanel {
+  flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -822,25 +822,27 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   position: relative;
 }
 
-.characterPlaceholder {
+.characterDisplay {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at center, rgba(138,3,3,0.1), transparent 70%);
+  padding: 20px;
 }
 
-.placeholderBox {
-  width: 200px;
-  height: 400px;
-  border: 2px dashed rgba(232, 220, 196, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8a7f72;
-  font-family: 'Inter', sans-serif;
-  text-align: center;
-  padding: 20px;
+.characterSprite {
+  width: auto;
+  height: 300px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.8));
+  animation: idleFloat 4s ease-in-out infinite;
+}
+
+@keyframes idleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .characterInfo {
