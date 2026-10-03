@@ -31,13 +31,19 @@ export default function HomePage() {
   const [resumeLoading, setResumeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
-  const [isDifficultyOpen, setIsDifficultyOpen] = useState(false);
-  const [isScenarioOpen, setIsScenarioOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
+  
+  // Seçili aktif oyun parametreleri
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('easy');
   const [selectedStory, setSelectedStory] = useState<string>('medieval');
+  
+  // Modaldaki geçici seçim parametreleri
+  const [tempDifficulty, setTempDifficulty] = useState<string>('easy');
+  const [tempStory, setTempStory] = useState<string>('medieval');
+
   // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
   const [testModeAvailable, setTestModeAvailable] = useState(false);
   const [isTestModeStart, setIsTestModeStart] = useState(false);
@@ -296,18 +302,25 @@ export default function HomePage() {
 
   const handleStart = () => {
     setIsTestModeStart(false);
-    setIsDifficultyOpen(true);
+    void startWithDifficultyAndScenario(selectedDifficulty, selectedStory);
   };
 
-  const handleDifficultySelect = (diff: string) => {
-    setSelectedDifficulty(diff);
-    setIsDifficultyOpen(false);
-    void startWithDifficultyAndScenario(diff, selectedStory);
+  const handleConfigModalOpen = () => {
+    setTempDifficulty(selectedDifficulty);
+    setTempStory(selectedStory);
+    setIsConfigModalOpen(true);
   };
 
-  const handleStorySelect = (storyType: string) => {
-    setSelectedStory(storyType);
-    setIsScenarioOpen(false);
+  const handleConfigSave = () => {
+    setSelectedDifficulty(tempDifficulty);
+    setSelectedStory(tempStory);
+    setIsConfigModalOpen(false);
+  };
+
+  const DIFFICULTY_DETAILS: Record<string, string> = {
+    easy: 'Kolay',
+    medium: 'Orta',
+    hard: 'Zor',
   };
 
   const STORY_DETAILS: Record<string, { title: string; badge: string; desc: string }> = {
@@ -440,7 +453,7 @@ export default function HomePage() {
             {/* Seçili Hikaye Kartı */}
             <div className={styles.activeStoryCard}>
               <h3 className={styles.storyName}>{STORY_DETAILS[selectedStory]?.title}</h3>
-              <span className={styles.difficultyBadge}>{STORY_DETAILS[selectedStory]?.badge}</span>
+              <span className={styles.difficultyBadge}>{DIFFICULTY_DETAILS[selectedDifficulty]} Zorluk &bull; {STORY_DETAILS[selectedStory]?.badge}</span>
               <p className={styles.storyDesc}>{STORY_DETAILS[selectedStory]?.desc}</p>
               
               <div className={styles.storyCta}>
@@ -452,8 +465,8 @@ export default function HomePage() {
                 <button onClick={handleStart} disabled={loading} className={styles.btnPrimary}>
                   {loading ? 'Hazırlanıyor...' : (activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla')}
                 </button>
-                <button className={styles.btnSecondary} onClick={() => setIsScenarioOpen(true)}>
-                  Başka Hikaye Seç
+                <button className={styles.btnSecondary} onClick={handleConfigModalOpen}>
+                  Hikaye & Zorluk Değiştir
                 </button>
               </div>
               
@@ -635,101 +648,96 @@ export default function HomePage() {
         </div>
       )}
 
-      {isDifficultyOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsDifficultyOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsDifficultyOpen(false)}>
+      {isConfigModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsConfigModalOpen(false)}>
+          <div className={`${styles.modalContent} ${styles.configModalContent}`} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsConfigModalOpen(false)}>
               &times;
             </button>
-            <h2 className={styles.modalTitle}>Zorluk Seviyesi Sec</h2>
-
-            <div className={styles.selectionList}>
-              <button
-                onClick={() => handleDifficultySelect('easy')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyEasy}`}
-              >
-                <div>
-                  <span>Kolay</span>
-                  <span>4 Supheli</span>
-                </div>
-                <p>Hanci, Peder, Mezarcı ve Degirmenci. Standart sorusturma deneyimi.</p>
-              </button>
-
-              <button
-                onClick={() => handleDifficultySelect('medium')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyMedium}`}
-              >
-                <div>
-                  <span>Orta</span>
-                  <span>5 Supheli</span>
-                </div>
-                <p>+ Ciftci Edmund. Artan supheli sayisiyla daha karmasik iliskiler.</p>
-              </button>
-
-              <button
-                onClick={() => handleDifficultySelect('hard')}
-                disabled={loading}
-                className={`${styles.selectionBtn} ${styles.difficultyHard}`}
-              >
-                <div>
-                  <span>Zor</span>
-                  <span>6 Supheli</span>
-                </div>
-                <p>+ Ciftci ve Doktor. Kalabaliklasan supheli listesiyle en karmasik hikaye.</p>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isScenarioOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsScenarioOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>
-              &times;
-            </button>
-            <h2 className={styles.modalTitle}>
-              Hikaye Evreni Seç
+            <h2 className={styles.modalTitle} style={{ textAlign: 'center' }}>
+              Maceranı Şekillendir
             </h2>
 
-            <div className={styles.selectionList}>
-              <button
-                onClick={() => handleStorySelect('medieval')}
-                className={`${styles.selectionBtn} ${styles.scenarioMedieval}`}
-              >
-                <div>
-                  <span>Klasik Ortaçağ</span>
-                </div>
-                <p>
-                  Ashenmoor Köyü. Engizisyon, batıl inanç ve karanlık sırlar. Standart karanlık
-                  fantezi deneyimi.
-                </p>
-              </button>
+            <div style={{ marginTop: '24px' }}>
+              <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
+                1. Hikaye Evreni
+              </h3>
+              <div className={styles.selectionList} style={{ marginTop: '12px' }}>
+                <button
+                  onClick={() => setTempStory('medieval')}
+                  className={`${styles.selectionBtn} ${styles.scenarioMedieval} ${tempStory === 'medieval' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Klasik Ortaçağ</span>
+                  </div>
+                  <p>Ashenmoor Köyü. Engizisyon, batıl inanç ve karanlık sırlar.</p>
+                </button>
 
-              <button
-                onClick={() => handleStorySelect('modern')}
-                className={`${styles.selectionBtn} ${styles.scenarioModern}`}
-              >
-                <div>
-                  <span>90'lar Amerikan Kasabası</span>
-                </div>
-                <p>
-                  Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.
-                </p>
-              </button>
+                <button
+                  onClick={() => setTempStory('modern')}
+                  className={`${styles.selectionBtn} ${styles.scenarioModern} ${tempStory === 'modern' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>90'lar Amerikan Kasabası</span>
+                  </div>
+                  <p>Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.</p>
+                </button>
 
-              <button
-                onClick={() => handleStorySelect('cyberpunk')}
-                className={`${styles.selectionBtn} ${styles.scenarioCyberpunk}`}
-              >
-                <div>
-                  <span>Distopik Cyberpunk</span>
-                </div>
-                <p>
-                  Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.
-                </p>
+                <button
+                  onClick={() => setTempStory('cyberpunk')}
+                  className={`${styles.selectionBtn} ${styles.scenarioCyberpunk} ${tempStory === 'cyberpunk' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Distopik Cyberpunk</span>
+                  </div>
+                  <p>Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.</p>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '32px' }}>
+              <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
+                2. Zorluk Seviyesi
+              </h3>
+              <div className={styles.selectionList} style={{ marginTop: '12px' }}>
+                <button
+                  onClick={() => setTempDifficulty('easy')}
+                  className={`${styles.selectionBtn} ${styles.difficultyEasy} ${tempDifficulty === 'easy' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Kolay</span>
+                    <span>4 Şüpheli</span>
+                  </div>
+                  <p>Hancı, Peder, Mezarcı ve Değirmenci. Standart soruşturma deneyimi.</p>
+                </button>
+
+                <button
+                  onClick={() => setTempDifficulty('medium')}
+                  className={`${styles.selectionBtn} ${styles.difficultyMedium} ${tempDifficulty === 'medium' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Orta</span>
+                    <span>5 Şüpheli</span>
+                  </div>
+                  <p>+ Çiftçi Edmund. Artan şüpheli sayısıyla daha karmaşık ilişkiler.</p>
+                </button>
+
+                <button
+                  onClick={() => setTempDifficulty('hard')}
+                  className={`${styles.selectionBtn} ${styles.difficultyHard} ${tempDifficulty === 'hard' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Zor</span>
+                    <span>6 Şüpheli</span>
+                  </div>
+                  <p>+ Doktor. Kalabalıklaşan şüpheli listesiyle en karmaşık hikaye.</p>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '32px', textAlign: 'center' }}>
+              <button className={styles.modalActionBtn} style={{ width: '100%' }} onClick={handleConfigSave}>
+                Seçimleri Uygula
               </button>
             </div>
           </div>
