@@ -36,7 +36,8 @@ export default function HomePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('easy');
+  const [selectedStory, setSelectedStory] = useState<string>('medieval');
   // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
   const [testModeAvailable, setTestModeAvailable] = useState(false);
   const [isTestModeStart, setIsTestModeStart] = useState(false);
@@ -293,18 +294,37 @@ export default function HomePage() {
     }
   };
 
+  const handleStart = () => {
+    setIsTestModeStart(false);
+    setIsDifficultyOpen(true);
+  };
+
   const handleDifficultySelect = (diff: string) => {
     setSelectedDifficulty(diff);
     setIsDifficultyOpen(false);
-    setIsScenarioOpen(true);
+    void startWithDifficultyAndScenario(diff, selectedStory);
   };
 
-  const handleStart = () => {
-    setIsTestModeStart(false);
-    if (isPremium) {
-      setIsDifficultyOpen(true);
-    } else {
-      void startWithDifficultyAndScenario('easy', 'medieval');
+  const handleStorySelect = (storyType: string) => {
+    setSelectedStory(storyType);
+    setIsScenarioOpen(false);
+  };
+
+  const STORY_DETAILS: Record<string, { title: string; badge: string; desc: string }> = {
+    medieval: {
+      title: 'Medieval Era - Ashenmoor',
+      badge: 'Varsayılan Hikaye',
+      desc: 'Engizisyon, batıl inanç ve karanlık sırlar. Standart karanlık fantezi deneyimi.'
+    },
+    modern: {
+      title: '90\'lar Amerikan Kasabası',
+      badge: 'Satın Alındı',
+      desc: 'Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.'
+    },
+    cyberpunk: {
+      title: 'Distopik Cyberpunk',
+      badge: 'Satın Alındı',
+      desc: 'Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir.'
     }
   };
 
@@ -419,9 +439,9 @@ export default function HomePage() {
 
             {/* Seçili Hikaye Kartı */}
             <div className={styles.activeStoryCard}>
-              <h3 className={styles.storyName}>Medieval Era - Ashenmoor</h3>
-              <span className={styles.difficultyBadge}>Kolay Zorluk (Ücretsiz)</span>
-              <p className={styles.storyDesc}>Varsayılan Başlangıç Hikayesi</p>
+              <h3 className={styles.storyName}>{STORY_DETAILS[selectedStory]?.title}</h3>
+              <span className={styles.difficultyBadge}>{STORY_DETAILS[selectedStory]?.badge}</span>
+              <p className={styles.storyDesc}>{STORY_DETAILS[selectedStory]?.desc}</p>
               
               <div className={styles.storyCta}>
                 {activeSession && !checkingSession && (
@@ -432,7 +452,7 @@ export default function HomePage() {
                 <button onClick={handleStart} disabled={loading} className={styles.btnPrimary}>
                   {loading ? 'Hazırlanıyor...' : (activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla')}
                 </button>
-                <button className={styles.btnSecondary} onClick={() => alert('Başka hikaye seç menüsü Faz 3\'te eklenecek.')}>
+                <button className={styles.btnSecondary} onClick={() => setIsScenarioOpen(true)}>
                   Başka Hikaye Seç
                 </button>
               </div>
@@ -664,63 +684,54 @@ export default function HomePage() {
         </div>
       )}
 
-      {isScenarioOpen && selectedDifficulty && (
+      {isScenarioOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsScenarioOpen(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setIsScenarioOpen(false)}>
               &times;
             </button>
             <h2 className={styles.modalTitle}>
-              Senaryo Evreni Sec{isTestModeStart ? ' (Test Modu)' : ''}
+              Hikaye Evreni Seç
             </h2>
 
             <div className={styles.selectionList}>
               <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'medieval')}
-                disabled={loading}
+                onClick={() => handleStorySelect('medieval')}
                 className={`${styles.selectionBtn} ${styles.scenarioMedieval}`}
               >
                 <div>
-                  <span>Klasik Ortacag</span>
+                  <span>Klasik Ortaçağ</span>
                 </div>
                 <p>
-                  Ashenmoor Koyu. Engizisyon, bati inanc ve karanlik sirlar. Standart karanlik
+                  Ashenmoor Köyü. Engizisyon, batıl inanç ve karanlık sırlar. Standart karanlık
                   fantezi deneyimi.
                 </p>
               </button>
 
               <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'modern')}
-                disabled={loading}
+                onClick={() => handleStorySelect('modern')}
                 className={`${styles.selectionBtn} ${styles.scenarioModern}`}
               >
                 <div>
-                  <span>90'lar Amerikan Kasabasi</span>
+                  <span>90'lar Amerikan Kasabası</span>
                 </div>
                 <p>
-                  Oakhaven. Yerel polis, cinayet dedektifleri ve supheli kasabalilar.
+                  Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.
                 </p>
               </button>
 
               <button
-                onClick={() => startWithDifficultyAndScenario(selectedDifficulty, 'cyberpunk')}
-                disabled={loading}
+                onClick={() => handleStorySelect('cyberpunk')}
                 className={`${styles.selectionBtn} ${styles.scenarioCyberpunk}`}
               >
                 <div>
                   <span>Distopik Cyberpunk</span>
                 </div>
                 <p>
-                  Neon Prime. Yozlasmis mega sirketler, siber gelistirmeler ve tech-noir bilimkurgu.
+                  Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.
                 </p>
               </button>
             </div>
-
-            {loading && (
-              <p style={{ textAlign: 'center', color: '#888', marginTop: '16px', fontSize: '0.85rem' }}>
-                Senaryo olusturuluyor, lutfen bekleyin...
-              </p>
-            )}
           </div>
         </div>
       )}
