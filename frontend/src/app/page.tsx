@@ -67,7 +67,7 @@ export default function LandingPage() {
               <button
                 className={styles.btn}
                 style={{ padding: '8px 20px', fontSize: '0.9rem' }}
-                onClick={() => router.push('/menu')}
+                onClick={handleStart}
               >
                 Hemen Başla
               </button>
