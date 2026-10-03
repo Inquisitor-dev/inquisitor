@@ -471,7 +471,7 @@ export default function HomePage() {
               </div>
               
               {testModeAvailable && (
-                <button onClick={() => { setIsTestModeStart(true); setIsDifficultyOpen(true); }} className={styles.btnSecondary} style={{ width: '100%', marginTop: '12px', borderStyle: 'dashed' }}>
+                <button onClick={() => { setIsTestModeStart(true); void startWithDifficultyAndScenario(selectedDifficulty, selectedStory, true); }} className={styles.btnSecondary} style={{ width: '100%', marginTop: '12px', borderStyle: 'dashed' }}>
                   Test Modu (Yapay Zekasız)
                 </button>
               )}
