@@ -1,13 +1,40 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Coins, Crown, ScrollText, Shirt, Skull, Store, Users } from 'lucide-react';
+import {
+  BookOpen,
+  Coins,
+  Crown,
+  Gavel,
+  Hourglass,
+  KeyRound,
+  Lightbulb,
+  LogOut,
+  Maximize,
+  Minimize,
+  NotebookPen,
+  ScrollText,
+  Settings,
+  Shirt,
+  Skull,
+  Store,
+  Target,
+  Users,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import styles from './page.module.scss';
+
+const subscribeFullscreen = (onChange: () => void) => {
+  document.addEventListener('fullscreenchange', onChange);
+  return () => document.removeEventListener('fullscreenchange', onChange);
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -113,6 +140,29 @@ export default function HomePage() {
       cancelled = true;
     };
   }, [authToken, hasHydrated]);
+
+  // Tam ekran: F11 ile aynı işi görür. Esc ile çıkıldığında da düğme güncel kalsın diye olay dinlenir.
+  // Tam ekranı desteklemeyen tarayıcılarda (ör. iPhone Safari) düğme hiç gösterilmez.
+  const isFullscreen = useSyncExternalStore(
+    subscribeFullscreen,
+    () => Boolean(document.fullscreenElement),
+    () => false,
+  );
+  const canFullscreen = useSyncExternalStore(
+    subscribeFullscreen,
+    () => Boolean(document.fullscreenEnabled),
+    () => false,
+  );
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void document.documentElement.requestFullscreen().catch((err) => {
+        console.error('Tam ekrana geçilemedi', err);
+      });
+    }
+  };
 
   const saveAudioSettings = (settings: { musicVolume?: number; musicMuted?: boolean }) => {
     if (!authToken) return;
@@ -274,7 +324,7 @@ export default function HomePage() {
       }
 
       if (res.status === 403) {
-        setError(data.message || 'Gunluk sorusturma limitine ulastiniz.');
+        setError(data.message || 'Bugünkü soruşturma hakkın doldu.');
         setLoading(false);
         return;
       }
@@ -293,13 +343,13 @@ export default function HomePage() {
       } else {
         setError(
           data.message ||
-            'Yapay zeka su an mesgul veya bir hata olustu. Lutfen biraz bekleyip tekrar deneyin.',
+            'Yapay zekâ şu an meşgul ya da bir hata oluştu. Biraz bekleyip tekrar dene.',
         );
         setLoading(false);
       }
     } catch (err) {
       console.error('Failed to start session', err);
-      setError('Sunucuya baglanilamadi. Backend servisinin calistigindan emin olun.');
+      setError('Sunucuya bağlanılamadı. Bağlantını kontrol edip tekrar dene.');
       setLoading(false);
     }
   };
@@ -396,6 +446,16 @@ export default function HomePage() {
             <span className={styles.currencyIcon}><Coins size={15} /></span>
             <span>{marketHydrated ? tokenBalance.toLocaleString('tr-TR') : '—'}</span>
           </Link>
+          {canFullscreen && (
+            <button
+              className={styles.settingsBtn}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
+              aria-label={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
+            >
+              {isFullscreen ? <Minimize size={17} /> : <Maximize size={17} />}
+            </button>
+          )}
           <button
             className={styles.settingsBtn}
             onClick={() => setIsSettingsOpen(true)}
@@ -481,7 +541,7 @@ export default function HomePage() {
               {loading ? 'Dosya Hazırlanıyor...' : activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla'}
             </button>
             <button className={styles.btnGhost} onClick={handleConfigModalOpen}>
-              <ScrollText size={15} /> Hikaye &amp; Zorluk Değiştir
+              <ScrollText size={15} /> Evren ve Zorluğu Değiştir
             </button>
             {testModeAvailable && (
               <button
@@ -535,68 +595,92 @@ export default function HomePage() {
 
       <div className={styles.footerRule}>
         <span />
-        <span className={styles.footerRuleText}>Inquisitor AI · Est. MCCXII</span>
+        <span className={styles.footerRuleText} lang="en">Inquisitor AI · Est. MCCXII</span>
         <span />
       </div>
 
       {isHowToPlayOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsHowToPlayOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsHowToPlayOpen(false)}>
-              &times;
+          <div
+            className={`${styles.sheet} ${styles.guideSheet}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="guide-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.sheetClose} onClick={() => setIsHowToPlayOpen(false)} aria-label="Kapat">
+              <X size={18} />
             </button>
-            <h2 className={styles.modalTitle}>Sorusturma Kilavuzu</h2>
+            <span className={styles.sheetSeal} aria-hidden>✠</span>
+            <span className={styles.sheetEyebrow}>Engizitörün El Kitabı</span>
+            <h2 id="guide-title" className={styles.sheetTitle}>Soruşturma Kılavuzu</h2>
+            <p className={styles.sheetLead}>
+              Bir cinayet işlendi ve katil hâlâ aranızda. Dört gün içinde gerçeği bul ve doğru kişiyi mahkûm et.
+            </p>
 
-            <div className={styles.modalScroll}>
-              <section className={styles.guideSection}>
-                <h3>Temel Amac</h3>
-                <p>
-                  Ashenmoor koyunde islenen gizemli bir cinayeti cozmekle gorevli bir
-                  Engizisyon mufettisisin. 4 gunun var. Bu sure zarfinda dogru kisiyi
-                  olume mahkum etmeli ve gercegi ortaya cikarmalisin.
-                </p>
-              </section>
+            <ol className={styles.guideSteps}>
+              <li className={styles.guideStep}>
+                <span className={styles.guideIcon}><Target size={18} /></span>
+                <div>
+                  <h3>Amacın</h3>
+                  <p>
+                    Sen, cinayeti çözmekle görevli bir Engizisyon müfettişisin. <strong>Dört günün</strong> var:
+                    şüphelileri sorgula, kanıtları topla ve süre dolmadan katili bul.
+                  </p>
+                </div>
+              </li>
+              <li className={styles.guideStep}>
+                <span className={styles.guideIcon}><Hourglass size={18} /></span>
+                <div>
+                  <h3>Zaman</h3>
+                  <p>
+                    Bir mekâna her girdiğinde vakit ilerler. Gece çöktüğünde herkes evine çekilir ve gün biter;
+                    zamanını nereye harcadığına dikkat et.
+                  </p>
+                </div>
+              </li>
+              <li className={styles.guideStep}>
+                <span className={styles.guideIcon}><KeyRound size={18} /></span>
+                <div>
+                  <h3>Arama İzinleri</h3>
+                  <p>
+                    Kanıtları yalnızca sorgularda değil, mekânları arayarak da bulabilirsin. Bir mekânı aramak için
+                    izin gerekir: Ashenmoor’da izni <strong>Peder Malachar</strong>, diğer evrenlerde karakoldaki yetkili
+                    verir. Bir soruşturmada en fazla iki izin alabilirsin.
+                  </p>
+                </div>
+              </li>
+              <li className={styles.guideStep}>
+                <span className={styles.guideIcon}><NotebookPen size={18} /></span>
+                <div>
+                  <h3>Notlar</h3>
+                  <p>
+                    Şüphelilerin anlattıkları birbiriyle çelişebilir. Önemli ayrıntıları not defterine yaz; çelişkiler
+                    seni katile götürür.
+                  </p>
+                </div>
+              </li>
+              <li className={styles.guideStep}>
+                <span className={styles.guideIcon}><Gavel size={18} /></span>
+                <div>
+                  <h3>Hüküm</h3>
+                  <p>
+                    Hazır olduğunda haritadaki <strong>Hüküm Verilecek Kişiyi Seç</strong> düğmesiyle kararını ver.
+                    Yanlış kişiyi mahkûm edersen gerçek katil elini kolunu sallayarak dolaşmaya devam eder.
+                  </p>
+                </div>
+              </li>
+            </ol>
 
-              <section className={styles.guideSection}>
-                <h3>Zaman Yonetimi</h3>
-                <p>
-                  Bir mekana her girdiginde vakit ilerler. Gece oldugunda herkes evine
-                  cekilir ve gun biter.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Arama Izinleri</h3>
-                <p>
-                  Koyluleri sadece sorgulayarak degil, mekanlarini arayarak da kanit
-                  bulabilirsin. Ama bir mekani aramak icin Peder Malachar'dan arama izni
-                  almalisin.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Not Tutma</h3>
-                <p>
-                  Koylulerin soyledikleri celiskili olabilir. Onemli ipuclarini not
-                  defterine kaydet.
-                </p>
-              </section>
-
-              <section className={styles.guideSection}>
-                <h3>Nihai Hukum</h3>
-                <p>
-                  Istedigin an haritadaki Mahkumu Sec butonuna basarak birini suclayabilirsin.
-                  Yanlis kisiyi asarsan gercek katil aramizda dolasmaya devam eder.
-                </p>
-              </section>
-
-              <div className={styles.guideTip}>
-                <strong>Ipuucu:</strong> Her yalan soyleyen koylu katil olmayabilir.
-              </div>
+            <div className={styles.guideTip}>
+              <Lightbulb size={16} />
+              <p>
+                <strong>İpucu:</strong> Yalan söyleyen herkes katil değildir. Masumların da saklayacak sırları var.
+              </p>
             </div>
 
-            <button className={styles.modalActionBtn} onClick={() => setIsHowToPlayOpen(false)}>
-              Anladim.
+            <button className={styles.sheetPrimary} onClick={() => setIsHowToPlayOpen(false)}>
+              Anladım
             </button>
           </div>
         </div>
@@ -604,87 +688,107 @@ export default function HomePage() {
 
       {isSettingsOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsSettingsOpen(false)}>
-          <div className={`${styles.modalContent} ${styles.settingsModal}`} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsSettingsOpen(false)}>
-              &times;
+          <div
+            className={`${styles.sheet} ${styles.settingsSheet}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.sheetClose} onClick={() => setIsSettingsOpen(false)} aria-label="Kapat">
+              <X size={18} />
             </button>
-            <h2 className={styles.modalTitle}>Ayarlar</h2>
+            <span className={styles.sheetSeal} aria-hidden><Settings size={20} /></span>
+            <span className={styles.sheetEyebrow}>Hesap ve Tercihler</span>
+            <h2 id="settings-title" className={styles.sheetTitle}>Ayarlar</h2>
 
-            <div className={styles.settingsBody}>
-              <div className={styles.settingsSection}>
-                <div className={styles.settingsLabel}>Hesap Detaylari</div>
-                <div className={styles.accountCard}>
-                  <div className={styles.accountRow}>
-                    <span>E-posta</span>
-                    <strong>{effectiveEmail}</strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Plan</span>
-                    <strong>
-                      {effectiveIsAdmin
-                        ? 'Admin'
-                        : effectiveIsPremium
-                          ? 'Premium'
-                          : 'Ucretsiz'}
-                    </strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Kalan Oturum</span>
-                    <strong>
-                      {accountSummary
-                        ? `${Math.max(0, accountSummary.maxSessionsPerDay - accountSummary.dailySessionCount)} / ${accountSummary.maxSessionsPerDay === 999 ? 'Sinirsiz' : accountSummary.maxSessionsPerDay}`
-                        : effectiveIsAdmin
-                          ? 'Sinirsiz / Sinirsiz'
-                          : `${fallbackMaxSessions} / ${fallbackMaxSessions}`}
-                    </strong>
-                  </div>
-                  <div className={styles.accountRow}>
-                    <span>Kalan Diyalog</span>
-                    <strong>
-                      {accountSummary
-                        ? `${Math.max(0, accountSummary.maxMessagesPerDay - accountSummary.dailyMessageCount)} / ${accountSummary.maxMessagesPerDay === 999 ? 'Sinirsiz' : accountSummary.maxMessagesPerDay}`
-                        : effectiveIsAdmin
-                          ? 'Sinirsiz / Sinirsiz'
-                          : `${fallbackMaxMessages} / ${fallbackMaxMessages}`}
-                    </strong>
-                  </div>
+            <section className={styles.settingsBlock}>
+              <h3 className={styles.blockLabel}>Hesap</h3>
+              <div className={styles.profileRow}>
+                <span className={styles.profileAvatar}>{(effectiveEmail[0] ?? '?').toUpperCase()}</span>
+                <div className={styles.profileText}>
+                  <strong>{inquisitorName}</strong>
+                  <span>{effectiveEmail}</span>
                 </div>
+                <span className={styles.planBadge}>
+                  {effectiveIsAdmin ? 'Admin' : effectiveIsPremium ? 'Premium' : 'Ücretsiz'}
+                </span>
               </div>
 
-              <div className={styles.settingsSection}>
-                <div className={styles.settingsLabel}>Ana Menu Muzigi</div>
-                <div className={styles.soundControls}>
-                  <div className={styles.volumeWrapper}>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={volume}
-                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                    />
-                  </div>
-                  <button
-                    className={styles.muteBtn}
-                    onClick={handleMuteToggle}
-                    title={isMuted ? 'Sesi Ac' : 'Sesi Kapat'}
-                  >
-                    {isMuted || volume === 0 ? 'MUTE' : 'SOUND'}
-                  </button>
-                </div>
+              <div className={styles.quotaGrid}>
+                {[
+                  {
+                    label: 'Bugün kalan soruşturma',
+                    used: accountSummary?.dailySessionCount,
+                    max: accountSummary?.maxSessionsPerDay ?? fallbackMaxSessions,
+                  },
+                  {
+                    label: 'Bugün kalan diyalog',
+                    used: accountSummary?.dailyMessageCount,
+                    max: accountSummary?.maxMessagesPerDay ?? fallbackMaxMessages,
+                  },
+                ].map((quota) => {
+                  const unlimited = effectiveIsAdmin || quota.max === 999;
+                  const remaining = Math.max(0, quota.max - (quota.used ?? 0));
+                  return (
+                    <div key={quota.label} className={styles.quotaTile}>
+                      <span className={styles.quotaLabel}>{quota.label}</span>
+                      <span className={styles.quotaValue}>
+                        {unlimited ? 'Sınırsız' : (
+                          <>
+                            {remaining}
+                            <small> / {quota.max}</small>
+                          </>
+                        )}
+                      </span>
+                      {!unlimited && (
+                        <span className={styles.quotaBar}>
+                          <span style={{ width: `${(remaining / quota.max) * 100}%` }} />
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+            </section>
 
-              <button
-                onClick={() => {
-                  logout();
-                  router.push('/');
-                }}
-                className={styles.settingsLogoutBtn}
-              >
-                Hesaptan Cikis Yap
-              </button>
-            </div>
+            <section className={styles.settingsBlock}>
+              <h3 className={styles.blockLabel}>Ana Menü Müziği</h3>
+              <div className={styles.soundRow}>
+                <button
+                  className={styles.muteToggle}
+                  onClick={handleMuteToggle}
+                  title={isMuted ? 'Sesi aç' : 'Sesi kapat'}
+                  aria-label={isMuted ? 'Sesi aç' : 'Sesi kapat'}
+                >
+                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className={styles.volumeSlider}
+                  style={{ '--fill': `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
+                  aria-label="Müzik sesi"
+                />
+                <span className={styles.volumeValue}>
+                  {isMuted ? 'Kapalı' : `%${Math.round(volume * 100)}`}
+                </span>
+              </div>
+            </section>
+
+            <button
+              onClick={() => {
+                logout();
+                router.push('/');
+              }}
+              className={styles.logoutBtn}
+            >
+              <LogOut size={16} /> Çıkış Yap
+            </button>
           </div>
         </div>
       )}
@@ -701,7 +805,7 @@ export default function HomePage() {
 
             <div style={{ marginTop: '24px' }}>
               <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
-                1. Hikaye Evreni
+                1. Evren
               </h3>
               <div className={styles.selectionList} style={{ marginTop: '12px' }}>
                 <button
@@ -709,9 +813,9 @@ export default function HomePage() {
                   className={`${styles.selectionBtn} ${styles.scenarioMedieval} ${tempStory === 'medieval' ? styles.activeSelection : ''}`}
                 >
                   <div>
-                    <span>Klasik Ortaçağ</span>
+                    <span>Ashenmoor</span>
                   </div>
-                  <p>Ashenmoor Köyü. Engizisyon, batıl inanç ve karanlık sırlar.</p>
+                  <p>Karanlık Ortaçağ. Engizisyon, batıl inanç ve karanlık sırlar.</p>
                 </button>
 
                 <button
@@ -719,9 +823,9 @@ export default function HomePage() {
                   className={`${styles.selectionBtn} ${styles.scenarioModern} ${tempStory === 'modern' ? styles.activeSelection : ''}`}
                 >
                   <div>
-                    <span>90'lar Amerikan Kasabası</span>
+                    <span>Oakhaven</span>
                   </div>
-                  <p>Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.</p>
+                  <p>{"90'lar Amerikan kasabası. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar."}</p>
                 </button>
 
                 <button
@@ -729,16 +833,16 @@ export default function HomePage() {
                   className={`${styles.selectionBtn} ${styles.scenarioCyberpunk} ${tempStory === 'cyberpunk' ? styles.activeSelection : ''}`}
                 >
                   <div>
-                    <span>Distopik Cyberpunk</span>
+                    <span>Neon Prime</span>
                   </div>
-                  <p>Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.</p>
+                  <p>Distopik cyberpunk. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.</p>
                 </button>
               </div>
             </div>
 
             <div style={{ marginTop: '32px' }}>
               <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
-                2. Zorluk Seviyesi
+                2. Zorluk
               </h3>
               <div className={styles.selectionList} style={{ marginTop: '12px' }}>
                 <button
@@ -749,7 +853,7 @@ export default function HomePage() {
                     <span>Kolay</span>
                     <span>4 Şüpheli</span>
                   </div>
-                  <p>Hancı, Peder, Mezarcı ve Değirmenci. Standart soruşturma deneyimi.</p>
+                  <p>Dört şüpheliyle klasik bir soruşturma. İlk vaka için ideal.</p>
                 </button>
 
                 <button
@@ -760,7 +864,7 @@ export default function HomePage() {
                     <span>Orta</span>
                     <span>5 Şüpheli</span>
                   </div>
-                  <p>+ Çiftçi Edmund. Artan şüpheli sayısıyla daha karmaşık ilişkiler.</p>
+                  <p>Beşinci bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.</p>
                 </button>
 
                 <button
@@ -771,7 +875,7 @@ export default function HomePage() {
                     <span>Zor</span>
                     <span>6 Şüpheli</span>
                   </div>
-                  <p>+ Doktor. Kalabalıklaşan şüpheli listesiyle en karmaşık hikaye.</p>
+                  <p>Altı şüpheli ve çakışan tanıklıklar. En karmaşık hikâye.</p>
                 </button>
               </div>
             </div>

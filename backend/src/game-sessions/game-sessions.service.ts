@@ -110,12 +110,12 @@ export class GameSessionsService {
     const locationClues: Record<string, string> = {};
     for (const location of scenarioConfig.locationDefinitions) {
       if (location.id === 'crime_scene') continue;
-      locationClues[location.id] = `[TEST MODU] ${location.id} icin yer tutucu ipucu.`;
+      locationClues[location.id] = `[TEST MODU] ${location.id} için yer tutucu ipucu.`;
     }
 
     return {
-      scenario: `[TEST MODU] Bu oturum yapay zeka kullanmadan olusturuldu. Hikaye uretilmedi. Olay yeri izi: ${crimeSceneClueText}`,
-      truthReveal: `[TEST MODU] Sucluyu rastgele secilen ${culprit?.name ?? culpritId} oldugu varsayildi.`,
+      scenario: `[TEST MODU] Bu oturum yapay zekâ kullanılmadan oluşturuldu; hikâye üretilmedi. Olay yeri izi: ${crimeSceneClueText}`,
+      truthReveal: `[TEST MODU] Katilin rastgele seçilen ${culprit?.name ?? culpritId} olduğu varsayıldı.`,
       npcPrompts: {} as Record<string, string>,
       locationClues,
     };
@@ -184,7 +184,7 @@ export class GameSessionsService {
 
     const session = await findOwnedSession(this.prisma, sessionId, userId);
     if (session.status !== 'ACTIVE') {
-      throw new BadRequestException('Bu sorusturma zaten sona erdi.');
+      throw new BadRequestException('Bu soruşturma zaten sona erdi.');
     }
 
     const won = session.culpritId === npcId;
@@ -199,7 +199,7 @@ export class GameSessionsService {
       success: true,
       won,
       culpritId: session.culpritId,
-      message: won ? 'Doğru kişiyi buldunuz! Adalet yerini buldu.' : 'Masum birini mahkum ettiniz.',
+      message: won ? 'Doğru kişiyi buldun! Adalet yerini buldu.' : 'Masum birini mahkûm ettin.',
       session: updatedSession,
     };
   }
@@ -239,7 +239,7 @@ export class GameSessionsService {
     return {
       success: true,
       won: updatedSession.status === 'WON',
-      message: 'Zamanınız doldu.',
+      message: 'Süren doldu.',
       session: updatedSession,
     };
   }

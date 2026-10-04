@@ -41,7 +41,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'all', label: 'Tümü' },
   { id: 'universe', label: 'Evrenler' },
   { id: 'difficulty', label: 'Zorluklar' },
-  { id: 'story', label: 'Hazır Hikayeler' },
+  { id: 'story', label: 'Hazır Hikâyeler' },
   { id: 'cosmetic', label: 'Kozmetikler' },
   { id: 'tokens', label: 'Token Al' },
 ];
@@ -308,7 +308,7 @@ export default function MarketPage() {
               <p className={styles.featuredSubtitle}>{featured.subtitle}</p>
               <p className={styles.featuredDesc}>{featured.description}</p>
               <div className={styles.featuredMeta}>
-                <span className={styles.metaInline}><BookOpen size={14} /> Hazır Hikaye</span>
+                <span className={styles.metaInline}><BookOpen size={14} /> Hazır Hikâye</span>
                 <span className={styles.metaInline}><MapIcon size={14} /> {featured.universe}</span>
                 <span className={styles.metaInline}><Clock size={14} /> {featured.length}</span>
               </div>
@@ -410,7 +410,9 @@ export default function MarketPage() {
 
         <div className={styles.bottomRule}>
           <span />
-          <span className={styles.bottomRuleText}>Inquisitor AI · Hazine Defteri</span>
+          <span className={styles.bottomRuleText}>
+            <span lang="en">Inquisitor AI</span> · Hazine Defteri
+          </span>
           <span />
         </div>
       </div>

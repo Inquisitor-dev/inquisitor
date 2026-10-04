@@ -30,7 +30,7 @@ export const CATEGORY_LABELS: Record<MarketCategory, { title: string; eyebrow: s
   universe: {
     title: 'Evrenler',
     eyebrow: 'Yeni Diyarlar',
-    blurb: 'Sorgunu başka çağlara ve şehirlere taşı. Her evren kendi şüphelileri, mekanları ve yalanlarıyla gelir.',
+    blurb: 'Sorgunu başka çağlara ve şehirlere taşı. Her evren kendi şüphelileri, mekânları ve yalanlarıyla gelir.',
   },
   difficulty: {
     title: 'Zorluklar',
@@ -38,7 +38,7 @@ export const CATEGORY_LABELS: Record<MarketCategory, { title: string; eyebrow: s
     blurb: 'Daha fazla şüpheli, daha sıkı alibiler, daha derin yalanlar. Rütbeni kanıtla.',
   },
   story: {
-    title: 'Hazır Hikayeler',
+    title: 'Hazır Hikâyeler',
     eyebrow: 'Mühürlü Dosyalar',
     blurb: 'Elle yazılmış, sabit kurgulu vakalar. Her dosyanın kendine ait bir sırrı ve unutulmaz bir sonu var.',
   },
@@ -66,7 +66,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     price: 0,
     image: '/map/village_map.png',
     ownedByDefault: true,
-    tags: ['6 mekan', 'Başlangıç evreni'],
+    tags: ['6 mekân', 'Başlangıç evreni'],
   },
   {
     id: 'universe_modern',
@@ -76,7 +76,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     description: 'Karakol, video kiralama dükkanı ve açık hava sineması. Ormanın kenarındaki bu kasabada herkes birini koruyor.',
     price: 500,
     image: '/map/town_map_night.png',
-    tags: ['6 mekan', 'Polisiye'],
+    tags: ['6 mekân', 'Polisiye'],
   },
   {
     id: 'universe_cyberpunk',
@@ -86,7 +86,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     description: 'Bölge 13, hurdalıklar ve robot pazarları. Yozlaşmış şirketlerin gölgesinde hafızalar bile satılık.',
     price: 800,
     image: '/map/cyberpunk_map_night.png',
-    tags: ['6 mekan', 'Tech-noir'],
+    tags: ['6 mekân', 'Tech-noir'],
   },
 
   // ─── ZORLUKLAR ───────────────────────────────────────────────
@@ -95,7 +95,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     category: 'difficulty',
     title: 'Acemi Engizitör',
     subtitle: 'Kolay',
-    description: 'Suçluyu bulmak için yeterli ipucu. Köylüler korkak ama yalanları kolay çözülür.',
+    description: 'Suçluyu bulmak için yeterli ipucu var. Şüpheliler korkak ama yalanları kolay çözülür.',
     price: 0,
     ownedByDefault: true,
     suspects: 4,
@@ -226,7 +226,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     category: 'cosmetic',
     title: 'Odun Yığını',
     subtitle: 'Hüküm Efekti',
-    description: 'Mahkumu seçtiğinde hüküm ekranı alevler içinde açılır.',
+    description: 'Mahkûmu seçtiğinde hüküm ekranı alevler içinde açılır.',
     price: 1200,
     rarity: 'legendary',
     icon: 'flame',
@@ -265,10 +265,10 @@ export const TOKEN_PACKS: TokenPack[] = [
 
 // Oynayarak token kazanma yolları (taslak değerler; backend'de ödül sistemi kurulunca buradan beslenebilir)
 export const EARN_WAYS: { id: string; title: string; reward: string; description: string }[] = [
-  { id: 'solve', title: 'Vakayı Çöz', reward: '+100', description: 'Doğru kişiyi mahkum ettiğinde.' },
+  { id: 'solve', title: 'Vakayı Çöz', reward: '+100', description: 'Doğru kişiyi mahkûm ettiğinde.' },
   { id: 'fast', title: 'Erken Hüküm', reward: '+50', description: 'Suçluyu ilk iki günde bulursan ek ödül.' },
   { id: 'daily', title: 'Günlük Sorgu', reward: '+20', description: 'Her gün ilk soruşturmanı tamamladığında.' },
-  { id: 'community', title: 'Topluluk', reward: '+30', description: 'Yazdığın hikaye başkaları tarafından oynandıkça.' },
+  { id: 'community', title: 'Topluluk', reward: '+30', description: 'Yazdığın hikâye başkaları tarafından oynandıkça.' },
 ];
 
 export const formatEur = (value: number) =>

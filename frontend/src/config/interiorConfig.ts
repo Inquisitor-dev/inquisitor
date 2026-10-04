@@ -46,9 +46,9 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         title: 'Kardeş Aldric (Hancı)',
         category: 'npc',
         icon: '🍺',
-        summary: 'Tezgahın arkasında gergin bir şekilde kupa dolduran hancı.',
+        summary: 'Tezgâhın arkasında gergin bir şekilde kupa dolduran hancı.',
         description:
-          'Kardeş Aldric, elleri hafifçe titreyerek müşterilerine bira dolduruyor. Bakışları sürekli kapıya ve şöminenin karanlık köşelerine kayıyor. Kasabadaki son olaylar hakkında bildiklerini saklamakta zorlanıyor gibi.',
+          'Kardeş Aldric, elleri hafifçe titreyerek müşterilerine bira dolduruyor. Bakışları sürekli kapıya ve şöminenin karanlık köşelerine kayıyor. Köydeki son olaylar hakkında bildiklerini saklamakta zorlanıyor gibi.',
         actionText: 'Aldric ile Sorguya Başla',
         actionHref: '/interact/tavern',
       },
@@ -61,7 +61,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         icon: '🔥',
         summary: 'Ateşin sıcaklığına sığınmış kapüşonlu köylüler.',
         description:
-          'Közlerin çıtırtısı arasında fısıltılar duyuluyor: "...dün gece mezarlık tarafında parlayan meşaleler vardı... Silas yine kilisenin çanını çalmadı..." Köylüler Engizisyoncunun gölgesini görünce aniden susuyor.',
+          'Közlerin çıtırtısı arasında fısıltılar duyuluyor: "...dün gece mezarlık tarafında parlayan meşaleler vardı... Silas yine kilisenin çanını çalmadı..." Köylüler Engizitörün gölgesini görünce aniden susuyor.',
         clueSnippet: 'Dün gece mezarlıkta meşaleler görüldüğüne dair kulak misafiri olunan bir fısıltı.',
       },
       {
@@ -71,10 +71,10 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         title: 'Meşe Bira Varilleri ve Gizli Bölme',
         category: 'clue',
         icon: '🛢️',
-        summary: 'Tezgahın arkasına istiflenmiş eski meşe fıçılar.',
+        summary: 'Tezgâhın arkasına istiflenmiş eski meşe fıçılar.',
         description:
           'En alttaki fıçının üzerinde kilise mührüne benzeyen kazınmış bir işaret var. Varillerin arkasındaki zeminde taze tebeşir tozu ve kül kalıntıları dikkat çekiyor.',
-        clueSnippet: 'Hancı tezgahının dibindeki fıçıda gizli bir işaret ve zemin kalıntıları bulundu.',
+        clueSnippet: 'Hancının tezgâhının dibindeki fıçıda gizli bir işaret ve zemin kalıntıları bulundu.',
       },
       {
         id: 'stairs',
@@ -96,7 +96,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         icon: '📜',
         summary: 'Yarım bırakılmış yemek ve mum damlalarıyla kaplı parşömen.',
         description:
-          'Masada devrilmiş bir kalay kupa ve üzerinde kırmızı balmumu damlamış yırtık bir kağıt parçası duruyor. Birisi Engizitör içeri girdiğinde aceleyle masayı terk etmiş.',
+          'Masada devrilmiş bir kalay kupa ve üzerinde kırmızı balmumu damlamış yırtık bir kâğıt parçası duruyor. Birisi Engizitör içeri girdiğinde aceleyle masayı terk etmiş.',
         clueSnippet: 'Masada aceleyle terk edilmiş, üzerinde kilise balmumu olan şüpheli bir not kırıntısı.',
       },
     ],
@@ -122,7 +122,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         icon: '⛪',
         summary: 'Kürsünün yanında dua kitabını inceleyen din adamı.',
         description:
-          'Peder Malachar, soğuk gözlerle sizi süzüyor. Tavırları son derece hesaplı ve eğitimli bir zekayı ele veriyor. Kilisenin kutsal emanetlerini ve kasabanın günahlarını herkesten iyi bildiği aşikar.',
+          'Peder Malachar soğuk gözlerle seni süzüyor. Tavırları son derece hesaplı ve eğitimli bir zekâyı ele veriyor. Kilisenin kutsal emanetlerini ve köyün günahlarını herkesten iyi bildiği aşikâr.',
         actionText: 'Malachar ile Sorguya Başla',
         actionHref: '/interact/church',
       },
@@ -183,7 +183,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
         icon: '⚙️',
         summary: 'Tartıların ve defterlerin başında bekleyen unlu adam.',
         description:
-          'Giles, un tozlarına bulanmış önlüğüyle tartıların arkasında duruyor. Sürekli etrafına bakınarak kasabanın tahıl ambarlarındaki eksilmeleri ve gece teslimatlarını gizlemeye çalışıyor.',
+          'Giles, un tozlarına bulanmış önlüğüyle tartıların arkasında duruyor. Sürekli etrafına bakınarak köyün tahıl ambarlarındaki eksilmeleri ve gece teslimatlarını gizlemeye çalışıyor.',
         actionText: 'Giles ile Sorguya Başla',
         actionHref: '/interact/mill',
       },

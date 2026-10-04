@@ -491,14 +491,14 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
           <button
             className={styles.hudIconBtn}
             onClick={() => setZoom((z) => Math.min(1.35, z + 0.1))}
-            title="Yakınlaştır (Zoom In)"
+            title="Yakınlaştır"
           >
             🔍+
           </button>
           <button
             className={styles.hudIconBtn}
             onClick={() => setZoom((z) => Math.max(0.85, z - 0.1))}
-            title="Uzaklaştır (Zoom Out)"
+            title="Uzaklaştır"
           >
             🔍-
           </button>
@@ -519,7 +519,7 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
         {!hasInteracted && (
           <div className={styles.dragHint}>
             <span className={styles.handIcon}>👈👉👆👇</span>
-            <span>Basılı tutup sağa/sola ve yukarı/aşağı serbestçe sürükleyin</span>
+            <span>Etrafa bakmak için basılı tutup sürükle</span>
           </div>
         )}
 
@@ -542,12 +542,12 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
                 <div>
                   <div className={styles.cardCategory}>
                     {activeHotspot.category === 'npc'
-                      ? 'Şüpheli / Tanığı İnceleme'
+                      ? 'Şüpheli ya da Tanık'
                       : activeHotspot.category === 'clue'
-                      ? 'Gizli İpucu & Kanıt'
+                      ? 'Gizli İpucu ve Kanıt'
                       : activeHotspot.category === 'passage'
-                      ? 'Geçit & Merdiven'
-                      : 'Mekan Gözlemi'}
+                      ? 'Geçit ve Merdiven'
+                      : 'Mekân Gözlemi'}
                   </div>
                   <h3 className={styles.cardTitle}>{activeHotspot.title}</h3>
                 </div>

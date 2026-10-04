@@ -42,7 +42,7 @@ export class GameSessionsController {
     // Yapay zekasız test oturumu: kota ve Premium kısıtları uygulanmaz, sayaç artmaz
     if (testMode === true) {
       if (!isTestModeEnabled()) {
-        throw new ForbiddenException('Test modu bu sunucuda kapali.');
+        throw new ForbiddenException('Test modu bu sunucuda kapalı.');
       }
       return this.gameSessionsService.createSession(userId, diff, sType, true);
     }
@@ -51,16 +51,16 @@ export class GameSessionsController {
     const quota = await this.authService.checkAndResetDailyQuota(userId);
     const maxSessions = quota.isPremium ? 5 : 2;
     if (quota.dailySessionCount >= maxSessions) {
-      throw new ForbiddenException(`Günlük soruşturma limitine ulaştınız. (${maxSessions}/${maxSessions}) Yarın tekrar gelin.`);
+      throw new ForbiddenException(`Bugünkü soruşturma hakkın doldu (${maxSessions}/${maxSessions}). Yarın tekrar gel.`);
     }
 
     // Premium olmayan kullanıcılar sadece easy ve medieval oynayabilir
     if (!quota.isPremium && !quota.isAdmin) {
       if (diff !== 'easy') {
-        throw new ForbiddenException('Zorluk seçimi sadece Premium üyelere açıktır.');
+        throw new ForbiddenException('Zorluk seçimi yalnızca Premium üyelere açık.');
       }
       if (sType !== 'medieval') {
-        throw new ForbiddenException('Farklı senaryo seçimi sadece Premium üyelere açıktır.');
+        throw new ForbiddenException('Farklı evren seçimi yalnızca Premium üyelere açık.');
       }
     }
 

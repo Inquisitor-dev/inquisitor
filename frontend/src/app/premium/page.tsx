@@ -16,7 +16,7 @@ export default function PremiumPage() {
 
   const handleActivate = async () => {
     if (!termsAccepted) {
-      setError('Kullanım koşullarını kabul etmeniz gerekmektedir.');
+      setError('Devam etmek için kullanım koşullarını kabul etmelisin.');
       return;
     }
     if (!activationCode.trim()) {
@@ -74,7 +74,7 @@ export default function PremiumPage() {
             PREMIUM AKTİF
           </h1>
           <p style={{ color: '#e5d9c5', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '24px' }}>
-            Tebrikler! Artık tüm premium özelliklere erişebilirsiniz.
+            Tebrikler! Artık tüm Premium özelliklere erişebilirsin.
           </p>
           <div style={{ color: '#888', fontSize: '0.85rem', lineHeight: 2, marginBottom: '32px', textAlign: 'left', padding: '16px', background: 'rgba(218,165,32,0.05)', border: '1px solid rgba(218,165,32,0.15)' }}>
             ✓ Günlük 100 diyalog hakkı<br/>
@@ -161,11 +161,11 @@ export default function PremiumPage() {
           </h3>
           <div style={{ color: '#aaa', fontSize: '0.85rem', lineHeight: 2.2 }}>
             ⚡ Sunuculara öncelikli erişim<br/>
-            🎯 Zorluk seçimi (Orta & Zor modlar)<br/>
-            🌍 Ek senaryolar (Modern Kasaba & Cyberpunk)<br/>
-            💬 Günlük 100 diyalog hakkı (3x artış)<br/>
-            🔍 Günlük 5 soruşturma hakkı (2.5x artış)<br/>
-            👥 Ek NPC'ler (Çiftçi & Doktor)
+            🎯 Zorluk seçimi (Orta ve Zor)<br/>
+            🌍 Ek evrenler (Oakhaven ve Neon Prime)<br/>
+            💬 Günde 100 diyalog hakkı (30 yerine)<br/>
+            🔍 Günde 5 soruşturma hakkı (2 yerine)<br/>
+            👥 Ek şüpheliler (Orta ve Zor zorluklarda)
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function PremiumPage() {
             value={activationCode}
             onChange={(e) => setActivationCode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleActivate()}
-            placeholder="Aktivasyon kodunuzu girin"
+            placeholder="Aktivasyon kodunu gir"
             style={inputStyle}
           />
         </div>
@@ -229,7 +229,7 @@ export default function PremiumPage() {
             style={{ marginTop: '3px', accentColor: '#DAA520' }}
           />
           <span>
-            <strong style={{ color: '#aaa' }}>Kullanım Koşulları</strong> ve <strong style={{ color: '#aaa' }}>Gizlilik Politikası</strong>&apos;nı okudum, kabul ediyorum. Premium üyelik abonelik bazlıdır ve istediğiniz zaman iptal edilebilir.
+            <strong style={{ color: '#aaa' }}>Kullanım Koşulları</strong> ve <strong style={{ color: '#aaa' }}>Gizlilik Politikası</strong>&apos;nı okudum ve kabul ediyorum. Premium üyelik aboneliktir ve istediğin zaman iptal edilebilir.
           </span>
         </label>
 

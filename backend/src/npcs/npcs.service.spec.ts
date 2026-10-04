@@ -2,12 +2,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { NpcsService } from './npcs.service';
 
-function setup(llmReply = '*Omuz silker* O gece tavernadaydım.') {
+function setup(
+  llmReply = '*Omuz silker* O gece tavernadaydım.',
+  isTestMode = false,
+  npcId = 'tavern',
+) {
   const state = {
-    npcId: 'tavern',
+    npcId,
     dynamicPrompt: 'Gizli bir borcun var.',
     npc: {
-      id: 'tavern',
+      id: npcId,
       name: 'Brother Aldric',
       description: 'Hanci',
       basePrompt: '',
@@ -26,7 +30,7 @@ function setup(llmReply = '*Omuz silker* O gece tavernadaydım.') {
       warrantsIssued: 0,
       activeWarrants: [],
       usedWarrants: [],
-      isTestMode: false,
+      isTestMode,
     },
   };
   const prisma = {
@@ -77,5 +81,18 @@ describe('NpcsService — prompt korumaları', () => {
     );
     expect(result.reply).not.toContain('Değirmenci');
     expect(result.reply).toContain('Brother Aldric');
+  });
+});
+
+describe('NpcsService — arama izni', () => {
+  it.each([
+    'Değirmeni aramak için arama izni ver',
+    'degirmeni aramak icin arama izni ver',
+    'Değirmeni araştırabilir miyim?',
+  ])('Türkçe karakterden bağımsız tanır: %s', async (message) => {
+    // Ortaçağda izni kilisedeki NPC verir; test modu LLM çağırmadan izin etiketi üretir
+    const { service } = setup(undefined, true, 'church');
+    const result = await service.interact('session-1', 'church', message);
+    expect(result.grantedWarrants).toEqual(['mill']);
   });
 });
