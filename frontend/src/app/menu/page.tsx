@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { BookOpen, Coins, Crown, ScrollText, Shirt, Skull, Store, Users } from 'lucide-react';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '@/store/useGameStore';
+import { useMarketStore } from '@/store/useMarketStore';
 import styles from './page.module.scss';
 
 export default function HomePage() {
@@ -26,6 +29,8 @@ export default function HomePage() {
     hasHydrated,
     isPremium,
   } = useGameStore();
+
+  const { tokenBalance, hasHydrated: marketHydrated } = useMarketStore();
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -316,29 +321,33 @@ export default function HomePage() {
     setIsConfigModalOpen(false);
   };
 
-  const DIFFICULTY_DETAILS: Record<string, string> = {
-    easy: 'Kolay',
-    medium: 'Orta',
-    hard: 'Zor',
+  const DIFFICULTY_DETAILS: Record<string, { label: string; level: number; suspects: number }> = {
+    easy: { label: 'Kolay', level: 1, suspects: 4 },
+    medium: { label: 'Orta', level: 2, suspects: 5 },
+    hard: { label: 'Zor', level: 3, suspects: 6 },
   };
 
-  const STORY_DETAILS: Record<string, { title: string; badge: string; desc: string }> = {
+  const STORY_DETAILS: Record<string, { title: string; era: string; desc: string }> = {
     medieval: {
-      title: 'Medieval Era - Ashenmoor',
-      badge: 'Varsayılan Hikaye',
-      desc: 'Engizisyon, batıl inanç ve karanlık sırlar. Standart karanlık fantezi deneyimi.'
+      title: 'Ashenmoor',
+      era: 'Karanlık Ortaçağ',
+      desc: 'Engizisyon, batıl inanç ve sisli mezarlıklar. Her köylünün dualarının altında bir sır yatar.',
     },
     modern: {
-      title: '90\'lar Amerikan Kasabası',
-      badge: 'Satın Alındı',
-      desc: 'Oakhaven. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar.'
+      title: 'Oakhaven',
+      era: "90'lar Amerikan Kasabası",
+      desc: 'Yerel polis, cinayet dedektifleri ve ormanın kenarında birbirini koruyan şüpheli kasabalılar.',
     },
     cyberpunk: {
-      title: 'Distopik Cyberpunk',
-      badge: 'Satın Alındı',
-      desc: 'Neon Prime. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir.'
-    }
+      title: 'Neon Prime',
+      era: 'Distopik Cyberpunk',
+      desc: 'Yozlaşmış mega şirketler, siber geliştirmeler ve hafızaların bile satılık olduğu tech-noir bir şehir.',
+    },
   };
+
+  const story = STORY_DETAILS[selectedStory] ?? STORY_DETAILS.medieval;
+  const difficulty = DIFFICULTY_DETAILS[selectedDifficulty] ?? DIFFICULTY_DETAILS.easy;
+  const inquisitorName = userEmail ? userEmail.split('@')[0] : 'Engizitör';
 
   const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
   const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
@@ -357,20 +366,36 @@ export default function HomePage() {
 
   return (
     <main className={styles.main}>
-      <div 
-        className={styles.dynamicBg} 
+      <div
+        key={selectedStory}
+        className={styles.dynamicBg}
         style={{ backgroundImage: `url('${getMapImage(selectedStory)}')` }}
       />
+      <div className={styles.bgShade} />
+
       <nav className={styles.navbar}>
         <div className={styles.navLeft}>
-          <img src="/logo/favicon.png" alt="Inquisitor Logo" className={styles.logo} />
+          <img src="/logo/favicon.png" alt="" className={styles.logo} />
           <span className={styles.navTitle}>The Inquisitor</span>
         </div>
+
+        <div className={styles.navLinks}>
+          <Link href="/market" className={styles.navLink}>
+            <Store size={16} /> Market
+          </Link>
+          <Link href="/community" className={styles.navLink}>
+            <Users size={16} /> Topluluk
+          </Link>
+          <button className={styles.navLink} onClick={() => setIsHowToPlayOpen(true)}>
+            <BookOpen size={16} /> Nasıl Oynanır
+          </button>
+        </div>
+
         <div className={styles.navRight}>
-          <div className={styles.currency}>
-            <span className={styles.currencyIcon}>🪙</span>
-            <span>100</span>
-          </div>
+          <Link href="/market" className={styles.currency} title="Token bakiyen · Markete git">
+            <span className={styles.currencyIcon}><Coins size={15} /></span>
+            <span>{marketHydrated ? tokenBalance.toLocaleString('tr-TR') : '—'}</span>
+          </Link>
           <button
             className={styles.settingsBtn}
             onClick={() => setIsSettingsOpen(true)}
@@ -398,94 +423,120 @@ export default function HomePage() {
       <div className={styles.cornerBotLeft} />
       <div className={styles.cornerBotRight} />
 
-      <div className={styles.layoutContainer}>
-        {/* SOL KOLON: KARAKTER & LEADERBOARD */}
-        <div className={styles.leftCol}>
-          <div className={styles.characterPanel}>
-            <div className={styles.characterDisplay}>
-              <img 
-                src="/characters/inquisitor2/idle/south.png" 
-                alt="Inquisitor Character" 
-                className={styles.characterSprite}
-              />
-            </div>
-            <div className={styles.characterInfo}>
-              <h2>Çaylak Engizitör</h2>
-              <p>Varsayılan Kıyafetler (Ücretsiz)</p>
-            </div>
+      <div className={styles.lobby}>
+        {/* KARAKTER */}
+        <section className={`${styles.panel} ${styles.characterPanel}`}>
+          <span className={styles.panelEyebrow}>Engizitör</span>
+          <div className={styles.characterStage}>
+            <span className={styles.characterHalo} />
+            <img
+              src="/characters/inquisitor2/idle/south.png"
+              alt="Engizitör karakteri"
+              className={styles.characterSprite}
+            />
+            <span className={styles.characterPedestal} />
           </div>
-          
-          <div className={styles.leaderboardPanel}>
+          <h2 className={styles.characterName}>{inquisitorName}</h2>
+          <span className={styles.characterRank}>Çaylak Engizitör</span>
+          <Link href="/market" className={styles.wardrobeBtn}>
+            <Shirt size={15} /> Gardırop
+          </Link>
+        </section>
+
+        {/* AKTİF DOSYA */}
+        <section className={styles.casePanel}>
+          <span className={styles.caseSeal} aria-hidden>✠</span>
+          <span className={styles.caseEyebrow}>{story.era}</span>
+          <h1 className={styles.caseTitle}>{story.title}</h1>
+
+          <div className={styles.caseMeta}>
+            <span className={styles.metaChip}>
+              {[1, 2, 3].map((lvl) => (
+                <Skull
+                  key={lvl}
+                  size={14}
+                  className={lvl <= difficulty.level ? styles.skullOn : styles.skullOff}
+                />
+              ))}
+              {difficulty.label} Zorluk
+            </span>
+            <span className={styles.metaChip}>
+              <Users size={14} /> {difficulty.suspects} Şüpheli
+            </span>
+          </div>
+
+          <p className={styles.caseDesc}>{story.desc}</p>
+
+          <div className={styles.caseActions}>
+            {activeSession && !checkingSession && (
+              <button onClick={handleResume} disabled={resumeLoading} className={styles.btnPrimary}>
+                {resumeLoading ? 'Dönülüyor...' : `Soruşturmaya Devam Et · Gün ${activeSession.currentDay}`}
+              </button>
+            )}
+            <button
+              onClick={handleStart}
+              disabled={loading}
+              className={activeSession ? styles.btnSecondary : styles.btnPrimary}
+            >
+              {loading ? 'Dosya Hazırlanıyor...' : activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla'}
+            </button>
+            <button className={styles.btnGhost} onClick={handleConfigModalOpen}>
+              <ScrollText size={15} /> Hikaye &amp; Zorluk Değiştir
+            </button>
+            {testModeAvailable && (
+              <button
+                onClick={() => { setIsTestModeStart(true); void startWithDifficultyAndScenario(selectedDifficulty, selectedStory, true); }}
+                className={`${styles.btnGhost} ${styles.btnDashed}`}
+              >
+                Test Modu (Yapay Zekasız)
+              </button>
+            )}
+          </div>
+
+          {error && <p className={styles.caseError} role="alert">{error}</p>}
+        </section>
+
+        {/* Dar ekranlarda navbar bağlantıları gizlenir; burada gösterilir */}
+        <nav className={styles.quickLinks} aria-label="Hızlı bağlantılar">
+          <Link href="/market" className={styles.quickLink}>
+            <Store size={18} /> Market
+          </Link>
+          <Link href="/community" className={styles.quickLink}>
+            <Users size={18} /> Topluluk
+          </Link>
+          <button className={styles.quickLink} onClick={() => setIsHowToPlayOpen(true)}>
+            <BookOpen size={18} /> Kılavuz
+          </button>
+        </nav>
+
+        {/* SIRALAMA */}
+        <section className={`${styles.panel} ${styles.leaderboardPanel}`}>
+          <header className={styles.leaderboardHeader}>
+            <Crown size={18} />
             <h3 className={styles.leaderboardTitle}>Engizitör Sıralaması</h3>
-            <div className={styles.leaderboardList}>
-              <div className={styles.leaderboardItem}>
-                <span className={styles.lbRank}>1</span>
-                <span className={styles.lbName}>---</span>
+          </header>
+          <ol className={styles.leaderboardList}>
+            {[1, 2, 3, 4, 5].map((rank) => (
+              <li key={rank} className={`${styles.leaderboardItem} ${rank <= 3 ? styles[`podium${rank}`] : ''}`}>
+                <span className={styles.lbRank}>{rank}</span>
+                <span className={styles.lbName}>—</span>
                 <span className={styles.lbScore}>0</span>
-              </div>
-              <div className={styles.leaderboardItem}>
-                <span className={styles.lbRank}>2</span>
-                <span className={styles.lbName}>---</span>
-                <span className={styles.lbScore}>0</span>
-              </div>
-              <div className={styles.leaderboardItem}>
-                <span className={styles.lbRank}>3</span>
-                <span className={styles.lbName}>---</span>
-                <span className={styles.lbScore}>0</span>
-              </div>
-            </div>
+              </li>
+            ))}
+          </ol>
+          <div className={styles.lbSelf}>
+            <span className={styles.lbRank}>—</span>
+            <span className={styles.lbName}>{inquisitorName} <em>(sen)</em></span>
+            <span className={styles.lbScore}>0</span>
           </div>
-        </div>
+          <p className={styles.lbNote}>İlk sezon yakında başlıyor. Çözdüğün her vaka seni üst sıralara taşıyacak.</p>
+        </section>
+      </div>
 
-        {/* SAĞ KOLON: HİKAYE VE MENÜ */}
-        <div className={styles.rightCol}>
-          <div className={styles.storyPanel}>
-            {/* Seçili Hikaye Kartı */}
-            <div className={styles.activeStoryCard}>
-              <h3 className={styles.storyName}>{STORY_DETAILS[selectedStory]?.title}</h3>
-              <span className={styles.difficultyBadge}>{DIFFICULTY_DETAILS[selectedDifficulty]} Zorluk &bull; {STORY_DETAILS[selectedStory]?.badge}</span>
-              <p className={styles.storyDesc}>{STORY_DETAILS[selectedStory]?.desc}</p>
-              
-              <div className={styles.storyCta}>
-                {activeSession && !checkingSession && (
-                  <button onClick={handleResume} disabled={resumeLoading} className={styles.btnPrimary}>
-                    {resumeLoading ? 'Dönülüyor...' : `Soruşturmaya Devam Et (Gün ${activeSession.currentDay})`}
-                  </button>
-                )}
-                <button onClick={handleStart} disabled={loading} className={styles.btnPrimary}>
-                  {loading ? 'Hazırlanıyor...' : (activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla')}
-                </button>
-                <button className={styles.btnSecondary} onClick={handleConfigModalOpen}>
-                  Hikaye & Zorluk Değiştir
-                </button>
-              </div>
-              
-              {testModeAvailable && (
-                <button onClick={() => { setIsTestModeStart(true); void startWithDifficultyAndScenario(selectedDifficulty, selectedStory, true); }} className={styles.btnSecondary} style={{ width: '100%', marginTop: '12px', borderStyle: 'dashed' }}>
-                  Test Modu (Yapay Zekasız)
-                </button>
-              )}
-            </div>
-
-            {/* Alt Menüler (Market & Community) */}
-            <div className={styles.bottomNavGroup}>
-              <button className={styles.navBtnMarket} onClick={() => router.push('/market')}>
-                <span className={styles.navIcon}>🪙</span>
-                Market (Hikaye & Kozmetik)
-              </button>
-              <button className={styles.navBtnCommunity} onClick={() => router.push('/community')}>
-                <span className={styles.navIcon}>📜</span>
-                Community (Kendi Hikayeni Oluştur)
-              </button>
-            </div>
-
-            <div className={styles.bottomRule}>
-              <span />
-              <span className={styles.bottomRuleText}>Inquisitor AI · Est. MCCXII</span>
-              <span />
-            </div>
-          </div>
-        </div>
+      <div className={styles.footerRule}>
+        <span />
+        <span className={styles.footerRuleText}>Inquisitor AI · Est. MCCXII</span>
+        <span />
       </div>
 
       {isHowToPlayOpen && (
