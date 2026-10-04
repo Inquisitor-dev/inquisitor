@@ -1,8 +1,15 @@
-import { Injectable, BadRequestException, UnauthorizedException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  OnModuleInit,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
+import { isTestModeEnabled } from '../test-mode';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -64,7 +71,9 @@ export class AuthService implements OnModuleInit {
     const isAdmin = adminEmails.includes(email);
 
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
-    if (existingUser?.isVerified && !isAdmin) {
+    // Doğrulanmış hesaplar (admin dahil) bu uçtan yeniden kaydolamaz; aksi halde admin e-postasını bilen
+    // biri gönderdiği şifreyi admin hesabına yazıp giriş yapabilirdi. Admin hesabı açılışta .env'den kurulur.
+    if (existingUser?.isVerified) {
       throw new BadRequestException('Bu e-posta adresi zaten kayıtlı.');
     }
 
@@ -110,9 +119,21 @@ export class AuthService implements OnModuleInit {
       });
       return { message: 'Doğrulama kodu e-posta adresine gönderildi.' };
     } catch (error) {
-      console.warn('Mail gonderilemedi (SMTP portu kapali olabilir). Kod:', code, error);
-      // Render free tier'da test edebilmek icin kodu mesaja ekliyoruz
-      return { message: `(Test Modu) E-posta gönderilemedi. Doğrulama kodun: ${code}` };
+      // Kod canlıda asla cevaba eklenmez: eklenirse herkes başkasının e-postasıyla hesap açabilir.
+      // E-posta ayarı olmayan yerel geliştirmede kayıt denenebilsin diye yalnızca test modunda gösterilir.
+      if (isTestModeEnabled()) {
+        console.warn(
+          'Dogrulama e-postasi gonderilemedi; test modunda kod cevaba eklendi.',
+          error,
+        );
+        return {
+          message: `(Test Modu) E-posta gönderilemedi. Doğrulama kodun: ${code}`,
+        };
+      }
+      console.error('Dogrulama e-postasi gonderilemedi.', error);
+      throw new ServiceUnavailableException(
+        'Doğrulama e-postası gönderilemedi. Birazdan tekrar dene.',
+      );
     }
   }
 
