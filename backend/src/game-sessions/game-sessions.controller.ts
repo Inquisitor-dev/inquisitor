@@ -4,6 +4,8 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
 import { isTestModeEnabled } from '../test-mode';
 
+type AuthedRequest = { user: { userId: string } };
+
 @Controller('game-sessions')
 export class GameSessionsController {
   constructor(
@@ -72,43 +74,85 @@ export class GameSessionsController {
 
   @Post(':id/end-day')
   @UseGuards(JwtAuthGuard)
-  async endDay(@Param('id') sessionId: string) {
-    return await this.gameSessionsService.endDay(sessionId);
+  async endDay(@Request() req: AuthedRequest, @Param('id') sessionId: string) {
+    return await this.gameSessionsService.endDay(sessionId, req.user.userId);
   }
 
   @Post(':id/advance-time')
   @UseGuards(JwtAuthGuard)
-  async advanceTime(@Param('id') sessionId: string) {
-    return await this.gameSessionsService.advanceTime(sessionId);
+  async advanceTime(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.advanceTime(
+      sessionId,
+      req.user.userId,
+    );
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getSession(@Param('id') sessionId: string) {
-    return await this.gameSessionsService.getSession(sessionId);
+  async getSession(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getSession(
+      sessionId,
+      req.user.userId,
+    );
   }
 
   @Post(':id/notes')
   @UseGuards(JwtAuthGuard)
-  async updateNotes(@Param('id') sessionId: string, @Body('notes') notes: string) {
-    return await this.gameSessionsService.updateNotes(sessionId, notes);
+  async updateNotes(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+    @Body('notes') notes: string,
+  ) {
+    return await this.gameSessionsService.updateNotes(
+      sessionId,
+      req.user.userId,
+      notes,
+    );
   }
 
   @Post(':id/condemn')
   @UseGuards(JwtAuthGuard)
-  async condemnNpc(@Param('id') sessionId: string, @Body('npcId') npcId: string) {
-    return await this.gameSessionsService.condemnNpc(sessionId, npcId);
+  async condemnNpc(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+    @Body('npcId') npcId: string,
+  ) {
+    return await this.gameSessionsService.condemnNpc(
+      sessionId,
+      req.user.userId,
+      npcId,
+    );
   }
 
   @Post(':id/consume-warrant')
   @UseGuards(JwtAuthGuard)
-  async consumeWarrant(@Param('id') sessionId: string, @Body('location') location: string) {
-    return await this.gameSessionsService.consumeWarrant(sessionId, location);
+  async consumeWarrant(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+    @Body('location') location: string,
+  ) {
+    return await this.gameSessionsService.consumeWarrant(
+      sessionId,
+      req.user.userId,
+      location,
+    );
   }
 
   @Post(':id/timeout')
   @UseGuards(JwtAuthGuard)
-  async timeoutSession(@Param('id') sessionId: string) {
-    return await this.gameSessionsService.timeoutSession(sessionId);
+  async timeoutSession(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.timeoutSession(
+      sessionId,
+      req.user.userId,
+    );
   }
 }
