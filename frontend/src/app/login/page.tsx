@@ -79,7 +79,8 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setInfo('Doğrulama kodu e-posta adresine gönderildi.');
+        // Yerel test modunda backend kodu mesajda döndürür; canlıda sadece genel bir bilgi gelir
+        setInfo(data.message || 'Doğrulama kodu e-posta adresine gönderildi.');
         setStep('code');
       } else {
         setError(data.message || data.error || 'Bir hata oluştu.');
