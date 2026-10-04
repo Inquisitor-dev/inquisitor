@@ -5,7 +5,7 @@
 export const MAX_PLAYER_MESSAGE_LENGTH = 500;
 
 // Türkçe karakterleri sadeleştirir; oyuncular "önceki talimatları" yerine "onceki talimatlari" da yazabilir
-const fold = (text: string) =>
+export const foldTurkish = (text: string) =>
   text
     .toLocaleLowerCase('tr-TR')
     .replace(/ı/g, 'i')
@@ -32,7 +32,7 @@ const INJECTION_PATTERNS: RegExp[] = [
 ];
 
 export function looksLikePromptInjection(message: string): boolean {
-  const normalized = fold(message);
+  const normalized = foldTurkish(message);
   return INJECTION_PATTERNS.some((pattern) => pattern.test(normalized));
 }
 

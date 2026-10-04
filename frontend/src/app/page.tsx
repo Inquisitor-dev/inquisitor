@@ -78,10 +78,10 @@ export default function LandingPage() {
 
       <section className={styles.hero} id="ana-sayfa">
         <div className={styles.heroContent}>
-          <h1>The Inquısıtor</h1>
+          <h1 lang="en">The Inquisitor</h1>
           <h2>Dinle. Analiz et. Hüküm ver.</h2>
           <p>
-            Sen bu hikayenin kahramanı değilsin. Sen engizitörsün. Sıradan bir
+            Sen bu hikâyenin kahramanı değilsin. Sen engizitörsün. Sıradan bir
             oyun oynamıyorsun, kararlarınla sanal bir cemaatin kaderini belirleyen
             mutlak bir yargıçsın.
           </p>
@@ -126,7 +126,7 @@ export default function LandingPage() {
               <div className={styles.featureContent}>
                 <h3>Çapraz Sorgu Mekaniği</h3>
                 <p>
-                  İstediğini sor. Hikayeleri karşılaştır. Çelişkileri açığa çıkar
+                  İstediğini sor. Hikâyeleri karşılaştır. Çelişkileri açığa çıkar
                   ve manipülatif şüphelileri köşeye sıkıştır.
                 </p>
               </div>
@@ -141,7 +141,7 @@ export default function LandingPage() {
               <div className={styles.featureContent}>
                 <h3>Psikolojik Gerilim</h3>
                 <p>
-                  Yanlış kişiyi suçlarsan... veya fazla merhametli davranırsan,
+                  Yanlış kişiyi suçlarsan ya da fazla merhametli davranırsan
                   bütün köy sana karşı ayaklanabilir. Tansiyon hep yüksek.
                 </p>
               </div>
@@ -154,7 +154,7 @@ export default function LandingPage() {
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
-                <h3>Asla Aynı Hikaye Değil</h3>
+                <h3>Asla Aynı Hikâye Değil</h3>
                 <p>
                   Her oturum, arka plandaki yapay zeka tarafından yeni yalanlar ve
                   yeni gerçeklerle tekrar örülür. Sonsuz tekrar oynanabilirlik.
@@ -171,8 +171,8 @@ export default function LandingPage() {
             <div className={styles.mechText}>
               <h2>Köyde Kimse Göründüğü Gibi Değil.</h2>
               <p>
-                Etkileşimli köy haritası üzerinden farklı mekanları ziyaret et.
-                Taverna, Kilise, Mezarlık... Her mekan başka bir sır saklıyor.
+                Etkileşimli köy haritasında farklı mekânları ziyaret et.
+                Taverna, kilise, mezarlık... Her mekân başka bir sır saklıyor.
               </p>
               <p>
                 Karşılaştığın karakterlerle doğal dilde konuş. İfadelerindeki
@@ -212,11 +212,11 @@ export default function LandingPage() {
               <h3>Aday Engizitör</h3>
               <div className={styles.price}>Ücretsiz</div>
               <ul className={styles.featuresList}>
-                <li>Temel Köy Haritası (Kilise, Taverna vb.)</li>
-                <li>5 Aktif Yapay Zeka Ajanı (NPC)</li>
-                <li>Günde 1 Oyun Oturumu</li>
-                <li>Maksimum 40 Diyalog Limiti</li>
-                <li>Temel İstatistikler ve Oyun Raporu</li>
+                <li>Ashenmoor evreni ve köy haritası</li>
+                <li>Kolay zorlukta 4 şüpheli</li>
+                <li>Günde 2 soruşturma</li>
+                <li>Günde 30 diyalog</li>
+                <li>Oyun sonunda hakikat ve ipucu özeti</li>
               </ul>
               <button
                 className={styles.btn}
@@ -233,11 +233,10 @@ export default function LandingPage() {
                 $4.99 <span>/ ay</span>
               </div>
               <ul className={styles.featuresList}>
-                <li>Sınırsız Etkileşim ve Token Limiti Yok</li>
-                <li>Genişletilmiş Köy Halkı (15+ AI Karakter)</li>
-                <li>AI Davranışları İçin Derin Analitik Raporu</li>
-                <li>Farklı Fantastik Senaryolar</li>
-                <li>Sunuculara Öncelikli ve Hızlı Erişim</li>
+                <li>Günde 5 soruşturma ve 100 diyalog</li>
+                <li>Orta ve Zor zorluklar (5–6 şüpheli)</li>
+                <li>Oakhaven ve Neon Prime evrenleri</li>
+                                <li>Sunuculara öncelikli erişim</li>
               </ul>
               <button
                 className={styles.btn}
@@ -311,7 +310,7 @@ export default function LandingPage() {
             Her sorgu bir iz bırakır.
           </p>
           <div className={styles.copyright}>
-            &copy; 2026 Inquisitor AI. Tüm Hakları Saklıdır. Kurucu: Berke Çakıroğlu
+            &copy; 2026 Inquisitor AI. Tüm hakları saklıdır. Kurucu: Berke Çakıroğlu
           </div>
         </div>
       </footer>

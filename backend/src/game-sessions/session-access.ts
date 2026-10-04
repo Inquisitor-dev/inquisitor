@@ -12,7 +12,7 @@ export async function findOwnedSession(
     ? await prisma.gameSession.findUnique({ where: { id: sessionId } })
     : null;
   if (!session || session.userId !== userId) {
-    throw new NotFoundException('Oturum bulunamadi.');
+    throw new NotFoundException('Oturum bulunamadı.');
   }
   return session;
 }

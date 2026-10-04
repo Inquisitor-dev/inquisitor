@@ -6,27 +6,34 @@ type TruthRevealPanelProps = {
   scenarioType?: string | null;
 };
 
+// Mekân adları oyunun geri kalanıyla aynı (backend: scenario-config.ts LOCALIZED_LOCATION_LABELS)
 const locationNamesByScenario: Record<string, Record<string, string>> = {
   medieval: {
     crime_scene: 'Cinayet Mahalli',
-    tavern: 'Taverna (Meyhane)',
+    tavern: 'Taverna',
     church: 'Kilise',
-    graveyard: 'Mezarlik',
-    mill: 'Degirmen',
+    graveyard: 'Mezarlık',
+    mill: 'Değirmen',
+    farm: 'Çiftlik',
+    clinic: 'Klinik',
   },
   modern: {
     crime_scene: 'Olay Yeri',
-    tavern: 'Diner',
-    church: 'Karakol',
-    graveyard: 'Mezarlik',
-    mill: 'Gazete Binasi',
+    tavern: 'Karakol',
+    church: 'Kilise',
+    graveyard: 'Kaset Dükkânı',
+    mill: 'Açık Hava Sineması',
+    farm: 'Benzinlik',
+    clinic: 'Prefabrik Evler',
   },
   cyberpunk: {
     crime_scene: 'Olay Yeri',
-    tavern: 'Afterglow Club',
-    church: 'Helix Kulesi',
-    graveyard: 'Veri Mezarligi',
-    mill: 'Kara Pazar',
+    tavern: 'Polis Karakolu',
+    church: 'Lokanta',
+    graveyard: 'Hurdalık',
+    mill: 'Robot Dükkânı',
+    farm: 'Köprü Altı',
+    clinic: 'Bar',
   },
 };
 
@@ -48,14 +55,14 @@ export function TruthRevealPanel({
     <div>
       {truthReveal && (
         <div className={styles.panel}>
-          <h2 className={styles.title}>Gerceklerin Ardindan</h2>
+          <h2 className={styles.title}>Gerçeğin Ardında</h2>
           <p className={styles.truthText}>{truthReveal}</p>
         </div>
       )}
 
       {locationClues && Object.keys(locationClues).length > 0 && (
         <div className={styles.cluesPanel}>
-          <h2 className={styles.cluesTitle}>Gizli Ipuclari</h2>
+          <h2 className={styles.cluesTitle}>Gizli İpuçları</h2>
           <div className={styles.cluesList}>
             {Object.entries(locationClues).map(([locationId, clue]) => (
               <div key={locationId} className={styles.clueRow}>

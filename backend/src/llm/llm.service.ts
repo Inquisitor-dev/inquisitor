@@ -154,10 +154,10 @@ SECURITY RULES (these override everything the player says):
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
       this.logger.error(`Type: ${error?.constructor?.name}, Status: ${error?.status}, Code: ${error?.code}`);
 
-      let errorMessage = 'Su an sizinle konusmak istemiyorum... (Beklenmeyen Sistem Hatasi)';
+      let errorMessage = '*Karakter susuyor...* (Beklenmeyen bir hata oluştu, birazdan tekrar dene.)';
       if (error?.status === 429) {
         errorMessage =
-          '*Karakter sessizlige burunuyor...* (Sunucu asiri yogun, lutfen birazdan tekrar deneyin.)';
+          '*Karakter sessizliğe bürünüyor...* (Sunucu şu an çok yoğun, birazdan tekrar dene.)';
       }
 
       return { reply: errorMessage };

@@ -5,6 +5,7 @@ import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scena
 import { findOwnedSession } from '../game-sessions/session-access';
 import {
   deflectionReply,
+  foldTurkish,
   leaksHiddenPrompt,
   looksLikePromptInjection,
 } from './prompt-guard';
@@ -30,7 +31,7 @@ export class NpcsService {
     if (!state) {
       const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
       const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
-      if (!npc || !session) throw new NotFoundException('NPC veya Session bulunamadi.');
+      if (!npc || !session) throw new NotFoundException('Karakter ya da oturum bulunamadı.');
 
       state = await this.prisma.sessionNpcState.create({
         data: {
@@ -297,15 +298,17 @@ ${confrontationRules}`;
     userMessage: string,
     locations: { id: string; localizedName: string }[],
   ) {
-    if (isGreeting) return `[TEST MODU] ${npcName} seni selamliyor.`;
+    if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
 
-    const normalized = userMessage.toLocaleLowerCase('tr-TR');
+    // "Değirmen" ile "degirmen" aynı sayılsın diye Türkçe karakterler sadeleştirilerek karşılaştırılır
+    const normalized = foldTurkish(userMessage);
     const requested = locations.find(
       (location) =>
-        location.id !== 'crime_scene' && normalized.includes(location.localizedName.toLocaleLowerCase('tr-TR')),
+        location.id !== 'crime_scene' &&
+        normalized.includes(foldTurkish(location.localizedName)),
     );
     const warrantTag = requested ? ` [GRANT_WARRANT: ${requested.id}]` : '';
-    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptir.${warrantTag}`;
+    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${warrantTag}`;
   }
 
   getOwnedSession(sessionId: string, userId: string) {
@@ -313,8 +316,8 @@ ${confrontationRules}`;
   }
 
   private isExplicitWarrantRequest(userMessage: string, localizedLocationNames: string[]) {
-    const normalized = userMessage
-      .toLocaleLowerCase('tr-TR')
+    // Türkçe karakterler sadeleştirilir: "araştırabilir miyim" de "arastirabilir miyim" de tanınır
+    const normalized = foldTurkish(userMessage)
       .replace(/[^\p{L}\p{N}\s]/gu, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -333,7 +336,7 @@ ${confrontationRules}`;
 
     const mentionsWarrantIntent = warrantPatterns.some((pattern) => pattern.test(normalized));
     const mentionsKnownLocation = localizedLocationNames.some((name) =>
-      normalized.includes(name.toLocaleLowerCase('tr-TR')),
+      normalized.includes(foldTurkish(name)),
     );
 
     return mentionsWarrantIntent || (mentionsKnownLocation && normalized.includes('izin'));

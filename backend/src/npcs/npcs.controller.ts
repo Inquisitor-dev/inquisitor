@@ -36,7 +36,7 @@ export class NpcsController {
 
     const session = await this.npcsService.getOwnedSession(sessionId, userId);
     if (session.status !== 'ACTIVE') {
-      throw new BadRequestException('Bu sorusturma sona erdi.');
+      throw new BadRequestException('Bu soruşturma sona erdi.');
     }
     if (message.length > MAX_PLAYER_MESSAGE_LENGTH) {
       throw new BadRequestException(
@@ -49,7 +49,7 @@ export class NpcsController {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
       const maxMessages = quota.isPremium ? 100 : 30;
       if (quota.dailyMessageCount >= maxMessages) {
-        throw new ForbiddenException(`Günlük mesaj limitine ulaştınız. (${maxMessages}/${maxMessages}) Yarın tekrar gelin.`);
+        throw new ForbiddenException(`Bugünkü sorgu hakkın doldu (${maxMessages}/${maxMessages}). Yarın tekrar gel.`);
       }
       await this.authService.incrementMessageCount(userId);
     }

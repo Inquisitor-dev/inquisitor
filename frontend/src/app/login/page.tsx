@@ -39,7 +39,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('E-posta ve şifre girin.');
+      setError('E-posta adresini ve şifreni gir.');
       return;
     }
     setLoading(true);
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
   const handleSendCode = async () => {
     if (!email.includes('@') || password.length < 6) {
-      setError('Geçerli bir e-posta adresi ve en az 6 haneli şifre girin.');
+      setError('Geçerli bir e-posta adresi ve en az 6 karakterli bir şifre gir.');
       return;
     }
     setLoading(true);
@@ -79,7 +79,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setInfo('Doğrulama kodu e-posta adresinize gönderildi.');
+        setInfo('Doğrulama kodu e-posta adresine gönderildi.');
         setStep('code');
       } else {
         setError(data.message || data.error || 'Bir hata oluştu.');
@@ -109,7 +109,7 @@ export default function LoginPage() {
         setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
         router.push('/menu');
       } else {
-        setError(data.message || data.error || 'Geçersiz kod.');
+        setError(data.message || data.error || 'Kod hatalı.');
       }
     } catch {
       setError('Sunucuya bağlanılamadı.');

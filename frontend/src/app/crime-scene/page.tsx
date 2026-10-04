@@ -113,7 +113,7 @@ export default function CrimeScenePage() {
         <aside className={styles.sidebar}>
           <div className={styles.panel}>
             <div className={styles.panelTitle}>
-              Engizisyoncunun Notları
+              Engizitörün Notları
               <div className={styles.expandIcon} onClick={toggleNotesExpanded} title="Genişlet">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -139,7 +139,7 @@ export default function CrimeScenePage() {
           <div className={styles.expandedNotesOverlay}>
             <div className={styles.expandedNotesPanel}>
               <div className={styles.expandedNotesHeader}>
-                <h2>Engizisyoncunun Notları</h2>
+                <h2>Engizitörün Notları</h2>
                 <button className={styles.closeExpandedBtn} onClick={toggleNotesExpanded}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -155,7 +155,7 @@ export default function CrimeScenePage() {
                 onChange={handleNotesChange}
                 onBlur={handleNotesBlur}
               />
-              <div className={styles.saveHint}>Değişiklikler tıklanmadığında otomatik kaydedilir.</div>
+              <div className={styles.saveHint}>Not alanından çıktığında değişiklikler otomatik kaydedilir.</div>
             </div>
           </div>
         )}

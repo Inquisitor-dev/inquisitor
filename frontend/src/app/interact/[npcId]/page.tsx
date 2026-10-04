@@ -16,35 +16,35 @@ interface Message {
 const getNpcProfile = (npcKey: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Serif Dale Cooper', title: 'Polis Amiri - Karakolun Tek Kanunu', icon: '🚔' },
-      church: { name: 'Papaz Gerald', title: 'Papaz - Kilisedeki Sessiz Tanik', icon: '⛪' },
-      graveyard: { name: 'Randy', title: 'Video Kasetci - Herkesin Ugradigi Dukkan', icon: '📼' },
-      mill: { name: 'Donna', title: 'Gise Gorevlisi - Acik Hava Sinemasinin Gozleri', icon: '🎬' },
-      farm: { name: 'Earl', title: 'Pompaci - Benzinligin Sessiz Bekcisi', icon: '⛽' },
-      clinic: { name: 'Old Marge', title: 'Koyun Yaslisi - Her Seyi Bilen Ama Soylemeyen', icon: '🏠' },
-      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Taniklar...', icon: '🩸' },
+      tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
+      church: { name: 'Papaz Gerald', title: 'Papaz — Kilisenin Sessiz Tanığı', icon: '⛪' },
+      graveyard: { name: 'Randy', title: 'Kasetçi — Herkesin Uğradığı Dükkân', icon: '📼' },
+      mill: { name: 'Donna', title: 'Gişe Görevlisi — Açık Hava Sinemasının Gözü', icon: '🎬' },
+      farm: { name: 'Earl', title: 'Pompacı — Benzinliğin Sessiz Bekçisi', icon: '⛽' },
+      clinic: { name: 'Old Marge', title: 'Kasabanın Yaşlısı — Her Şeyi Bilen Ama Söylemeyen', icon: '🏠' },
+      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
   } else if (scenarioType === 'cyberpunk') {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Officer Kael Voss', title: 'Memur Bey - Neon Prime Karakolu', icon: '👮' },
-      church: { name: 'Mirel Sato', title: 'Restoran Sahibi - Static Spoon', icon: '🍜' },
-      graveyard: { name: 'Brakk Coil', title: 'Hurdaci - Coil Yard', icon: '🛠️' },
-      mill: { name: 'AURA-9', title: 'Satici Android - AURA Robotics', icon: '🤖' },
-      farm: { name: 'Ash', title: 'Dilenci - Kopru Alti Muhbiri', icon: '🧥' },
-      clinic: { name: 'Vera Nyx', title: 'Barmen - Velvet Static', icon: '🍸' },
-      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Taniklar...', icon: '🩸' },
+      tavern: { name: 'Officer Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
+      church: { name: 'Mirel Sato', title: 'Lokanta Sahibi — Static Spoon', icon: '🍜' },
+      graveyard: { name: 'Brakk Coil', title: 'Hurdacı — Coil Yard', icon: '🛠️' },
+      mill: { name: 'AURA-9', title: 'Satıcı Android — AURA Robotics', icon: '🤖' },
+      farm: { name: 'Ash', title: 'Dilenci — Köprü Altının Muhbiri', icon: '🧥' },
+      clinic: { name: 'Vera Nyx', title: 'Barmen — Velvet Static', icon: '🍸' },
+      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
   } else {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Kardes Aldric', title: 'Hanci - Sirlarin Bekcisi', icon: '🍺' },
-      church: { name: 'Peder Malachar', title: 'Rahip - Iki Efendinin Hizmetkari', icon: '⛪' },
-      graveyard: { name: 'Ihtiyar Silas', title: 'Mezarci - Gercegi Gomup Saklayan', icon: '🪦' },
-      mill: { name: 'Degirmenci Giles', title: 'Degirmenci - Ruzgarin Sirdasi', icon: '⚙️' },
-      farm: { name: 'Ciftci Edmund', title: 'Ciftci - Topragin ve Karanligin Tanigi', icon: '🌾' },
-      clinic: { name: 'Doktor Harland', title: 'Hekim - Soguk Ellerin ve Daha Soguk Gozlerin Sahibi', icon: '🏥' },
-      crime_scene: { name: 'Cinayet Mahalli', title: 'Sessiz Taniklar...', icon: '🩸' },
+      tavern: { name: 'Kardeş Aldric', title: 'Hancı — Sırların Bekçisi', icon: '🍺' },
+      church: { name: 'Peder Malachar', title: 'Rahip — İki Efendinin Hizmetkârı', icon: '⛪' },
+      graveyard: { name: 'İhtiyar Silas', title: 'Mezarcı — Gerçeği Gömüp Saklayan', icon: '🪦' },
+      mill: { name: 'Değirmenci Giles', title: 'Değirmenci — Rüzgârın Sırdaşı', icon: '⚙️' },
+      farm: { name: 'Çiftçi Edmund', title: 'Çiftçi — Toprağın ve Karanlığın Tanığı', icon: '🌾' },
+      clinic: { name: 'Doktor Harland', title: 'Hekim — Soğuk Ellerin ve Daha Soğuk Gözlerin Sahibi', icon: '🏥' },
+      crime_scene: { name: 'Cinayet Mahalli', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
   }
@@ -55,8 +55,8 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
     const labels: Record<string, string> = {
       tavern: 'Karakol',
       church: 'Kilise',
-      graveyard: 'Kaset Dukkani',
-      mill: 'Acik Hava Sinemasi',
+      graveyard: 'Kaset Dükkânı',
+      mill: 'Açık Hava Sineması',
       farm: 'Benzinlik',
       clinic: 'Prefabrik Evler',
       crime_scene: 'Olay Yeri',
@@ -68,9 +68,9 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
     const labels: Record<string, string> = {
       tavern: 'Polis Karakolu',
       church: 'Lokanta',
-      graveyard: 'Hurdalik',
-      mill: 'Robot Dukkani',
-      farm: 'Kopru Alti',
+      graveyard: 'Hurdalık',
+      mill: 'Robot Dükkânı',
+      farm: 'Köprü Altı',
       clinic: 'Bar',
       crime_scene: 'Olay Yeri',
     };
@@ -80,9 +80,9 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
   const labels: Record<string, string> = {
     tavern: 'Taverna',
     church: 'Kilise',
-    graveyard: 'Mezarlik',
-    mill: 'Degirmen',
-    farm: 'Ciftlik',
+    graveyard: 'Mezarlık',
+    mill: 'Değirmen',
+    farm: 'Çiftlik',
     clinic: 'Klinik',
     crime_scene: 'Cinayet Mahalli',
   };
@@ -113,8 +113,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   } = useGameStore();
 
   const profile = getNpcProfile(npcKey, scenarioType || 'medieval') ?? {
-    name: 'Mechul Koylu',
-    title: 'Golgeler arasinda bir yabanci',
+    name: 'Meçhul Köylü',
+    title: 'Gölgelerin arasından bir yabancı',
     icon: '👤',
   };
 
@@ -208,13 +208,13 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 setMessages([{ role: 'npc', text: greetData.reply, timestamp: new Date() }]);
               }
             } catch {
-              setMessages([{ role: 'npc', text: `*${profile.name} sizi tanir gibi basini kaldiriyor...*`, timestamp: new Date() }]);
+              setMessages([{ role: 'npc', text: `*${profile.name} seni tanıyormuş gibi başını kaldırıyor...*`, timestamp: new Date() }]);
             }
           } else if (isInvestigating) {
             setMessages([
               {
                 role: 'npc',
-                text: `*[Mekan: ${profile.name}] Etrafi arastirmaya basliyorsunuz. Sadece detaylara odaklanin...*`,
+                text: `*[Mekân: ${profile.name}] Etrafı araştırmaya başlıyorsun. Ayrıntılara odaklan...*`,
                 timestamp: new Date(),
               },
             ]);
@@ -222,7 +222,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             setMessages([
               {
                 role: 'npc',
-                text: `*${profile.name} size supheyle bakiyor.*\n\n"Buraya neden geldiniz?"`,
+                text: `*${profile.name} sana şüpheyle bakıyor.*\n\n"Buraya neden geldiniz?"`,
                 timestamp: new Date(),
               },
             ]);
@@ -248,7 +248,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         setMessages([
           {
             role: 'npc',
-            text: `*${profile.name} size kuskulu bir bakis atiyor.*`,
+            text: `*${profile.name} sana kuşkulu bir bakış atıyor.*`,
             timestamp: new Date(),
           },
         ]);
@@ -294,8 +294,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
         setConfirmModal({
           isOpen: true,
-          title: 'Arama Izni Alindi',
-          message: `${profile.name} size ${locNames} icin arama izni verdi.`,
+          title: 'Arama İzni Alındı',
+          message: `${profile.name} sana ${locNames} için arama izni verdi.`,
           onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
         });
       }
@@ -304,16 +304,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         setMessages((prev) => [...prev, { role: 'npc', text: data.reply, timestamp: new Date() }]);
         incrementDialogue();
       } else if (!res.ok && data.message) {
-        setMessages((prev) => [...prev, { role: 'npc', text: `*[Sistem Hatasi: ${data.message}]*`, timestamp: new Date() }]);
+        setMessages((prev) => [...prev, { role: 'npc', text: `*[Sistem hatası: ${data.message}]*`, timestamp: new Date() }]);
       } else {
-        setMessages((prev) => [...prev, { role: 'npc', text: '*Karsi taraf sessiz kaldi.*', timestamp: new Date() }]);
+        setMessages((prev) => [...prev, { role: 'npc', text: '*Karşındaki sessiz kaldı.*', timestamp: new Date() }]);
       }
     } catch {
       setMessages((prev) => [
         ...prev,
         {
           role: 'npc',
-          text: '*Sunucuya ulasilamiyor. Backend servisinin ayakta oldugundan emin olun.*',
+          text: '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*',
           timestamp: new Date(),
         },
       ]);
@@ -352,8 +352,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
     setConfirmModal({
       isOpen: true,
-      title: 'Nihai Hukum',
-      message: `${profile.name} isimli kisiyi mahkum etmek istediginizden emin misiniz?`,
+      title: 'Nihai Hüküm',
+      message: `${profile.name} adlı kişiyi mahkûm etmek istediğine emin misin? Bu karar geri alınamaz.`,
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
@@ -396,7 +396,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       <header className={styles.header}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <Link href="/map" className={styles.back}>
-            Haritaya Don
+            Haritaya Dön
           </Link>
           <Link 
             href={`/interior/${npcKey}`} 
@@ -408,23 +408,23 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               alignItems: 'center',
               gap: '6px'
             }}
-            title="Mekanın içini 360° inceleyin"
+            title="Mekânın içini 360° incele"
           >
             <span>🧭</span>
-            <span>Mekanı İncele (360°)</span>
+            <span>Mekânı İncele (360°)</span>
           </Link>
         </div>
 
         <div className={styles.npcInfo}>
           <span className={styles.npcIcon}>{isInvestigating ? '👁️' : profile.icon}</span>
           <div>
-            <div className={styles.npcName}>{isInvestigating ? 'Fiziksel Cevre' : profile.name}</div>
-            <div className={styles.npcTitle}>{isInvestigating ? 'Etrafinizdaki Dunya' : profile.title}</div>
+            <div className={styles.npcName}>{isInvestigating ? 'Fiziksel Çevre' : profile.name}</div>
+            <div className={styles.npcTitle}>{isInvestigating ? 'Etrafındaki Dünya' : profile.title}</div>
           </div>
         </div>
 
         <div className={styles.quota}>
-          Bugun kalan sorgu hakkiniz: {isAdmin ? 'Sinirsiz' : 30 - dialoguesUsedToday}
+          Bugün kalan sorgu hakkın: {isAdmin ? 'Sınırsız' : 30 - dialoguesUsedToday}
         </div>
       </header>
 
@@ -474,7 +474,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 disabled={!canInvestigate}
                 onClick={() => setIsInvestigating(true)}
               >
-                <span>🔍</span> Mekanı Araştır
+                <span>🔍</span> Mekânı Araştır
               </button>
             ) : (
               !isCrimeScene && (
@@ -484,7 +484,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                     setConfirmModal({
                       isOpen: true,
                       title: 'Araştırmayı Bitir',
-                      message: 'Araştırmayı bitirmek izninizi tüketecek. Emin misiniz?',
+                      message: 'Araştırmayı bitirirsen bu mekânın arama izni kullanılmış sayılır. Emin misin?',
                       onConfirm: async () => {
                         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
                         consumeWarrant(npcId);
@@ -519,7 +519,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
           <div className={styles.inputArea}>
             {dialoguesUsedToday >= maxDailyDialogues && !isAdmin ? (
-              <div className={styles.limitReached}>Gunluk siniriniza ulastiniz.</div>
+              <div className={styles.limitReached}>Bugünkü sorgu hakkın doldu. Yarın tekrar gel.</div>
             ) : (
               <>
                 <textarea
@@ -527,7 +527,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   value={input}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
                   onKeyDown={handleKeyDown}
-                  placeholder="Sorunuzu sorun..."
+                  placeholder="Sorunu sor..."
                   rows={2}
                   disabled={loading}
                   maxLength={MAX_CHARS}
@@ -536,7 +536,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   {input.length}/{MAX_CHARS}
                 </div>
                 <button className={styles.sendBtn} onClick={handleSend} disabled={loading || !input.trim()}>
-                  Gonder
+                  Gönder
                 </button>
               </>
             )}
@@ -546,7 +546,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         <aside className={styles.sidebar}>
           <div className={styles.sideCard}>
             <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Engizisyoncunun Notlari
+              Engizitörün Notları
               <button className={styles.expandBtn} onClick={() => setIsNotesExpanded(true)} title="Genislet">
                 +
               </button>
@@ -557,16 +557,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               value={localNotes}
               onChange={(e) => setLocalNotes(e.target.value)}
               onBlur={handleNotesBlur}
-              placeholder="Supheli davranislari buraya not et..."
+              placeholder="Şüpheli davranışları buraya not et..."
             />
           </div>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Gunluk Kaynak</div>
+            <div className={styles.sideTitle}>Günlük Hak</div>
             <div className={styles.progressBar}>
               <div className={styles.progressFill} style={{ width: `${(dialoguesUsedToday / maxDailyDialogues) * 100}%` }} />
             </div>
-            <p className={styles.sideHint}>Bugun {dialoguesUsedToday} / {isAdmin ? 'Sinirsiz' : 30} sorgu hakki kullanildi.</p>
+            <p className={styles.sideHint}>Bugün {dialoguesUsedToday} / {isAdmin ? 'Sınırsız' : 30} sorgu hakkı kullanıldı.</p>
           </div>
 
           <div className={styles.sideCard}>
@@ -575,13 +575,13 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               {inventory?.activeWarrants?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {inventory.activeWarrants.map((w) => (
-                    <div key={w}>📜 Arama Izni: {getLocationLabel(w, scenarioType || 'medieval').toUpperCase()}</div>
+                    <div key={w}>📜 Arama İzni: {getLocationLabel(w, scenarioType || 'medieval').toLocaleUpperCase('tr-TR')}</div>
                   ))}
                 </div>
               ) : inventory?.usedWarrants?.length > 0 ? (
-                <span style={{ color: '#8a7f72' }}>Tum izinler kullanildi.</span>
+                <span style={{ color: '#8a7f72' }}>Tüm izinler kullanıldı.</span>
               ) : (
-                'Envanter bos'
+                'Envanter boş'
               )}
             </div>
 
@@ -591,7 +591,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   if (canInvestigate) {
                     setIsInvestigating(true);
                   } else {
-                    alert('Bu mekani arastirmak icin once arama izni almalisiniz.');
+                    alert('Bu mekânı araştırmak için önce arama izni almalısın.');
                   }
                 }}
                 disabled={!canInvestigate}
@@ -608,7 +608,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   fontFamily: 'inherit',
                 }}
               >
-                Mekani Arastir
+                Mekânı Araştır
               </button>
             ) : (
               !isCrimeScene && (
@@ -616,8 +616,8 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                   onClick={() => {
                     setConfirmModal({
                       isOpen: true,
-                      title: 'Arastirmayi Bitir',
-                      message: 'Arastirmayi bitirmek izninizi tuketecek. Emin misiniz?',
+                      title: 'Araştırmayı Bitir',
+                      message: 'Araştırmayı bitirirsen bu mekânın arama izni kullanılmış sayılır. Emin misin?',
                       onConfirm: async () => {
                         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
                         consumeWarrant(npcId);
@@ -650,7 +650,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                     fontFamily: 'inherit',
                   }}
                 >
-                  Arastirmayi Sonlandir
+                  Araştırmayı Bitir
                 </button>
               )
             )}
@@ -671,7 +671,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               onClick={handleCondemn}
               disabled={isInvestigating}
             >
-              BU KAFIRI MAHKUM ET
+              BU KİŞİYİ MAHKÛM ET
             </button>
           </div>
         </aside>
@@ -680,7 +680,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       {isNotesExpanded && (
         <div className={styles.notesExpandedOverlay}>
           <div className={styles.notesExpandedHeader}>
-            <h2 className={styles.notesExpandedTitle}>Engizisyoncunun Notlari</h2>
+            <h2 className={styles.notesExpandedTitle}>Engizitörün Notları</h2>
             <button className={styles.closeBtn} onClick={() => setIsNotesExpanded(false)} title="Kucult">
               x
             </button>
@@ -691,7 +691,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               value={localNotes}
               onChange={(e) => setLocalNotes(e.target.value)}
               onBlur={handleNotesBlur}
-              placeholder="Supheli davranislari, celiskileri ve analizlerinizi buraya not edin..."
+              placeholder="Şüpheli davranışları, çelişkileri ve çıkarımlarını buraya not et..."
               autoFocus
             />
           </div>
@@ -742,7 +742,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             <p className={styles.modalMessage}>{confirmModal.message}</p>
             <div className={styles.modalActions}>
               <button className={styles.modalCancel} onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}>
-                Vazgec
+                Vazgeç
               </button>
               <button className={styles.modalConfirm} onClick={confirmModal.onConfirm}>
                 Onayla

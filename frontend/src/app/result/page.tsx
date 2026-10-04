@@ -36,7 +36,11 @@ function ResultContent() {
           letterSpacing: '4px',
         }}
       >
-        {won ? 'Sorusturma Basariyla Sonuclandi' : 'Korkunc Bir Hata Yaptiniz'}
+        {won
+          ? 'Soruşturma Başarıyla Sonuçlandı'
+          : searchParams.get('reason') === 'timeout'
+            ? 'Süre Doldu'
+            : 'Korkunç Bir Hata Yaptın'}
       </h1>
 
       <p
@@ -49,10 +53,10 @@ function ResultContent() {
         }}
       >
         {won
-          ? `Mahkumiyet karari verildi. ${message} Ashenmoor koyu karanliktan arindirildi. Ancak Engizisyon'un isi asla bitmez.`
+          ? `Hüküm verildi. ${message} Karanlık bu kez geri çekildi, ama Engizisyon’un işi asla bitmez.`
           : searchParams.get('reason') === 'timeout'
-            ? `Verilen 3 gunluk surede koyu karanliktan arindiramadiniz. Engizisyon, basarisizliga ve zayifliga tahammul etmez. Kilise tarafindan derhal gorevden alindiniz...`
-            : `Masum bir ruhu alevlere teslim ettiniz. Gercek suclu ise karanlikta saklanmaya devam ediyor... Koyun kaderi muhurlendi.`}
+            ? `Sana verilen dört günde katili bulamadın. Engizisyon başarısızlığı ve zaafı affetmez; görevinden derhal alındın...`
+            : `Masum bir ruhu alevlere teslim ettin. Gerçek katil ise karanlıkta saklanmaya devam ediyor... Bu toprakların kaderi artık mühürlendi.`}
       </p>
 
       {(truthReveal || (locationClues && Object.keys(locationClues).length > 0)) && (
@@ -89,7 +93,7 @@ function ResultContent() {
           e.currentTarget.style.background = 'transparent';
         }}
       >
-        Ana Ekrana Don ve Yeni Sorusturma Baslat
+        Ana Menüye Dön
       </button>
     </main>
   );
@@ -97,7 +101,7 @@ function ResultContent() {
 
 export default function ResultPage() {
   return (
-    <Suspense fallback={<div>Sonuclar Yukleniyor...</div>}>
+    <Suspense fallback={<div>Sonuçlar yükleniyor...</div>}>
       <ResultContent />
     </Suspense>
   );

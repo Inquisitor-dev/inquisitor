@@ -65,7 +65,7 @@ export class AuthService implements OnModuleInit {
 
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser?.isVerified && !isAdmin) {
-      throw new BadRequestException('Bu e-posta adresi zaten kayitli.');
+      throw new BadRequestException('Bu e-posta adresi zaten kayıtlı.');
     }
 
     let passwordHash = existingUser?.passwordHash;
@@ -94,25 +94,25 @@ export class AuthService implements OnModuleInit {
       await this.transporter.sendMail({
         from: `"The Inquisitor" <${process.env.MAIL_USER}>`,
         to: email,
-        subject: 'The Inquisitor - Dogrulama Kodunuz',
+        subject: 'The Inquisitor — Doğrulama Kodunuz',
         html: `
           <div style="background:#0a0a0a;color:#e5d9c5;padding:40px;font-family:serif;max-width:480px;margin:auto;border:1px solid #2a2a2a;">
             <h1 style="color:#8A0303;letter-spacing:3px;text-transform:uppercase;font-size:1.4rem;">The Inquisitor</h1>
             <p style="color:#aaa;font-size:0.9rem;letter-spacing:2px;text-transform:uppercase;">- Engizisyon Davetiyesi -</p>
             <hr style="border-color:#2a2a2a;margin:20px 0;"/>
-            <p>Ashenmoor'a adim atmak uzeresiniz. Kimliginizi kanitlamak icin asagidaki kodu kullanin:</p>
+            <p>Engizisyon’un kapısındasınız. Kimliğinizi doğrulamak için aşağıdaki kodu kullanın:</p>
             <div style="background:#1a0505;border:1px solid #8A0303;padding:20px;text-align:center;margin:24px 0;">
               <span style="font-size:2.5rem;letter-spacing:12px;color:#e5d9c5;font-weight:bold;">${code}</span>
             </div>
-            <p style="color:#666;font-size:0.8rem;">Bu kod 5 dakika gecerlidir. Eger bu istegi siz yapmadiysaniz bu e-postayi gormezden gelin.</p>
+            <p style="color:#666;font-size:0.8rem;">Bu kod 5 dakika geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
           </div>
         `,
       });
-      return { message: 'Dogrulama kodu e-posta adresinize gonderildi.' };
+      return { message: 'Doğrulama kodu e-posta adresine gönderildi.' };
     } catch (error) {
       console.warn('Mail gonderilemedi (SMTP portu kapali olabilir). Kod:', code, error);
       // Render free tier'da test edebilmek icin kodu mesaja ekliyoruz
-      return { message: `(Test Modu) Mail gonderilemedi. Dogrulama Kodunuz: ${code}` };
+      return { message: `(Test Modu) E-posta gönderilemedi. Doğrulama kodun: ${code}` };
     }
   }
 
@@ -120,15 +120,15 @@ export class AuthService implements OnModuleInit {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.verificationCode || !user.codeExpiresAt) {
-      throw new BadRequestException('Once dogrulama kodu gonderin.');
+      throw new BadRequestException('Önce doğrulama kodu iste.');
     }
 
     if (user.verificationCode !== code) {
-      throw new UnauthorizedException('Gecersiz dogrulama kodu.');
+      throw new UnauthorizedException('Doğrulama kodu hatalı.');
     }
 
     if (new Date() > user.codeExpiresAt) {
-      throw new UnauthorizedException('Dogrulama kodunun suresi dolmus. Yeni kod talep edin.');
+      throw new UnauthorizedException('Doğrulama kodunun süresi dolmuş. Yeni bir kod iste.');
     }
 
     // Kodu temizle, kullaniciyi dogrulanmis olarak isaretle
@@ -151,20 +151,20 @@ export class AuthService implements OnModuleInit {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      throw new UnauthorizedException('E-posta veya sifre hatali.');
+      throw new UnauthorizedException('E-posta ya da şifre hatalı.');
     }
 
     if (!user.isVerified) {
-      throw new UnauthorizedException('Lutfen once e-postanizi dogrulayin.');
+      throw new UnauthorizedException('Önce e-posta adresini doğrulaman gerekiyor.');
     }
 
     if (!user.passwordHash) {
-      throw new UnauthorizedException('Lutfen sifre belirleyerek tekrar kayit olun.');
+      throw new UnauthorizedException('Hesabının şifresi yok. Bir şifre belirleyerek yeniden kaydol.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('E-posta veya sifre hatali.');
+      throw new UnauthorizedException('E-posta ya da şifre hatalı.');
     }
 
     const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
@@ -179,7 +179,7 @@ export class AuthService implements OnModuleInit {
     isPremium: boolean;
   }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
 
     // Admin kota sinirindan muaf
     if (user.isAdmin) {
@@ -238,7 +238,7 @@ export class AuthService implements OnModuleInit {
     maxMessagesPerDay: number;
   }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
 
     const quota = await this.checkAndResetDailyQuota(userId);
     const maxSessionsPerDay = quota.isAdmin ? 999 : quota.isPremium ? 5 : 2;
@@ -260,7 +260,7 @@ export class AuthService implements OnModuleInit {
       where: { id: userId },
       select: { musicVolume: true, musicMuted: true },
     });
-    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
     return user;
   }
 
@@ -287,14 +287,14 @@ export class AuthService implements OnModuleInit {
     const VALID_CODE = 'PREMIUM246741';
 
     if (activationCode !== VALID_CODE) {
-      throw new BadRequestException('Gecersiz aktivasyon kodu.');
+      throw new BadRequestException('Aktivasyon kodu geçersiz.');
     }
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('Kullanici bulunamadi.');
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
 
     if (user.isPremium) {
-      return { success: true, message: 'Hesabiniz zaten Premium.' };
+      return { success: true, message: 'Hesabın zaten Premium.' };
     }
 
     await this.prisma.user.update({
@@ -302,6 +302,6 @@ export class AuthService implements OnModuleInit {
       data: { isPremium: true },
     });
 
-    return { success: true, message: 'Premium basariyla aktiflestirildi! Artik tum ozelliklere erisebilirsiniz.' };
+    return { success: true, message: 'Premium başarıyla etkinleştirildi! Artık tüm özelliklere erişebilirsin.' };
   }
 }
