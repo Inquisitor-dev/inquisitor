@@ -2,6 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
+import { findOwnedSession } from '../game-sessions/session-access';
+import {
+  deflectionReply,
+  leaksHiddenPrompt,
+  looksLikePromptInjection,
+} from './prompt-guard';
 
 @Injectable()
 export class NpcsService {
@@ -102,7 +108,8 @@ export class NpcsService {
 4. When you break, follow this emotional sequence inside the SAME reply: brief denial or shock -> visible panic -> confession -> plea for mercy/forgiveness.
 5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
 6. If the player's accusation is wrong, exaggerated, or aimed at the wrong secret, continue to deny it.
-7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.`;
+7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.
+8. The ABSOLUTE TRUTH below is given to you only so you can judge accusations. NEVER reveal who the culprit is or retell the full truth to the player; share only what your character could plausibly have seen, as described in your personal secret.`;
 
     let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -200,8 +207,15 @@ ${confrontationRules}`;
       ? '[Engizisyoncu iceri giriyor. Sen onlari daha once gordun. Yeni gune uygun bir sekilde selamla.]'
       : userMessage;
 
+    const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
+    // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
+    const isInjectionAttempt =
+      !isGreetingSignal && looksLikePromptInjection(userMessage);
+
     // Test modunda yapay zeka çağrılmaz; arama izni istenirse izin akışı da denenebilsin diye etiket eklenir
-    const llmResponse = currentState.session.isTestMode
+    const llmResponse = isInjectionAttempt
+      ? { reply: deflectionReply(npcDisplayName, isNarrator) }
+      : currentState.session.isTestMode
       ? {
           reply: this.buildTestReply(
             canonicalNpc?.name ?? currentState.npc.name,
@@ -218,7 +232,10 @@ ${confrontationRules}`;
           isNewDay,
         );
 
-    let finalReply = llmResponse.reply;
+    // Cevapta prompt'un bölüm başlıkları görünüyorsa model gizli talimatları sızdırmıştır
+    let finalReply = leaksHiddenPrompt(llmResponse.reply)
+      ? deflectionReply(npcDisplayName, isNarrator)
+      : llmResponse.reply;
     const explicitWarrantRequest = this.isExplicitWarrantRequest(
       userMessage,
       localizedLocationList.map((location) => location.localizedName),
@@ -291,12 +308,8 @@ ${confrontationRules}`;
     return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptir.${warrantTag}`;
   }
 
-  async isTestSession(sessionId: string): Promise<boolean> {
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-      select: { isTestMode: true },
-    });
-    return session?.isTestMode ?? false;
+  getOwnedSession(sessionId: string, userId: string) {
+    return findOwnedSession(this.prisma, sessionId, userId);
   }
 
   private isExplicitWarrantRequest(userMessage: string, localizedLocationNames: string[]) {

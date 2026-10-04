@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getScenarioConfig } from '../scenarios/scenario-config';
 import { SCENARIO_CLUES } from '../scenarios/clues-config';
+import { findOwnedSession, toPublicSession } from './session-access';
 
 @Injectable()
 export class GameSessionsService {
@@ -96,7 +97,7 @@ export class GameSessionsService {
     }
 
     this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
-    return session;
+    return toPublicSession(session);
   }
 
   // Test modu: yapay zeka çağrılmadan, senaryo ayarlarından basit bir yer tutucu hikaye kurar
@@ -120,17 +121,14 @@ export class GameSessionsService {
     };
   }
 
-  async endDay(sessionId: string) {
+  async endDay(sessionId: string, userId: string) {
     this.logger.log(`Ending day for session: ${sessionId}`);
 
-    const session = await this.prisma.gameSession.findUnique({
+    await findOwnedSession(this.prisma, sessionId, userId);
+    const session = await this.prisma.gameSession.findUniqueOrThrow({
       where: { id: sessionId },
       include: { npcStates: true },
     });
-
-    if (!session) {
-      throw new Error('Session not found');
-    }
 
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
@@ -148,19 +146,13 @@ export class GameSessionsService {
       });
     }
 
-    return updatedSession;
+    return toPublicSession(updatedSession);
   }
 
-  async advanceTime(sessionId: string) {
+  async advanceTime(sessionId: string, userId: string) {
     this.logger.log(`Advancing time for session: ${sessionId}`);
 
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) {
-      throw new Error('Session not found');
-    }
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
 
     let newTime = session.timeOfDay + 1;
     if (newTime > 4) newTime = 4;
@@ -170,38 +162,30 @@ export class GameSessionsService {
       data: { timeOfDay: newTime },
     });
 
-    return updatedSession;
+    return toPublicSession(updatedSession);
   }
 
-  async getSession(sessionId: string) {
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-    });
-    if (!session) throw new Error('Session not found');
-
-    if (session.status === 'ACTIVE') {
-      const { truthReveal, locationClues, ...safeSession } = session;
-      return safeSession;
-    }
-    return session;
+  async getSession(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    return toPublicSession(session);
   }
 
-  async updateNotes(sessionId: string, notes: string) {
-    return await this.prisma.gameSession.update({
+  async updateNotes(sessionId: string, userId: string, notes: string) {
+    await findOwnedSession(this.prisma, sessionId, userId);
+    const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
       data: { notes },
     });
+    return toPublicSession(updatedSession);
   }
 
-  async condemnNpc(sessionId: string, npcId: string) {
+  async condemnNpc(sessionId: string, userId: string, npcId: string) {
     this.logger.log(`Condemning NPC: ${npcId} for session: ${sessionId}`);
 
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) throw new Error('Session not found');
-    if (session.status !== 'ACTIVE') throw new Error('Session is already finished');
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    if (session.status !== 'ACTIVE') {
+      throw new BadRequestException('Bu sorusturma zaten sona erdi.');
+    }
 
     const won = session.culpritId === npcId;
     const newStatus = won ? 'WON' : 'LOST';
@@ -220,36 +204,41 @@ export class GameSessionsService {
     };
   }
 
-  async consumeWarrant(sessionId: string, location: string) {
+  async consumeWarrant(sessionId: string, userId: string, location: string) {
     this.logger.log(`Consuming warrant for ${location} in session: ${sessionId}`);
 
-    const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
-    if (!session) throw new Error('Session not found');
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
 
     const newActive = session.activeWarrants.filter((w) => w !== location);
     const newUsed = [...session.usedWarrants];
     if (!newUsed.includes(location)) newUsed.push(location);
 
-    return await this.prisma.gameSession.update({
+    const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
       data: {
         activeWarrants: newActive,
         usedWarrants: newUsed,
       },
     });
+    return toPublicSession(updatedSession);
   }
 
-  async timeoutSession(sessionId: string) {
+  async timeoutSession(sessionId: string, userId: string) {
     this.logger.log(`Session timed out: ${sessionId}`);
 
-    const updatedSession = await this.prisma.gameSession.update({
-      where: { id: sessionId },
-      data: { status: 'LOST' },
-    });
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    // Bitmiş bir oturumun sonucu (ör. kazanılmış vaka) sonradan kayba çevrilemez
+    const updatedSession =
+      session.status === 'ACTIVE'
+        ? await this.prisma.gameSession.update({
+            where: { id: sessionId },
+            data: { status: 'LOST' },
+          })
+        : session;
 
     return {
       success: true,
-      won: false,
+      won: updatedSession.status === 'WON',
       message: 'Zamanınız doldu.',
       session: updatedSession,
     };
@@ -268,7 +257,6 @@ export class GameSessionsService {
 
     if (!session) return null;
 
-    const { truthReveal, locationClues, ...safeSession } = session;
-    return safeSession;
+    return toPublicSession(session);
   }
 }
