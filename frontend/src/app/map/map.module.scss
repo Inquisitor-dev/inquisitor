@@ -428,6 +428,20 @@
   .itemName { color: #E8DCC4; font-weight: 500; }
 }
 
+// Kanıtlar uzun cümleler olduğu için satırın tamamını kaplar
+.evidenceItem {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  text-align: left;
+  border-left: 3px solid #8A0303;
+  line-height: 1.45;
+}
+
+.evidenceSource {
+  color: #8A0303;
+  font-size: 0.75rem;
+}
+
 /* ── INTERACTIVE MAP ── */
 .mapContainer {
   position: relative;

@@ -421,6 +421,8 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
         culpritId: currentState.session.culpritId,
         caseFacts,
         locationClues: sessionLocationClues,
+        reply: finalReply,
+        nameOf: (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
       }),
     );
 

@@ -1,5 +1,9 @@
 import { CaseFacts } from '../scenarios/case-setup';
-import { evidenceFromTags, extractEvidenceTags } from './evidence';
+import {
+  evidenceFromTags,
+  extractEvidenceTags,
+  sharesTestimony,
+} from './evidence';
 
 const facts = (placement: CaseFacts['verification']['placement']) =>
   ({
@@ -143,6 +147,78 @@ describe('evidenceFromTags', () => {
         sourceId: 'tavern',
         text: 'Tezgâhın altında kaçak içki fıçısı.',
       },
+    ]);
+  });
+});
+
+describe('sharesTestimony', () => {
+  // Gerçek Gemini denemesinden: tanık doğru şeyi söyledi ama etiketi koymadı
+  const verificationText =
+    "Kardeş Aldric, cinayet gecesi İhtiyar Silas'ın aceleyle mezarlıktan çıktığını ve ayaklarında kaba çamurlu çizmeler olduğunu kendi gözleriyle görmüştür.";
+  const base = {
+    verificationText,
+    witnessName: 'Kardeş Aldric',
+    culpritName: 'İhtiyar Silas',
+  };
+
+  it('etiketsiz anlatılan tanıklığı tanır', () => {
+    expect(
+      sharesTestimony({
+        ...base,
+        reply:
+          "Gece yarısını biraz geçe camdan dışarı baktım. İhtiyar Silas'ın mezarlık tarafından, ayaklarında o kaba çamurlu çizmeleriyle panik içinde aceleyle koşarak uzaklaştığını kendi gözlerimle gördüm.",
+      }),
+    ).toBe(true);
+  });
+
+  it('farklı kelimelerle anlatılan tanıklığı da tanır', () => {
+    // İkinci gerçek Gemini cevabı: "aceleyle", "kendi gözlerimle" geçmiyor
+    expect(
+      sharesTestimony({
+        ...base,
+        reply:
+          "Sisler arasından biri belirdi; İhtiyar Silas'tı o. Ayaklarında o her zamanki kaba, çamurlu çizmeleri vardı ve mezarlık tarafından panik içinde, nefes nefese koşarak uzaklaşıyordu.",
+      }),
+    ).toBe(true);
+  });
+
+  it('katilin adı geçmeyen ya da konuyla ilgisiz cevabı tanıklık saymaz', () => {
+    expect(
+      sharesTestimony({
+        ...base,
+        reply:
+          'O gece arka odada hesap kitapla uğraşıyordum, kimseyi görmedim.',
+      }),
+    ).toBe(false);
+    expect(
+      sharesTestimony({
+        ...base,
+        reply: 'Silas mı? Mezarcıdır, pek konuşmaz.',
+      }),
+    ).toBe(false);
+  });
+
+  it('etiket olmadan da tanığın cevabı kanıt olarak kaydedilir', () => {
+    const drafts = evidenceFromTags({
+      tags: new Set(),
+      npcId: 'tavern',
+      locationId: null,
+      culpritId: 'graveyard',
+      caseFacts: {
+        verification: {
+          kind: 'CORROBORATION',
+          placement: { type: 'TESTIMONY', npcId: 'tavern' },
+        },
+        verificationText,
+        alibis: {},
+      } as unknown as CaseFacts,
+      locationClues: {},
+      reply:
+        "İhtiyar Silas'ın mezarlıktan aceleyle, ayaklarında kaba çamurlu çizmelerle çıktığını kendi gözlerimle gördüm.",
+      nameOf: (id) => (id === 'tavern' ? 'Kardeş Aldric' : 'İhtiyar Silas'),
+    });
+    expect(drafts).toMatchObject([
+      { kind: 'VERIFICATION', category: 'STATEMENT', sourceId: 'tavern' },
     ]);
   });
 });
