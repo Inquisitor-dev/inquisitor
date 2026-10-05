@@ -50,11 +50,14 @@ Run each in its own directory.
   - `JWT_SECRET` is mandatory (`jwt-secret.ts`, no fallback); the server refuses to start without it.
   - `send-code` rejects every already-verified account, including the admin.
   - The verification code is never returned in the API response. Only when `ALLOW_TEST_MODE=true` and the email fails is it included in the message, so local signup works without SMTP.
-- `game-sessions/` — session lifecycle: create, advance time of day / end day, notes, search warrants, condemn, timeout.
-  - Quota and premium gating (difficulty ≠ `easy` or scenario ≠ `medieval` requires premium) is enforced in the **controller**.
+- `game-sessions/` — session lifecycle: create, advance time of day / end day, notes, search warrants, condemn, timeout, and `GET /game-sessions/:id/evidence` (the evidence log).
+  - The daily session quota is enforced in the **controller**. Universe and difficulty are not gated server-side yet (they will be tied to market purchases).
   - Every route resolves the session with `findOwnedSession` (`session-access.ts`); other users' sessions return 404.
-- `npcs/` — `POST /npcs/interact` (one dialogue turn) and `POST /npcs/history`. Builds the NPC prompt from scenario config + session state and persists `DialogueHistory`.
-  - Both routes check session ownership. `interact` also requires an `ACTIVE` session and messages of at most 500 characters.
+- `npcs/` — `POST /npcs/interact` (one dialogue turn), `POST /npcs/confront` (show an evidence item to an NPC) and `POST /npcs/history`. Builds the NPC prompt from scenario config + session state and persists `DialogueHistory`.
+  - All routes check session ownership. `interact` and `confront` also require an `ACTIVE` session and spend the daily message quota; `interact` messages are at most 500 characters.
+  - Replies return `newEvidence`, `fear` (`{ level, band }`, null for narrators) and, when a statement was added, the updated `notes`.
+  - `evidence.ts`: the **evidence log**. The LLM appends hidden tags (`[CLUE_FOUND]` from narrators, `[CONFESSED]` from innocents, `[EVIDENCE_REVEALED]` from the testimony witness), which are stripped server-side and turned into `Evidence` rows. Evidence text always comes from the stored case facts / `locationClues`, never from the live reply. `sharesTestimony` also catches a witness who tells the testimony without the tag.
+  - `fear.ts`: **fear is driven by code**. Showing evidence raises `SessionNpcState.currentFear` (own location clue +6, implicating evidence +3, irrelevant or repeated 0, max 10, −1 each night). At the threshold (7) an innocent is forced to confess and the confession is recorded by code; the culprit only panics and never confesses. Starting fear is `startingFear(baseFear)` (0–4).
   - `prompt-guard.ts` answers prompt-injection attempts in character without calling the LLM, and replaces replies that leak prompt section headers.
   - Its `foldTurkish` makes text matching diacritic-insensitive (used for warrant requests).
 - `llm/` — single `LlmService` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`).
@@ -67,16 +70,22 @@ Run each in its own directory.
 ### Key design points
 - **NPC ids double as location ids** (`tavern`, `church`, `graveyard`, `mill`, `farm`, `clinic`, plus `crime_scene`). The same ids are reused across all scenario types; only display labels/personas change per scenario (`getLocalizedLocationLabel`). Keep ids consistent across `scenario-config.ts`, `clues-config.ts`, `prisma/seed.ts`, and the frontend/mobile location configs.
 - **Location display names** come from `LOCALIZED_LOCATION_LABELS` in `scenario-config.ts`. The frontend keeps its own copies (`interact/[npcId]/page.tsx`, `components/TruthRevealPanel.tsx`) that must stay identical.
-- **Culprit and clue are chosen deterministically in code, not by the LLM** (`GameSessionsService.createSession`): a random culprit, a HURRIED/PLANNED murder style, and a clue that does (hurried) or doesn't (planned) implicate the culprit. The LLM only writes narrative around those facts.
-- **Per-session state** lives on `GameSession` (day, `timeOfDay` 0–4, warrants, `locationClues` JSON, `truthReveal`) and `SessionNpcState` (fear/lie tendency, `dynamicPrompt`). A case lasts 4 days. Creating a session marks the user's previous `ACTIVE` sessions as `LOST`.
+- **The case is planned in code, not by the LLM** (`planCase` in `scenarios/case-setup.ts`, called from `GameSessionsService.createSession`). The plan is stored as `GameSession.caseFacts`; the LLM only writes narrative around it.
+  - A random culprit and a HURRIED (genuine clue) / PLANNED (planted clue) murder style.
+  - An information budget: the crime-scene clue eliminates exactly `ELIMINATION_TARGET[difficulty]` suspects.
+  - A MESSY/TIDY scene appearance that is independent of the clue (deliberately hidden from players).
+  - A verifying evidence item (CORROBORATION or FLAW) placed at a location or in one NPC's testimony, an alibi for each innocent, and the victim's name and profession.
+- **Per-session state** lives on `GameSession` (day, `timeOfDay` 0–4, warrants, `locationClues` JSON, `truthReveal`, `caseFacts`, `notes`), `SessionNpcState` (`currentFear`, lie tendency, `dynamicPrompt`, `shownEvidenceIds`) and `Evidence` (`kind` CLUE/VERIFICATION/CONFESSION, `category` ITEM/STATEMENT, unique per session+kind+source). A case lasts 4 days. Creating a session marks the user's previous `ACTIVE` sessions as `LOST`.
+- **Evidence split:** `ITEM` evidence (physical objects found at locations) is shown in the inventory (dialogue screen and map). `STATEMENT` evidence (confessions, testimony) is appended to the session notes automatically.
 - **The case answer must never reach the client while a session is `ACTIVE`.**
-  - Every response containing a session goes through `toPublicSession`, which strips `culpritId`, `truthReveal` and `locationClues` until the session is `WON`/`LOST`. Any new endpoint returning a session must do the same.
-  - Every NPC prompt contains the full truth, so non-culprit NPCs are instructed never to reveal the culprit.
+  - Every response containing a session goes through `toPublicSession`, which strips `culpritId`, `truthReveal`, `locationClues` and `caseFacts` until the session is `WON`/`LOST`. Any new endpoint returning a session must do the same.
+  - Only the culprit's prompt contains the full truth. Innocent NPCs get only their own secret and alibi, and the testimony witness gets the verifying evidence text.
 - **Test mode (no AI):** with `ALLOW_TEST_MODE=true` on the backend, `POST /game-sessions` with `testMode: true` builds a canned scenario and NPCs answer with stock replies — no Gemini quota used, no quota counters touched. Use this for exercising game flow locally. Must stay off in production.
 
 ### Clients
 - **Frontend** calls the API through `apiUrl()` (`src/config/api.ts`), which defaults to `/api`; `next.config.ts` rewrites `/api/*` → `http://127.0.0.1:3001/*`.
-  - Game/auth state is a persisted Zustand store (`src/store/useGameStore.ts`).
+  - Game/auth state is a persisted Zustand store (`src/store/useGameStore.ts`), including the session's `evidence` list.
+  - The dialogue screen (`interact/[npcId]`) has the "Kanıt Göster" picker (calls `/npcs/confront`) and a fear indicator under the NPC name.
   - Pages are under `src/app/` (`menu`, `map`, `interior/[locationId]`, `interact/[npcId]`, `crime-scene`, `result`, `market`, `community`, …).
   - Shared SCSS variables are in `src/styles/_variables.scss`; import them with `@use '../../styles/variables' as *;`.
   - The **market** is client-only for now. Its catalog is in `market/marketItems.ts`, and the token balance and owned items are in `useMarketStore` (localStorage). The EUR token packs are visual only.
