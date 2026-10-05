@@ -10,9 +10,11 @@ gövdeden ayrı çizilir:
 Ayrıca çizme katmanlarının üst ağzındaki siyah iç kısım şeffaflaştırılır (pantolon içeri sokulmuş görünür).
 
 Çalıştırma (repo kökünden): python assets/outfits_src/tools/occlusion.py
+Çizme ağzı temizliği her çalıştırmada tekrar aşındırmasın diye yalnızca --clean-shoes ile yapılır.
 """
 from collections import deque
 import os
+import sys
 
 import numpy as np
 from PIL import Image
@@ -74,6 +76,13 @@ def main():
     hair = vis & (ys < HAIR_MAX_Y) & (lum < 150) & ~skin
     # Ayaklar: paça hizasının altındaki ten pikselleri ve tamamen alttaki her şey
     feet = vis & (((ys >= FEET_MIN_Y) & (lum > 95) & (r - b > 35)) | (ys >= 700))
+    # kenarlardaki yarı saydam ten pikselleri de ayağa dahil olsun (2px genişlet, paça hizasının altında)
+    grown = feet.copy()
+    for _ in range(2):
+        g2 = grown.copy()
+        g2[1:] |= grown[:-1]; g2[:-1] |= grown[1:]; g2[:, 1:] |= grown[:, :-1]; g2[:, :-1] |= grown[:, 1:]
+        grown = g2
+    feet = feet | (grown & vis & (ys >= FEET_MIN_Y) & (lum > 60) & (r - b > 20))
 
     def part(mask):
         out = base.copy()
@@ -98,7 +107,7 @@ def main():
         save(part(hair & ~hide), OUT + item + '_hair.png')
         print(item, 'gizlenen saç px', int((hair & hide).sum()))
 
-    for item in SHOE_ITEMS:
+    for item in (SHOE_ITEMS if '--clean-shoes' in sys.argv else []):
         path = OUT + item + '.png'
         if not os.path.exists(path):
             continue
