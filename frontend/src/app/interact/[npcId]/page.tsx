@@ -433,7 +433,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div className={styles.messages}>
             {messages.map((msg, i) => (
               <div key={i} className={`${styles.bubble} ${msg.role === 'player' ? styles.player : styles.npc}`}>
-                <div className={styles.bubbleLabel}>{msg.role === 'player' ? 'Inquisitor' : isInvestigating ? 'Anlatici' : profile.name}</div>
+                <div className={styles.bubbleLabel}>{msg.role === 'player' ? 'Engizitör' : isInvestigating ? 'Anlatıcı' : profile.name}</div>
                 <div className={styles.bubbleText}>
                   {msg.text.split('\n').map((line, j) => (
                     <span key={j}>
@@ -448,7 +448,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
             {loading && (
               <div className={`${styles.bubble} ${styles.npc} ${styles.typing}`}>
-                <div className={styles.bubbleLabel}>{isInvestigating ? 'Anlatici' : profile.name}</div>
+                <div className={styles.bubbleLabel}>{isInvestigating ? 'Anlatıcı' : profile.name}</div>
                 <div className={styles.typingDots}>
                   <span />
                   <span />

@@ -151,9 +151,9 @@
 }
 
 .bubbleLabel {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  /* Büyük harfe çevrilmez: Türkçe ve İngilizce karışık adlar (ör. Mirel Sato) tek dil kuralıyla doğru yazılamaz */
   color: #8a7f72;
   padding: 0 4px;
 }
