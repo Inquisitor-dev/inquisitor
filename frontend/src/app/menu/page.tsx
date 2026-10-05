@@ -7,6 +7,7 @@ import { BookOpen, Coins, Crown, ScrollText, Shirt, Skull, Store, Users } from '
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
+import DressedCharacter from '@/components/character/DressedCharacter';
 import styles from './page.module.scss';
 
 export default function HomePage() {
@@ -30,7 +31,7 @@ export default function HomePage() {
     isPremium,
   } = useGameStore();
 
-  const { tokenBalance, hasHydrated: marketHydrated } = useMarketStore();
+  const { tokenBalance, equippedOutfit, hasHydrated: marketHydrated } = useMarketStore();
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -429,16 +430,15 @@ export default function HomePage() {
           <span className={styles.panelEyebrow}>Engizitör</span>
           <div className={styles.characterStage}>
             <span className={styles.characterHalo} />
-            <img
-              src="/characters/inquisitor2/idle/south.png"
-              alt="Engizitör karakteri"
+            <DressedCharacter
+              outfit={marketHydrated ? equippedOutfit : {}}
               className={styles.characterSprite}
             />
             <span className={styles.characterPedestal} />
           </div>
           <h2 className={styles.characterName}>{inquisitorName}</h2>
           <span className={styles.characterRank}>Çaylak Engizitör</span>
-          <Link href="/market" className={styles.wardrobeBtn}>
+          <Link href="/wardrobe" className={styles.wardrobeBtn}>
             <Shirt size={15} /> Gardırop
           </Link>
         </section>

@@ -1016,13 +1016,11 @@ $panel-border: rgba(138, 3, 3, 0.28);
   60%      { opacity: 0.75; transform: translateX(-50%) scale(0.98); }
 }
 
+// DressedCharacter sarmalayıcısına uygulanır; image-rendering/object-fit iç görsellerde (bileşen scss'i)
 .characterSprite {
   position: relative;
   z-index: 1;
   height: 230px;
-  width: auto;
-  object-fit: contain;
-  image-rendering: pixelated;
   filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.85));
   animation: idleFloat 4s ease-in-out infinite;
 }

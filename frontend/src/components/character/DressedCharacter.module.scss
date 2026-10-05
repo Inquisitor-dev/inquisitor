@@ -1,0 +1,30 @@
+// Karakter sarmalayıcısı: yüksekliği dışarıdan (className) verilir, genişlik sprite oranından gelir.
+.wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.base,
+.layer {
+  // Boyalı, yüksek çözünürlüklü görseller: küçültülürken yumuşak ölçeklensin
+  image-rendering: auto;
+  user-select: none;
+}
+
+.base {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+// Kıyafet katmanları çıplak gövdeyle aynı tuvale (560x760, 112x152 oranı) hizalı şeffaf PNG'ler.
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}

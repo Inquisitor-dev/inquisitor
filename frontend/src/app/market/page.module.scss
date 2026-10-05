@@ -413,7 +413,8 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
-.grid_cosmetic {
+.grid_cosmetic,
+.grid_outfit {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
@@ -825,6 +826,67 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
   .cosmeticCard:hover & {
     box-shadow: 0 0 36px var(--rarity-glow), inset 0 0 0 5px rgba(10, 8, 7, 0.9), inset 0 0 0 6px var(--rarity);
+  }
+}
+
+// ─── Kıyafet kartı ───────────────────────────────────────────
+// Kozmetik kartının nadirlik renklerini kullanır; ikon yerine katmanın küçük görseli gösterilir.
+
+.outfitFrame {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin: 10px 0 22px;
+  display: grid;
+  place-items: center;
+  color: var(--rarity);
+  border: 1px solid var(--rarity);
+  background: radial-gradient(circle, var(--rarity-glow), transparent 72%);
+  box-shadow: 0 0 24px var(--rarity-glow), inset 0 0 0 5px rgba(10, 8, 7, 0.9), inset 0 0 0 6px var(--rarity-glow);
+  transition: box-shadow $transition-normal;
+
+  .outfitCard:hover & {
+    box-shadow: 0 0 36px var(--rarity-glow), inset 0 0 0 5px rgba(10, 8, 7, 0.9), inset 0 0 0 6px var(--rarity);
+  }
+}
+
+.outfitThumb {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+  transition: transform $transition-normal;
+
+  .outfitCard:hover & {
+    transform: scale(1.06);
+  }
+}
+
+.outfitFooter {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.wardrobeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: $text-parchment;
+  opacity: 0.7;
+  text-decoration: none;
+  transition: opacity $transition-normal, color $transition-normal;
+
+  &:hover {
+    opacity: 1;
+    color: $gold-bright;
   }
 }
 
@@ -1250,7 +1312,8 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
   .grid,
   .grid_universe,
-  .grid_cosmetic {
+  .grid_cosmetic,
+  .grid_outfit {
     grid-template-columns: 1fr;
   }
 

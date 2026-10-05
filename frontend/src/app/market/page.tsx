@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   BookOpen,
@@ -15,6 +16,7 @@ import {
   Gem,
   Lock,
   Map as MapIcon,
+  Shirt,
   Skull,
   Sparkles,
   Stamp,
@@ -29,6 +31,7 @@ import {
   EARN_WAYS,
   MARKET_ITEMS,
   RARITY_LABELS,
+  SLOT_LABELS,
   TOKEN_PACKS,
   formatEur,
   type MarketCategory,
@@ -42,11 +45,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'universe', label: 'Evrenler' },
   { id: 'difficulty', label: 'Zorluklar' },
   { id: 'story', label: 'Hazır Hikayeler' },
+  { id: 'outfit', label: 'Kıyafetler' },
   { id: 'cosmetic', label: 'Kozmetikler' },
   { id: 'tokens', label: 'Token Al' },
 ];
 
-const CATEGORY_ORDER: MarketCategory[] = ['universe', 'difficulty', 'story', 'cosmetic'];
+const CATEGORY_ORDER: MarketCategory[] = ['universe', 'difficulty', 'story', 'outfit', 'cosmetic'];
 const FEATURED_ID = 'story_serpents_coil';
 const ROMAN = ['I', 'II', 'III'];
 
@@ -59,9 +63,41 @@ const COSMETIC_ICONS = {
   eye: Eye,
 };
 
+const isTab = (value: string | null): value is Tab =>
+  value !== null && TABS.some((tab) => tab.id === value);
+
+// ?tab= parametresini okuyup sekmeyi önceden seçer (ör. gardıroptan /market?tab=outfit).
+// useSearchParams statik prerender'da Suspense sınırı istediği için ayrı bir bileşende tutuluyor;
+// böylece sayfanın geri kalanı yine prerender edilir.
+function TabFromQuery({ onTab }: { onTab: (tab: Tab) => void }) {
+  const tabParam = useSearchParams().get('tab');
+  useEffect(() => {
+    if (isTab(tabParam)) onTab(tabParam);
+  }, [tabParam, onTab]);
+  return null;
+}
+
+// Kıyafet küçük görseli; dosya yoksa gömlek ikonuna düşer
+function OutfitThumb({ src, alt }: { src?: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <Shirt size={40} strokeWidth={1.4} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className={styles.outfitThumb} onError={() => setFailed(true)} />
+  );
+}
+
 export default function MarketPage() {
-  const { tokenBalance, ownedItemIds, equippedCosmeticIds, hasHydrated, purchase, toggleEquip } =
-    useMarketStore();
+  const {
+    tokenBalance,
+    ownedItemIds,
+    equippedCosmeticIds,
+    equippedOutfit,
+    hasHydrated,
+    purchase,
+    toggleEquip,
+    equipOutfit,
+  } = useMarketStore();
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [pendingItem, setPendingItem] = useState<MarketItem | null>(null);
@@ -74,6 +110,7 @@ export default function MarketPage() {
     [hasHydrated, ownedItemIds]
   );
   const equipped = hasHydrated ? equippedCosmeticIds : [];
+  const wornOutfit = hasHydrated ? equippedOutfit : {};
   const isOwned = (item: MarketItem) => item.ownedByDefault || owned.has(item.id);
 
   useEffect(() => {
@@ -149,12 +186,35 @@ export default function MarketPage() {
     );
   };
 
-  const renderFooter = (item: MarketItem) => (
-    <div className={styles.cardFooter}>
-      {isOwned(item) ? <span className={styles.priceMuted}>{item.price === 0 ? 'Ücretsiz' : 'Arşivinde'}</span> : renderPrice(item)}
-      {renderAction(item)}
-    </div>
-  );
+  const renderFooter = (item: MarketItem) => {
+    // Kıyafetler gardıropta yönetilir; kozmetik kuşanma dalı bunlara uygulanmaz
+    if (item.category === 'outfit' && item.slot && isOwned(item)) {
+      const slot = item.slot;
+      const isWorn = wornOutfit[slot] === item.id;
+      return (
+        <div className={styles.outfitFooter}>
+          <div className={styles.cardFooter}>
+            <span className={styles.ownedTag}><Check size={14} /> Gardıropta</span>
+            <button
+              className={isWorn ? styles.equippedBtn : styles.ghostBtn}
+              onClick={() => equipOutfit(item.id, slot)}
+            >
+              {isWorn ? <><Check size={14} /> Giyili</> : 'Giy'}
+            </button>
+          </div>
+          <Link href="/wardrobe" className={styles.wardrobeLink}>
+            <Shirt size={14} /> Gardıroba Git
+          </Link>
+        </div>
+      );
+    }
+    return (
+      <div className={styles.cardFooter}>
+        {isOwned(item) ? <span className={styles.priceMuted}>{item.price === 0 ? 'Ücretsiz' : 'Arşivinde'}</span> : renderPrice(item)}
+        {renderAction(item)}
+      </div>
+    );
+  };
 
   const renderUniverse = (item: MarketItem) => (
     <article key={item.id} className={`${styles.card} ${styles.universeCard} ${isOwned(item) ? styles.isOwned : ''}`}>
@@ -236,6 +296,19 @@ export default function MarketPage() {
     );
   };
 
+  const renderOutfit = (item: MarketItem) => (
+    <article key={item.id} className={`${styles.card} ${styles.cosmeticCard} ${styles.outfitCard} ${styles[`rarity_${item.rarity}`]} ${isOwned(item) ? styles.isOwned : ''}`}>
+      <span className={styles.rarityTag}>{RARITY_LABELS[item.rarity ?? 'common']}</span>
+      <div className={styles.outfitFrame}>
+        <OutfitThumb src={item.thumb ?? item.layer} alt={item.title} />
+      </div>
+      <span className={styles.cardEyebrow}>{item.slot ? SLOT_LABELS[item.slot] : item.subtitle}</span>
+      <h3 className={styles.cardTitle}>{item.title}</h3>
+      <p className={styles.cardDesc}>{item.description}</p>
+      {renderFooter(item)}
+    </article>
+  );
+
   const renderCategory = (category: MarketCategory) => {
     const items = MARKET_ITEMS.filter((item) => item.category === category);
     const label = CATEGORY_LABELS[category];
@@ -254,6 +327,7 @@ export default function MarketPage() {
           {category === 'universe' && items.map(renderUniverse)}
           {category === 'difficulty' && items.map(renderDifficulty)}
           {category === 'story' && items.map(renderStory)}
+          {category === 'outfit' && items.map(renderOutfit)}
           {category === 'cosmetic' && items.map(renderCosmetic)}
         </div>
       </section>
@@ -270,6 +344,10 @@ export default function MarketPage() {
       <span className={styles.cornerTopRight} />
       <span className={styles.cornerBotLeft} />
       <span className={styles.cornerBotRight} />
+
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveTab} />
+      </Suspense>
 
       <div className={styles.content}>
         <div className={styles.topBar}>

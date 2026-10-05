@@ -1,0 +1,862 @@
+@use '../../styles/variables' as *;
+
+$gold: #c9a24a;
+$gold-bright: #e0bb5e;
+$gold-soft: rgba(201, 162, 74, 0.14);
+$gold-line: rgba(201, 162, 74, 0.35);
+$card-bg: rgba(18, 14, 12, 0.82);
+$panel-bg: rgba(12, 9, 8, 0.78);
+$panel-border: rgba(138, 3, 3, 0.28);
+$rare: #b23a3a;
+$legendary: $gold-bright;
+
+// ─── Sayfa iskeleti ──────────────────────────────────────────
+
+.container {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 30% -10%, rgba(138, 3, 3, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(201, 162, 74, 0.05) 0%, transparent 50%),
+    #0a0807;
+  color: $text-parchment;
+  font-family: $font-body;
+  position: relative;
+  overflow-x: clip;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+$corner-border: 1px solid rgba(138, 3, 3, 0.5);
+
+.cornerTopLeft,
+.cornerTopRight,
+.cornerBotLeft,
+.cornerBotRight {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  z-index: 2;
+  pointer-events: none;
+}
+.cornerTopLeft  { top: 84px; left: 20px;     border-top: $corner-border; border-left: $corner-border; }
+.cornerTopRight { top: 84px; right: 20px;    border-top: $corner-border; border-right: $corner-border; }
+.cornerBotLeft  { bottom: 20px; left: 20px;  border-bottom: $corner-border; border-left: $corner-border; }
+.cornerBotRight { bottom: 20px; right: 20px; border-bottom: $corner-border; border-right: $corner-border; }
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 64px;
+}
+
+// ─── Üst menü ────────────────────────────────────────────────
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  height: 68px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 40px;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.92), rgba(5, 5, 5, 0.7));
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(138, 3, 3, 0.3);
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(138, 3, 3, 0.5));
+}
+
+.navTitle {
+  font-family: $font-title;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: $text-parchment;
+  white-space: nowrap;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-family: $font-title;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+  border-radius: 2px;
+  transition: color 0.25s ease, background 0.25s ease;
+
+  &:hover {
+    color: $text-parchment;
+    background: rgba(138, 3, 3, 0.12);
+  }
+}
+
+.navLinkText {
+  white-space: nowrap;
+}
+
+.navRight {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+}
+
+.currency {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 16px 5px 5px;
+  background: linear-gradient(180deg, rgba(201, 162, 74, 0.12), rgba(201, 162, 74, 0.04));
+  border: 1px solid $gold-line;
+  border-radius: 999px;
+  color: $gold-bright;
+  font-family: $font-title;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    border-color: rgba(224, 187, 94, 0.7);
+    box-shadow: 0 0 18px rgba(201, 162, 74, 0.2);
+  }
+}
+
+.currencyIcon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, $gold-bright, #7a5a1c);
+  color: #1a1206;
+}
+
+// ─── Başlık ──────────────────────────────────────────────────
+
+.header {
+  text-align: center;
+  margin: 40px auto 40px;
+  max-width: 640px;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: $font-title;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $text-parchment;
+  text-shadow: 0 2px 40px rgba(138, 3, 3, 0.5), 0 0 80px rgba(138, 3, 3, 0.15);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px auto;
+  max-width: 280px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(138, 3, 3, 0.7), transparent);
+}
+
+.dividerIcon {
+  color: $primary;
+  font-size: 1.1rem;
+}
+
+.lead {
+  color: $text-muted;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+// ─── Yerleşim ────────────────────────────────────────────────
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+  margin-bottom: 56px;
+}
+
+.panel {
+  position: relative;
+  background: $panel-bg;
+  border: 1px solid $panel-border;
+  border-radius: $radius-sm;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.panelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.panelEyebrow {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #a33;
+}
+
+.panelCount {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+// ─── Karakter önizleme ──────────────────────────────────────
+
+.previewPanel {
+  position: sticky;
+  top: 92px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage {
+  position: relative;
+  height: 340px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 8px 0 10px;
+}
+
+.stageHalo {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  width: 260px;
+  height: 260px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 150, 60, 0.18) 0%, rgba(138, 3, 3, 0.12) 40%, transparent 70%);
+  animation: candleFlicker 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes candleFlicker {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+  45%      { opacity: 1;    transform: translateX(-50%) scale(1.04); }
+}
+
+.character {
+  position: relative;
+  z-index: 1;
+  height: 320px;
+  max-width: 100%;
+  margin-bottom: 8px;
+}
+
+.stagePedestal {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 190px;
+  height: 26px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.85) 0%, rgba(138, 3, 3, 0.25) 55%, transparent 72%);
+  border: 1px solid rgba(138, 3, 3, 0.25);
+}
+
+.previewHint {
+  min-height: 1.4em;
+  text-align: center;
+  font-family: $font-title;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: $text-muted;
+  margin-bottom: 16px;
+
+  strong {
+    font-style: normal;
+    color: $gold-bright;
+    font-weight: 600;
+  }
+}
+
+.slotList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.slotChip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 6px 8px 6px 12px;
+  border: 1px solid rgba(232, 220, 196, 0.08);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  transition: border-color $transition-normal, background $transition-normal;
+}
+
+.slotFilled {
+  border-color: $gold-line;
+  background: linear-gradient(90deg, $gold-soft, rgba(0, 0, 0, 0.3) 70%);
+}
+
+.slotLabel {
+  flex-shrink: 0;
+  width: 72px;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.slotValue {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: $font-title;
+  font-size: 0.92rem;
+  color: $text-dim;
+  font-style: italic;
+
+  .slotFilled & {
+    color: $text-parchment;
+    font-style: normal;
+  }
+}
+
+.slotRemove {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: $text-muted;
+  border: 1px solid transparent;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: $text-parchment;
+    border-color: $border-red;
+    background: rgba(138, 3, 3, 0.25);
+  }
+}
+
+// ─── Butonlar ────────────────────────────────────────────────
+
+%btnBase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-family: $font-title;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: all $transition-normal;
+  white-space: nowrap;
+}
+
+.clearBtn {
+  @extend %btnBase;
+  width: 100%;
+  color: $text-parchment;
+  border: 1px solid rgba(232, 220, 196, 0.2);
+
+  &:hover:not(:disabled) {
+    border-color: $border-red;
+    background: rgba(138, 3, 3, 0.15);
+  }
+
+  &:disabled {
+    color: $text-dim;
+    border-color: rgba(232, 220, 196, 0.08);
+    cursor: not-allowed;
+  }
+}
+
+.wearBtn {
+  @extend %btnBase;
+  width: 100%;
+  background: linear-gradient(180deg, #a10606, $primary);
+  color: $text-parchment;
+  border: 1px solid rgba(255, 120, 120, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+  &:hover {
+    background: linear-gradient(180deg, #b80a0a, #9a0505);
+    box-shadow: $shadow-red;
+  }
+}
+
+.equippedBtn {
+  @extend %btnBase;
+  width: 100%;
+  color: $gold-bright;
+  border: 1px solid $gold-line;
+  background: $gold-soft;
+
+  &:hover {
+    background: rgba(201, 162, 74, 0.22);
+  }
+}
+
+.marketBtn {
+  @extend %btnBase;
+  background: linear-gradient(180deg, #a10606, $primary);
+  color: $text-parchment;
+  border: 1px solid rgba(255, 120, 120, 0.15);
+
+  &:hover {
+    background: linear-gradient(180deg, #b80a0a, #9a0505);
+    box-shadow: $shadow-red;
+  }
+}
+
+// ─── Koleksiyon ──────────────────────────────────────────────
+
+.collection {
+  min-width: 0;
+  animation: fadeUp 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(138, 3, 3, 0.25);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: $font-title;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+  transition: color $transition-normal;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: -13px;
+    height: 2px;
+    background: $primary;
+    box-shadow: 0 0 10px rgba(138, 3, 3, 0.8);
+    transform: scaleX(0);
+    transition: transform $transition-normal;
+  }
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+.tabActive {
+  color: $text-parchment;
+
+  &::after {
+    transform: scaleX(1);
+  }
+}
+
+.tabCount {
+  min-width: 20px;
+  padding: 1px 6px;
+  font-family: $font-body;
+  font-size: 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 220, 196, 0.12);
+  color: $text-muted;
+  text-align: center;
+
+  .tabActive & {
+    border-color: $border-red;
+    color: $text-parchment;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+// ─── Kıyafet kartı ───────────────────────────────────────────
+
+.card {
+  --rarity: #8a7f72;
+  --rarity-glow: rgba(138, 127, 114, 0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 18px 18px;
+  background: $card-bg;
+  border: 1px solid rgba(138, 3, 3, 0.22);
+  border-radius: $radius-sm;
+  overflow: hidden;
+  transition: transform $transition-normal, border-color $transition-normal, box-shadow $transition-normal;
+
+  &:hover,
+  &:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(138, 3, 3, 0.6);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6), 0 0 22px rgba(138, 3, 3, 0.15);
+  }
+}
+
+.rarity_rare {
+  --rarity: #{$rare};
+  --rarity-glow: rgba(178, 58, 58, 0.25);
+}
+
+.rarity_legendary {
+  --rarity: #{$legendary};
+  --rarity-glow: rgba(224, 187, 94, 0.25);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(224, 187, 94, 0.08), transparent 60%),
+    $card-bg;
+}
+
+.cardEquipped {
+  border-color: rgba(201, 162, 74, 0.5);
+  box-shadow: 0 0 22px rgba(201, 162, 74, 0.1);
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(224, 187, 94, 0.75);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6), 0 0 22px rgba(201, 162, 74, 0.18);
+  }
+}
+
+.rarityTag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+.equippedMark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, $gold-bright, #7a5a1c);
+  color: #1a1206;
+  box-shadow: 0 0 10px rgba(201, 162, 74, 0.45);
+}
+
+.thumbFrame {
+  width: 112px;
+  height: 112px;
+  margin-bottom: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--rarity);
+  border: 1px solid var(--rarity);
+  border-radius: 2px;
+  background: radial-gradient(circle, var(--rarity-glow), transparent 70%);
+  box-shadow: 0 0 24px var(--rarity-glow), inset 0 0 0 4px rgba(10, 8, 7, 0.9), inset 0 0 0 5px var(--rarity-glow);
+  transition: box-shadow $transition-normal;
+
+  .card:hover & {
+    box-shadow: 0 0 36px var(--rarity-glow), inset 0 0 0 4px rgba(10, 8, 7, 0.9), inset 0 0 0 5px var(--rarity);
+  }
+}
+
+.thumbImg {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+}
+
+.thumbFallback {
+  display: grid;
+  place-items: center;
+  opacity: 0.85;
+}
+
+.cardEyebrow {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 6px;
+}
+
+.cardTitle {
+  font-family: $font-title;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: $text-parchment;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.cardPlaceholder {
+  height: 268px;
+  border: 1px solid rgba(232, 220, 196, 0.06);
+  border-radius: $radius-sm;
+  background: linear-gradient(110deg, rgba(18, 14, 12, 0.6) 30%, rgba(40, 30, 26, 0.6) 50%, rgba(18, 14, 12, 0.6) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
+}
+
+// ─── Boş durum ───────────────────────────────────────────────
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 24px;
+  border: 1px dashed rgba(138, 3, 3, 0.35);
+  border-radius: $radius-sm;
+  background: rgba(12, 9, 8, 0.55);
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 18px;
+  color: $text-muted;
+  border: 1px solid rgba(232, 220, 196, 0.15);
+  transform: rotate(45deg);
+
+  svg {
+    transform: rotate(-45deg);
+  }
+}
+
+.emptyTitle {
+  font-family: $font-title;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $text-parchment;
+  margin-bottom: 8px;
+}
+
+.emptyText {
+  color: $text-muted;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 380px;
+  margin-bottom: 22px;
+}
+
+// ─── Alt çizgi ───────────────────────────────────────────────
+
+.bottomRule {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  > span:not(.bottomRuleText) {
+    flex: 1;
+    height: 1px;
+    background: rgba(138, 3, 3, 0.3);
+  }
+}
+
+.bottomRuleText {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: $text-dim;
+  text-align: center;
+}
+
+// ─── Tablet ──────────────────────────────────────────────────
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .previewPanel {
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+// ─── Mobil ───────────────────────────────────────────────────
+
+@media (max-width: 720px) {
+  .navbar {
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 0 16px;
+  }
+
+  .navTitle {
+    display: none;
+  }
+
+  .navLinks {
+    justify-content: center;
+    gap: 2px;
+  }
+
+  .navLink {
+    padding: 8px 10px;
+  }
+
+  .navLinkText {
+    display: none;
+  }
+
+  .content {
+    padding: 0 16px 48px;
+  }
+
+  .cornerTopLeft,
+  .cornerTopRight,
+  .cornerBotLeft,
+  .cornerBotRight {
+    display: none;
+  }
+
+  .header {
+    margin: 28px auto 28px;
+  }
+
+  .stage {
+    height: 280px;
+  }
+
+  .character {
+    height: 260px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    padding: 32px 12px 14px;
+  }
+
+  .thumbFrame {
+    width: 92px;
+    height: 92px;
+  }
+
+  .thumbImg {
+    width: 72px;
+    height: 72px;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+  }
+
+  .wearBtn,
+  .equippedBtn {
+    padding: 9px 10px;
+  }
+}
