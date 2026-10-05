@@ -39,6 +39,7 @@ model GameSession {
   truthReveal String?           @db.Text // Gerçek hikaye perde arkası
   locationClues Json?                    // Her mekan için gizli ipuçları listesi
   culpritId   String?           // Cadı/Suçlu olan NPC ID'si
+  caseFacts   Json?             // Kodla belirlenen vaka gerçekleri (case-setup.ts CaseFacts); aktif oturumda gizli
   currentDay  Int               @default(1)
   timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
   notes         String?           @default("") // Engizisyoncunun notları
@@ -48,6 +49,7 @@ model GameSession {
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]
+  evidence      Evidence[]
 }
 
 model Npc {
@@ -69,6 +71,7 @@ model SessionNpcState {
   currentFear   Int         @default(0)
   lieTendency   Int         @default(0)
   dynamicPrompt String?     // Bu oturum için karaktere özel yazılmış gizli bilgi/motivasyon
+  shownEvidenceIds String[] @default([]) // Bu karaktere gösterilmiş kanıtlar (aynı kanıt korkuyu iki kez artırmaz)
   
   @@unique([sessionId, npcId])
 }
@@ -82,4 +85,19 @@ model DialogueHistory {
   message   String
   dayNumber Int         @default(1)
   createdAt DateTime    @default(now())
+}
+
+// Kanıt Defteri: oyuncunun bir vakada bulduğu ipuçları, doğrulayan kanıtlar ve aldığı itiraflar
+model Evidence {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id])
+  kind      String      // CLUE, VERIFICATION, CONFESSION
+  category  String      @default("ITEM") // ITEM: Envanter'deki fiziksel nesne, STATEMENT: Not defterine yazılan ifade
+  sourceId  String      // İpucunda mekân id'si, itiraf ve tanıklıkta karakter id'si
+  text      String      @db.Text
+  dayNumber Int         @default(1)
+  createdAt DateTime    @default(now())
+
+  @@unique([sessionId, kind, sourceId])
 }

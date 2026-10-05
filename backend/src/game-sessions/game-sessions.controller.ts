@@ -112,6 +112,14 @@ export class GameSessionsController {
     );
   }
 
+  @Get(':id/evidence')
+  @UseGuards(JwtAuthGuard)
+  async getEvidence(@Request() req: AuthedRequest, @Param('id') sessionId: string) {
+    return {
+      evidence: await this.gameSessionsService.getEvidence(sessionId, req.user.userId),
+    };
+  }
+
   @Post(':id/notes')
   @UseGuards(JwtAuthGuard)
   async updateNotes(

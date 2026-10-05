@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Kanıt Defteri kaydı. ITEM: mekânda bulunan fiziksel nesne (Envanter),
+// STATEMENT: bir karakterin ifadesi (Not defterine otomatik yazılır)
+export interface EvidenceItem {
+  id: string;
+  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION';
+  category: 'ITEM' | 'STATEMENT';
+  sourceId: string;
+  text: string;
+  dayNumber: number;
+}
+
 interface GameState {
   // Auth
   userEmail: string | null;
@@ -25,6 +36,7 @@ interface GameState {
     activeWarrants: string[];
     usedWarrants: string[];
   };
+  evidence: EvidenceItem[];
   truthReveal: string | null;
   locationClues: Record<string, string> | null;
   lastLocationId: string | null;
@@ -51,6 +63,8 @@ interface GameState {
   setWarrants: (active: string[], used: string[]) => void;
   addWarrant: (warrant: string) => void;
   consumeWarrant: (location: string) => void;
+  setEvidence: (items: EvidenceItem[]) => void;
+  addEvidence: (items: EvidenceItem[]) => void;
   setTruthReveal: (truth: string | null) => void;
   setLocationClues: (clues: Record<string, string> | null) => void;
   setLastLocationId: (id: string | null) => void;
@@ -79,6 +93,7 @@ export const useGameStore = create<GameState>()(
       notes: '',
       scenario: null,
       inventory: { activeWarrants: [], usedWarrants: [] },
+      evidence: [],
       truthReveal: null,
       locationClues: null,
       lastLocationId: null,
@@ -112,6 +127,7 @@ export const useGameStore = create<GameState>()(
         notes: '',
         scenario: null,
         inventory: { activeWarrants: [], usedWarrants: [] },
+        evidence: [],
         truthReveal: null,
         locationClues: null,
         lastLocationId: null,
@@ -119,7 +135,7 @@ export const useGameStore = create<GameState>()(
 
       // Yeni oturumda karakter tekrar başlangıç noktasından yola çıkar
       setSessionId: (id) => set((state) =>
-        state.sessionId === id ? { sessionId: id } : { sessionId: id, lastLocationId: null }
+        state.sessionId === id ? { sessionId: id } : { sessionId: id, lastLocationId: null, evidence: [] }
       ),
       setDifficulty: (d) => set({ difficulty: d }),
       setScenarioType: (s) => set({ scenarioType: s }),
@@ -192,6 +208,7 @@ export const useGameStore = create<GameState>()(
         notes: '',
         scenario: null,
         inventory: { activeWarrants: [], usedWarrants: [] },
+        evidence: [],
         truthReveal: null,
         locationClues: null,
         lastLocationId: null,
@@ -213,6 +230,15 @@ export const useGameStore = create<GameState>()(
           activeWarrants: state.inventory.activeWarrants.filter(w => w !== location),
           usedWarrants: [...state.inventory.usedWarrants, location]
         }
+      })),
+
+      setEvidence: (items) => set({ evidence: items }),
+
+      addEvidence: (items) => set((state) => ({
+        evidence: [
+          ...state.evidence,
+          ...items.filter((item) => !state.evidence.some((existing) => existing.id === item.id)),
+        ],
       })),
 
       setTruthReveal: (truth) => set({ truthReveal: truth }),

@@ -4,8 +4,19 @@ import { useState, useRef, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
-import { useGameStore } from '../../../store/useGameStore';
+import { HeartPulse, Hand, ScrollText, Search } from 'lucide-react';
+import { useGameStore, type EvidenceItem } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
+
+type FearBand = 'CALM' | 'UNEASY' | 'NERVOUS' | 'PANIC';
+
+// Korkunun oyuncuya görünen işaretleri; sayı yerine karakterin hâli gösterilir
+const FEAR_LABELS: Record<FearBand, string> = {
+  CALM: 'Sakin',
+  UNEASY: 'Tedirgin',
+  NERVOUS: 'Terliyor, elleri titriyor',
+  PANIC: 'Paniğe kapıldı',
+};
 
 interface Message {
   role: 'player' | 'npc';
@@ -109,6 +120,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     inventory,
     addWarrant,
     consumeWarrant,
+    evidence,
+    setEvidence,
+    addEvidence,
     hasHydrated,
   } = useGameStore();
 
@@ -126,6 +140,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [localNotes, setLocalNotes] = useState('');
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
+  const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
+  const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -143,6 +161,20 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [isInvestigating, setIsInvestigating] = useState(isCrimeScene);
   const currentNpcKey = isInvestigating ? `narrator_${npcKey}` : npcKey;
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(npcKey);
+  const items = evidence.filter((e) => e.category === 'ITEM');
+  const statements = evidence.filter((e) => e.category === 'STATEMENT');
+  const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
+
+  const evidenceSource = (item: EvidenceItem) =>
+    item.category === 'ITEM'
+      ? getLocationLabel(item.sourceId, scenarioType || 'medieval')
+      : getNpcProfile(item.sourceId, scenarioType || 'medieval')?.name ?? item.sourceId;
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     setLocalNotes(notes);
@@ -229,6 +261,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           }
         }
 
+        setFear(data.fear ?? null);
+        setShownEvidenceIds(Array.isArray(data.shownEvidenceIds) ? data.shownEvidenceIds : []);
+
         if (typeof data.dialoguesUsed === 'number') {
           setDialoguesUsed(data.dialoguesUsed);
         }
@@ -242,6 +277,14 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
           setNotes(sessionData.notes || '');
+        }
+
+        const evidenceRes = await fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (evidenceRes.ok) {
+          const evidenceData = await evidenceRes.json();
+          setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
         }
       } catch (err) {
         console.error('History fetch error:', err);
@@ -258,7 +301,81 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     };
 
     fetchHistory();
-  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, authToken, isInvestigating]);
+  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, setEvidence, authToken, isInvestigating]);
+
+  // Konuşma ya da yüzleştirme cevabındaki yeni kanıt, korku ve not değişikliklerini uygular
+  const applyTurnResult = (data: {
+    newEvidence?: EvidenceItem[];
+    notes?: string;
+    fear?: { level: number; band: FearBand } | null;
+  }) => {
+    const fresh = Array.isArray(data.newEvidence) ? data.newEvidence : [];
+    if (fresh.length > 0) {
+      addEvidence(fresh);
+      const hasItem = fresh.some((e) => e.category === 'ITEM');
+      const hasStatement = fresh.some((e) => e.category === 'STATEMENT');
+      setToast(
+        hasItem && hasStatement
+          ? 'Yeni kanıt Envanter’e eklendi, ifade Not defterine yazıldı.'
+          : hasItem
+          ? 'Yeni kanıt Envanter’e eklendi.'
+          : 'İfade Not defterine yazıldı.',
+      );
+    }
+    if (typeof data.notes === 'string') {
+      setNotes(data.notes);
+    }
+    if (data.fear !== undefined) {
+      setFear(data.fear);
+    }
+  };
+
+  const handleConfront = async (item: EvidenceItem) => {
+    const maxLimit = isPremium ? 100 : 30;
+    if (loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
+
+    setIsEvidencePickerOpen(false);
+    setMessages((prev) => [
+      ...prev,
+      { role: 'player', text: `*Ona bir kanıt gösteriyorsun:* ${item.text}`, timestamp: new Date() },
+    ]);
+    setLoading(true);
+
+    try {
+      const res = await fetch(apiUrl('/npcs/confront'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ sessionId, npcId: npcKey, evidenceId: item.id }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.reply) {
+        setShownEvidenceIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+        setMessages((prev) => [...prev, { role: 'npc', text: data.reply, timestamp: new Date() }]);
+        incrementDialogue();
+        applyTurnResult(data);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'npc', text: `*[Sistem hatası: ${data.message ?? 'Kanıt gösterilemedi.'}]*`, timestamp: new Date() },
+        ]);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'npc',
+          text: '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -303,6 +420,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
       if (res.ok && data.reply) {
         setMessages((prev) => [...prev, { role: 'npc', text: data.reply, timestamp: new Date() }]);
         incrementDialogue();
+        applyTurnResult(data);
       } else if (!res.ok && data.message) {
         setMessages((prev) => [...prev, { role: 'npc', text: `*[Sistem hatası: ${data.message}]*`, timestamp: new Date() }]);
       } else {
@@ -420,6 +538,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div>
             <div className={styles.npcName}>{isInvestigating ? 'Fiziksel Çevre' : profile.name}</div>
             <div className={styles.npcTitle}>{isInvestigating ? 'Etrafındaki Dünya' : profile.title}</div>
+            {!isInvestigating && fear && (
+              <div className={`${styles.fear} ${styles[`fear${fear.band}`]}`} title="Karakterin korkusu">
+                <HeartPulse size={13} aria-hidden />
+                <span>{FEAR_LABELS[fear.band]}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -433,7 +557,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div className={styles.messages}>
             {messages.map((msg, i) => (
               <div key={i} className={`${styles.bubble} ${msg.role === 'player' ? styles.player : styles.npc}`}>
-                <div className={styles.bubbleLabel}>{msg.role === 'player' ? 'Inquisitor' : isInvestigating ? 'Anlatici' : profile.name}</div>
+                <div className={styles.bubbleLabel}>{msg.role === 'player' ? 'Engizitör' : isInvestigating ? 'Anlatıcı' : profile.name}</div>
                 <div className={styles.bubbleText}>
                   {msg.text.split('\n').map((line, j) => (
                     <span key={j}>
@@ -448,7 +572,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
             {loading && (
               <div className={`${styles.bubble} ${styles.npc} ${styles.typing}`}>
-                <div className={styles.bubbleLabel}>{isInvestigating ? 'Anlatici' : profile.name}</div>
+                <div className={styles.bubbleLabel}>{isInvestigating ? 'Anlatıcı' : profile.name}</div>
                 <div className={styles.typingDots}>
                   <span />
                   <span />
@@ -467,6 +591,15 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             <button className={styles.toolBtn} onClick={() => setIsInventoryOpen(true)}>
               <span>📜</span> Envanter
             </button>
+            {!isInvestigating && !isCrimeScene && (
+              <button
+                className={`${styles.toolBtn} ${canConfront ? styles.activeTool : ''}`}
+                disabled={!canConfront || loading}
+                onClick={() => setIsEvidencePickerOpen(true)}
+              >
+                <Hand size={14} aria-hidden /> Kanıt Göster
+              </button>
+            )}
             
             {!isInvestigating ? (
               <button 
@@ -570,7 +703,12 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           </div>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideTitle}>Envanter</div>
+            <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Envanter
+              <button className={styles.expandBtn} onClick={() => setIsInventoryOpen(true)} title="Envanteri aç">
+                +
+              </button>
+            </div>
             <div style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '12px' }}>
               {inventory?.activeWarrants?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -580,10 +718,31 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
                 </div>
               ) : inventory?.usedWarrants?.length > 0 ? (
                 <span style={{ color: '#8a7f72' }}>Tüm izinler kullanıldı.</span>
-              ) : (
+              ) : items.length === 0 ? (
                 'Envanter boş'
+              ) : null}
+              {items.length > 0 && (
+                <div className={styles.sideEvidenceList}>
+                  {items.map((item) => (
+                    <div key={item.id} className={styles.sideEvidence} title={item.text}>
+                      <Search size={12} aria-hidden />
+                      <span>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
+
+            {!isInvestigating && !isCrimeScene && (
+              <button
+                className={styles.confrontBtn}
+                onClick={() => setIsEvidencePickerOpen(true)}
+                disabled={!canConfront || loading}
+                title={canConfront ? 'Envanterden ya da ifadelerden birini seçip göster' : 'Henüz gösterebileceğin bir kanıt yok'}
+              >
+                <Hand size={14} aria-hidden /> Kanıt Göster
+              </button>
+            )}
 
             {!isInvestigating ? (
               <button
@@ -704,8 +863,17 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
             <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Envanter</h2>
             <div className={styles.inventoryList}>
-              {inventory?.activeWarrants?.length > 0 || inventory?.usedWarrants?.length > 0 ? (
+              {inventory?.activeWarrants?.length > 0 || inventory?.usedWarrants?.length > 0 || items.length > 0 ? (
                 <>
+                  {items.map((item) => (
+                    <div key={item.id} className={styles.inventoryItem}>
+                      <span className={styles.itemIcon}><Search size={20} aria-hidden /></span>
+                      <div className={styles.itemDetails}>
+                        <span className={styles.itemName}>{item.text}</span>
+                        <span className={styles.itemLoc}>{evidenceSource(item)} · {item.dayNumber}. gün</span>
+                      </div>
+                    </div>
+                  ))}
                   {inventory.activeWarrants.map((w, idx) => (
                     <div key={`active-${idx}`} className={styles.inventoryItem}>
                       <span className={styles.itemIcon}>📜</span>
@@ -732,6 +900,50 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {isEvidencePickerOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsEvidencePickerOpen(false)}>
+          <div className={`${styles.modalContent} ${styles.pickerContent}`} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsEvidencePickerOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>Kanıt Göster</h2>
+            <p className={styles.modalMessage}>{profile.name} karşısında hangi kanıtı ortaya koyacaksın?</p>
+            {[
+              { title: 'Envanter', list: items, icon: <Search size={18} aria-hidden /> },
+              { title: 'İfadeler', list: statements, icon: <ScrollText size={18} aria-hidden /> },
+            ]
+              .filter((group) => group.list.length > 0)
+              .map((group) => (
+                <div key={group.title} className={styles.pickerGroup}>
+                  <div className={styles.pickerGroupTitle}>{group.title}</div>
+                  {group.list.map((item) => (
+                    <button
+                      key={item.id}
+                      className={styles.pickerItem}
+                      onClick={() => handleConfront(item)}
+                      disabled={loading}
+                    >
+                      <span className={styles.itemIcon}>{group.icon}</span>
+                      <span className={styles.itemDetails}>
+                        <span className={styles.itemName}>{item.text}</span>
+                        <span className={styles.itemLoc}>{evidenceSource(item)}</span>
+                      </span>
+                      {shownEvidenceIds.includes(item.id) && (
+                        <span className={styles.itemStatus}>Gösterildi</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            <p className={styles.pickerHint}>Kanıt göstermek bir sorgu hakkı harcar.</p>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={styles.toast} role="status">
+          {toast}
         </div>
       )}
 

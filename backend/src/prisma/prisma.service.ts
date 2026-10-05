@@ -20,6 +20,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly npc = prismaClient.npc;
   readonly sessionNpcState = prismaClient.sessionNpcState;
   readonly dialogueHistory = prismaClient.dialogueHistory;
+  readonly evidence = prismaClient.evidence;
 
   async onModuleInit() {
     await prismaClient.$connect();

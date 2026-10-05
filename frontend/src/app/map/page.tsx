@@ -282,7 +282,9 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
+  // Envanter'de sadece fiziksel kanıtlar görünür; karakter ifadeleri Not defterindedir
+  const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
 
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
@@ -417,11 +419,19 @@ export default function MapPage() {
             setScenarioType(data.scenarioType);
           }
           setWarrants(data.activeWarrants || [], data.usedWarrants || []);
+
+          const evidenceRes = await fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          if (evidenceRes.ok) {
+            const evidenceData = await evidenceRes.json();
+            setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
+          }
         } catch(e) {}
       }
     };
     if (hasHydrated) fetchSession();
-  }, [authToken, router, sessionId, setScenarioType, setWarrants, hasHydrated]);
+  }, [authToken, router, sessionId, setScenarioType, setWarrants, setEvidence, hasHydrated]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -934,8 +944,16 @@ export default function MapPage() {
             <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
             <h2 className={styles.modalTitle}>Envanter</h2>
             <div className={styles.inventoryList}>
-              {inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0 ? (
+              {inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0 || evidenceItems.length > 0 ? (
                 <>
+                  {evidenceItems.map((item) => (
+                    <div key={item.id} className={`${styles.inventoryItem} ${styles.evidenceItem}`}>
+                      <span className={styles.itemName}>{item.text}</span>
+                      <span className={styles.evidenceSource}>
+                        {getLocationLabel(item.sourceId, scenarioType)} · {item.dayNumber}. gün
+                      </span>
+                    </div>
+                  ))}
                   {inventory.activeWarrants.map((w, idx) => (
                     <div key={`active-${idx}`} className={styles.inventoryItem}>
                       <span className={styles.itemIcon}>📜</span>

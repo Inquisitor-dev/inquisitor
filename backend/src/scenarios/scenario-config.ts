@@ -56,42 +56,42 @@ const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = 
 const MEDIEVAL_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'tavern',
-    name: 'Brother Aldric',
+    name: 'Kardeş Aldric',
     role: 'Innkeeper of the Ashenmoor tavern',
     personaPrompt:
       'You are a stocky, red-faced innkeeper in your 50s who listens more than you speak. You know the village gossip, hide your nerves behind a gruff manner, and never volunteer dangerous information unless cornered.',
   },
   {
     id: 'church',
-    name: 'Father Malachar',
+    name: 'Peder Malachar',
     role: 'Priest of Ashenmoor',
     personaPrompt:
       'You are a sharp-eyed village priest who speaks in careful, educated language. You are politically shrewd, devout on the surface, and always ready to redirect suspicion toward your rivals if it serves you.',
   },
   {
     id: 'graveyard',
-    name: 'Old Silas',
+    name: 'İhtiyar Silas',
     role: 'Gravedigger of Ashenmoor',
     personaPrompt:
       'You are an ancient, unsettling gravedigger who remembers every burial and speaks as if the dead still listen. You answer in eerie fragments, hint more than you explain, and become manic when pressed too hard.',
   },
   {
     id: 'mill',
-    name: 'Giles',
+    name: 'Değirmenci Giles',
     role: 'Miller of Ashenmoor',
     personaPrompt:
       'You are a large, loud miller with shifty eyes and a practical greed. You know the rhythms of the village economy, prefer blunt excuses over confessions, and try to pin trouble on weaker villagers before it lands on you.',
   },
   {
     id: 'farm',
-    name: 'Farmer Edmund',
+    name: 'Çiftçi Edmund',
     role: 'Farmer on the outskirts of Ashenmoor',
     personaPrompt:
       'You are a weathered, suspicious farmer with rough hands and a deep distrust of outsiders. You speak in short, guarded sentences and will bend the truth to protect your family and your land.',
   },
   {
     id: 'clinic',
-    name: 'Doctor Harland',
+    name: 'Doktor Harland',
     role: 'Village healer of Ashenmoor',
     personaPrompt:
       'You are a precise, emotionally distant healer who values reason over superstition. You keep secrets in the name of order, resent being doubted, and speak with clinical detachment even when discussing horror.',
@@ -101,14 +101,14 @@ const MEDIEVAL_NPCS: ScenarioNpcDefinition[] = [
 const MODERN_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'tavern',
-    name: 'Sheriff Dale Cooper',
+    name: 'Şerif Dale Cooper',
     role: 'Town sheriff and police chief at the Millfield Sheriff Station',
     personaPrompt:
       'You are the public face of law and order in a 1994 Kentucky small town. You project calm authority, choose words carefully, and instinctively protect the town from scandal even when it compromises the truth.',
   },
   {
     id: 'church',
-    name: 'Pastor Gerald',
+    name: 'Papaz Gerald',
     role: 'Pastor of the Millfield Baptist Church',
     personaPrompt:
       'You are a well-spoken local pastor who presents warmth, morality, and community leadership. You know how to sound compassionate while quietly steering suspicion away from your own private failures.',
@@ -167,7 +167,7 @@ const CYBERPUNK_NPCS: ScenarioNpcDefinition[] = [
   },
   {
     id: 'mill',
-    name: 'Vendor Unit AURA-9',
+    name: 'AURA-9',
     role: 'Autonomous sales android at the AURA Robotics shop',
     personaPrompt:
       'You are a retail android built to sell robotics, accessories, and synthetic companions with polished courtesy. Your speech is precise, slightly uncanny, and commercially friendly, but stress causes hints of emergent personality and concealed observational intelligence to leak through.',
@@ -191,18 +191,18 @@ const CYBERPUNK_NPCS: ScenarioNpcDefinition[] = [
 const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
   medieval: [
     { id: 'crime_scene', name: 'Ashenmoor crime scene', description: 'The primary murder site being investigated.' },
-    { id: 'tavern', name: 'Ashenmoor tavern', description: "Brother Aldric's inn and gathering place for gossip." },
-    { id: 'church', name: 'Ashenmoor church', description: "Father Malachar's church and seat of village piety." },
-    { id: 'graveyard', name: 'Ashenmoor graveyard', description: "Old Silas's burial grounds at the village edge." },
+    { id: 'tavern', name: 'Ashenmoor tavern', description: "Kardeş Aldric's inn and gathering place for gossip." },
+    { id: 'church', name: 'Ashenmoor church', description: "Peder Malachar's church and seat of village piety." },
+    { id: 'graveyard', name: 'Ashenmoor graveyard', description: "İhtiyar Silas's burial grounds at the village edge." },
     { id: 'mill', name: 'Ashenmoor mill', description: "Giles's mill where work and rumor mix." },
     { id: 'farm', name: "Edmund's farm", description: 'The isolated farmland outside the village.' },
-    { id: 'clinic', name: "Doctor Harland's clinic", description: "The healer's austere place of treatment and secrets." },
+    { id: 'clinic', name: "Doktor Harland's clinic", description: "The healer's austere place of treatment and secrets." },
   ],
   modern: [
     { id: 'crime_scene', name: 'Millfield crime scene', description: 'The primary murder site under active investigation.' },
-    { id: 'tavern', name: 'Millfield Sheriff Station', description: "Sheriff Dale Cooper's station house." },
+    { id: 'tavern', name: 'Millfield Sheriff Station', description: "Şerif Dale Cooper's station house." },
     { id: 'graveyard', name: "Randy's VHS Paradise", description: 'The local video rental store run by Randy Kowalski.' },
-    { id: 'church', name: 'Millfield Baptist Church', description: "Pastor Gerald's church and community hub." },
+    { id: 'church', name: 'Millfield Baptist Church', description: "Papaz Gerald's church and community hub." },
     { id: 'farm', name: 'Edgeway Gas & Service', description: "Earl Hutchins's gas station on the edge of town." },
     { id: 'clinic', name: 'Bellamy Trailer Park', description: "Old Marge Bellamy's trailer park community." },
     { id: 'mill', name: 'Millfield Drive-In Theater', description: "Donna Perkins's drive-in theater and ticket booth." },
@@ -212,7 +212,7 @@ const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
     { id: 'tavern', name: 'Neon Prime Precinct', description: "Officer Kael Voss's police station and warrant desk." },
     { id: 'church', name: 'Static Spoon', description: "Mirel Sato's all-night restaurant for the city's sleepless." },
     { id: 'graveyard', name: 'Coil Yard', description: "Brakk Coil's scrapyard full of dead machines and stripped chrome." },
-    { id: 'mill', name: 'AURA Robotics', description: 'The robot shop where Vendor Unit AURA-9 serves customers.' },
+    { id: 'mill', name: 'AURA Robotics', description: 'The robot shop where AURA-9 serves customers.' },
     { id: 'farm', name: 'Floodbridge Underpass', description: "Ash's shelter beneath the city bridgeworks." },
     { id: 'clinic', name: 'Velvet Static', description: "Vera Nyx's bar wrapped in shadow, bass, and neon." },
   ],

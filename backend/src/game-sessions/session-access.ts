@@ -17,7 +17,7 @@ export async function findOwnedSession(
   return session;
 }
 
-// Aktif oturumda suçlu, gerçek hikaye ve mekan ipuçları oyuncuya gönderilmez:
+// Aktif oturumda suçlu, gerçek hikaye, mekan ipuçları ve vaka gerçekleri oyuncuya gönderilmez:
 // tarayıcının ağ sekmesinden okunup vakanın cevabını ele verirler. Oyun bitince açılırlar.
 export function toPublicSession<
   T extends {
@@ -25,10 +25,12 @@ export function toPublicSession<
     culpritId?: unknown;
     truthReveal?: unknown;
     locationClues?: unknown;
+    caseFacts?: unknown;
   },
 >(session: T) {
   if (session.status !== 'ACTIVE') return session;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { culpritId, truthReveal, locationClues, ...publicSession } = session;
+  const { culpritId, truthReveal, locationClues, caseFacts, ...publicSession } =
+    session;
   return publicSession;
 }
