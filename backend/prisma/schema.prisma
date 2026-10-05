@@ -71,6 +71,7 @@ model SessionNpcState {
   currentFear   Int         @default(0)
   lieTendency   Int         @default(0)
   dynamicPrompt String?     // Bu oturum için karaktere özel yazılmış gizli bilgi/motivasyon
+  shownEvidenceIds String[] @default([]) // Bu karaktere gösterilmiş kanıtlar (aynı kanıt korkuyu iki kez artırmaz)
   
   @@unique([sessionId, npcId])
 }
@@ -92,6 +93,7 @@ model Evidence {
   sessionId String
   session   GameSession @relation(fields: [sessionId], references: [id])
   kind      String      // CLUE, VERIFICATION, CONFESSION
+  category  String      @default("ITEM") // ITEM: Envanter'deki fiziksel nesne, STATEMENT: Not defterine yazılan ifade
   sourceId  String      // İpucunda mekân id'si, itiraf ve tanıklıkta karakter id'si
   text      String      @db.Text
   dayNumber Int         @default(1)

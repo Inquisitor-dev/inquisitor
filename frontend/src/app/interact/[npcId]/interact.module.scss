@@ -573,6 +573,152 @@
   display: none;
 }
 
+/* ── KORKU GÖSTERGESİ ── */
+.fear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: #8a7f72;
+}
+
+.fearCALM { color: #8a7f72; }
+.fearUNEASY { color: #e0bb5e; }
+.fearNERVOUS { color: #d9822b; }
+.fearPANIC {
+  color: #e04444;
+  animation: fearTremble 0.35s ease-in-out infinite;
+}
+
+@keyframes fearTremble {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  75% { transform: translateX(1px); }
+}
+
+/* ── KANIT GÖSTER ── */
+.confrontBtn {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: #e0bb5e;
+  border: 1px solid rgba(224, 187, 94, 0.5);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  font-family: inherit;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled) { background: rgba(224, 187, 94, 0.08); }
+
+  &:disabled {
+    color: #555;
+    border-color: #333;
+    cursor: not-allowed;
+  }
+}
+
+.sideEvidenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sideEvidence {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #E8DCC4;
+  line-height: 1.35;
+
+  svg { flex-shrink: 0; margin-top: 3px; color: #e0bb5e; }
+
+  span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.pickerContent {
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  gap: 14px;
+}
+
+.pickerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pickerGroupTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e0bb5e;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #3d342d;
+  border-left: 3px solid #8A0303;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(138, 3, 3, 0.12);
+    border-color: #8A0303;
+  }
+
+  &:disabled { opacity: 0.5; cursor: wait; }
+
+  .itemIcon { color: #e0bb5e; display: flex; }
+}
+
+.pickerHint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #8a7f72;
+  text-align: center;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 1100;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  background: #0f0b09;
+  border: 1px solid rgba(224, 187, 94, 0.6);
+  color: #e0bb5e;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s ease;
+}
+
 .inventoryList {
   display: flex;
   flex-direction: column;

@@ -6,6 +6,7 @@ import { getScenarioConfig } from '../scenarios/scenario-config';
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
+import { startingFear } from '../npcs/fear';
 
 @Injectable()
 export class GameSessionsService {
@@ -88,7 +89,7 @@ export class GameSessionsService {
         data: {
           sessionId: session.id,
           npcId: npc.id,
-          currentFear: npc.baseFear,
+          currentFear: startingFear(npc.baseFear),
           lieTendency: npc.baseLie,
           dynamicPrompt,
         },
@@ -281,7 +282,7 @@ export class GameSessionsService {
     return this.prisma.evidence.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
-      select: { kind: true, sourceId: true, text: true, dayNumber: true, createdAt: true },
+      select: { id: true, kind: true, category: true, sourceId: true, text: true, dayNumber: true, createdAt: true },
     });
   }
 

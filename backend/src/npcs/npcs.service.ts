@@ -1,10 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts } from '../scenarios/case-setup';
 import { EVIDENCE_TAG, EvidenceDraft, evidenceFromTags, extractEvidenceTags } from './evidence';
+import {
+  EvidenceImpact,
+  FEAR_BREAK_THRESHOLD,
+  FEAR_GAIN,
+  evidenceImpact,
+  fearBand,
+  fearPrompt,
+  raiseFear,
+  startingFear,
+} from './fear';
 import {
   deflectionReply,
   foldTurkish,
@@ -19,8 +29,8 @@ export class NpcsService {
     private readonly llm: LlmService,
   ) {}
 
-  async interact(sessionId: string, npcId: string, userMessage: string) {
-    let state = await this.prisma.sessionNpcState.findUnique({
+  private async loadState(sessionId: string, npcId: string) {
+    const state = await this.prisma.sessionNpcState.findUnique({
       where: {
         sessionId_npcId: { sessionId, npcId },
       },
@@ -29,23 +39,65 @@ export class NpcsService {
         session: true,
       },
     });
+    if (state) return state;
 
-    if (!state) {
-      const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
-      const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
-      if (!npc || !session) throw new NotFoundException('Karakter ya da oturum bulunamadı.');
+    const npc = await this.prisma.npc.findUnique({ where: { id: npcId } });
+    const session = await this.prisma.gameSession.findUnique({ where: { id: sessionId } });
+    if (!npc || !session) throw new NotFoundException('Karakter ya da oturum bulunamadı.');
 
-      state = await this.prisma.sessionNpcState.create({
-        data: {
-          sessionId,
-          npcId,
-          currentFear: npc.baseFear,
-          lieTendency: npc.baseLie,
-          dynamicPrompt: 'You are a villager. You know nothing.',
-        },
-        include: { npc: true, session: true },
-      });
+    return this.prisma.sessionNpcState.create({
+      data: {
+        sessionId,
+        npcId,
+        currentFear: startingFear(npc.baseFear),
+        lieTendency: npc.baseLie,
+        dynamicPrompt: 'You are a villager. You know nothing.',
+      },
+      include: { npc: true, session: true },
+    });
+  }
+
+  // Yüzleştirme: oyuncu Kanıt Defteri'nden bir kanıtı karaktere gösterir. Kanıtın karakterle ilgisi
+  // ve korkuya etkisi kodla belirlenir; karakterin tepkisini yapay zekâ bu karara göre yazar.
+  async confront(sessionId: string, npcId: string, evidenceId: string) {
+    if (npcId.startsWith('narrator_') || npcId === 'crime_scene') {
+      throw new BadRequestException('Kanıt sadece karakterlere gösterilebilir.');
     }
+    const evidence = await this.prisma.evidence.findFirst({
+      where: { id: evidenceId, sessionId },
+    });
+    if (!evidence) throw new NotFoundException('Kanıt bulunamadı.');
+
+    const state = await this.loadState(sessionId, npcId);
+    const impact = evidenceImpact({
+      evidence,
+      targetNpcId: npcId,
+      culpritId: state.session.culpritId,
+      caseFacts: (state.session.caseFacts ?? null) as CaseFacts | null,
+      alreadyShown: state.shownEvidenceIds.includes(evidence.id),
+    });
+
+    await this.prisma.sessionNpcState.update({
+      where: { id: state.id },
+      data: {
+        currentFear: raiseFear(state.currentFear, impact),
+        ...(impact === 'REPEAT' ? {} : { shownEvidenceIds: { push: evidence.id } }),
+      },
+    });
+
+    return this.interact(sessionId, npcId, `*Ona bir kanıt gösteriyorsun:* ${evidence.text}`, {
+      evidenceText: evidence.text,
+      impact,
+    });
+  }
+
+  async interact(
+    sessionId: string,
+    npcId: string,
+    userMessage: string,
+    confrontation?: { evidenceText: string; impact: EvidenceImpact },
+  ) {
+    const state = await this.loadState(sessionId, npcId);
 
     const historyData = await this.prisma.dialogueHistory.findMany({
       where: { sessionId, npcId },
@@ -112,7 +164,7 @@ export class NpcsService {
 5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
 6. If the player's accusation is wrong, exaggerated, or aimed at the wrong secret, continue to deny it.
 7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.
-8. The ABSOLUTE TRUTH below is given to you only so you can judge accusations. NEVER reveal who the culprit is or retell the full truth to the player; share only what your character could plausibly have seen, as described in your personal secret.`;
+8. You do NOT know who the culprit is. Never name or guess a culprit as a fact; share only what your character could plausibly have seen, as described in your personal secret.`;
 
     let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -137,6 +189,22 @@ STRICT CANON RULES:
     const isNarrator = currentState.npc.id.startsWith('narrator_');
     const narratedLocationId = isNarrator ? currentState.npc.id.replace('narrator_', '') : null;
     const caseFacts = (currentState.session.caseFacts ?? null) as CaseFacts | null;
+    const existingEvidence = await this.prisma.evidence.findMany({
+      where: { sessionId },
+      select: { kind: true, sourceId: true },
+    });
+    const hasConfessed = existingEvidence.some(
+      (e) => e.kind === 'CONFESSION' && e.sourceId === currentState.npc.id,
+    );
+    const fearLevel = currentState.currentFear;
+    // Korku eşiği bir yüzleştirmeyle aşıldıysa masum karakter itiraf eder; bunu yapay zekâ değil kod belirler
+    const forcedConfession =
+      !isNarrator &&
+      !isCulprit &&
+      !hasConfessed &&
+      !!confrontation &&
+      FEAR_GAIN[confrontation.impact] > 0 &&
+      fearLevel >= FEAR_BREAK_THRESHOLD;
 
     if (isNarrator) {
       const narratedLocation = canonicalLocations.find((location) => location.id === narratedLocationId);
@@ -173,15 +241,56 @@ ${canonicalNpc?.personaPrompt ?? currentState.npc.basePrompt}
 
 YOUR PERSONAL SECRET/ROLE IN THIS:
 ${currentState.dynamicPrompt}
+`;
 
+      // Sadece katil olayın tamamını bilir; masumlar kendi gördüklerini ve mazeretlerini bilir
+      if (isCulprit) {
+        combinedPrompt += `
 THE ABSOLUTE TRUTH OF THE INCIDENT:
 ${currentState.session.truthReveal}
+`;
+      } else if (caseFacts?.alibis[currentState.npc.id]) {
+        combinedPrompt += `
+YOUR WHEREABOUTS ON THE NIGHT OF THE MURDER (your secret alibi):
+${caseFacts.alibis[currentState.npc.id]}
+`;
+      }
 
+      combinedPrompt += `
 ${confrontationRules}`;
 
       if (!isCulprit) {
         combinedPrompt += `
 9. EVIDENCE TAG: If and only if you confess your personal secret in this reply, end the reply with the tag [${EVIDENCE_TAG.confession}].`;
+      }
+
+      combinedPrompt += `
+
+EMOTIONAL STATE:
+${fearPrompt(fearLevel, isCulprit)}`;
+      if (hasConfessed) {
+        combinedPrompt += `
+You have already confessed your personal secret to the Inquisitor. Do not deny it again.`;
+      }
+
+      if (confrontation) {
+        const impactText: Record<EvidenceImpact, string> = {
+          DECISIVE: 'This evidence exposes your personal secret.',
+          IMPLICATING: 'This evidence points at you and makes you look guilty.',
+          IRRELEVANT:
+            'This evidence has nothing to do with you. You may be puzzled or dismissive, but it does not frighten you.',
+          REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
+        };
+        combinedPrompt += `
+
+EVIDENCE SHOWN TO YOU:
+The Inquisitor silently shows you this evidence: "${confrontation.evidenceText}"
+${impactText[confrontation.impact]}
+React to the evidence in character.`;
+      }
+      if (forcedConfession) {
+        combinedPrompt += `
+FEAR BREAK: You can no longer hold out. In this reply you break down and confess your personal secret, following the emotional sequence of the confession rules. You still NEVER confess to the murder.`;
       }
 
       // Doğrulayan kanıtı bilen tanık: söylediğinde kanıt deftere düşsün
@@ -230,7 +339,7 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
     const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
     // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
     const isInjectionAttempt =
-      !isGreetingSignal && looksLikePromptInjection(userMessage);
+      !isGreetingSignal && !confrontation && looksLikePromptInjection(userMessage);
 
     // Test modunda yapay zeka çağrılmaz; arama izni istenirse izin akışı da denenebilsin diye etiket eklenir
     const llmResponse = isInjectionAttempt
@@ -243,6 +352,7 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
             userMessage,
             localizedLocationList,
             isNarrator,
+            confrontation ? { impact: confrontation.impact, fear: fearLevel, forcedConfession } : undefined,
           ),
         }
       : await this.llm.generateNpcResponse(
@@ -299,9 +409,11 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
     // Kanıt etiketleri cevaptan ayıklanır ve deftere işlenir; oyuncu etiketleri hiç görmez
     const extracted = extractEvidenceTags(finalReply);
     finalReply = extracted.reply;
+    if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);
     const newEvidence = await this.recordEvidence(
       sessionId,
       state.session.currentDay,
+      existingEvidence,
       evidenceFromTags({
         tags: extracted.tags,
         npcId: isNarrator ? null : currentState.npc.id,
@@ -322,10 +434,19 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
       },
     });
 
+    // Karakter ifadeleri Not defterine otomatik yazılır; fiziksel nesneler Envanter'de görünür
+    const notes = await this.appendStatementsToNotes(
+      sessionId,
+      newEvidence.filter((evidence) => evidence.category === 'STATEMENT'),
+      (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
+    );
+
     return {
       reply: finalReply,
       grantedWarrants: newlyGranted,
       newEvidence,
+      notes,
+      fear: isNarrator ? null : { level: fearLevel, band: fearBand(fearLevel) },
     };
   }
 
@@ -333,23 +454,45 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
   private async recordEvidence(
     sessionId: string,
     dayNumber: number,
+    existing: { kind: string; sourceId: string }[],
     drafts: EvidenceDraft[],
-  ): Promise<EvidenceDraft[]> {
-    if (drafts.length === 0) return [];
-    const existing = await this.prisma.evidence.findMany({
-      where: { sessionId },
-      select: { kind: true, sourceId: true },
-    });
+  ) {
     const fresh = drafts.filter(
       (draft) => !existing.some((e) => e.kind === draft.kind && e.sourceId === draft.sourceId),
     );
-    if (fresh.length > 0) {
-      await this.prisma.evidence.createMany({
-        data: fresh.map((draft) => ({ ...draft, sessionId, dayNumber })),
-        skipDuplicates: true,
-      });
+    const created: Array<EvidenceDraft & { id: string; dayNumber: number }> = [];
+    for (const draft of fresh) {
+      try {
+        const row = await this.prisma.evidence.create({
+          data: { ...draft, sessionId, dayNumber },
+          select: { id: true, kind: true, category: true, sourceId: true, text: true, dayNumber: true },
+        });
+        created.push(row as EvidenceDraft & { id: string; dayNumber: number });
+      } catch (err) {
+        // Aynı anda gelen iki istek aynı kanıtı yazmaya çalışırsa ikincisi atlanır
+        if ((err as { code?: string }).code !== 'P2002') throw err;
+      }
     }
-    return fresh;
+    return created;
+  }
+
+  private async appendStatementsToNotes(
+    sessionId: string,
+    statements: { sourceId: string; text: string; dayNumber: number }[],
+    nameOf: (npcId: string) => string,
+  ): Promise<string | undefined> {
+    if (statements.length === 0) return undefined;
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      select: { notes: true },
+    });
+    const lines = statements.map(
+      (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
+    );
+    const current = (session?.notes ?? '').trimEnd();
+    const notes = [current, ...lines].filter(Boolean).join('\n\n');
+    await this.prisma.gameSession.update({ where: { id: sessionId }, data: { notes } });
+    return notes;
   }
 
   private buildTestReply(
@@ -358,8 +501,15 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
     userMessage: string,
     locations: { id: string; localizedName: string }[],
     isNarrator = false,
+    confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
   ) {
     if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
+    if (confrontation) {
+      const reaction = confrontation.forcedConfession
+        ? 'dayanamıyor ve sırrını itiraf ediyor.'
+        : `kanıta bakıyor (etki: ${confrontation.impact}).`;
+      return `[TEST MODU] ${npcName} ${reaction} Korku: ${confrontation.fear}/10`;
+    }
 
     // Kanıt Defteri yapay zekâ olmadan denenebilsin diye anahtar kelimelerle etiket eklenir:
     // anlatıcıda "ara/incele", karakterde "itiraf" ve "kanıt"
@@ -445,6 +595,11 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
       })),
       dialoguesUsed: totalDialoguesUsed,
       currentDay,
+      fear:
+        state && !npcId.startsWith('narrator_')
+          ? { level: state.currentFear, band: fearBand(state.currentFear) }
+          : null,
+      shownEvidenceIds: state?.shownEvidenceIds ?? [],
     };
   }
 }

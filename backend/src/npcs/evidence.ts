@@ -6,9 +6,13 @@ import { CaseFacts } from '../scenarios/case-setup';
 // resmi metinden alınır; böylece defter her zaman vakanın gerçekleriyle tutarlıdır.
 
 export type EvidenceKind = 'CLUE' | 'VERIFICATION' | 'CONFESSION';
+// ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
+// STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
+export type EvidenceCategory = 'ITEM' | 'STATEMENT';
 
 export interface EvidenceDraft {
   kind: EvidenceKind;
+  category: EvidenceCategory;
   // Kanıtın kaynağı: ipucu için mekân id'si, itiraf ve tanıklık için karakter id'si
   sourceId: string;
   text: string;
@@ -60,6 +64,7 @@ export function evidenceFromTags(params: {
         placement?.type === 'LOCATION' && placement.locationId === locationId;
       drafts.push({
         kind: isVerification ? 'VERIFICATION' : 'CLUE',
+        category: 'ITEM',
         sourceId: locationId,
         text,
       });
@@ -71,6 +76,7 @@ export function evidenceFromTags(params: {
     if (tags.has(EVIDENCE_TAG.confession) && npcId !== culpritId) {
       drafts.push({
         kind: 'CONFESSION',
+        category: 'STATEMENT',
         sourceId: npcId,
         text: caseFacts?.alibis[npcId] || 'Sakladığı sırrı itiraf etti.',
       });
@@ -84,6 +90,7 @@ export function evidenceFromTags(params: {
     ) {
       drafts.push({
         kind: 'VERIFICATION',
+        category: 'STATEMENT',
         sourceId: npcId,
         text: caseFacts.verificationText,
       });

@@ -34,18 +34,41 @@ export class NpcsController {
     const userId: string = req.user.userId;
     const isGreeting = message === '__NEW_DAY_GREETING__';
 
-    const session = await this.npcsService.getOwnedSession(sessionId, userId);
-    if (session.status !== 'ACTIVE') {
-      throw new BadRequestException('Bu soruşturma sona erdi.');
-    }
     if (message.length > MAX_PLAYER_MESSAGE_LENGTH) {
       throw new BadRequestException(
         `Mesaj en fazla ${MAX_PLAYER_MESSAGE_LENGTH} karakter olabilir.`,
       );
     }
+    // Selamlama sinyali sorgu hakkı harcamaz
+    await this.checkSessionAndQuota(sessionId, userId, !isGreeting);
 
-    // Selamlama sinyali değilse günlük mesaj kotasını kontrol et (test oturumları kota harcamaz)
-    if (!isGreeting && !session.isTestMode) {
+    return await this.npcsService.interact(sessionId, npcId, message);
+  }
+
+  // Yüzleştirme: Kanıt Defteri'nden bir kanıtı karaktere göster. Bir sorgu hakkı harcar.
+  @Post('confront')
+  @UseGuards(JwtAuthGuard)
+  async confront(
+    @Request() req: { user: { userId: string } },
+    @Body('sessionId') sessionId: string,
+    @Body('npcId') npcId: string,
+    @Body('evidenceId') evidenceId: string,
+  ) {
+    if (!sessionId || !npcId || !evidenceId) {
+      throw new BadRequestException('Gerekli alanlar eksik (sessionId, npcId, evidenceId)');
+    }
+    await this.checkSessionAndQuota(sessionId, req.user.userId, true);
+    return await this.npcsService.confront(sessionId, npcId, evidenceId);
+  }
+
+  private async checkSessionAndQuota(sessionId: string, userId: string, usesQuota: boolean) {
+    const session = await this.npcsService.getOwnedSession(sessionId, userId);
+    if (session.status !== 'ACTIVE') {
+      throw new BadRequestException('Bu soruşturma sona erdi.');
+    }
+
+    // Günlük mesaj kotası (test oturumları kota harcamaz)
+    if (usesQuota && !session.isTestMode) {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
       const maxMessages = quota.isPremium ? 100 : 30;
       if (quota.dailyMessageCount >= maxMessages) {
@@ -53,8 +76,6 @@ export class NpcsController {
       }
       await this.authService.incrementMessageCount(userId);
     }
-
-    return await this.npcsService.interact(sessionId, npcId, message);
   }
 
   @Post('history')

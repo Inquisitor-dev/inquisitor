@@ -51,7 +51,12 @@ describe('evidenceFromTags', () => {
       caseFacts: facts({ type: 'TESTIMONY', npcId: 'church' }),
     });
     expect(drafts).toEqual([
-      { kind: 'CLUE', sourceId: 'crime_scene', text: 'Çamurlu çizme izi.' },
+      {
+        kind: 'CLUE',
+        category: 'ITEM',
+        sourceId: 'crime_scene',
+        text: 'Çamurlu çizme izi.',
+      },
     ]);
   });
 
@@ -64,6 +69,7 @@ describe('evidenceFromTags', () => {
       caseFacts: facts({ type: 'LOCATION', locationId: 'mill' }),
     });
     expect(drafts[0].kind).toBe('VERIFICATION');
+    expect(drafts[0].category).toBe('ITEM');
   });
 
   it('masumun itirafı mazeretiyle kaydedilir', () => {
@@ -77,6 +83,7 @@ describe('evidenceFromTags', () => {
     expect(drafts).toEqual([
       {
         kind: 'CONFESSION',
+        category: 'STATEMENT',
         sourceId: 'tavern',
         text: 'O gece mahzende kaçak içki dolduruyordu.',
       },
@@ -113,6 +120,7 @@ describe('evidenceFromTags', () => {
     expect(fromWitness).toEqual([
       {
         kind: 'VERIFICATION',
+        category: 'STATEMENT',
         sourceId: 'church',
         text: 'Değirmende aynı çamur bulundu.',
       },
@@ -131,6 +139,7 @@ describe('evidenceFromTags', () => {
     expect(drafts).toEqual([
       {
         kind: 'CLUE',
+        category: 'ITEM',
         sourceId: 'tavern',
         text: 'Tezgâhın altında kaçak içki fıçısı.',
       },
