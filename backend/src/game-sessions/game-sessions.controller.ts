@@ -1,10 +1,23 @@
-import { Controller, Post, Body, Param, Get, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  UseGuards,
+  Request,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { GameSessionsService } from './game-sessions.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
 import { isTestModeEnabled } from '../test-mode';
 
 type AuthedRequest = { user: { userId: string } };
+
+const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
+const VALID_SCENARIOS = ['medieval', 'modern', 'cyberpunk'];
 
 @Controller('game-sessions')
 export class GameSessionsController {
@@ -39,6 +52,13 @@ export class GameSessionsController {
     const diff = difficulty || 'easy';
     const sType = scenarioType || 'medieval';
 
+    // Evren ve zorluk kilitleri artık Premium'a değil market satın alımlarına bağlı. Satın alımlar
+    // henüz sadece istemcide tutulduğu için burada yalnızca değerlerin geçerliliği kontrol edilir;
+    // token sistemi backend'e taşındığında sahiplik kontrolü buraya eklenmeli.
+    if (!VALID_DIFFICULTIES.includes(diff) || !VALID_SCENARIOS.includes(sType)) {
+      throw new BadRequestException('Geçersiz evren ya da zorluk seçimi.');
+    }
+
     // Yapay zekasız test oturumu: kota ve Premium kısıtları uygulanmaz, sayaç artmaz
     if (testMode === true) {
       if (!isTestModeEnabled()) {
@@ -52,16 +72,6 @@ export class GameSessionsController {
     const maxSessions = quota.isPremium ? 5 : 2;
     if (quota.dailySessionCount >= maxSessions) {
       throw new ForbiddenException(`Bugünkü soruşturma hakkın doldu (${maxSessions}/${maxSessions}). Yarın tekrar gel.`);
-    }
-
-    // Premium olmayan kullanıcılar sadece easy ve medieval oynayabilir
-    if (!quota.isPremium && !quota.isAdmin) {
-      if (diff !== 'easy') {
-        throw new ForbiddenException('Zorluk seçimi yalnızca Premium üyelere açık.');
-      }
-      if (sType !== 'medieval') {
-        throw new ForbiddenException('Farklı evren seçimi yalnızca Premium üyelere açık.');
-      }
     }
 
     const session = await this.gameSessionsService.createSession(userId, diff, sType);
