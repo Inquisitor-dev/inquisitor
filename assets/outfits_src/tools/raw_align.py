@@ -54,7 +54,7 @@ def place(raw_rgba, s, dx, dy):
     return np.array(canvas)
 
 
-def align_raw(path, base_file='base_nude.png', tol=18):
+def align_raw(path, base_file='base_nude.png', tol=18, region_box=(20, 150, 170, 390)):
     raw = remove_bg(np.array(Image.open(path).convert('RGB')), tol=tol)
     base = np.array(Image.open(OUT + base_file).convert('RGBA')).astype(int)
     ra = raw[:, :, 3] > 0
@@ -64,7 +64,8 @@ def align_raw(path, base_file='base_nude.png', tol=18):
     s0 = (brows.max() - brows.min()) / (rows.max() - rows.min())
     # karşılaştırma bölgesi: kafa ve üst kollar (kıyafetlerin çoğu buralara dokunmaz)
     region = np.zeros((H, W), bool)
-    region[20:150, 170:390] = True
+    ry0, ry1, rx0, rx1 = region_box  # varsayılan: kafa; şapkalı görsellerde gövde bölgesi verilir
+    region[ry0:ry1, rx0:rx1] = True
     best = None
     for s in np.arange(s0 * 0.94, s0 * 1.06, s0 * 0.01):
         for dx in range(-24, 25, 3):

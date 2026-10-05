@@ -267,6 +267,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     layer: '/characters/outfits/outfit_wide_brim_hat.png',
     thumb: '/characters/outfits/outfit_wide_brim_hat_thumb.png',
     hairLayer: '/characters/outfits/outfit_wide_brim_hat_hair.png',
+    views: ['east', 'north'],
   },
   {
     id: 'outfit_inquisitor_hood',
@@ -392,6 +393,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     layer: '/characters/outfits/outfit_riding_boots.png',
     thumb: '/characters/outfits/outfit_riding_boots_thumb.png',
     hidesFeet: true,
+    views: ['east', 'north'],
   },
   {
     id: 'outfit_iron_greaves',

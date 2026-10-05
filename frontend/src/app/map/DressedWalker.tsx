@@ -54,24 +54,17 @@ function liftRig(hip: number, mid: number): Rig {
   };
 }
 
-// Yandan: bacaklar üst üste olduğu için alt gövde iki kez çizilir (arka bacak koyu), her kopya kendi ayağını taşır.
-// Eller gövde parçasında kalır ve dönen uyluğun önünde durur.
+// Yandan: alt gövde iki kez çizilir (arka bacak koyu). Kasıktan ayağa uzanan bir çizgi iki bacağı ayırır;
+// her kopya yalnızca kendi bacağını ve ayağını taşır. Eller gövde parçasında kalır (gövde kalçaya kadar iner).
+const SIDE_DIVIDER: Pt[] = [[285, 440], [283, 500], [272, 545], [270, 600], [262, 645], [262, 690], [300, 694], [420, 702]];
 const SIDE_RIG: Rig = {
   mode: 'swing',
-  pivot: [288, 362],
-  // arka bacak: sağ üstteki ayak; ellerin olduğu bölgeler oyulur (gövde parçası onları statik çizer)
-  legA: pct([
-    [110, 360], [196, 360], [196, 448], [300, 448], [300, 360], [330, 360], [330, 434], [356, 434], [356, 360],
-    [420, 360], [420, 645], [400, 645], [400, 700], [300, 694], [262, 690], [258, 645], [110, 645],
-  ]),
-  // ön bacak: sol alttaki ayak
-  legB: pct([
-    [110, 360], [196, 360], [196, 448], [300, 448], [300, 360], [330, 360], [330, 434], [356, 434], [356, 360],
-    [420, 360], [420, 645], [258, 645], [262, 690], [300, 694], [400, 700], [420, 700], [420, CANVAS_H],
-    [110, CANVAS_H],
-  ]),
-  // kalça boyunca düz alt sınır; öndeki el biraz daha aşağı iner
-  torso: pct([[0, 0], [CANVAS_W, 0], [CANVAS_W, 430], [300, 430], [300, 448], [196, 448], [196, 430], [0, 430]]),
+  pivot: [278, 446], // kesik çizgisinde: bacak döndüğünde uyluk üstü yerinde kalır, kalçada basamak oluşmaz
+  // arka bacak: ayırma çizgisinin sağı (sağ üstteki ayak)
+  legA: pct([...SIDE_DIVIDER, [420, 440]]),
+  // ön bacak: ayırma çizgisinin solu (sol alttaki ayak)
+  legB: pct([[110, 440], ...SIDE_DIVIDER, [420, CANVAS_H], [110, CANVAS_H]]),
+  torso: pct([[0, 0], [CANVAS_W, 0], [CANVAS_W, 448], [0, 448]]),
 };
 
 const RIGS: Record<ArtView, Rig> = {
