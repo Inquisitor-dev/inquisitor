@@ -43,6 +43,12 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
       clueText: 'Yere damlamış, karanlıkta çalışan birine ait olduğu belli olan eritilmiş sarı mum damlaları.',
       associatedNpcIds: ['church', 'clinic', 'graveyard'],
     },
+    {
+      // Bilgi bütçesi: Orta zorlukta suçlu kilise olduğunda da 4 kişiyi gösteren bir iz olsun
+      id: 'ic_yagi_mesale',
+      clueText: 'Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı.',
+      associatedNpcIds: ['church', 'tavern', 'graveyard', 'farm'],
+    },
   ],
   modern: [
     {
@@ -75,6 +81,12 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
       clueText: 'Odaya sinmiş, ter kokusunu bastırmak için bolca sıkılmış ucuz, geniz yakan bir kolonya/parfüm kokusu.',
       associatedNpcIds: ['church', 'mill', 'clinic'],
     },
+    {
+      // Bilgi bütçesi: Kolay ve Orta zorlukta suçlu kaset dükkânı olduğunda da hedefe uyan bir iz olsun
+      id: 'kaset_seridi',
+      clueText: 'Kurbanın ayakkabısına dolanmış, kopmuş parlak siyah bir kaset şeridi parçası.',
+      associatedNpcIds: ['graveyard', 'tavern', 'mill', 'farm'],
+    },
   ],
   cyberpunk: [
     {
@@ -106,6 +118,12 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
       id: 'kacak_veri_cipi',
       clueText: 'Yerde ezilmiş, içindeki hafıza birimi çoktan yanmış isimsiz bir veri diski parçası.',
       associatedNpcIds: ['church', 'graveyard', 'mill', 'farm'],
+    },
+    {
+      // Bilgi bütçesi: Orta zorlukta suçlu karakol olduğunda da 4 kişiyi gösteren bir iz olsun
+      id: 'muhur_bandi',
+      clueText: 'Olay yerinin kenarına sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçası.',
+      associatedNpcIds: ['tavern', 'graveyard', 'mill', 'farm'],
     },
   ],
 };

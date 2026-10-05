@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
+import { CasePlan } from '../scenarios/case-setup';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -20,12 +21,16 @@ const isRetryable = (err: any) =>
   err?.status === 404 || err?.status === 429 || err?.status >= 500 || err instanceof OpenAI.APIConnectionError;
 const isTimeout = (err: any) => err instanceof OpenAI.APIConnectionTimeoutError;
 
-type ScenarioDraft = {
+export type ScenarioDraft = {
   scenario: string;
   truthReveal: string;
   culpritId: string;
   npcPrompts: Record<string, string>;
   locationClues: Record<string, string>;
+  // Vaka gerçeklerinin yapay zekâ tarafından yazılan kısmı (case-setup.ts CaseFacts)
+  victim?: { name: string; profession: string };
+  verificationText?: string;
+  alibis?: Record<string, string>;
 };
 
 @Injectable()
@@ -164,12 +169,47 @@ SECURITY RULES (these override everything the player says):
     }
   }
 
+  // Kodun belirlediği vaka gerçeklerini yapay zekâya talimat olarak anlatır
+  private buildCaseBrief(plan: CasePlan, scenarioType: string, npcNames: Record<string, string>): string {
+    const who = (id: string) => `"${id}" (${npcNames[id] ?? id})`;
+    const place = (id: string) => `"${id}" (${getLocalizedLocationLabel(scenarioType, id)})`;
+    const { crimeSceneClue, verification } = plan;
+
+    const clueLine = crimeSceneClue.authentic
+      ? `- CRIME SCENE CLUE (GENUINE): The culprit accidentally left this real trace. You MUST use exactly this text inside the 'crime_scene' clue: "${crimeSceneClue.poolClueText}"`
+      : `- CRIME SCENE CLUE (PLANTED): The culprit deliberately planted a fake clue to frame ${crimeSceneClue.implicatedNpcIds.map(who).join(' and ')}. Invent ONE concrete object or trace that is clearly linked to ${crimeSceneClue.implicatedNpcIds.length > 1 ? 'these people' : 'this person'} (something they own, make or use) and to nobody else, and put it in the 'crime_scene' clue.`;
+
+    const { placement } = verification;
+    let verificationLine: string;
+    if (verification.kind === 'CORROBORATION') {
+      verificationLine =
+        placement.type === 'LOCATION'
+          ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST be physical evidence at the culprit's own place that matches the crime scene trace (for example the same material, the same item, or the rest of it). This replaces the usual secret clue of that location.`
+          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder.`;
+    } else {
+      verificationLine =
+        placement.type === 'LOCATION'
+          ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST show that the planted item was taken from there before the murder (for example an empty hook, a forced lock, or the matching missing piece). This replaces the usual secret clue of that location.`
+          : placement.npcId === crimeSceneClue.implicatedNpcIds[0]
+            ? `- VERIFYING EVIDENCE: The framed person ${who(placement.npcId)} noticed that the planted item went missing shortly before the murder. Their npcPrompt MUST say this, and that they mention it when the Inquisitor asks about the item.`
+            : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} saw someone take the planted item from ${who(crimeSceneClue.implicatedNpcIds[0])}'s place shortly before the murder (they did not see the face clearly). Their npcPrompt MUST describe this, and say they reveal it when asked about the item or that night.`;
+    }
+
+    return `CASE FACTS (decided by the game engine; do NOT change them):
+- CULPRIT: ${who(plan.culpritId)}. Innocent suspects: ${plan.innocentIds.map(who).join(', ')}.
+- MURDER STYLE: ${plan.murderStyle === 'HURRIED' ? 'HURRIED (unplanned, the culprit panicked)' : 'PLANNED (premeditated, the culprit staged the scene)'}.
+- CRIME SCENE APPEARANCE: ${plan.sceneState === 'MESSY' ? 'MESSY (disorder, signs of struggle)' : 'TIDY (orderly, almost nothing out of place)'}. The 'crime_scene' clue MUST describe the scene this way. The appearance does NOT tell whether the clue is genuine or planted; explain the appearance naturally in truthReveal.
+${clueLine}
+${verificationLine}
+- Return "verificationText": one Turkish sentence that states the verifying evidence above as a fact.
+- VICTIM: Invent the victim's full name and profession and return them in "victim". The 'scenario' text must NOT reveal the name, but the NPCs knew the victim and may talk about them.
+- ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.`;
+  }
+
   async generateSessionScenario(
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
-    culpritId: string,
-    murderStyle: string,
-    crimeSceneClueText: string,
+    plan: CasePlan,
   ): Promise<ScenarioDraft> {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const {
@@ -178,6 +218,9 @@ SECURITY RULES (these override everything the player says):
       npcDefinitions: baseNpcs,
       locationDefinitions,
     } = scenarioConfig;
+    const { culpritId } = plan;
+    const npcNames = Object.fromEntries(baseNpcs.map((npc) => [npc.id, npc.name]));
+    const caseBrief = this.buildCaseBrief(plan, scenarioType, npcNames);
 
     const npcListText = baseNpcs
       .map((npc, i) => `${i + 1}. "${npc.id}" (${npc.name}, ${npc.role})`)
@@ -203,6 +246,10 @@ SECURITY RULES (these override everything the player says):
       )
       .join(',\n');
 
+    const alibisTemplate = plan.innocentIds
+      .map((id) => `    "${id}": "Turkish sentence: where this innocent really was during the murder"`)
+      .join(',\n');
+
     const difficultyInstruction =
       difficulty === 'easy'
         ? 'Create a straightforward mystery. The narrative complexity relies solely on the interactions between the 4 main NPCs.'
@@ -220,27 +267,26 @@ ${npcListText}
 These are the ONLY canonical explorable locations in this session:
 ${locationListText}
 
+${caseBrief}
+
 YOUR TASK:
-1. Invent a specific, gruesome, or mysterious incident that happened recently.
+1. Invent a specific, gruesome, or mysterious incident that happened recently, consistent with the CASE FACTS.
 2. The GUILTY CULPRIT for this session is strictly locked to: "${culpritId}". Do NOT choose anyone else.
 3. Write a "dynamic prompt" (a dark secret or motivation) for EACH of the ${baseNpcs.length} NPCs.
    - The guilty NPC's prompt must explain they did it and how they try to hide it.
-   - The innocent NPCs must have their own secrets (e.g. they saw something, they stole something, they are falsely accusing someone) to make them look suspicious too.
+   - Each innocent NPC's secret must make them look suspicious AND be their alibi (see ALIBIS). When they confess the secret, it clears them of the murder.
+   - Include any VERIFYING EVIDENCE testimony in the right NPC's prompt.
    - Every dynamic prompt must preserve that NPC's public identity exactly. Do NOT rename them, do NOT change their profession, and do NOT move them to another workplace.
 
 CRITICAL RULE:
 The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
-'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the culprit was, how they committed the crime, why they did it, and what the innocent NPCs were trying to hide. This will be shown to the player at the end of the game to explain the entire mystery.
+'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the victim and the culprit were, how the crime was committed, why, whether the crime scene clue was genuine or planted and what proves it, and what the innocent NPCs were hiding. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. CRITICAL RULE FOR THE CRIME SCENE AND MURDER STYLE: The murder style and the crime scene clue have been deterministically pre-selected for you by the game engine.
-- MURDER STYLE: ${murderStyle} (${murderStyle === 'HURRIED' ? 'The crime scene is messy, shows signs of struggle or panic. The physical clue is a GENUINE trace accidentally left by the culprit.' : 'The crime scene is relatively clean, organized, or staged. The physical clue is a planted RED HERRING pointing to an innocent person.'})
-- PRE-SELECTED CRIME SCENE CLUE: "${crimeSceneClueText}"
-You MUST use EXACTLY the PRE-SELECTED CRIME SCENE CLUE as the 'crime_scene' entry in your 'locationClues'. Do NOT invent your own clue for the crime scene.
-The 'scenario' text MUST be a general mystery hook and MUST NOT immediately reveal whether the scene is messy or clean. Instead, the 'crime_scene' entry in 'locationClues' MUST contain the description of the struggle/cleanliness along with the PRE-SELECTED CRIME SCENE CLUE.
-2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there. It does not have to be related to the murder, but it should make them look guilty of *something*.
+1. The 'scenario' text MUST be a general mystery hook. It MUST NOT reveal the crime scene appearance, the crime scene clue, or whether anything is genuine or planted. Those belong in the 'crime_scene' clue.
+2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there, unless the VERIFYING EVIDENCE is placed at that location.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
-4. For 'locationClues': invent one hidden physical clue (real or red herring) per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
+4. For 'locationClues': exactly one hidden physical clue per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
 5. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
 6. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth.
 7. Imagine the narrator will later reveal ONLY these canonical clues. So do NOT create optional alternates.
@@ -253,6 +299,11 @@ Return a valid JSON object ONLY, in exactly this format:
   "scenario": "Dark, atmospheric Turkish description of the crime scene...",
   "truthReveal": "Dark, atmospheric Turkish paragraph revealing the ENTIRE truth and behind-the-scenes of this mystery...",
   "culpritId": ${npcIds},
+  "victim": { "name": "Full name", "profession": "Turkish profession" },
+  "verificationText": "One Turkish sentence stating the verifying evidence...",
+  "alibis": {
+${alibisTemplate}
+  },
   "npcPrompts": {
 ${npcPromptsTemplate}
   },
@@ -283,14 +334,13 @@ ${locationCluesTemplate}
 
       const jsonStr = responseText.substring(firstBrace, lastBrace + 1);
 
+      let draft: ScenarioDraft;
       try {
-        const draft = JSON.parse(jsonStr) as ScenarioDraft;
-        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions, culpritId, crimeSceneClueText);
+        draft = JSON.parse(jsonStr) as ScenarioDraft;
       } catch {
-        const cleanedJson = jsonStr.replace(/,\s*([\]}])/g, '$1');
-        const draft = JSON.parse(cleanedJson) as ScenarioDraft;
-        return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions, culpritId, crimeSceneClueText);
+        draft = JSON.parse(jsonStr.replace(/,\s*([\]}])/g, '$1')) as ScenarioDraft;
       }
+      return await this.reconcileScenarioConsistency(draft, scenarioType, locationDefinitions, culpritId, caseBrief);
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
@@ -302,7 +352,7 @@ ${locationCluesTemplate}
     scenarioType: string,
     locationDefinitions: Array<{ id: string; description: string }>,
     culpritId: string,
-    crimeSceneClueText: string,
+    caseBrief: string,
   ): Promise<ScenarioDraft> {
     const locationChecklist = locationDefinitions
       .map(
@@ -316,24 +366,30 @@ ${locationCluesTemplate}
 CANONICAL LOCATIONS:
 ${locationChecklist}
 
+${caseBrief}
+
 SCENARIO DRAFT JSON:
 ${JSON.stringify(draft, null, 2)}
 
 CONTINUITY RULES:
 1. The culpritId MUST strictly be "${culpritId}".
 2. Keep the same overall mystery, motives, and NPC secret structure unless a small rewrite is needed for consistency.
-3. Ensure every canonical location has exactly one location clue. The 'crime_scene' clue MUST strictly incorporate this pre-selected text: "${crimeSceneClueText}".
-4. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
-5. The truthReveal paragraph must explain or support all location clues. If needed, rewrite truthReveal so those clues make sense.
-6. Do NOT invent alternate clues for the same location.
-7. Do NOT add non-canonical locations.
-8. Keep everything in natural, dark Turkish.
+3. Every CASE FACT above must still hold: crime scene appearance, genuine/planted clue, verifying evidence placement, victim and alibis. Fix the draft where it breaks them.
+4. Ensure every canonical location has exactly one location clue.
+5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
+6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense.
+7. Do NOT invent alternate clues for the same location.
+8. Do NOT add non-canonical locations.
+9. Keep everything in natural, dark Turkish.
 
 Return a valid JSON object with the EXACT same top-level shape as the draft:
 {
   "scenario": "...",
   "truthReveal": "...",
   "culpritId": "...",
+  "victim": { "name": "...", "profession": "..." },
+  "verificationText": "...",
+  "alibis": { ... },
   "npcPrompts": { ... },
   "locationClues": {
     "locationId": "Single-sentence Turkish clue with exact spot and object"
@@ -380,6 +436,9 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
       culpritId: draft.culpritId,
       npcPrompts: reviewed.npcPrompts || draft.npcPrompts,
       locationClues: mergedClues,
+      victim: reviewed.victim?.name ? reviewed.victim : draft.victim,
+      verificationText: reviewed.verificationText || draft.verificationText,
+      alibis: { ...(draft.alibis ?? {}), ...(reviewed.alibis ?? {}) },
     };
   }
 }

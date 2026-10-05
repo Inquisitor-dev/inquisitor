@@ -10,6 +10,7 @@ const activeSession = {
   culpritId: 'mill',
   truthReveal: 'Değirmenci yaptı.',
   locationClues: { tavern: 'Kanlı mendil' },
+  caseFacts: { culpritId: 'mill' },
   currentDay: 1,
   timeOfDay: 0,
   notes: '',
@@ -17,7 +18,12 @@ const activeSession = {
   usedWarrants: [] as string[],
 };
 
-const SECRET_FIELDS = ['culpritId', 'truthReveal', 'locationClues'];
+const SECRET_FIELDS = [
+  'culpritId',
+  'truthReveal',
+  'locationClues',
+  'caseFacts',
+];
 
 function setup(session: Record<string, unknown> = activeSession) {
   const gameSession = {
@@ -114,4 +120,61 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
     expect(gameSession.update).not.toHaveBeenCalled();
     expect(result.won).toBe(true);
   });
+});
+
+describe('GameSessionsService — vaka kurulumu (test modu)', () => {
+  function setupCreate() {
+    const create = jest
+      .fn()
+      .mockImplementation(({ data }: { data: Record<string, unknown> }) =>
+        Promise.resolve({ id: 'new-session', ...data }),
+      );
+    const prisma = {
+      gameSession: { updateMany: jest.fn(), create },
+      npc: { findMany: jest.fn().mockResolvedValue([]) },
+      sessionNpcState: { create: jest.fn() },
+    } as unknown as PrismaService;
+    const service = new GameSessionsService(prisma, {} as LlmService);
+    return { service, create };
+  }
+
+  it.each(['easy', 'medium', 'hard'])(
+    '%s: vaka gerçekleri kaydedilir, oyuncuya gönderilmez',
+    async (difficulty) => {
+      const { service, create } = setupCreate();
+      const result = await service.createSession(
+        'owner',
+        difficulty,
+        'medieval',
+        true,
+      );
+
+      expectNoSecrets(result);
+
+      const saved = create.mock.calls[0][0].data as {
+        culpritId: string;
+        caseFacts: {
+          culpritId: string;
+          innocentIds: string[];
+          crimeSceneClueText: string;
+          verificationText: string;
+          victim: { name: string };
+          alibis: Record<string, string>;
+          crimeSceneClue: { eliminatedNpcIds: string[] };
+        };
+        locationClues: Record<string, string>;
+      };
+      const facts = saved.caseFacts;
+      expect(facts.culpritId).toBe(saved.culpritId);
+      expect(facts.crimeSceneClueText).toBeTruthy();
+      expect(facts.verificationText).toBeTruthy();
+      expect(facts.victim.name).toBeTruthy();
+      // Her masumun bir mazereti var, suçlunun yok
+      expect(Object.keys(facts.alibis).sort()).toEqual(
+        [...facts.innocentIds].sort(),
+      );
+      expect(facts.alibis).not.toHaveProperty(facts.culpritId);
+      expect(saved.locationClues.crime_scene).toBeTruthy();
+    },
+  );
 });

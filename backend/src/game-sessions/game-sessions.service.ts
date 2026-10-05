@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getScenarioConfig } from '../scenarios/scenario-config';
-import { SCENARIO_CLUES } from '../scenarios/clues-config';
+import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
+import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 
 @Injectable()
@@ -27,25 +29,21 @@ export class GameSessionsService {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
 
-    const culpritId = allowedNpcIds[Math.floor(Math.random() * allowedNpcIds.length)];
-    const isHurried = Math.random() < 0.6;
-    const murderStyle = isHurried ? 'HURRIED' : 'PLANNED';
+    // Suçlu, cinayet tarzı, olay yerinin görünüşü, ipucu ve doğrulayan kanıt kodla belirlenir
+    const plan = planCase(scenarioConfig, difficulty);
+    const { culpritId } = plan;
 
-    const allClues = SCENARIO_CLUES[scenarioConfig.scenarioType];
-
-    const validClues = allClues.filter(c => 
-      isHurried ? c.associatedNpcIds.includes(culpritId) : !c.associatedNpcIds.includes(culpritId)
+    this.logger.log(
+      `Case planned. Culprit: ${culpritId}, style: ${plan.murderStyle}, scene: ${plan.sceneState}, ` +
+        `clue: ${plan.crimeSceneClue.authentic ? `genuine (${plan.crimeSceneClue.poolClueId})` : `planted -> ${plan.crimeSceneClue.implicatedNpcIds.join(',')}`}, ` +
+        `verification: ${plan.verification.kind}/${plan.verification.placement.type}`,
     );
 
-    const selectedClue = validClues.length > 0 
-      ? validClues[Math.floor(Math.random() * validClues.length)]
-      : allClues[0];
-
-    this.logger.log(`Deterministically selected Culprit: ${culpritId}, Style: ${murderStyle}, Clue: ${selectedClue.id}`);
-
-    const { scenario, truthReveal, npcPrompts, locationClues } = testMode
-      ? this.buildTestScenario(scenarioConfig, culpritId, selectedClue.clueText)
-      : await this.llm.generateSessionScenario(difficulty, scenarioType, culpritId, murderStyle, selectedClue.clueText);
+    const draft: ScenarioDraft = testMode
+      ? this.buildTestScenario(scenarioConfig, plan)
+      : await this.llm.generateSessionScenario(difficulty, scenarioType, plan);
+    const { scenario, truthReveal, npcPrompts, locationClues } = draft;
+    const caseFacts = this.buildCaseFacts(plan, draft);
 
     this.logger.log(`Scenario generated. Culprit is confirmed: ${culpritId}`);
 
@@ -68,6 +66,7 @@ export class GameSessionsService {
         truthReveal,
         locationClues,
         culpritId,
+        caseFacts: caseFacts as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
         isTestMode: testMode,
       },
@@ -100,24 +99,56 @@ export class GameSessionsService {
     return toPublicSession(session);
   }
 
-  // Test modu: yapay zeka çağrılmadan, senaryo ayarlarından basit bir yer tutucu hikaye kurar
+  // Vaka gerçekleri: kodun planı + yapay zekânın yazdığı ayrıntılar. Kanıt Defteri ve
+  // Hüküm Dosyası bu kayda göre çalışacak; aktif oturumda oyuncuya gönderilmez.
+  private buildCaseFacts(plan: CasePlan, draft: ScenarioDraft): CaseFacts {
+    return {
+      ...plan,
+      version: 1,
+      crimeSceneClueText: draft.locationClues?.crime_scene ?? plan.crimeSceneClue.poolClueText ?? '',
+      verificationText: draft.verificationText ?? '',
+      victim: draft.victim ?? { name: '', profession: '' },
+      alibis: Object.fromEntries(plan.innocentIds.map((id) => [id, draft.alibis?.[id] ?? ''])),
+    };
+  }
+
+  // Test modu: yapay zekâ çağrılmadan, plana uyan yer tutucu bir vaka kurar
   private buildTestScenario(
     scenarioConfig: ReturnType<typeof getScenarioConfig>,
-    culpritId: string,
-    crimeSceneClueText: string,
-  ) {
-    const culprit = scenarioConfig.npcDefinitions.find((npc) => npc.id === culpritId);
+    plan: CasePlan,
+  ): ScenarioDraft {
+    const name = (id: string) =>
+      scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id;
+    const sceneText = plan.sceneState === 'MESSY' ? 'Olay yeri dağınık.' : 'Olay yeri düzenli.';
+    const clueText = plan.crimeSceneClue.authentic
+      ? plan.crimeSceneClue.poolClueText
+      : `${plan.crimeSceneClue.implicatedNpcIds.map(name).join(' ve ')} ile bağlantılı bir eşya (tuzak).`;
+    const { placement } = plan.verification;
+    const verificationText = `[TEST MODU] ${plan.verification.kind === 'CORROBORATION' ? 'İzi doğrulayan' : 'Tuzağı ele veren'} kanıt: ${
+      placement.type === 'LOCATION' ? `${placement.locationId} mekânında` : `${name(placement.npcId)} tanıklığında`
+    }.`;
+
     const locationClues: Record<string, string> = {};
     for (const location of scenarioConfig.locationDefinitions) {
-      if (location.id === 'crime_scene') continue;
-      locationClues[location.id] = `[TEST MODU] ${location.id} için yer tutucu ipucu.`;
+      locationClues[location.id] =
+        location.id === 'crime_scene'
+          ? `[TEST MODU] ${sceneText} ${clueText}`
+          : placement.type === 'LOCATION' && placement.locationId === location.id
+            ? verificationText
+            : `[TEST MODU] ${location.id} için yer tutucu ipucu.`;
     }
 
     return {
-      scenario: `[TEST MODU] Bu oturum yapay zekâ kullanılmadan oluşturuldu; hikâye üretilmedi. Olay yeri izi: ${crimeSceneClueText}`,
-      truthReveal: `[TEST MODU] Katilin rastgele seçilen ${culprit?.name ?? culpritId} olduğu varsayıldı.`,
-      npcPrompts: {} as Record<string, string>,
+      scenario: '[TEST MODU] Bu oturum yapay zekâ kullanılmadan oluşturuldu; hikâye üretilmedi.',
+      truthReveal: `[TEST MODU] Katil ${name(plan.culpritId)}. ${verificationText}`,
+      culpritId: plan.culpritId,
+      npcPrompts: {},
       locationClues,
+      victim: { name: 'Test Kurbanı', profession: 'Yer tutucu' },
+      verificationText,
+      alibis: Object.fromEntries(
+        plan.innocentIds.map((id) => [id, `[TEST MODU] ${name(id)} cinayet saatinde başka yerdeydi.`]),
+      ),
     };
   }
 

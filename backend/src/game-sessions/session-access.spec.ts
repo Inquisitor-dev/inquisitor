@@ -9,6 +9,7 @@ const baseSession = {
   culpritId: 'mill',
   truthReveal: 'Değirmenci yaptı.',
   locationClues: { tavern: 'Kanlı mendil' },
+  caseFacts: { culpritId: 'mill' },
   currentDay: 2,
 };
 
@@ -26,6 +27,7 @@ describe('toPublicSession', () => {
     expect(result).not.toHaveProperty('culpritId');
     expect(result).not.toHaveProperty('truthReveal');
     expect(result).not.toHaveProperty('locationClues');
+    expect(result).not.toHaveProperty('caseFacts');
     expect(result).toMatchObject({ id: 'session-1', currentDay: 2 });
   });
 

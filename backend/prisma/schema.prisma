@@ -39,6 +39,7 @@ model GameSession {
   truthReveal String?           @db.Text // Gerçek hikaye perde arkası
   locationClues Json?                    // Her mekan için gizli ipuçları listesi
   culpritId   String?           // Cadı/Suçlu olan NPC ID'si
+  caseFacts   Json?             // Kodla belirlenen vaka gerçekleri (case-setup.ts CaseFacts); aktif oturumda gizli
   currentDay  Int               @default(1)
   timeOfDay   Int               @default(0) // 0: Sabah, 1: Öğlen, 2: İkindi, 3: Akşam, 4: Gece
   notes         String?           @default("") // Engizisyoncunun notları
