@@ -275,6 +275,16 @@ export class GameSessionsService {
     };
   }
 
+  // Kanıt Defteri: oyuncunun bu vakada bulduğu kanıtlar (sadece oturumun sahibine)
+  async getEvidence(sessionId: string, userId: string) {
+    await findOwnedSession(this.prisma, sessionId, userId);
+    return this.prisma.evidence.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      select: { kind: true, sourceId: true, text: true, dayNumber: true, createdAt: true },
+    });
+  }
+
   async findActiveSession(userId: string) {
     this.logger.log(`Looking for active session for user: ${userId}`);
 

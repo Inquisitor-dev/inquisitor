@@ -49,6 +49,7 @@ model GameSession {
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]
+  evidence      Evidence[]
 }
 
 model Npc {
@@ -83,4 +84,18 @@ model DialogueHistory {
   message   String
   dayNumber Int         @default(1)
   createdAt DateTime    @default(now())
+}
+
+// Kanıt Defteri: oyuncunun bir vakada bulduğu ipuçları, doğrulayan kanıtlar ve aldığı itiraflar
+model Evidence {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id])
+  kind      String      // CLUE, VERIFICATION, CONFESSION
+  sourceId  String      // İpucunda mekân id'si, itiraf ve tanıklıkta karakter id'si
+  text      String      @db.Text
+  dayNumber Int         @default(1)
+  createdAt DateTime    @default(now())
+
+  @@unique([sessionId, kind, sourceId])
 }

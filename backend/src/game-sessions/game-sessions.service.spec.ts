@@ -98,6 +98,10 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
       'timeoutSession',
       (s: GameSessionsService) => s.timeoutSession('session-1', 'intruder'),
     ],
+    [
+      'getEvidence',
+      (s: GameSessionsService) => s.getEvidence('session-1', 'intruder'),
+    ],
   ])(
     '%s başkasının oturumunda "bulunamadı" verir ve hiçbir şey yazmaz',
     async (_name, call) => {

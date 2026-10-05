@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { findOwnedSession } from '../game-sessions/session-access';
+import { CaseFacts } from '../scenarios/case-setup';
+import { EVIDENCE_TAG, EvidenceDraft, evidenceFromTags, extractEvidenceTags } from './evidence';
 import {
   deflectionReply,
   foldTurkish,
@@ -133,12 +135,13 @@ STRICT CANON RULES:
 `;
 
     const isNarrator = currentState.npc.id.startsWith('narrator_');
+    const narratedLocationId = isNarrator ? currentState.npc.id.replace('narrator_', '') : null;
+    const caseFacts = (currentState.session.caseFacts ?? null) as CaseFacts | null;
 
     if (isNarrator) {
-      const narratedLocationId = currentState.npc.id.replace('narrator_', '');
       const narratedLocation = canonicalLocations.find((location) => location.id === narratedLocationId);
       const canonicalClueForLocation =
-        sessionLocationClues[narratedLocationId] || 'Bu mekan icin kayitli gizli ipucu yok.';
+        sessionLocationClues[narratedLocationId!] || 'Bu mekan icin kayitli gizli ipucu yok.';
 
       combinedPrompt += `
 NARRATOR ROLE:
@@ -159,7 +162,8 @@ INVESTIGATION RULES FOR NARRATOR:
 6. You may add atmospheric detail, but you must NEVER change the clue's object, location, or meaning.
 7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
 8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.
-9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.`;
+9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.
+10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.`;
     } else {
       combinedPrompt += `
 PUBLIC IDENTITY:
@@ -174,6 +178,21 @@ THE ABSOLUTE TRUTH OF THE INCIDENT:
 ${currentState.session.truthReveal}
 
 ${confrontationRules}`;
+
+      if (!isCulprit) {
+        combinedPrompt += `
+9. EVIDENCE TAG: If and only if you confess your personal secret in this reply, end the reply with the tag [${EVIDENCE_TAG.confession}].`;
+      }
+
+      // Doğrulayan kanıtı bilen tanık: söylediğinde kanıt deftere düşsün
+      const placement = caseFacts?.verification.placement;
+      if (placement?.type === 'TESTIMONY' && placement.npcId === currentState.npc.id && caseFacts?.verificationText) {
+        combinedPrompt += `
+
+VERIFYING EVIDENCE YOU KNOW:
+${caseFacts.verificationText}
+Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
+      }
     }
 
     const isWarrantIssuer =
@@ -223,6 +242,7 @@ ${confrontationRules}`;
             isGreetingSignal,
             userMessage,
             localizedLocationList,
+            isNarrator,
           ),
         }
       : await this.llm.generateNpcResponse(
@@ -276,6 +296,22 @@ ${confrontationRules}`;
       }
     }
 
+    // Kanıt etiketleri cevaptan ayıklanır ve deftere işlenir; oyuncu etiketleri hiç görmez
+    const extracted = extractEvidenceTags(finalReply);
+    finalReply = extracted.reply;
+    const newEvidence = await this.recordEvidence(
+      sessionId,
+      state.session.currentDay,
+      evidenceFromTags({
+        tags: extracted.tags,
+        npcId: isNarrator ? null : currentState.npc.id,
+        locationId: narratedLocationId,
+        culpritId: currentState.session.culpritId,
+        caseFacts,
+        locationClues: sessionLocationClues,
+      }),
+    );
+
     await this.prisma.dialogueHistory.create({
       data: {
         sessionId,
@@ -289,7 +325,31 @@ ${confrontationRules}`;
     return {
       reply: finalReply,
       grantedWarrants: newlyGranted,
+      newEvidence,
     };
+  }
+
+  // Daha önce kaydedilmemiş kanıtları ekler ve sadece yenilerini döndürür
+  private async recordEvidence(
+    sessionId: string,
+    dayNumber: number,
+    drafts: EvidenceDraft[],
+  ): Promise<EvidenceDraft[]> {
+    if (drafts.length === 0) return [];
+    const existing = await this.prisma.evidence.findMany({
+      where: { sessionId },
+      select: { kind: true, sourceId: true },
+    });
+    const fresh = drafts.filter(
+      (draft) => !existing.some((e) => e.kind === draft.kind && e.sourceId === draft.sourceId),
+    );
+    if (fresh.length > 0) {
+      await this.prisma.evidence.createMany({
+        data: fresh.map((draft) => ({ ...draft, sessionId, dayNumber })),
+        skipDuplicates: true,
+      });
+    }
+    return fresh;
   }
 
   private buildTestReply(
@@ -297,8 +357,21 @@ ${confrontationRules}`;
     isGreeting: boolean,
     userMessage: string,
     locations: { id: string; localizedName: string }[],
+    isNarrator = false,
   ) {
     if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
+
+    // Kanıt Defteri yapay zekâ olmadan denenebilsin diye anahtar kelimelerle etiket eklenir:
+    // anlatıcıda "ara/incele", karakterde "itiraf" ve "kanıt"
+    const folded = foldTurkish(userMessage);
+    if (isNarrator) {
+      const found = /\b(ara|incele)/.test(folded);
+      return `[TEST MODU] Anlatıcı: ${found ? 'Gizli ipucunu buldun.' : 'Etrafta olağandışı bir şey yok.'}${found ? ` [${EVIDENCE_TAG.clue}]` : ''}`;
+    }
+    const evidenceTags = [
+      /itiraf/.test(folded) ? ` [${EVIDENCE_TAG.confession}]` : '',
+      /kanit/.test(folded) ? ` [${EVIDENCE_TAG.verification}]` : '',
+    ].join('');
 
     // "Değirmen" ile "degirmen" aynı sayılsın diye Türkçe karakterler sadeleştirilerek karşılaştırılır
     const normalized = foldTurkish(userMessage);
@@ -308,7 +381,7 @@ ${confrontationRules}`;
         normalized.includes(foldTurkish(location.localizedName)),
     );
     const warrantTag = requested ? ` [GRANT_WARRANT: ${requested.id}]` : '';
-    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${warrantTag}`;
+    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${warrantTag}${evidenceTags}`;
   }
 
   getOwnedSession(sessionId: string, userId: string) {
