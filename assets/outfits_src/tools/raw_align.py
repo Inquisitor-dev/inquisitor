@@ -54,9 +54,9 @@ def place(raw_rgba, s, dx, dy):
     return np.array(canvas)
 
 
-def align_raw(path):
-    raw = remove_bg(np.array(Image.open(path).convert('RGB')))
-    base = np.array(Image.open(OUT + 'base_nude.png').convert('RGBA')).astype(int)
+def align_raw(path, base_file='base_nude.png', tol=18):
+    raw = remove_bg(np.array(Image.open(path).convert('RGB')), tol=tol)
+    base = np.array(Image.open(OUT + base_file).convert('RGBA')).astype(int)
     ra = raw[:, :, 3] > 0
     rows = np.nonzero(ra.any(axis=1))[0]
     brows = np.nonzero((base[:, :, 3] > 0).any(axis=1))[0]
@@ -89,12 +89,12 @@ def align_raw(path):
     return place(raw, s, dx, dy), (s, dx, dy, best[0])
 
 
-def widen_to_body(layer, y0, y1, max_px=14, margin=3):
+def widen_to_body(layer, y0, y1, max_px=14, margin=3, body_file='base_body.png'):
     """Gövde kıyafetinin omuz/kol bölgesini satır satır, çıplak gövdeyi örtecek kadar genişletir.
 
     Sadece her satırın dış bandı esnetilir (nakış/düğme gibi iç ayrıntılar bozulmaz).
     """
-    body = np.array(Image.open(OUT + 'base_body.png').convert('RGBA'))
+    body = np.array(Image.open(OUT + body_file).convert('RGBA'))
     src = layer.astype(float)
     out = src.copy()
     rows = {}

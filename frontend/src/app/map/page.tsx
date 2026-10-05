@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
+import { useMarketStore } from '@/store/useMarketStore';
 import styles from './map.module.scss';
 import PlayerCharacter from './PlayerCharacter';
+import DressedWalker, { dressedWalkCycle } from './DressedWalker';
 import PixelCharacter, {
   MEDIEVAL_SPRITE,
   directionFromDelta,
@@ -348,6 +350,14 @@ export default function MapPage() {
       if (walkFrame.current !== null) cancelAnimationFrame(walkFrame.current);
     };
   }, []);
+
+  // PROTOTİP: ?karakter=giyinik ile gardıroptaki kıyafetleri giymiş katmanlı karakter yürür
+  const dressedWalker = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get('karakter') === 'giyinik',
+    () => false
+  );
+  const { equippedOutfit, hasHydrated: marketHydrated } = useMarketStore();
 
   // Engizisyoncu sprite'ı tüm haritalarda kullanılır; görsel yüklenemezse SVG karaktere düşer
   const pixelSprite = MEDIEVAL_SPRITE;
@@ -702,7 +712,18 @@ export default function MapPage() {
   };
 
   const renderPlayer = (x: number, y: number, depthScale?: number) =>
-    pixelSprite && pixelSpriteReady ? (
+    dressedWalker && marketHydrated ? (
+      <DressedWalker
+        outfit={equippedOutfit}
+        x={x}
+        y={y}
+        facing={playerFacing}
+        walking={Boolean(walkingTo)}
+        cycle={dressedWalkCycle(walkScreenSpeed)}
+        depthScale={depthScale}
+        ambient={timeOfDay <= 1 ? 'day' : timeOfDay <= 3 ? 'dusk' : 'night'}
+      />
+    ) : pixelSprite && pixelSpriteReady ? (
       <PixelCharacter
         sprite={pixelSprite}
         x={x}

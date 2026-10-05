@@ -63,8 +63,15 @@ def fill_holes(mask):
     return ~outside
 
 
-def main():
-    base = load(OUT + 'base_nude.png')
+# Görünüm sonekleri: önden ('') ve diğer yönler. Batı, doğunun aynası olduğu için ayrıca üretilmez.
+VIEWS = ['', '_east', '_north']
+
+
+def process_view(sfx):
+    path = OUT + f'base_nude{sfx}.png'
+    if not os.path.exists(path):
+        return
+    base = load(path)
     h, w = base.shape[:2]
     r, g, b, a = [base[:, :, i].astype(int) for i in range(4)]
     lum = np.maximum(np.maximum(r, g), b)
@@ -74,28 +81,34 @@ def main():
     # Saç: kafa bölgesindeki koyu, ten olmayan pikseller
     skin = (lum > 120) & (r - b > 45)
     hair = vis & (ys < HAIR_MAX_Y) & (lum < 150) & ~skin
+    # Ayakların başladığı satır: bacakların en ince olduğu satır (ayak bileği). Bacaklar çıplak olduğu için
+    # ten rengine bakmak yetmez; ayakkabı sadece bilekten aşağısını gizlemeli.
+    widths = vis.sum(axis=1)
+    lo, hi = 600, 680  # ayak tabanına inmeden (ayaklar dışa açık olunca alt satırlar daralır)
+    feet_min = lo + int(np.argmin(widths[lo:hi])) - 4
+    print(sfx or '_south', 'ayak başlangıcı (bilek)', feet_min)
     # Ayaklar: paça hizasının altındaki ten pikselleri ve tamamen alttaki her şey
-    feet = vis & (((ys >= FEET_MIN_Y) & (lum > 95) & (r - b > 35)) | (ys >= 700))
+    feet = vis & (ys >= feet_min)
     # kenarlardaki yarı saydam ten pikselleri de ayağa dahil olsun (2px genişlet, paça hizasının altında)
     grown = feet.copy()
     for _ in range(2):
         g2 = grown.copy()
         g2[1:] |= grown[:-1]; g2[:-1] |= grown[1:]; g2[:, 1:] |= grown[:, :-1]; g2[:, :-1] |= grown[:, 1:]
         grown = g2
-    feet = feet | (grown & vis & (ys >= FEET_MIN_Y) & (lum > 60) & (r - b > 20))
+    feet = feet | (grown & vis & (ys >= feet_min) & (lum > 60) & (r - b > 20))
 
     def part(mask):
         out = base.copy()
         out[:, :, 3] = np.where(mask, base[:, :, 3], 0)
         return out
 
-    save(part(vis & ~hair & ~feet), OUT + 'base_body.png')
-    save(part(hair), OUT + 'base_hair.png')
-    save(part(feet), OUT + 'base_feet.png')
-    print('saç px', int(hair.sum()), 'ayak px', int(feet.sum()))
+    save(part(vis & ~hair & ~feet), OUT + f'base_body{sfx}.png')
+    save(part(hair), OUT + f'base_hair{sfx}.png')
+    save(part(feet), OUT + f'base_feet{sfx}.png')
+    print(sfx or '_south', 'saç px', int(hair.sum()), 'ayak px', int(feet.sum()))
 
     for item in HEAD_ITEMS:
-        path = OUT + item + '.png'
+        path = OUT + item + f'{sfx}.png'
         if not os.path.exists(path):
             continue
         silhouette = fill_holes(load(path)[:, :, 3] > 40)
@@ -104,8 +117,14 @@ def main():
             bottom = np.nonzero(silhouette[:, x])[0].max()
             hide[:bottom, x] = True
         hide &= ~silhouette
-        save(part(hair & ~hide), OUT + item + '_hair.png')
-        print(item, 'gizlenen saç px', int((hair & hide).sum()))
+        save(part(hair & ~hide), OUT + item + f'_hair{sfx}.png')
+        print(item + sfx, 'gizlenen saç px', int((hair & hide).sum()))
+
+
+def main():
+    for sfx in VIEWS:
+        process_view(sfx)
+    ys = np.arange(760)[:, None].repeat(560, axis=1)
 
     for item in (SHOE_ITEMS if '--clean-shoes' in sys.argv else []):
         path = OUT + item + '.png'

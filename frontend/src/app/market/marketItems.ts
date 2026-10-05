@@ -47,6 +47,10 @@ export interface MarketItem {
   // hairLayer → bu kafa eşyası giyilince çizilecek kırpılmış saç, hidesFeet → çıplak ayaklar çizilmez
   hairLayer?: string;
   hidesFeet?: boolean;
+  // Haritada yürürken bacaklarla bölünmeyen uzun etekli gövde kıyafeti (cübbe gibi)
+  longSkirt?: boolean;
+  // Önden görünüm dışında görseli olan yönler (`<id>_east.png`, `<id>_north.png`); batı doğunun aynasıdır
+  views?: ('east' | 'north')[];
 }
 
 export const CATEGORY_LABELS: Record<MarketCategory, { title: string; eyebrow: string; blurb: string }> = {
@@ -361,6 +365,8 @@ export const MARKET_ITEMS: MarketItem[] = [
     slot: 'body',
     layer: '/characters/outfits/outfit_scarlet_robe.png',
     thumb: '/characters/outfits/outfit_scarlet_robe_thumb.png',
+    longSkirt: true,
+    views: ['east', 'north'],
   },
   {
     id: 'outfit_leather_coat',
@@ -522,6 +528,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     slot: 'body',
     layer: '/characters/outfits/outfit_black_cassock.png',
     thumb: '/characters/outfits/outfit_black_cassock_thumb.png',
+    longSkirt: true,
   },
   {
     id: 'outfit_crusader_tabard',
