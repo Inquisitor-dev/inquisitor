@@ -5,17 +5,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BookOpen,
+  Check,
+  ChevronRight,
   Coins,
   Crown,
   Gavel,
   Hourglass,
   KeyRound,
   Lightbulb,
+  Lock,
   LogOut,
+  Map as MapIcon,
   Maximize,
   Minimize,
   NotebookPen,
-  ScrollText,
   Settings,
   Shirt,
   Skull,
@@ -29,6 +32,7 @@ import {
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
+import { MARKET_ITEMS } from '../market/marketItems';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -57,7 +61,7 @@ export default function HomePage() {
     isPremium,
   } = useGameStore();
 
-  const { tokenBalance, hasHydrated: marketHydrated } = useMarketStore();
+  const { tokenBalance, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -359,6 +363,15 @@ export default function HomePage() {
     void startWithDifficultyAndScenario(selectedDifficulty, selectedStory);
   };
 
+  useEffect(() => {
+    if (!isConfigModalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsConfigModalOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isConfigModalOpen]);
+
   const handleConfigModalOpen = () => {
     setTempDifficulty(selectedDifficulty);
     setTempStory(selectedStory);
@@ -371,10 +384,10 @@ export default function HomePage() {
     setIsConfigModalOpen(false);
   };
 
-  const DIFFICULTY_DETAILS: Record<string, { label: string; level: number; suspects: number }> = {
-    easy: { label: 'Kolay', level: 1, suspects: 4 },
-    medium: { label: 'Orta', level: 2, suspects: 5 },
-    hard: { label: 'Zor', level: 3, suspects: 6 },
+  const DIFFICULTY_DETAILS: Record<string, { label: string; level: number; suspects: number; desc: string }> = {
+    easy: { label: 'Kolay', level: 1, suspects: 4, desc: 'Dört şüpheliyle klasik bir soruşturma. İlk vaka için ideal.' },
+    medium: { label: 'Orta', level: 2, suspects: 5, desc: 'Beşinci bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.' },
+    hard: { label: 'Zor', level: 3, suspects: 6, desc: 'Altı şüpheli ve çakışan tanıklıklar. En karmaşık hikâye.' },
   };
 
   const STORY_DETAILS: Record<string, { title: string; era: string; desc: string }> = {
@@ -404,6 +417,18 @@ export default function HomePage() {
   const effectiveEmail = accountSummary?.email ?? userEmail ?? '-';
   const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
   const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
+
+  // Hesapta açık olanlar: varsayılanlar (Ashenmoor, Kolay), markette satın alınanlar ve
+  // eski Premium/admin hesaplarda her şey. Market henüz tarayıcıda tutulur (useMarketStore).
+  const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk'];
+  const DIFFICULTY_IDS = ['easy', 'medium', 'hard'];
+  const unlocksEverything = effectiveIsAdmin || effectiveIsPremium;
+  const ownsMarketItem = (itemId: string) => marketHydrated && ownedItemIds.includes(itemId);
+  const ownsUniverse = (id: string) =>
+    id === 'medieval' || unlocksEverything || ownsMarketItem(`universe_${id}`);
+  const ownsDifficulty = (id: string) =>
+    id === 'easy' || unlocksEverything || ownsMarketItem(`difficulty_${id}`);
+  const getUnlockPrice = (itemId: string) => MARKET_ITEMS.find((item) => item.id === itemId)?.price ?? '—';
 
   const getMapImage = (story: string) => {
     switch (story) {
@@ -540,8 +565,25 @@ export default function HomePage() {
             >
               {loading ? 'Dosya Hazırlanıyor...' : activeSession ? 'Yeni Soruşturma Başlat' : 'Soruşturmaya Başla'}
             </button>
-            <button className={styles.btnGhost} onClick={handleConfigModalOpen}>
-              <ScrollText size={15} /> Evren ve Zorluğu Değiştir
+            <button className={styles.loadoutBtn} onClick={handleConfigModalOpen} aria-label="Evren ve zorluğu değiştir">
+              <span className={styles.loadoutItem}>
+                <MapIcon size={16} />
+                <span>
+                  <small>Evren</small>
+                  <strong>{story.title}</strong>
+                </span>
+              </span>
+              <span className={styles.loadoutDivider} />
+              <span className={styles.loadoutItem}>
+                <Skull size={16} />
+                <span>
+                  <small>Zorluk</small>
+                  <strong>{difficulty.label}</strong>
+                </span>
+              </span>
+              <span className={styles.loadoutAction}>
+                Değiştir <ChevronRight size={15} />
+              </span>
             </button>
             {testModeAvailable && (
               <button
@@ -795,96 +837,148 @@ export default function HomePage() {
 
       {isConfigModalOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsConfigModalOpen(false)}>
-          <div className={`${styles.modalContent} ${styles.configModalContent}`} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsConfigModalOpen(false)}>
-              &times;
+          <div
+            className={`${styles.sheet} ${styles.configSheet}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="config-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.sheetClose} onClick={() => setIsConfigModalOpen(false)} aria-label="Kapat">
+              <X size={18} />
             </button>
-            <h2 className={styles.modalTitle} style={{ textAlign: 'center' }}>
-              Maceranı Şekillendir
-            </h2>
+            <span className={styles.sheetSeal} aria-hidden><MapIcon size={20} /></span>
+            <span className={styles.sheetEyebrow}>Soruşturma Ayarları</span>
+            <h2 id="config-title" className={styles.sheetTitle}>Maceranı Şekillendir</h2>
+            <p className={styles.sheetLead}>
+              Hesabında açık olan evrenlerden ve zorluklardan birini seç. Kilitli olanları markette açabilirsin.
+            </p>
 
-            <div style={{ marginTop: '24px' }}>
-              <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
-                1. Evren
-              </h3>
-              <div className={styles.selectionList} style={{ marginTop: '12px' }}>
-                <button
-                  onClick={() => setTempStory('medieval')}
-                  className={`${styles.selectionBtn} ${styles.scenarioMedieval} ${tempStory === 'medieval' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Ashenmoor</span>
-                  </div>
-                  <p>Karanlık Ortaçağ. Engizisyon, batıl inanç ve karanlık sırlar.</p>
+            {/* EVRENLER */}
+            <section className={styles.configSection}>
+              <header className={styles.configHeader}>
+                <span className={styles.configNumeral}>I</span>
+                <h3>Evren</h3>
+                <span className={styles.configCount}>
+                  {UNIVERSE_IDS.filter(ownsUniverse).length} / {UNIVERSE_IDS.length} açık
+                </span>
+              </header>
+
+              <div className={styles.universeGrid}>
+                {UNIVERSE_IDS.map((id) => {
+                  const details = STORY_DETAILS[id];
+                  const owned = ownsUniverse(id);
+                  const selected = tempStory === id;
+                  const thumb = (
+                    <>
+                      <span className={styles.universeThumb} style={{ backgroundImage: `url('${getMapImage(id)}')` }} />
+                      <span className={styles.universeShade} />
+                      <span className={`${styles.cardStatus} ${selected ? styles.statusSelected : owned ? styles.statusOwned : styles.statusLocked}`}>
+                        {selected ? <><Check size={12} /> Seçili</> : owned ? 'Açık' : <><Lock size={12} /> Kilitli</>}
+                      </span>
+                      <span className={styles.universeBody}>
+                        <small>{details.era}</small>
+                        <strong>{details.title}</strong>
+                      </span>
+                    </>
+                  );
+
+                  return owned ? (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`${styles.universeCard} ${selected ? styles.cardSelected : ''}`}
+                      onClick={() => setTempStory(id)}
+                      aria-pressed={selected}
+                    >
+                      {thumb}
+                    </button>
+                  ) : (
+                    <div key={id} className={`${styles.universeCard} ${styles.cardLocked}`}>
+                      {thumb}
+                      <Link href="/market" className={styles.unlockLink}>
+                        <Coins size={13} /> {getUnlockPrice(`universe_${id}`)} · Markette aç
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className={styles.configHint}>{STORY_DETAILS[tempStory]?.desc}</p>
+            </section>
+
+            {/* ZORLUKLAR */}
+            <section className={styles.configSection}>
+              <header className={styles.configHeader}>
+                <span className={styles.configNumeral}>II</span>
+                <h3>Zorluk</h3>
+                <span className={styles.configCount}>
+                  {DIFFICULTY_IDS.filter(ownsDifficulty).length} / {DIFFICULTY_IDS.length} açık
+                </span>
+              </header>
+
+              <div className={styles.difficultyGrid}>
+                {DIFFICULTY_IDS.map((id) => {
+                  const details = DIFFICULTY_DETAILS[id];
+                  const owned = ownsDifficulty(id);
+                  const selected = tempDifficulty === id;
+                  const content = (
+                    <>
+                      <span className={`${styles.cardStatus} ${selected ? styles.statusSelected : owned ? styles.statusOwned : styles.statusLocked}`}>
+                        {selected ? <><Check size={12} /> Seçili</> : owned ? 'Açık' : <><Lock size={12} /> Kilitli</>}
+                      </span>
+                      <span className={styles.rankSeal}>{['I', 'II', 'III'][details.level - 1]}</span>
+                      <strong className={styles.difficultyName}>{details.label}</strong>
+                      <span className={styles.skullRow}>
+                        {[1, 2, 3].map((lvl) => (
+                          <Skull key={lvl} size={14} className={lvl <= details.level ? styles.skullOn : styles.skullOff} />
+                        ))}
+                      </span>
+                      <span className={styles.suspectCount}>
+                        <Users size={13} /> {details.suspects} şüpheli
+                      </span>
+                      <span className={styles.difficultyDesc}>{details.desc}</span>
+                    </>
+                  );
+
+                  return owned ? (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`${styles.difficultyCard} ${styles[`level${details.level}`]} ${selected ? styles.cardSelected : ''}`}
+                      onClick={() => setTempDifficulty(id)}
+                      aria-pressed={selected}
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    <div key={id} className={`${styles.difficultyCard} ${styles[`level${details.level}`]} ${styles.cardLocked}`}>
+                      {content}
+                      <Link href="/market" className={styles.unlockLink}>
+                        <Coins size={13} /> {getUnlockPrice(`difficulty_${id}`)} · Markette aç
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <footer className={styles.configFooter}>
+              <div className={styles.configSummary}>
+                <span>Seçimin</span>
+                <strong>
+                  {STORY_DETAILS[tempStory]?.title} · {DIFFICULTY_DETAILS[tempDifficulty]?.label}
+                </strong>
+                <small>{DIFFICULTY_DETAILS[tempDifficulty]?.suspects} şüpheli</small>
+              </div>
+              <div className={styles.configActions}>
+                <button className={styles.btnGhost} onClick={() => setIsConfigModalOpen(false)}>
+                  Vazgeç
                 </button>
-
-                <button
-                  onClick={() => setTempStory('modern')}
-                  className={`${styles.selectionBtn} ${styles.scenarioModern} ${tempStory === 'modern' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Oakhaven</span>
-                  </div>
-                  <p>{"90'lar Amerikan kasabası. Yerel polis, cinayet dedektifleri ve şüpheli kasabalılar."}</p>
-                </button>
-
-                <button
-                  onClick={() => setTempStory('cyberpunk')}
-                  className={`${styles.selectionBtn} ${styles.scenarioCyberpunk} ${tempStory === 'cyberpunk' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Neon Prime</span>
-                  </div>
-                  <p>Distopik cyberpunk. Yozlaşmış mega şirketler, siber geliştirmeler ve tech-noir bilimkurgu.</p>
+                <button className={styles.sheetPrimary} onClick={handleConfigSave}>
+                  Seçimi Onayla
                 </button>
               </div>
-            </div>
-
-            <div style={{ marginTop: '32px' }}>
-              <h3 style={{ color: '#E8DCC4', marginBottom: '12px', borderBottom: '1px solid rgba(138, 3, 3, 0.3)', paddingBottom: '8px' }}>
-                2. Zorluk
-              </h3>
-              <div className={styles.selectionList} style={{ marginTop: '12px' }}>
-                <button
-                  onClick={() => setTempDifficulty('easy')}
-                  className={`${styles.selectionBtn} ${styles.difficultyEasy} ${tempDifficulty === 'easy' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Kolay</span>
-                    <span>4 Şüpheli</span>
-                  </div>
-                  <p>Dört şüpheliyle klasik bir soruşturma. İlk vaka için ideal.</p>
-                </button>
-
-                <button
-                  onClick={() => setTempDifficulty('medium')}
-                  className={`${styles.selectionBtn} ${styles.difficultyMedium} ${tempDifficulty === 'medium' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Orta</span>
-                    <span>5 Şüpheli</span>
-                  </div>
-                  <p>Beşinci bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.</p>
-                </button>
-
-                <button
-                  onClick={() => setTempDifficulty('hard')}
-                  className={`${styles.selectionBtn} ${styles.difficultyHard} ${tempDifficulty === 'hard' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Zor</span>
-                    <span>6 Şüpheli</span>
-                  </div>
-                  <p>Altı şüpheli ve çakışan tanıklıklar. En karmaşık hikâye.</p>
-                </button>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '32px', textAlign: 'center' }}>
-              <button className={styles.modalActionBtn} style={{ width: '100%' }} onClick={handleConfigSave}>
-                Seçimleri Uygula
-              </button>
-            </div>
+            </footer>
           </div>
         </div>
       )}
