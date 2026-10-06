@@ -616,3 +616,60 @@
     border-color: rgba(232, 220, 196, 0.4);
   }
 }
+
+// ─── TELEFON ──────────────────────────────────────────────────────────────
+// Üst çubuk tek satıra sığmaz: mekân adı en üste, butonlar altına iki yana dizilir
+@media (max-width: 640px) {
+  .topHud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px 24px;
+  }
+
+  .compassRibbon {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .locationTitle {
+    font-size: 16px;
+  }
+
+  .locationSubtitle,
+  .compassGauge {
+    display: none;
+  }
+
+  .hudGroup {
+    gap: 8px;
+  }
+
+  .backBtn,
+  .actionBtn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .locationDropdown {
+    max-width: 150px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .bottomHud {
+    padding: 0 16px;
+  }
+
+  // İpucu yazısı yakınlaştırma butonlarının üstüne çıkar
+  .dragHint {
+    bottom: 52px;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+
+  .dragHint .handIcon {
+    display: none;
+  }
+}
