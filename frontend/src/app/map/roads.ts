@@ -167,8 +167,73 @@ const cyberpunk: RoadNetwork = {
 };
 
 
-export const getRoadNetwork = (scenarioType: string): RoadNetwork =>
-  scenarioType === 'modern' ? town : scenarioType === 'cyberpunk' ? cyberpunk : village;
+const chinaRoads: RoadNetwork = {
+  image: { width: 2730, height: 1536 },
+  nodes: {
+    square: { x: 1365, y: 880 },
+    churchDoor: { x: 620, y: 440 },
+    tavernDoor: { x: 1480, y: 490 },
+    graveyardDoor: { x: 2260, y: 430 },
+    clinicDoor: { x: 500, y: 880 },
+    millDoor: { x: 2180, y: 880 },
+    farmDoor: { x: 1840, y: 1220 },
+  },
+  edges: [
+    ['square', 'churchDoor', [{ x: 950, y: 640 }]],
+    ['square', 'tavernDoor', [{ x: 1420, y: 680 }]],
+    ['square', 'graveyardDoor', [{ x: 1800, y: 660 }]],
+    ['square', 'clinicDoor', [{ x: 880, y: 880 }]],
+    ['square', 'millDoor', [{ x: 1800, y: 880 }]],
+    ['square', 'farmDoor', [{ x: 1600, y: 1080 }]],
+  ],
+  doors: {
+    church: 'churchDoor',
+    tavern: 'tavernDoor',
+    graveyard: 'graveyardDoor',
+    clinic: 'clinicDoor',
+    mill: 'millDoor',
+    farm: 'farmDoor',
+  },
+  spawn: 'square',
+};
+
+const winterRoads: RoadNetwork = {
+  image: { width: 2730, height: 1536 },
+  nodes: {
+    square: { x: 1420, y: 920 },
+    churchDoor: { x: 520, y: 460 },
+    graveyardDoor: { x: 1420, y: 440 },
+    tavernDoor: { x: 2020, y: 860 },
+    farmDoor: { x: 1040, y: 860 },
+    millDoor: { x: 520, y: 1260 },
+    clinicDoor: { x: 1980, y: 1240 },
+  },
+  edges: [
+    ['square', 'churchDoor', [{ x: 980, y: 680 }]],
+    ['square', 'graveyardDoor', [{ x: 1420, y: 680 }]],
+    ['square', 'tavernDoor', [{ x: 1720, y: 890 }]],
+    ['square', 'farmDoor', [{ x: 1220, y: 890 }]],
+    ['square', 'millDoor', [{ x: 920, y: 1120 }]],
+    ['square', 'clinicDoor', [{ x: 1720, y: 1100 }]],
+  ],
+  doors: {
+    church: 'churchDoor',
+    graveyard: 'graveyardDoor',
+    tavern: 'tavernDoor',
+    farm: 'farmDoor',
+    mill: 'millDoor',
+    clinic: 'clinicDoor',
+  },
+  spawn: 'square',
+};
+
+export const getRoadNetwork = (scenarioType: string): RoadNetwork => {
+  if (scenarioType === 'modern') return town;
+  if (scenarioType === 'cyberpunk') return cyberpunk;
+  if (scenarioType === 'china') return chinaRoads;
+  if (scenarioType === 'winter') return winterRoads;
+  return village;
+};
 
 // Harita ekran oranında yatay ve dikey yüzdeler aynı uzunlukta değil
 export const MAP_ASPECT = 16 / 9;

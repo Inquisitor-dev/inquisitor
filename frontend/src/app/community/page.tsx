@@ -37,7 +37,7 @@ interface SuspectEntry {
 
 interface ScenarioForm {
   title: string;
-  scenarioType: 'medieval' | 'modern' | 'cyberpunk';
+  scenarioType: 'medieval' | 'modern' | 'cyberpunk' | 'china' | 'winter';
   difficulty: 'easy' | 'medium' | 'hard';
   authorName: string;
   prologueHook: string;
@@ -55,6 +55,8 @@ const SCENARIO_LABELS: Record<ScenarioForm['scenarioType'], string> = {
   medieval: 'Ashenmoor — Karanlık Ortaçağ',
   modern: "Oakhaven — 90'lar Amerikan Kasabası",
   cyberpunk: 'Neon Prime — Distopik Cyberpunk',
+  china: 'Jinling — Antik Doğu / Feodal Çin',
+  winter: 'Frosthold — Kutup / Kar Fırtınası',
 };
 
 const DIFFICULTY_LABELS: Record<ScenarioForm['difficulty'], string> = {
@@ -426,6 +428,8 @@ export default function CommunityPage() {
                       <option value="medieval">{SCENARIO_LABELS.medieval}</option>
                       <option value="modern">{SCENARIO_LABELS.modern}</option>
                       <option value="cyberpunk">{SCENARIO_LABELS.cyberpunk}</option>
+                      <option value="china">{SCENARIO_LABELS.china}</option>
+                      <option value="winter">{SCENARIO_LABELS.winter}</option>
                     </select>
                   </div>
 

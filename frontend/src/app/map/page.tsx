@@ -219,6 +219,135 @@ const cyberpunkLocations = [
     width: '9%',
     height: '14%',
     available: true,
+  },
+];
+
+const chinaLocations = [
+  {
+    id: 'church',
+    name: 'Muhafız Karargahı',
+    icon: '🏯',
+    top: '8%',
+    left: '12%',
+    width: '24%',
+    height: '28%',
+    available: true,
+  },
+  {
+    id: 'tavern',
+    name: 'Çay Evi & Han',
+    icon: '🍵',
+    top: '12%',
+    left: '46%',
+    width: '22%',
+    height: '30%',
+    available: true,
+  },
+  {
+    id: 'graveyard',
+    name: 'Kadim Tapınak',
+    icon: '⛩️',
+    top: '10%',
+    left: '74%',
+    width: '20%',
+    height: '28%',
+    available: true,
+  },
+  {
+    id: 'clinic',
+    name: 'Şifacı & Baharatçı',
+    icon: '🌿',
+    top: '38%',
+    left: '8%',
+    width: '20%',
+    height: '28%',
+    available: true,
+    minDifficulty: 'hard',
+  },
+  {
+    id: 'mill',
+    name: 'Demirci Ocağı',
+    icon: '⚒️',
+    top: '38%',
+    left: '70%',
+    width: '22%',
+    height: '30%',
+    available: true,
+  },
+  {
+    id: 'farm',
+    name: 'Bahçıvan Kulübesi',
+    icon: '🎋',
+    top: '64%',
+    left: '54%',
+    width: '24%',
+    height: '30%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+];
+
+const winterLocations = [
+  {
+    id: 'church',
+    name: 'Kutsal Yürek Ağacı',
+    icon: '🍁',
+    top: '5%',
+    left: '6%',
+    width: '24%',
+    height: '32%',
+    available: true,
+  },
+  {
+    id: 'graveyard',
+    name: 'Gözcü Kalesi',
+    icon: '🏰',
+    top: '8%',
+    left: '38%',
+    width: '24%',
+    height: '32%',
+    available: true,
+  },
+  {
+    id: 'tavern',
+    name: 'Kış Hanı',
+    icon: '🔥',
+    top: '38%',
+    left: '64%',
+    width: '24%',
+    height: '32%',
+    available: true,
+  },
+  {
+    id: 'farm',
+    name: 'Avcı Kulübesi',
+    icon: '🏹',
+    top: '46%',
+    left: '28%',
+    width: '20%',
+    height: '26%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+  {
+    id: 'mill',
+    name: 'Terk Edilmiş Maden',
+    icon: '⛏️',
+    top: '68%',
+    left: '5%',
+    width: '24%',
+    height: '26%',
+    available: true,
+  },
+  {
+    id: 'clinic',
+    name: 'İnfaz Meydanı',
+    icon: '⚔️',
+    top: '68%',
+    left: '60%',
+    width: '26%',
+    height: '28%',
+    available: true,
     minDifficulty: 'hard',
   },
 ];
@@ -268,6 +397,32 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
     return labels[locationId] ?? locationId.toUpperCase();
   }
 
+  if (scenarioType === 'china') {
+    const labels: Record<string, string> = {
+      tavern: 'Çay Evi & Han',
+      church: 'Muhafız Karargahı',
+      graveyard: 'Kadim Tapınak',
+      mill: 'Demirci Ocağı',
+      farm: 'Bahçıvan Kulübesi',
+      clinic: 'Şifacı & Baharatçı',
+      crime_scene: 'Pazar Meydanı',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  if (scenarioType === 'winter') {
+    const labels: Record<string, string> = {
+      tavern: 'Kış Hanı',
+      church: 'Kutsal Yürek Ağacı',
+      graveyard: 'Gözcü Kalesi',
+      mill: 'Terk Edilmiş Maden',
+      farm: 'Avcı Kulübesi',
+      clinic: 'İnfaz Meydanı',
+      crime_scene: 'Buzlu Geçit',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
   const labels: Record<string, string> = {
     tavern: 'Taverna',
     church: 'Kilise',
@@ -292,7 +447,11 @@ export default function MapPage() {
       ? modernLocations
       : scenarioType === 'cyberpunk'
         ? cyberpunkLocations
-        : locations;
+        : scenarioType === 'china'
+          ? chinaLocations
+          : scenarioType === 'winter'
+            ? winterLocations
+            : locations;
   const visibleLocations = baseLocations.filter((loc: any) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
@@ -696,6 +855,16 @@ export default function MapPage() {
       if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.png';
       return '/map/cyberpunk_map_night.png';
     }
+    if (scenarioType === 'china') {
+      if (timeOfDay <= 1) return '/map/china_morning.png';
+      if (timeOfDay <= 3) return '/map/china_sunset.png';
+      return '/map/china_night.png';
+    }
+    if (scenarioType === 'winter') {
+      if (timeOfDay <= 1) return '/map/winter_morning.jpg';
+      if (timeOfDay <= 3) return '/map/winter_sunset.jpg';
+      return '/map/winter_night.jpg';
+    }
     if (timeOfDay <= 1) return '/map/village_map_morning.png';
     if (timeOfDay <= 3) return '/map/village_map_sunset.png';
     return '/map/village_map.png';
@@ -737,6 +906,20 @@ export default function MapPage() {
       if (loc.id === 'graveyard') return "Hurdaliga Git";
       if (loc.id === 'farm') return "Kopru Altina Git";
       if (loc.id === 'clinic') return "Bara Git";
+    } else if (scenarioType === 'china') {
+      if (loc.id === 'tavern') return "Çay Evi'ne Git";
+      if (loc.id === 'church') return "Karargah'a Git";
+      if (loc.id === 'graveyard') return "Tapınak'a Git";
+      if (loc.id === 'mill') return "Demirci'ye Git";
+      if (loc.id === 'farm') return "Bahçıvan'a Git";
+      if (loc.id === 'clinic') return "Şifacı'ya Git";
+    } else if (scenarioType === 'winter') {
+      if (loc.id === 'tavern') return "Kış Hanı'na Git";
+      if (loc.id === 'church') return "Yürek Ağacı'na Git";
+      if (loc.id === 'graveyard') return "Gözcü Kalesi'ne Git";
+      if (loc.id === 'mill') return "Maden'e Git";
+      if (loc.id === 'farm') return "Avcı Kulübesi'ne Git";
+      if (loc.id === 'clinic') return "İnfaz Meydanı'na Git";
     }
 
     return `${loc.name}'a Git`;
