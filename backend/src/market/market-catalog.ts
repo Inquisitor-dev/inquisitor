@@ -1,6 +1,6 @@
 export interface MarketItemDef {
   id: string;
-  category: 'universe' | 'difficulty' | 'story' | 'cosmetic';
+  category: 'universe' | 'difficulty' | 'story' | 'cosmetic' | 'outfit';
   title: string;
   price: number;
   ownedByDefault?: boolean;
@@ -34,14 +34,16 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
 
   // Kozmetikler
   { id: 'cosmetic_wax_seal', category: 'cosmetic', title: 'Kızıl Balmumu Mührü', price: 200 },
-  { id: 'cosmetic_black_robe', category: 'cosmetic', title: 'Siyah Cüppe', price: 350 },
   { id: 'cosmetic_raven_quill', category: 'cosmetic', title: 'Kuzgun Tüyü Kalem', price: 500 },
-  { id: 'cosmetic_inquisitor_hat', category: 'cosmetic', title: 'Geniş Kenarlı Şapka', price: 600 },
-  { id: 'cosmetic_riding_boots', category: 'cosmetic', title: 'Binici Çizmeleri', price: 650 },
-  { id: 'cosmetic_iron_boots', category: 'cosmetic', title: 'Demir Mahmuzlu Çizme', price: 750 },
-  { id: 'cosmetic_cardinal_robe', category: 'cosmetic', title: 'Kardinal Cübbesi', price: 900 },
   { id: 'cosmetic_pyre', category: 'cosmetic', title: 'Odun Yığını', price: 1200 },
-  { id: 'cosmetic_plague_mask', category: 'cosmetic', title: 'Veba Doktoru Maskesi', price: 1500 },
+
+  // Karakterler (gardırop). Her biri baştan sona tam bir görünüm; id'ler frontend config/outfits.ts ile aynı.
+  { id: 'outfit_default', category: 'outfit', title: 'Engizitör', price: 0, ownedByDefault: true },
+  { id: 'outfit_dedektif', category: 'outfit', title: 'Sis Dedektifi', price: 700 },
+  { id: 'outfit_china_girl', category: 'outfit', title: 'Jinling Gölgesi', price: 900 },
+  { id: 'outfit_fantastic_girl', category: 'outfit', title: 'Kızıl Yemin', price: 900 },
+  { id: 'outfit_cyber_girl', category: 'outfit', title: 'Neon Kuzgun', price: 1200 },
+  { id: 'outfit_cyber_man', category: 'outfit', title: 'Krom Şerif', price: 1200 },
 ];
 
 export const TOKEN_PACKS_CATALOG: TokenPackDef[] = [

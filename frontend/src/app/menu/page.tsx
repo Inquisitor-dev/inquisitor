@@ -34,6 +34,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
+import { wearableOutfitId } from '@/config/outfits';
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import styles from './page.module.scss';
 
@@ -648,7 +649,7 @@ export default function HomePage() {
           <div className={styles.characterStage}>
             <span className={styles.characterHalo} />
             <CharacterTurntable
-              outfitId={marketHydrated ? equippedOutfitId : null}
+              outfitId={marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null}
               alt="Engizitör karakteri"
               className={styles.characterSprite}
             />
@@ -675,7 +676,7 @@ export default function HomePage() {
             >
               <Settings size={13} /> Avatar & İsim
             </button>
-            <Link href="/market" className={styles.wardrobeBtn}>
+            <Link href="/wardrobe" className={styles.wardrobeBtn}>
               <Shirt size={15} /> Gardırop
             </Link>
           </div>

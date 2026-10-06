@@ -15,6 +15,7 @@ import {
   Gem,
   Lock,
   Map as MapIcon,
+  Shirt,
   Skull,
   Sparkles,
   Stamp,
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
+import { wearableOutfitId } from '@/config/outfits';
 import styles from './page.module.scss';
 import {
   CATEGORY_LABELS,
@@ -44,11 +46,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'universe', label: 'Evrenler' },
   { id: 'difficulty', label: 'Zorluklar' },
   { id: 'story', label: 'Hazır Hikâyeler' },
+  { id: 'outfit', label: 'Karakterler' },
   { id: 'cosmetic', label: 'Kozmetikler' },
   { id: 'tokens', label: 'Token Al' },
 ];
 
-const CATEGORY_ORDER: MarketCategory[] = ['universe', 'difficulty', 'story', 'cosmetic'];
+const CATEGORY_ORDER: MarketCategory[] = ['universe', 'difficulty', 'story', 'outfit', 'cosmetic'];
 const FEATURED_ID = 'story_serpents_coil';
 const ROMAN = ['I', 'II', 'III'];
 
@@ -61,17 +64,27 @@ const COSMETIC_ICONS = {
   eye: Eye,
 };
 
+// Karakter kartı görseli; görsel henüz yoksa gömlek ikonuna düşer
+function OutfitPortrait({ src, alt }: { src?: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <Shirt size={44} strokeWidth={1.3} />;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} onError={() => setFailed(true)} />;
+}
+
 export default function MarketPage() {
   const { authToken } = useGameStore();
   const {
     tokenBalance,
     ownedItemIds,
     equippedCosmeticIds,
+    equippedOutfitId,
     hasHydrated,
     fetchMarketData,
     purchaseServer,
     purchase,
     toggleEquip,
+    equipOutfit,
     createCheckout,
     simulatePayment,
   } = useMarketStore();
@@ -121,6 +134,7 @@ export default function MarketPage() {
     [hasHydrated, ownedItemIds]
   );
   const equipped = hasHydrated ? equippedCosmeticIds : [];
+  const wornOutfitId = hasHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
   const isOwned = (item: MarketItem) => item.ownedByDefault || owned.has(item.id);
 
   useEffect(() => {
@@ -212,6 +226,24 @@ export default function MarketPage() {
   };
 
   const renderAction = (item: MarketItem) => {
+    if (item.category === 'outfit') {
+      if (item.comingSoon) {
+        return <span className={styles.soonTag}><Clock size={14} /> Yakında</span>;
+      }
+      if (isOwned(item) && item.outfitId) {
+        const isWorn = wornOutfitId === item.outfitId;
+        const outfitId = item.outfitId;
+        return (
+          <button
+            className={isWorn ? styles.equippedBtn : styles.ghostBtn}
+            onClick={() => equipOutfit(outfitId)}
+            disabled={isWorn}
+          >
+            {isWorn ? <><Check size={14} /> Giyili</> : 'Giy'}
+          </button>
+        );
+      }
+    }
     if (item.category === 'cosmetic' && isOwned(item)) {
       const isEquipped = equipped.includes(item.id);
       return (
@@ -239,7 +271,13 @@ export default function MarketPage() {
 
   const renderFooter = (item: MarketItem) => (
     <div className={styles.cardFooter}>
-      {isOwned(item) ? <span className={styles.priceMuted}>{item.price === 0 ? 'Ücretsiz' : 'Arşivinde'}</span> : renderPrice(item)}
+      {isOwned(item) ? (
+        <span className={styles.priceMuted}>
+          {item.price === 0 ? 'Ücretsiz' : item.category === 'outfit' ? 'Gardırobunda' : 'Arşivinde'}
+        </span>
+      ) : (
+        renderPrice(item)
+      )}
       {renderAction(item)}
     </div>
   );
@@ -324,6 +362,27 @@ export default function MarketPage() {
     );
   };
 
+  const renderOutfit = (item: MarketItem) => (
+    <article
+      key={item.id}
+      className={`${styles.card} ${styles.outfitCard} ${styles[`rarity_${item.rarity}`]} ${isOwned(item) ? styles.isOwned : ''} ${item.comingSoon ? styles.isSoon : ''}`}
+    >
+      <span className={styles.rarityTag}>{RARITY_LABELS[item.rarity ?? 'common']}</span>
+      <div className={styles.outfitPortrait}>
+        <OutfitPortrait src={item.image} alt={item.title} />
+      </div>
+      <span className={styles.cardEyebrow}>{item.subtitle}</span>
+      <h3 className={styles.cardTitle}>{item.title}</h3>
+      <p className={styles.cardDesc}>{item.description}</p>
+      {renderFooter(item)}
+      {isOwned(item) && !item.comingSoon && (
+        <Link href="/wardrobe" className={styles.wardrobeLink}>
+          <Shirt size={14} /> Gardıropta 360° İncele
+        </Link>
+      )}
+    </article>
+  );
+
   const renderCategory = (category: MarketCategory) => {
     const items = MARKET_ITEMS.filter((item) => item.category === category);
     const label = CATEGORY_LABELS[category];
@@ -342,6 +401,7 @@ export default function MarketPage() {
           {category === 'universe' && items.map(renderUniverse)}
           {category === 'difficulty' && items.map(renderDifficulty)}
           {category === 'story' && items.map(renderStory)}
+          {category === 'outfit' && items.map(renderOutfit)}
           {category === 'cosmetic' && items.map(renderCosmetic)}
         </div>
       </section>

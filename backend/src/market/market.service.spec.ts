@@ -154,6 +154,27 @@ describe('MarketService', () => {
       expect(resultWinter.purchasedItem.title).toBe('Frosthold');
     });
 
+    it('gardırop karakterini satın alır ve outfit kategorisiyle kaydeder', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        tokenBalance: 1000,
+        isAdmin: false,
+      });
+      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.findMany.mockResolvedValue([{ itemId: 'outfit_dedektif' }]);
+
+      const result = await service.purchaseItem('user-1', 'outfit_dedektif');
+
+      expect(result.success).toBe(true);
+      expect(result.tokenBalance).toBe(300);
+      expect(result.ownedItemIds).toEqual(
+        expect.arrayContaining(['outfit_default', 'outfit_dedektif']),
+      );
+      expect(mockPrisma.userPurchase.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ itemId: 'outfit_dedektif', category: 'outfit', pricePaid: 700 }),
+      });
+    });
+
     it('yetersiz bakiyede BadRequestException fırlatır', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-1',
@@ -185,6 +206,7 @@ describe('MarketService', () => {
     it('varsayılan eşyalar (easy, medieval) için true döner', async () => {
       expect(await service.hasPurchased('user-1', 'universe_medieval')).toBe(true);
       expect(await service.hasPurchased('user-1', 'difficulty_easy')).toBe(true);
+      expect(await service.hasPurchased('user-1', 'outfit_default')).toBe(true);
     });
 
     it('admin kullanıcılar için her şeye true döner', async () => {

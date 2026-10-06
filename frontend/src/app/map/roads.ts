@@ -14,6 +14,8 @@ export type RoadNetwork = {
   spawn: string;
   // Verilirse koordinatlar harita görselinin pikselleridir (ekran oranından bağımsız)
   image?: { width: number; height: number };
+  // Karakterin bu haritadaki boy çarpanı (köy = 1). Haritadaki insan, kapı ve araç boyutlarına göre seçilir.
+  characterScale?: number;
 };
 
 // Köy haritası: koordinatlar village_map_*.png'nin 2752x1536 ölçeğindeki toprak yolların ortasından alınmıştır.
@@ -83,42 +85,40 @@ const village: RoadNetwork = {
   spawn: 'square',
 };
 
-// Kasaba haritası (town_map_*.png, 2750x1536): koordinatlar asfalt yolların ve otoparkların üzerindedir.
-// Karakola polis arabalarının arasından değil, soldaki boş otopark şeridinden dolanarak yaklaşılır.
+// Kasaba haritası (town_map_*.png, 2752x1536): koordinatlar asfalt yol, kaldırım ve kapı önlerindedir.
+// Kapılar mekanların tıklama alanlarının içindedir. İnsan ve araç boyları karakterle uyumlu, ölçek köyle aynı.
 const town: RoadNetwork = {
-  image: { width: 2750, height: 1536 },
+  image: { width: 2752, height: 1536 },
   nodes: {
-    junction: { x: 1520, y: 930 },
-    westJunction: { x: 1290, y: 860 },
-    policeDoor: { x: 738, y: 606 },
-    barDoor: { x: 1415, y: 705 },
-    gasDoor: { x: 778, y: 988 },
-    dinerDoor: { x: 1598, y: 1182 },
-    northBend: { x: 2135, y: 428 },
-    arcadeDoor: { x: 1850, y: 960 },
-    hotelDoor: { x: 2300, y: 382 },
-    homeDoor: { x: 1820, y: 480 },
+    crossing: { x: 1290, y: 800 },
+    northRoad: { x: 1700, y: 620 },
+    hotelCorner: { x: 1900, y: 520 },
+    policeDoor: { x: 800, y: 860 },
+    gasDoor: { x: 500, y: 1040 },
+    barDoor: { x: 1380, y: 565 },
+    arcadeDoor: { x: 1850, y: 1080 },
+    dinerDoor: { x: 1490, y: 1350 },
+    hotelDoor: { x: 2140, y: 690 },
+    homeDoor: { x: 1925, y: 330 },
   },
   edges: [
-    ['junction', 'westJunction', [{ x: 1400, y: 905 }]],
-    ['westJunction', 'barDoor', [{ x: 1290, y: 800 }, { x: 1335, y: 735 }]],
-    ['westJunction', 'policeDoor', [
-      { x: 1170, y: 800 }, { x: 1000, y: 742 }, { x: 900, y: 716 }, { x: 780, y: 713 },
-      { x: 660, y: 712 }, { x: 592, y: 700 }, { x: 588, y: 650 }, { x: 640, y: 616 },
-      { x: 695, y: 608 },
+    // Maple Ave boyunca batıya, polis arabasının üstünden şerif binasının merdivenine
+    ['crossing', 'policeDoor', [{ x: 1100, y: 820 }, { x: 950, y: 790 }]],
+    // Main St'den aşağı, polis arabasının altından dolanıp benzin pompalarının önüne
+    ['crossing', 'gasDoor', [
+      { x: 1150, y: 900 }, { x: 1000, y: 1030 }, { x: 820, y: 1060 }, { x: 650, y: 1055 },
     ]],
-    ['junction', 'gasDoor', [
-      { x: 1400, y: 962 }, { x: 1262, y: 1006 }, { x: 1130, y: 1046 }, { x: 1000, y: 1035 },
-      { x: 895, y: 995 },
-    ]],
-    ['junction', 'dinerDoor', [{ x: 1560, y: 1030 }, { x: 1572, y: 1100 }]],
-    ['junction', 'arcadeDoor', [{ x: 1680, y: 950 }, { x: 1780, y: 960 }]],
-    ['junction', 'northBend', [
-      { x: 1600, y: 860 }, { x: 1700, y: 780 }, { x: 1800, y: 700 }, { x: 1850, y: 600 },
-      { x: 1905, y: 520 }, { x: 1990, y: 470 }, { x: 2080, y: 440 },
-    ]],
-    ['northBend', 'homeDoor'],
-    ['northBend', 'hotelDoor', [{ x: 2210, y: 402 }, { x: 2262, y: 388 }]],
+    // Elektrik direğinin üstünden geçen yaya geçidiyle barın önündeki kaldırıma
+    ['crossing', 'barDoor', [{ x: 1340, y: 700 }, { x: 1380, y: 610 }]],
+    ['crossing', 'northRoad', [{ x: 1450, y: 740 }, { x: 1580, y: 680 }]],
+    // Ağacın ve çalıların altından arnavut kaldırımlı meydana
+    ['crossing', 'arcadeDoor', [{ x: 1430, y: 900 }, { x: 1450, y: 1050 }, { x: 1600, y: 1080 }]],
+    // Lokantanın doğu cephesindeki girişe
+    ['arcadeDoor', 'dinerDoor', [{ x: 1640, y: 1150 }, { x: 1600, y: 1300 }]],
+    ['northRoad', 'hotelCorner'],
+    ['hotelCorner', 'hotelDoor', [{ x: 2000, y: 600 }]],
+    // Yolu karşıya geçip terk edilmiş evin basamaklarına
+    ['hotelCorner', 'homeDoor', [{ x: 1890, y: 420 }]],
   ],
   doors: {
     tavern: 'policeDoor',
@@ -129,39 +129,42 @@ const town: RoadNetwork = {
     mill: 'dinerDoor',
     home: 'homeDoor',
   },
-  spawn: 'junction',
+  spawn: 'crossing',
 };
 
-
-// Cyberpunk haritası (cyberpunk_map_*.png, 2750x1536): koordinatlar kaldırım, meydan ve yaya geçitleri üzerindedir;
-// park etmiş araçların, motosikletin ve seyyar tezgahların etrafından dolanılır.
+// Cyberpunk haritası (cyberpunk_map_*.png, 2752x1536): koordinatlar meydan karoları ve sokaklar üzerindedir;
+// ortadaki kalkan logolu blok, tezgâhlar ve korumalar dolanılır. Kapılar mekanların tıklama alanlarının içindedir.
+// İnsan boyları karakterle uyumlu, ölçek köyle aynı.
 const cyberpunk: RoadNetwork = {
-  image: { width: 2750, height: 1536 },
+  image: { width: 2752, height: 1536 },
   nodes: {
-    centralPlaza: { x: 1450, y: 720 },
-    westLane: { x: 980, y: 880 },
-    eastLane: { x: 1720, y: 920 },
-    southCrossing: { x: 1320, y: 1260 },
-    policeDoor: { x: 1320, y: 1160 },
-    barDoor: { x: 1950, y: 1160 },
-    clinicDoor: { x: 2260, y: 700 },
-    workshopDoor: { x: 1720, y: 680 },
-    ramenDoor: { x: 1080, y: 580 },
-    marketDoor: { x: 740, y: 680 },
-    homeDoor: { x: 800, y: 1120 },
+    plaza: { x: 930, y: 960 },
+    north: { x: 1250, y: 700 },
+    east: { x: 1730, y: 900 },
+    south: { x: 1480, y: 1270 },
+    marketDoor: { x: 760, y: 840 },
+    ramenDoor: { x: 1150, y: 640 },
+    workshopDoor: { x: 1745, y: 710 },
+    clinicDoor: { x: 2050, y: 665 },
+    barDoor: { x: 2010, y: 1150 },
+    policeDoor: { x: 1395, y: 1215 },
+    homeDoor: { x: 800, y: 1110 },
   },
   edges: [
-    ['centralPlaza', 'ramenDoor'],
-    ['centralPlaza', 'workshopDoor'],
-    ['centralPlaza', 'westLane', [{ x: 1200, y: 780 }]],
-    ['centralPlaza', 'eastLane', [{ x: 1600, y: 820 }]],
-    ['westLane', 'marketDoor', [{ x: 860, y: 780 }]],
-    ['westLane', 'homeDoor', [{ x: 890, y: 1020 }]],
-    ['westLane', 'southCrossing', [{ x: 1120, y: 1120 }]],
-    ['eastLane', 'clinicDoor', [{ x: 1980, y: 800 }]],
-    ['eastLane', 'barDoor', [{ x: 1840, y: 1080 }]],
-    ['eastLane', 'southCrossing', [{ x: 1540, y: 1140 }]],
-    ['southCrossing', 'policeDoor'],
+    ['plaza', 'marketDoor', [{ x: 850, y: 890 }]],
+    ['plaza', 'homeDoor', [{ x: 900, y: 1050 }]],
+    ['plaza', 'north', [{ x: 960, y: 800 }, { x: 1100, y: 740 }]],
+    ['north', 'ramenDoor'],
+    // Lamba direğinin üstünden doğu sokağına
+    ['north', 'east', [{ x: 1350, y: 690 }, { x: 1450, y: 690 }, { x: 1600, y: 700 }, { x: 1720, y: 780 }]],
+    ['east', 'workshopDoor'],
+    // Klinik önündeki ağaçlı meydana
+    ['east', 'clinicDoor', [{ x: 1830, y: 800 }, { x: 1960, y: 720 }]],
+    // Kulübün önündeki kuyruğun solundan
+    ['east', 'barDoor', [{ x: 1760, y: 1100 }, { x: 1890, y: 1160 }]],
+    // Kalkan logolu bloğun altından karakolun kapısına
+    ['east', 'south', [{ x: 1730, y: 1120 }, { x: 1650, y: 1250 }]],
+    ['south', 'policeDoor'],
   ],
   doors: {
     home: 'homeDoor',
@@ -172,30 +175,49 @@ const cyberpunk: RoadNetwork = {
     church: 'ramenDoor',
     farm: 'marketDoor',
   },
-  spawn: 'centralPlaza',
+  spawn: 'plaza',
 };
 
-
+// Çin haritası (china_*.png, 2730x1536): koordinatlar taş döşeli meydanın açık karoları üzerindedir.
+// Ortadaki pazar tezgâhları ve çadırlar dolanılır: merkez, tezgâhların arasındaki desenli taş levhadır.
+// Kapı yükseklikleri köydekinden küçük, karakter biraz küçültülür.
 const chinaRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
+  characterScale: 0.85,
   nodes: {
-    square: { x: 1365, y: 880 },
-    churchDoor: { x: 620, y: 440 },
-    tavernDoor: { x: 1480, y: 490 },
-    graveyardDoor: { x: 2260, y: 430 },
-    clinicDoor: { x: 500, y: 880 },
-    millDoor: { x: 2180, y: 880 },
-    homeDoor: { x: 1840, y: 1220 },
-    farmDoor: { x: 620, y: 1180 },
+    square: { x: 1320, y: 790 },
+    north: { x: 1480, y: 665 },
+    west: { x: 950, y: 655 },
+    east: { x: 1800, y: 675 },
+    forge: { x: 1960, y: 950 },
+    southGap: { x: 1240, y: 1040 },
+    churchDoor: { x: 700, y: 485 },
+    clinicDoor: { x: 800, y: 730 },
+    tavernDoor: { x: 1540, y: 545 },
+    graveyardDoor: { x: 2180, y: 470 },
+    millDoor: { x: 2180, y: 885 },
+    homeDoor: { x: 2120, y: 1075 },
+    pierDoor: { x: 660, y: 1160 },
   },
   edges: [
-    ['square', 'churchDoor', [{ x: 950, y: 640 }]],
-    ['square', 'tavernDoor', [{ x: 1420, y: 680 }]],
-    ['square', 'graveyardDoor', [{ x: 1800, y: 660 }]],
-    ['square', 'clinicDoor', [{ x: 880, y: 880 }]],
-    ['square', 'millDoor', [{ x: 1800, y: 880 }]],
-    ['square', 'homeDoor', [{ x: 1600, y: 1080 }]],
-    ['square', 'farmDoor', [{ x: 920, y: 1060 }]],
+    // Orta tezgâhın çatısıyla üst çadırın arasındaki dar şeritten kuzeye
+    ['square', 'north', [{ x: 1420, y: 770 }, { x: 1460, y: 745 }, { x: 1480, y: 700 }]],
+    // Sol tezgâhla üst çadırın arasından batıdaki açık alana
+    ['square', 'west', [{ x: 1255, y: 762 }, { x: 1150, y: 650 }, { x: 1040, y: 660 }]],
+    ['west', 'churchDoor', [{ x: 800, y: 560 }]],
+    ['west', 'clinicDoor', [{ x: 870, y: 700 }]],
+    ['north', 'tavernDoor', [{ x: 1510, y: 600 }]],
+    // Saksıların altıyla kırmızı çadırın üstündeki şeritten doğuya
+    ['north', 'east', [{ x: 1640, y: 670 }]],
+    // Taş fenerin sağından aslan heykellerinin arasındaki merdivene
+    ['east', 'graveyardDoor', [{ x: 1900, y: 630 }, { x: 2000, y: 560 }, { x: 2120, y: 510 }]],
+    ['east', 'forge', [{ x: 1800, y: 900 }]],
+    // Masayla örsün arasından ocağın önüne
+    ['forge', 'millDoor', [{ x: 2140, y: 930 }]],
+    ['forge', 'homeDoor', [{ x: 2060, y: 1010 }]],
+    // İki alt tezgâhın arasındaki boşluktan desenli taş levhaya, oradan fenerlerin üstünden iskeleye
+    ['square', 'southGap', [{ x: 1250, y: 900 }]],
+    ['southGap', 'pierDoor', [{ x: 1100, y: 1010 }, { x: 900, y: 1010 }, { x: 760, y: 1060 }]],
   ],
   doors: {
     church: 'churchDoor',
@@ -204,39 +226,64 @@ const chinaRoads: RoadNetwork = {
     clinic: 'clinicDoor',
     mill: 'millDoor',
     home: 'homeDoor',
-    farm: 'farmDoor',
+    farm: 'pierDoor',
   },
   spawn: 'square',
 };
 
+// Kış haritası (winter_*.jpg, 2730x1536): koordinatlar karla kaplı toprak yolların üzerindedir.
+// Kaya, dikili taş ve ateşlerin etrafından dolanılır. Haritadaki insanlar ~90 px; karakter küçültülür.
 const winterRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
+  characterScale: 0.82,
   nodes: {
-    square: { x: 1420, y: 920 },
-    churchDoor: { x: 520, y: 460 },
-    graveyardDoor: { x: 1420, y: 440 },
-    tavernDoor: { x: 2020, y: 860 },
-    homeDoor: { x: 1040, y: 860 },
-    farmDoor: { x: 2280, y: 380 },
-    millDoor: { x: 520, y: 1260 },
-    clinicDoor: { x: 1980, y: 1240 },
+    square: { x: 1460, y: 910 },
+    northwest: { x: 1280, y: 740 },
+    castleRoad: { x: 1645, y: 620 },
+    eastFork: { x: 1720, y: 985 },
+    southwest: { x: 1400, y: 1000 },
+    churchDoor: { x: 560, y: 470 },
+    castleDoor: { x: 1625, y: 545 },
+    gateDoor: { x: 2225, y: 390 },
+    tavernDoor: { x: 1835, y: 990 },
+    clinicDoor: { x: 2125, y: 1045 },
+    homeDoor: { x: 1160, y: 1005 },
+    mineDoor: { x: 470, y: 1310 },
   },
   edges: [
-    ['square', 'churchDoor', [{ x: 980, y: 680 }]],
-    ['square', 'graveyardDoor', [{ x: 1420, y: 680 }]],
-    ['square', 'tavernDoor', [{ x: 1720, y: 890 }]],
-    ['square', 'homeDoor', [{ x: 1220, y: 890 }]],
-    ['square', 'farmDoor', [{ x: 1720, y: 890 }, { x: 1900, y: 650 }, { x: 2080, y: 520 }]],
-    ['square', 'millDoor', [{ x: 920, y: 1120 }]],
-    ['square', 'clinicDoor', [{ x: 1720, y: 1100 }]],
+    // Et kurutma iskelesinin üstünden kuzeybatı yoluna
+    ['square', 'northwest', [{ x: 1380, y: 820 }]],
+    // Taşlı patika boyunca, iki dikili taşın arasından kutsal ağacın köklerine
+    ['northwest', 'churchDoor', [
+      { x: 1150, y: 680 }, { x: 1000, y: 620 }, { x: 840, y: 575 }, { x: 790, y: 520 }, { x: 690, y: 480 },
+    ]],
+    // Meşalenin solundan kale yoluna
+    ['square', 'castleRoad', [{ x: 1560, y: 800 }, { x: 1640, y: 690 }]],
+    ['castleRoad', 'castleDoor'],
+    // Meşalenin önünden, kulübe çatısının arkasındaki toprak yolla surun kapısına
+    ['castleRoad', 'gateDoor', [
+      { x: 1760, y: 630 }, { x: 1900, y: 590 }, { x: 2010, y: 510 }, { x: 2120, y: 440 },
+    ]],
+    ['square', 'eastFork', [{ x: 1600, y: 950 }]],
+    // Atın ve hancının altından ateşin yanına
+    ['eastFork', 'tavernDoor'],
+    // Gözcü kulesinin üstünden infaz platformunun sağına
+    ['eastFork', 'clinicDoor', [{ x: 1850, y: 1015 }, { x: 1960, y: 1022 }]],
+    ['square', 'southwest'],
+    // Ateş çukurunun altından avcı kulübesinin kapısına
+    ['southwest', 'homeDoor', [{ x: 1230, y: 1060 }]],
+    // Kömür yığınıyla vincin arasından madenin girişine
+    ['southwest', 'mineDoor', [
+      { x: 1300, y: 1090 }, { x: 1100, y: 1150 }, { x: 830, y: 1220 }, { x: 680, y: 1310 },
+    ]],
   ],
   doors: {
     church: 'churchDoor',
-    graveyard: 'graveyardDoor',
+    graveyard: 'castleDoor',
     tavern: 'tavernDoor',
     home: 'homeDoor',
-    farm: 'farmDoor',
-    mill: 'millDoor',
+    farm: 'gateDoor',
+    mill: 'mineDoor',
     clinic: 'clinicDoor',
   },
   spawn: 'square',

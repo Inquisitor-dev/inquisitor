@@ -1,7 +1,9 @@
 // Market kataloğu. Fiyatlar oyun içi token cinsindendir.
-// Şimdilik istemcide tutuluyor; satın alma backend'e bağlandığında buradaki id'ler kullanılmalı.
+// Satın alma backend'de doğrulanır; id'ler backend/src/market/market-catalog.ts ile aynı olmalı.
 
-export type MarketCategory = 'universe' | 'difficulty' | 'story' | 'cosmetic';
+import { OUTFITS, outfitMarketId, outfitThumb } from '@/config/outfits';
+
+export type MarketCategory = 'universe' | 'difficulty' | 'story' | 'outfit' | 'cosmetic';
 export type Rarity = 'common' | 'rare' | 'legendary';
 
 export interface MarketItem {
@@ -24,6 +26,9 @@ export interface MarketItem {
   // Hazır hikayeler için
   universe?: string;
   length?: string;
+  // Karakterler için: gardıroptaki kıyafet id'si, görselleri hazır değilse satın alınamaz
+  outfitId?: string;
+  comingSoon?: boolean;
 }
 
 export const CATEGORY_LABELS: Record<MarketCategory, { title: string; eyebrow: string; blurb: string }> = {
@@ -41,6 +46,11 @@ export const CATEGORY_LABELS: Record<MarketCategory, { title: string; eyebrow: s
     title: 'Hazır Hikâyeler',
     eyebrow: 'Mühürlü Dosyalar',
     blurb: 'Elle yazılmış, sabit kurgulu vakalar. Her dosyanın kendine ait bir sırrı ve unutulmaz bir sonu var.',
+  },
+  outfit: {
+    title: 'Karakterler',
+    eyebrow: 'Engizitörün Gardırobu',
+    blurb: 'Lobide ve haritada seni temsil eden karakteri değiştir. Satın aldıkların gardırobuna düşer.',
   },
   cosmetic: {
     title: 'Kozmetikler',
@@ -222,16 +232,6 @@ export const MARKET_ITEMS: MarketItem[] = [
     icon: 'feather',
   },
   {
-    id: 'cosmetic_scarlet_robe',
-    category: 'cosmetic',
-    title: 'Kardinal Cübbesi',
-    subtitle: 'Karakter Görünümü',
-    description: 'Lobi ve harita karakterine kızıl işlemeli bir cübbe giydir.',
-    price: 600,
-    rarity: 'rare',
-    icon: 'crown',
-  },
-  {
     id: 'cosmetic_all_seeing',
     category: 'cosmetic',
     title: 'Her Şeyi Gören Göz',
@@ -251,16 +251,23 @@ export const MARKET_ITEMS: MarketItem[] = [
     rarity: 'legendary',
     icon: 'flame',
   },
-  {
-    id: 'cosmetic_plague_mask',
-    category: 'cosmetic',
-    title: 'Veba Doktoru Maskesi',
-    subtitle: 'Karakter Görünümü',
-    description: 'Lobideki karakterine ikonik gagalı veba doktoru maskesini tak.',
-    price: 1500,
-    rarity: 'legendary',
-    icon: 'mask',
-  },
+
+  // ─── KARAKTERLER ─────────────────────────────────────────────
+  ...OUTFITS.map(
+    (outfit): MarketItem => ({
+      id: outfitMarketId(outfit.id),
+      category: 'outfit',
+      title: outfit.name,
+      subtitle: outfit.title,
+      description: outfit.description,
+      price: outfit.price,
+      image: outfitThumb(outfit.id),
+      ownedByDefault: outfit.price === 0,
+      rarity: outfit.rarity,
+      outfitId: outfit.id,
+      comingSoon: !outfit.ready,
+    })
+  ),
 ];
 
 // ─── TOKEN PAKETLERİ (gerçek para) ────────────────────────────

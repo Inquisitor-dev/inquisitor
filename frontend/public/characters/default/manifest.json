@@ -10,17 +10,17 @@
   },
   "walk": {
     "frames": 16,
-    "cycleSeconds": 0.9667,
-    "strideMeters": 1.6789,
+    "cycleSeconds": 1.0333,
+    "strideMeters": 1.8115,
     "stridePx": {
-      "east": 201.47,
-      "south-east": 141.76,
-      "south": 115.56,
-      "south-west": 141.76,
-      "west": 201.47,
-      "north-west": 141.76,
-      "north": 115.56,
-      "north-east": 141.76
+      "east": 217.38,
+      "south-east": 152.96,
+      "south": 124.68,
+      "south-west": 152.96,
+      "west": 217.38,
+      "north-west": 152.96,
+      "north": 124.68,
+      "north-east": 152.96
     },
     "sheets": {
       "east": "walk/east.webp",

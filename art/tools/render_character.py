@@ -11,7 +11,7 @@
 # Beklenen dosyalar (art/characters/<id>/source/):
 #   <id>_walk.fbx   Mixamo yürüme, "In Place", With Skin
 #   <id>_idle.fbx   Mixamo durma, With Skin
-#   <id>_meshy.glb  Meshy'nin orijinal modeli (malzeme/dokular buradan alınır)
+#   <id>_model.glb  görselden-3D aracının orijinal modeli (malzeme/dokular buradan alınır)
 import argparse
 import json
 import math
@@ -99,21 +99,49 @@ def assign_action(arm, action):
         ad.action_slot = action.slots[0]
 
 
-def glb_material(glb_path):
-    # Meshy GLB'sinin malzemesi (renk + metal/pürüzlülük + normal) FBX gidiş-dönüşünden daha eksiksiz
+def base_name(name):
+    # Blender'ın çakışan adlara eklediği ".001" sonekini at
+    head, _, tail = name.rpartition(".")
+    return head if head and tail.isdigit() else name
+
+
+def glb_materials(glb_path):
+    # Görselden-3D aracının malzemeleri (renk + metal/pürüzlülük + normal) FBX gidiş-dönüşünden daha eksiksiz.
+    # Parçalı modellerde her parçanın kendi malzemesi var; adlarıyla eşleştirilmek üzere döndürülür.
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=glb_path)
     new = [o for o in bpy.data.objects if o not in before]
-    mat = next(o for o in new if o.type == "MESH").active_material
+    mats = {}
+    for o in new:
+        if o.type == "MESH":
+            for m in o.data.materials:
+                if m:
+                    mats.setdefault(base_name(m.name), m)
     for o in new:
         bpy.data.objects.remove(o, do_unlink=True)
     # Boyalı görünüm: parlama yok, metal hissi az
-    bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
-    if bsdf:
-        for name, value in (("Specular IOR Level", 0.15), ("Coat Weight", 0.0), ("Sheen Weight", 0.0)):
-            if name in bsdf.inputs:
-                bsdf.inputs[name].default_value = value
-    return mat
+    for mat in mats.values():
+        bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if bsdf:
+            for name, value in (("Specular IOR Level", 0.15), ("Coat Weight", 0.0), ("Sheen Weight", 0.0)):
+                if name in bsdf.inputs:
+                    bsdf.inputs[name].default_value = value
+    return mats
+
+
+def apply_glb_materials(mesh_obj, mats):
+    # FBX'teki her malzeme yuvasını aynı adlı GLB malzemesiyle değiştirir.
+    # Tek malzemeli modellerde ad tutmasa bile tek malzeme kullanılır.
+    only = next(iter(mats.values())) if len(mats) == 1 else None
+    slots = mesh_obj.data.materials
+    for i, m in enumerate(slots):
+        match = mats.get(base_name(m.name)) if m else None
+        if match or only:
+            slots[i] = match or only
+        else:
+            print(f"UYARI: '{m.name if m else '?'}' için GLB malzemesi bulunamadı, FBX malzemesi kullanılıyor")
+    if not len(slots) and only:
+        slots.append(only)
 
 
 def add_outline(mesh_obj):
@@ -281,10 +309,9 @@ def main():
     for o in [idle_arm, *idle_meshes]:
         bpy.data.objects.remove(o, do_unlink=True)
 
-    mat = glb_material(os.path.join(src, f"{args.outfit}_meshy.glb"))
+    mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"))
     for m in meshes:
-        m.data.materials.clear()
-        m.data.materials.append(mat)
+        apply_glb_materials(m, mats)
         if args.outline:
             add_outline(m)
 
@@ -370,4 +397,5 @@ def main():
     print("RENDER_DONE", out)
 
 
-main()
+if __name__ == "__main__":
+    main()
