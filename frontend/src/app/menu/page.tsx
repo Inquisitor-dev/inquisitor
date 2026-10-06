@@ -1293,26 +1293,6 @@ export default function HomePage() {
                 <button className={styles.sheetPrimary} onClick={handleConfigSave}>
                   Seçimi Onayla
                 </button>
-
-                <button
-                  onClick={() => setTempStory('china')}
-                  className={`${styles.selectionBtn} ${styles.scenarioChina ?? ''} ${tempStory === 'china' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Jinling</span>
-                  </div>
-                  <p>Antik Doğu / Feodal Hanedanlık. Bambu korulukları, tapınaklar ve çay evleri.</p>
-                </button>
-
-                <button
-                  onClick={() => setTempStory('winter')}
-                  className={`${styles.selectionBtn} ${styles.scenarioWinter ?? ''} ${tempStory === 'winter' ? styles.activeSelection : ''}`}
-                >
-                  <div>
-                    <span>Frosthold</span>
-                  </div>
-                  <p>Kutup / Kar Fırtınası. Buz tutmuş sığınaklar, gözetleme kuleleri ve donmuş sırlar.</p>
-                </button>
               </div>
             </footer>
           </div>
