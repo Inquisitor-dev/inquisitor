@@ -20,7 +20,8 @@ export type EvidenceImpact =
   | 'REPEAT';
 
 export const FEAR_GAIN: Record<EvidenceImpact, number> = {
-  DECISIVE: 6,
+  // Kendi sırrının kanıtı korku 0 olsa bile eşiği geçirir: o kanıtı bulan oyuncu itirafı hak eder
+  DECISIVE: 7,
   IMPLICATING: 3,
   IRRELEVANT: 0,
   REPEAT: 0,

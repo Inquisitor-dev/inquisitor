@@ -279,12 +279,14 @@ YOUR TASK:
    - Every dynamic prompt must preserve that NPC's public identity exactly. Do NOT rename them, do NOT change their profession, and do NOT move them to another workplace.
 
 CRITICAL RULE:
-The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the crime scene.
+The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the village and its atmosphere. Never put English words or game terms (such as tidy, messy, hurried, planned) in Turkish text.
 'truthReveal' should be a single, long, atmospheric paragraph revealing exactly who the victim and the culprit were, how the crime was committed, why, whether the crime scene clue was genuine or planted and what proves it, and what the innocent NPCs were hiding. This will be shown to the player at the end of the game to explain the entire mystery.
 
 CLUE & MYSTERY RULES:
-1. The 'scenario' text MUST be a general mystery hook. It MUST NOT reveal the crime scene appearance, the crime scene clue, or whether anything is genuine or planted. Those belong in the 'crime_scene' clue.
-2. For all OTHER locations (non-crime-scene), the hidden clue should reveal the dirty secret or suspicious activity of the NPC who resides/works there, unless the VERIFYING EVIDENCE is placed at that location.
+1. The 'scenario' text MUST be a general mystery hook. It MUST NOT reveal the crime scene appearance (orderly or messy, signs of struggle or none), how the murder seems to have happened (in panic or planned), the crime scene clue, or whether anything is genuine or planted. The player discovers those at the crime scene.
+2. For all OTHER locations (non-crime-scene), the hidden clue belongs to the NPC who lives/works there, unless the VERIFYING EVIDENCE is placed at that location:
+   - An INNOCENT's location clue MUST be physical proof of that innocent's own secret, the same activity as their alibi in 'alibis' (for example the smuggled goods or the stolen money). It MUST NOT involve the victim's belongings, blood, the murder weapon, or anything that points at the culprit or at another NPC.
+   - The CULPRIT's location clue (when the verifying evidence is not there) shows the culprit's motive or suspicious activity, not a direct proof of the murder.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': exactly one hidden physical clue per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
 5. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
@@ -296,7 +298,7 @@ CLUE & MYSTERY RULES:
 
 Return a valid JSON object ONLY, in exactly this format:
 {
-  "scenario": "Dark, atmospheric Turkish description of the crime scene...",
+  "scenario": "Dark, atmospheric Turkish mystery hook (no crime scene details)...",
   "truthReveal": "Dark, atmospheric Turkish paragraph revealing the ENTIRE truth and behind-the-scenes of this mystery...",
   "culpritId": ${npcIds},
   "victim": { "name": "Full name", "profession": "Turkish profession" },
@@ -378,6 +380,9 @@ CONTINUITY RULES:
 4. Ensure every canonical location has exactly one location clue.
 5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
 6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense.
+6a. Each INNOCENT's location clue must prove that innocent's own alibi secret. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
+6b. The 'scenario' hook must not reveal how orderly or messy the crime scene is, or whether the murder looks panicked or planned. Remove such sentences.
+6c. No English words or game terms (tidy, messy, hurried, planned) in Turkish text.
 7. Do NOT invent alternate clues for the same location.
 8. Do NOT add non-canonical locations.
 9. Keep everything in natural, dark Turkish.

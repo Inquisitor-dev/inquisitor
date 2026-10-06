@@ -287,6 +287,11 @@ EVIDENCE SHOWN TO YOU:
 The Inquisitor silently shows you this evidence: "${confrontation.evidenceText}"
 ${impactText[confrontation.impact]}
 React to the evidence in character.`;
+        // Eşik geçilmediyse masum itiraf etmez: itirafı yapay zekâ değil korku eşiği belirler
+        if (!isCulprit && !hasConfessed && !forcedConfession) {
+          combinedPrompt += `
+This evidence alone does NOT break you. Do NOT confess your personal secret in this reply: deny, deflect or explain it away, letting your fear show.`;
+        }
       }
       if (forcedConfession) {
         combinedPrompt += `
@@ -322,7 +327,7 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
 - Canonical Searchable Location IDs: ${canonicalLocationIds.join(', ')}`;
 
       if (remaining > 0) {
-        warrantInfo += `\n\nIMPORTANT: You may grant up to ${remaining} more search warrant(s), but ONLY if the player clearly and directly asks for a search warrant / arama izni. Never grant one proactively, never grant one just because you suspect something, and never grant one in response to a generic question. Only grant warrants for canonical location IDs from this list: ${canonicalLocationIds.join(', ')}. To grant, use [GRANT_WARRANT: location_id] tags.`;
+        warrantInfo += `\n\nIMPORTANT: You can grant up to ${remaining} more search warrant(s). If the player clearly and directly asks for a search warrant / arama izni for one or more canonical locations, you MUST grant them (up to the remaining number) in this reply: you may grumble, warn or doubt in words, but you do not refuse. Never grant one proactively and never in response to a generic question. Only grant warrants for canonical location IDs from this list: ${canonicalLocationIds.join(', ')}. To grant, use [GRANT_WARRANT: location_id] tags.`;
       } else {
         warrantInfo += `\n\nIMPORTANT: You have reached the limit of 2 warrants. Do NOT grant any more.`;
       }
