@@ -2,7 +2,7 @@ import { SCENARIO_CLUES } from './clues-config';
 import { getScenarioConfig } from './scenario-config';
 import { ELIMINATION_TARGET, findAuthenticClues, planCase } from './case-setup';
 
-const SCENARIOS = ['medieval', 'modern', 'cyberpunk'] as const;
+const SCENARIOS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'] as const;
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 // Tekrarlanabilir rastgelelik: aynı tohumla aynı vakalar üretilir

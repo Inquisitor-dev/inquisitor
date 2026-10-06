@@ -88,6 +88,26 @@ export const MARKET_ITEMS: MarketItem[] = [
     image: '/map/cyberpunk_map_night.png',
     tags: ['6 mekân', 'Tech-noir'],
   },
+  {
+    id: 'universe_china',
+    category: 'universe',
+    title: 'Jinling',
+    subtitle: 'Antik Doğu / Feodal Çin',
+    description: 'Bambu korulukları, tapınaklar ve çay evleri. Hanedan entrikaları ve kadim sırlar.',
+    price: 650,
+    image: '/map/china_night.png',
+    tags: ['6 mekân', 'Uzak Doğu'],
+  },
+  {
+    id: 'universe_winter',
+    category: 'universe',
+    title: 'Frosthold',
+    subtitle: 'Kutup / Kar Fırtınası',
+    description: 'Buz tutmuş göller, gözetleme kuleleri ve sığınaklar. Dondurucu soğukta saklanan sırlar.',
+    price: 650,
+    image: '/map/winter_night.jpg',
+    tags: ['6 mekân', 'Buzul Diyarı'],
+  },
 
   // ─── ZORLUKLAR ───────────────────────────────────────────────
   {

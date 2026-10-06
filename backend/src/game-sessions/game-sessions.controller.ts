@@ -19,7 +19,7 @@ type AuthedRequest = { user: { userId: string } };
 import { MarketService } from '../market/market.service';
 
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
-const VALID_SCENARIOS = ['medieval', 'modern', 'cyberpunk'];
+const VALID_SCENARIOS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'];
 
 @Controller('game-sessions')
 export class GameSessionsController {

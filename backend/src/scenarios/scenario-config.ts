@@ -1,4 +1,4 @@
-export type ScenarioType = 'medieval' | 'modern' | 'cyberpunk';
+export type ScenarioType = 'medieval' | 'modern' | 'cyberpunk' | 'china' | 'winter';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface ScenarioNpcDefinition {
@@ -50,6 +50,24 @@ const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = 
     mill: 'Robot Dükkânı',
     farm: 'Köprü Altı',
     clinic: 'Bar',
+  },
+  china: {
+    crime_scene: 'Pazar Meydanı',
+    tavern: 'Çay Evi & Han',
+    church: 'Muhafız Karargahı',
+    graveyard: 'Kadim Tapınak',
+    mill: 'Demirci Ocağı',
+    farm: 'Bahçıvan Kulübesi',
+    clinic: 'Şifacı & Baharatçı',
+  },
+  winter: {
+    crime_scene: 'Buzlu Geçit',
+    tavern: 'Kış Hanı',
+    church: 'Kutsal Yürek Ağacı',
+    graveyard: 'Gözcü Kalesi',
+    mill: 'Terk Edilmiş Maden',
+    farm: 'Avcı Kulübesi',
+    clinic: 'İnfaz Meydanı',
   },
 };
 
@@ -188,6 +206,96 @@ const CYBERPUNK_NPCS: ScenarioNpcDefinition[] = [
   },
 ];
 
+const CHINA_NPCS: ScenarioNpcDefinition[] = [
+  {
+    id: 'tavern',
+    name: 'Lin Feng',
+    role: 'Master of the Golden Lotus Tea House',
+    personaPrompt:
+      'You are a shrewd tea house proprietor who hears whispers from travelers, merchants, and officials. You smile politely, measure every word like fine silk, and always calculate how much each piece of information is worth.',
+  },
+  {
+    id: 'church',
+    name: 'Commander Zhao',
+    role: 'Imperial Garrison Magistrate',
+    personaPrompt:
+      'You are a stern, battle-tested garrison commander bound by the imperial code of honor. You speak with sharp authority, despise disorder and treachery, and will fiercely protect your troops and imperial dignity.',
+  },
+  {
+    id: 'graveyard',
+    name: 'Monk Huikang',
+    role: 'Elder of the Mountain Shrine',
+    personaPrompt:
+      'You are a serene, enigmatic monk who tends the incense burners and ancestral spirit tablets. You speak in calm philosophical riddles, discerning motives beneath earthly ambition.',
+  },
+  {
+    id: 'mill',
+    name: 'Master Guan',
+    role: 'Master Weaponsmith and Blacksmith',
+    personaPrompt:
+      'You are a burly, soot-stained bladesmith with a booming voice and a fiery temper. You know every weapon in the district by heart and resent any implication that your blades were used for dishonorable slaughter.',
+  },
+  {
+    id: 'farm',
+    name: 'Auntie Mei',
+    role: 'Herbal gardener of the riverside estate',
+    personaPrompt:
+      'You are an observant, sharp-tongued elder woman tending vegetable patches and rare medicinal herbs. You notice everything that passes along the riverbank and feign simple-mindedness when strangers interrogate you.',
+  },
+  {
+    id: 'clinic',
+    name: 'Scholar Song',
+    role: 'Imperial Apothecary and physician',
+    personaPrompt:
+      'You are a refined, soft-spoken scholar of medicine, acupuncture, and exotic venoms. You value analytical intellect above emotion, concealing your own forbidden experiments behind clinical treatises.',
+  },
+];
+
+const WINTER_NPCS: ScenarioNpcDefinition[] = [
+  {
+    id: 'tavern',
+    name: 'Torstein',
+    role: 'Innkeeper of the Hearthfire Tavern',
+    personaPrompt:
+      'You are a rugged, bearded host who keeps the hearth fires burning in the brutal cold. You serve mulled ale to cold travelers, know who arrived before the snowstorm shut the mountain pass, and protect your patrons fiercely.',
+  },
+  {
+    id: 'church',
+    name: 'Seer Valda',
+    role: 'Keeper of the ancient Heart Tree',
+    personaPrompt:
+      'You are a quiet, mystical guardian who reads the frozen omens carved in the blood-red leaves of the ancient weirwood tree. You speak in cold, prophetic whispers and regard worldly crimes through the lens of ancient deities.',
+  },
+  {
+    id: 'graveyard',
+    name: 'Commander Bjorn',
+    role: 'Castellan of the Frosthold Keep',
+    personaPrompt:
+      'You are a grim fortress commander wrapped in thick wolf pelts. You maintain iron discipline among the watchmen, treat every outsider as a potential infiltrator, and despise weakness or deceit in times of winter siege.',
+  },
+  {
+    id: 'mill',
+    name: 'Durn the Miner',
+    role: 'Foreman of the abandoned iron mine',
+    personaPrompt:
+      'You are a grizzled, suspicious miner who spends your days in the freezing shafts and stone quarries. You speak with coarse bluntness, hide contraband in the frozen tunnels, and trust nobody from outside the clan.',
+  },
+  {
+    id: 'farm',
+    name: 'Einar',
+    role: 'Wilderness trapper and hunter',
+    personaPrompt:
+      'You are a solitary hunter who knows every frozen ridge and beast track across the snowfields. You are a man of few words, sharp senses, and pragmatic survival instincts, uncomfortable in crowded rooms.',
+  },
+  {
+    id: 'clinic',
+    name: 'Warden Kenneth',
+    role: 'Overseer of the execution grounds',
+    personaPrompt:
+      'You are a cold-eyed warden who oversees the gallows, stocks, and military tribunal courtyard. You believe fear is the only force keeping the freezing garrison from mutiny, and you measure guilt with ruthless certainty.',
+  },
+];
+
 const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
   medieval: [
     { id: 'crime_scene', name: 'Ashenmoor crime scene', description: 'The primary murder site being investigated.' },
@@ -216,6 +324,24 @@ const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
     { id: 'farm', name: 'Floodbridge Underpass', description: "Ash's shelter beneath the city bridgeworks." },
     { id: 'clinic', name: 'Velvet Static', description: "Vera Nyx's bar wrapped in shadow, bass, and neon." },
   ],
+  china: [
+    { id: 'crime_scene', name: 'Jinling Market Square', description: 'The central market square where the crime was committed.' },
+    { id: 'tavern', name: 'Golden Lotus Tea House', description: "Lin Feng's bustling two-story tea house and restaurant." },
+    { id: 'church', name: 'Imperial Garrison Gate', description: "Commander Zhao's fortified headquarters and weapons court." },
+    { id: 'graveyard', name: 'Mountain Shrine of Ancestors', description: "Monk Huikang's tranquil stone shrine and incense court." },
+    { id: 'mill', name: 'Dragon Forge Workshop', description: "Master Guan's weaponsmithy and kiln." },
+    { id: 'farm', name: 'Riverside Garden Plots', description: "Auntie Mei's fenced bamboo garden and vegetable beds." },
+    { id: 'clinic', name: 'Apothecary Song Pavilion', description: "Scholar Song's clinic and medicine repository." },
+  ],
+  winter: [
+    { id: 'crime_scene', name: 'Frosthold Frozen Pass', description: 'The windswept snowfield and frozen pass where the victim was discovered.' },
+    { id: 'tavern', name: 'Hearthfire Tavern', description: "Torstein's warm timber tavern and stables." },
+    { id: 'church', name: 'Ancient Heart Tree Grove', description: "Seer Valda's mystical weirwood shrine and frozen pool." },
+    { id: 'graveyard', name: 'Frosthold Watchtower Keep', description: "Commander Bjorn's stone fortress and ramparts." },
+    { id: 'mill', name: 'Abandoned Iron Quarry', description: "Durn's mining shaft, crane, and ore carts." },
+    { id: 'farm', name: "Hunter's Smokehouse Cabin", description: "Einar's isolated log cabin and game racks." },
+    { id: 'clinic', name: 'Execution Courtyard', description: "Warden Kenneth's gallows platform and watch enclosure." },
+  ],
 };
 
 export function getScenarioConfig(
@@ -243,6 +369,18 @@ export function getScenarioConfig(
     styleInstruction =
       'It should read like a grim, tech-noir cyberpunk thriller. Use cyberpunk terminology such as cyberware, credits, neon, synths, black clinics, data brokers, and mega-corps.';
     npcPool = CYBERPUNK_NPCS;
+  } else if (normalizedScenario === 'china') {
+    settingLabel = 'Jinling (Hanedan Dönemi)';
+    worldDescription = 'Set in the ancient Chinese city of Jinling during the Imperial Dynasty. The district is rich with ornate pavilions, tea houses, bamboo groves, and ancient shrines.';
+    styleInstruction =
+      'It should read like an atmospheric Chinese historical detective mystery or wuxia thriller (in the vein of Judge Dee). Use authentic period flavor, courtly etiquette, and references to tea ceremonies, dynasty magistrates, incense, jade, and martial honor.';
+    npcPool = CHINA_NPCS;
+  } else if (normalizedScenario === 'winter') {
+    settingLabel = 'Frosthold';
+    worldDescription = 'Set in the freezing, snow-covered northern stronghold of Frosthold, surrounded by ice cliffs and frozen forests.';
+    styleInstruction =
+      'It should read like a grim, frostbitten northern survival mystery or dark gothic fantasy. Emphasize the bitter freezing cold, wolf pelts, hearth fires, snowstorms, frozen tracks, and isolated paranoia.';
+    npcPool = WINTER_NPCS;
   }
 
   const npcCount = normalizedDifficulty === 'easy' ? 4 : normalizedDifficulty === 'medium' ? 5 : 6;
@@ -270,7 +408,7 @@ export function getLocalizedLocationLabel(
 }
 
 function normalizeScenarioType(scenarioType: string): ScenarioType {
-  if (scenarioType === 'modern' || scenarioType === 'cyberpunk') return scenarioType;
+  if (scenarioType === 'modern' || scenarioType === 'cyberpunk' || scenarioType === 'china' || scenarioType === 'winter') return scenarioType;
   return 'medieval';
 }
 

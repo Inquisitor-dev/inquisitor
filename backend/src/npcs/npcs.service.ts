@@ -310,10 +310,14 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
     }
 
     const isWarrantIssuer =
-      (currentState.session.scenarioType === 'medieval' && currentState.npc.id === 'church') ||
+      ((currentState.session.scenarioType === 'medieval' ||
+        currentState.session.scenarioType === 'china') &&
+        currentState.npc.id === 'church') ||
       ((currentState.session.scenarioType === 'modern' ||
         currentState.session.scenarioType === 'cyberpunk') &&
-        currentState.npc.id === 'tavern');
+        currentState.npc.id === 'tavern') ||
+      (currentState.session.scenarioType === 'winter' &&
+        (currentState.npc.id === 'graveyard' || currentState.npc.id === 'church'));
 
     if (isWarrantIssuer) {
       const issuedCount = currentState.session.warrantsIssued;
