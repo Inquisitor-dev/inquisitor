@@ -351,8 +351,8 @@ describe('NpcsService — yüzleştirme ve korku', () => {
       1,
     );
     const result = await service.confront('session-1', 'tavern', 'ev-tavern');
-    expect(state.currentFear).toBe(7);
-    expect(result.fear).toEqual({ level: 7, band: 'PANIC' });
+    expect(state.currentFear).toBe(8);
+    expect(result.fear).toEqual({ level: 8, band: 'PANIC' });
     const prompt = generateNpcResponse.mock.calls[0][1];
     expect(prompt).toContain('FEAR BREAK');
     expect(prompt).toContain('exposes your personal secret');

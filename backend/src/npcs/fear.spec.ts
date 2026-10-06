@@ -28,13 +28,12 @@ describe('korku', () => {
     }
   });
 
-  it('tek bir belirleyici kanıt başlangıç korkusu 1 olanı kırar', () => {
-    // Seed'deki karakterlerin korkusu 1..7; yarıya inince 1..4 olur
-    expect(raiseFear(startingFear(1), 'DECISIVE')).toBeGreaterThanOrEqual(
+  it('kendi sırrının kanıtı, geceler boyunca korkusu 0 a inmiş karakteri bile kırar', () => {
+    expect(raiseFear(0, 'DECISIVE')).toBeGreaterThanOrEqual(
       FEAR_BREAK_THRESHOLD,
     );
-    // Hiç korkusu olmayan biri için bir kanıt daha gerekir
-    expect(raiseFear(startingFear(0), 'DECISIVE')).toBeLessThan(
+    // Şüpheli gösteren tek kanıt ise sadece en korkak karakteri (başlangıç 4) kırabilir
+    expect(raiseFear(startingFear(5), 'IMPLICATING')).toBeLessThan(
       FEAR_BREAK_THRESHOLD,
     );
   });
