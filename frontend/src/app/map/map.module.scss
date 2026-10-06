@@ -442,6 +442,67 @@
   font-size: 0.75rem;
 }
 
+.homeActionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.homeActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #251f1b;
+  border: 1px solid #3d342d;
+  border-radius: 6px;
+  color: #E8DCC4;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    background: #322822;
+    border-color: #8A0303;
+    transform: translateX(4px);
+  }
+
+  .homeActionIcon {
+    font-size: 1.4rem;
+  }
+
+  .homeActionInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .homeActionTitle {
+    font-weight: 600;
+    color: #E8DCC4;
+  }
+
+  .homeActionDesc {
+    font-size: 0.8rem;
+    color: #8a7f72;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+.homeActionSleep {
+  background: rgba(138, 3, 3, 0.15);
+  border-color: #8A0303;
+
+  &:hover {
+    background: #8A0303;
+    color: #fff;
+    .homeActionDesc { color: #f0cfcf; }
+  }
+}
+
 /* ── INTERACTIVE MAP ── */
 .mapContainer {
   position: relative;
