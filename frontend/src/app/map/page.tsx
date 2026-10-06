@@ -474,6 +474,8 @@ export default function MapPage() {
   const walkFrame = useRef<number | null>(null);
   const imageLayerRef = useRef<HTMLDivElement>(null);
   const playerPos = (walkingTo && walkPos) || roads.nodes[restNodeId];
+  // Haritanın çizim ölçeğine göre karakter boyu (köydeki boy = 1)
+  const characterScale = roads.characterScale ?? 1;
   const roadImage = roads.image;
 
   // Harita katmanının ekrandaki ölçeği (görsel pikseli başına ekran pikseli); karakter boyu buna bağlı
@@ -723,7 +725,8 @@ export default function MapPage() {
       return;
     }
 
-    const sizeScale = layerScale / CHARACTER_REF_LAYER_SCALE;
+    // Karakterin ekrandaki boy çarpanı; hız da bununla ölçeklenir ki adım temposu her haritada aynı kalsın
+    const sizeScale = (layerScale / CHARACTER_REF_LAYER_SCALE) * characterScale;
     // Referans ölçekteki hız; ekrandaki hız karakterle birlikte sizeScale kadar büyür
     const baseSpeed = Math.max(
       SCREEN_WALK_SPEED,
@@ -764,7 +767,8 @@ export default function MapPage() {
       travelled += advance;
       // Ekranda kat edilen yol / ekrandaki adım boyu (sizeScale ve layerScale birbirini götürür)
       if (stride > 0) {
-        phase += (advance * CHARACTER_REF_LAYER_SCALE) / (stride * CHARACTER_SPRITE_SCALE * depth);
+        phase +=
+          (advance * CHARACTER_REF_LAYER_SCALE) / (stride * CHARACTER_SPRITE_SCALE * characterScale * depth);
         setWalkPhase(phase);
       }
 
@@ -880,7 +884,7 @@ export default function MapPage() {
         facing={playerFacing}
         walking={Boolean(walkingTo)}
         walkPhase={walkPhase}
-        scale={CHARACTER_SPRITE_SCALE * depthScale}
+        scale={CHARACTER_SPRITE_SCALE * characterScale * depthScale}
         ambient={timeOfDay <= 1 ? 'day' : timeOfDay <= 3 ? 'dusk' : 'night'}
       />
     );
