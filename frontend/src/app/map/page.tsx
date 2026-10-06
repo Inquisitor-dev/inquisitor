@@ -63,167 +63,218 @@ const locations = [
     available: true,
   },
   {
+    id: 'home',
+    name: 'Evim',
+    icon: '🏡',
+    top: '56%',
+    left: '6%',
+    width: '17%',
+    height: '25%',
+    available: true,
+  },
+  {
+    id: 'clinic',
+    name: 'Revir',
+    icon: '🏥',
+    top: '44%',
+    left: '27%',
+    width: '16%',
+    height: '24%',
+    available: true,
+    minDifficulty: 'hard',
+  },
+  {
     id: 'farm',
     name: 'Çiftlik',
     icon: '🌾',
-    top: '65%',
-    left: '5%',
-    width: '22%',
-    height: '30%',
+    top: '66%',
+    left: '39%',
+    width: '26%',
+    height: '24%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+];
+
+// Modern kasaba konumları (Oakhaven / Millfield, KY 1994 haritası)
+const modernLocations = [
+  {
+    // Petrol İstasyonu — Sol taraf, benzin pompaları ve sarı çatı
+    id: 'farm',
+    name: 'Petrol İstasyonu',
+    icon: '⛽',
+    top: '42%',
+    left: '1%',
+    width: '17%',
+    height: '28%',
     available: true,
     minDifficulty: 'medium',
   },
   {
-    id: 'clinic',
-    name: 'Klinik',
-    icon: '🏥',
-    top: '65%',
-    left: '72%',
-    width: '20%',
-    height: '28%',
-    available: true,
-    minDifficulty: 'hard',
-  }
-];
-
-// Modern kasaba konumları (Millfield, KY 1994 haritasına göre)
-const modernLocations = [
-  {
-    // Karakol (Police Station) — Sol üst köşe, büyük bina
+    // Karakol — Petrolün sağında, tuğla bina ve bayrak
     id: 'tavern',
     name: 'Karakol',
     icon: '🚔',
-    top: '8%',
-    left: '8%',
-    width: '28%',
-    height: '45%',
-    available: true,
-  },
-  {
-    // Kaset Dükkanı (Video Rental) — Orta üst, neon tabela
-    id: 'graveyard',
-    name: 'Kaset Dükkanı',
-    icon: '📼',
     top: '25%',
-    left: '42%',
-    width: '20%',
-    height: '32%',
+    left: '17.5%',
+    width: '15%',
+    height: '36%',
     available: true,
   },
   {
-    // Kilise — Sağ üst köşe
-    id: 'church',
-    name: 'Kilise',
-    icon: '⛪',
-    top: '3%',
-    left: '80%',
-    width: '18%',
-    height: '30%',
-    available: true,
-  },
-  {
-    // Benzinlik (Gas Station) — Orta sol alt
-    id: 'farm',
-    name: 'Benzinlik',
-    icon: '⛽',
-    top: '48%',
-    left: '25%',
-    width: '20%',
-    height: '28%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-  {
-    // Prefabrik Evler (Trailer Park) — Sağ orta
+    // Bar — Yukarıda, iki katlı ahşap "David's Bar"
     id: 'clinic',
-    name: 'Prefabrik Evler',
-    icon: '🏠',
-    top: '30%',
-    left: '71%',
-    width: '9%',
-    height: '20%',
+    name: 'Bar',
+    icon: '🍺',
+    top: '1%',
+    left: '34%',
+    width: '22%',
+    height: '36%',
     available: true,
     minDifficulty: 'hard',
   },
   {
-    // Açık Hava Sineması (Drive-In Theater) — Alt merkez sağ
+    // Evim — Barın sağ üstündeki ahşap müstakil ev
+    id: 'home',
+    name: 'Evim',
+    icon: '🏡',
+    top: '1%',
+    left: '58%',
+    width: '16%',
+    height: '21%',
+    available: true,
+  },
+  {
+    // Hotel — Sağ üst köşe, 3 katlı ahşap otel
+    id: 'church',
+    name: 'Hotel',
+    icon: '🏨',
+    top: '7.5%',
+    left: '72%',
+    width: '24%',
+    height: '44%',
+    available: true,
+  },
+  {
+    // Video Oyuncusu — Hotelin bir altındaki mor neon ışıklı salon (Pixel Arcade)
+    id: 'graveyard',
+    name: 'Video Oyuncusu',
+    icon: '🎮',
+    top: '44%',
+    left: '62%',
+    width: '20%',
+    height: '29%',
+    available: true,
+  },
+  {
+    // Lokanta — En alttaki Diner / The Maple Cafe
     id: 'mill',
-    name: 'Açık Hava Sineması',
-    icon: '🎬',
-    top: '55%',
-    left: '55%',
-    width: '38%',
-    height: '32%',
+    name: 'Lokanta',
+    icon: '🍽️',
+    top: '63%',
+    left: '31%',
+    width: '26%',
+    height: '31%',
     available: true,
   },
 ];
 
 const cyberpunkLocations = [
   {
-    id: 'tavern',
-    name: 'Polis Karakolu',
-    icon: '👮',
-    top: '20%',
+    // Evim — Sol alt köşe, küçük kulübe / sığınak
+    id: 'home',
+    name: 'Evim',
+    icon: '🏡',
+    top: '58%',
     left: '2%',
-    width: '27%',
-    height: '48%',
+    width: '28%',
+    height: '35%',
     available: true,
   },
   {
-    id: 'church',
-    name: 'Lokanta',
-    icon: '🍜',
-    top: '40%',
-    left: '45%',
-    width: '12%',
-    height: '18%',
+    // Karakol — Sağ orta merkezdeki polis karakolu (chevron tabela)
+    id: 'tavern',
+    name: 'Karakol',
+    icon: '👮',
+    top: '48%',
+    left: '36%',
+    width: '24%',
+    height: '37%',
     available: true,
   },
   {
-    id: 'graveyard',
-    name: 'Hurdalik',
-    icon: '🛠️',
-    top: '38%',
-    left: '73%',
-    width: '25%',
-    height: '44%',
-    available: true,
-  },
-  {
-    id: 'mill',
-    name: 'Robot Dukkani',
-    icon: '🤖',
-    top: '28%',
-    left: '60%',
-    width: '14%',
-    height: '21%',
-    available: true,
-  },
-  {
-    id: 'farm',
-    name: 'Kopru Alti',
-    icon: '🧥',
-    top: '29%',
-    left: '73%',
-    width: '16%',
-    height: '16%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-  {
+    // Bar — Karakolun bir sağındaki pembe kedi neonlu mekan (Velvet Static)
     id: 'clinic',
     name: 'Bar',
     icon: '🍸',
-    top: '39%',
-    left: '36%',
-    width: '9%',
-    height: '14%',
+    top: '50%',
+    left: '64%',
+    width: '28%',
+    height: '40%',
     available: true,
+    minDifficulty: 'hard',
+  },
+  {
+    // Klinik — Sağ üst köşe, yeşil neon haçlı klinik
+    id: 'graveyard',
+    name: 'Klinik',
+    icon: '🏥',
+    top: '12%',
+    left: '74%',
+    width: '24%',
+    height: '43%',
+    available: true,
+  },
+  {
+    // Tamirhane — Kliniğin bir solundaki mavi anahtar tabelalı atölye
+    id: 'mill',
+    name: 'Tamirhane',
+    icon: '🛠️',
+    top: '10%',
+    left: '54%',
+    width: '20%',
+    height: '38%',
+    available: true,
+  },
+  {
+    // Lokanta — Tamirhanenin bir solundaki kırmızı neon ramen kasesi
+    id: 'church',
+    name: 'Lokanta',
+    icon: '🍜',
+    top: '4%',
+    left: '27%',
+    width: '26%',
+    height: '36%',
+    available: true,
+  },
+  {
+    // Sokak Pazarı — Lokantanın bir solundaki tenteli gece pazarı
+    id: 'farm',
+    name: 'Sokak Pazarı',
+    icon: '🏮',
+    top: '10%',
+    left: '2%',
+    width: '25%',
+    height: '45%',
+    available: true,
+    minDifficulty: 'medium',
   },
 ];
 
 const chinaLocations = [
   {
+    // Evim — Sağ alttaki konut ve avlu
+    id: 'home',
+    name: 'Evim',
+    icon: '🏡',
+    top: '64%',
+    left: '54%',
+    width: '24%',
+    height: '30%',
+    available: true,
+  },
+  {
+    // Muhafız Karargahı — Sol üst
     id: 'church',
     name: 'Muhafız Karargahı',
     icon: '🏯',
@@ -234,6 +285,7 @@ const chinaLocations = [
     available: true,
   },
   {
+    // Çay Evi & Han — Üst orta
     id: 'tavern',
     name: 'Çay Evi & Han',
     icon: '🍵',
@@ -244,6 +296,7 @@ const chinaLocations = [
     available: true,
   },
   {
+    // Kadim Tapınak — Sağ üst
     id: 'graveyard',
     name: 'Kadim Tapınak',
     icon: '⛩️',
@@ -254,6 +307,7 @@ const chinaLocations = [
     available: true,
   },
   {
+    // Şifacı & Baharatçı — Sol orta
     id: 'clinic',
     name: 'Şifacı & Baharatçı',
     icon: '🌿',
@@ -265,6 +319,7 @@ const chinaLocations = [
     minDifficulty: 'hard',
   },
   {
+    // Demirci Ocağı — Sağ orta
     id: 'mill',
     name: 'Demirci Ocağı',
     icon: '⚒️',
@@ -275,13 +330,14 @@ const chinaLocations = [
     available: true,
   },
   {
+    // Balıkçı İskelesi — Sol alt nehir kenarındaki iskele ve kayık
     id: 'farm',
-    name: 'Bahçıvan Kulübesi',
-    icon: '🎋',
-    top: '64%',
-    left: '54%',
-    width: '24%',
-    height: '30%',
+    name: 'Balıkçı İskelesi',
+    icon: '🎣',
+    top: '72%',
+    left: '3%',
+    width: '25%',
+    height: '25%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -289,6 +345,18 @@ const chinaLocations = [
 
 const winterLocations = [
   {
+    // Evim — Ortadaki ahşap avcı kulübesi
+    id: 'home',
+    name: 'Evim',
+    icon: '🏡',
+    top: '46%',
+    left: '28%',
+    width: '20%',
+    height: '26%',
+    available: true,
+  },
+  {
+    // Kutsal Yürek Ağacı — Sol üst
     id: 'church',
     name: 'Kutsal Yürek Ağacı',
     icon: '🍁',
@@ -299,6 +367,7 @@ const winterLocations = [
     available: true,
   },
   {
+    // Gözcü Kalesi — Orta üst
     id: 'graveyard',
     name: 'Gözcü Kalesi',
     icon: '🏰',
@@ -309,6 +378,19 @@ const winterLocations = [
     available: true,
   },
   {
+    // Sur — En sağ üstteki sur kapısı ve nöbetçi mevkii
+    id: 'farm',
+    name: 'Sur',
+    icon: '🛡️',
+    top: '1%',
+    left: '74%',
+    width: '25%',
+    height: '33%',
+    available: true,
+    minDifficulty: 'medium',
+  },
+  {
+    // Kış Hanı — Sağ orta
     id: 'tavern',
     name: 'Kış Hanı',
     icon: '🔥',
@@ -319,17 +401,7 @@ const winterLocations = [
     available: true,
   },
   {
-    id: 'farm',
-    name: 'Avcı Kulübesi',
-    icon: '🏹',
-    top: '46%',
-    left: '28%',
-    width: '20%',
-    height: '26%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-  {
+    // Terk Edilmiş Maden — Sol alt
     id: 'mill',
     name: 'Terk Edilmiş Maden',
     icon: '⛏️',
@@ -340,6 +412,7 @@ const winterLocations = [
     available: true,
   },
   {
+    // İnfaz Meydanı — Sağ alt
     id: 'clinic',
     name: 'İnfaz Meydanı',
     icon: '⚔️',
@@ -377,11 +450,12 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const labels: Record<string, string> = {
       tavern: 'Karakol',
-      church: 'Kilise',
-      graveyard: 'Kaset Dukkani',
-      mill: 'Acik Hava Sinemasi',
-      farm: 'Benzinlik',
-      clinic: 'Prefabrik Evler',
+      farm: 'Petrol İstasyonu',
+      clinic: 'Bar',
+      home: 'Evim',
+      church: 'Hotel',
+      graveyard: 'Video Oyuncusu',
+      mill: 'Lokanta',
       crime_scene: 'Olay Yeri',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -389,12 +463,13 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
   if (scenarioType === 'cyberpunk') {
     const labels: Record<string, string> = {
-      tavern: 'Polis Karakolu',
+      tavern: 'Karakol',
       church: 'Lokanta',
-      graveyard: 'Hurdalik',
-      mill: 'Robot Dukkani',
-      farm: 'Kopru Alti',
+      graveyard: 'Klinik',
+      mill: 'Tamirhane',
+      farm: 'Sokak Pazarı',
       clinic: 'Bar',
+      home: 'Evim',
       crime_scene: 'Olay Yeri',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -406,8 +481,9 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       church: 'Muhafız Karargahı',
       graveyard: 'Kadim Tapınak',
       mill: 'Demirci Ocağı',
-      farm: 'Bahçıvan Kulübesi',
+      farm: 'Balıkçı İskelesi',
       clinic: 'Şifacı & Baharatçı',
+      home: 'Evim',
       crime_scene: 'Pazar Meydanı',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -419,8 +495,9 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       church: 'Kutsal Yürek Ağacı',
       graveyard: 'Gözcü Kalesi',
       mill: 'Terk Edilmiş Maden',
-      farm: 'Avcı Kulübesi',
+      farm: 'Sur',
       clinic: 'İnfaz Meydanı',
+      home: 'Evim',
       crime_scene: 'Buzlu Geçit',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -432,7 +509,8 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
     graveyard: 'Mezarlik',
     mill: 'Degirmen',
     farm: 'Ciftlik',
-    clinic: 'Klinik',
+    clinic: 'Revir',
+    home: 'Evim',
     crime_scene: 'Cinayet Mahalli',
   };
   return labels[locationId] ?? locationId.toUpperCase();
@@ -524,6 +602,7 @@ export default function MapPage() {
   );
   
   // Modal states
+  const [isHomeModalOpen, setIsHomeModalOpen] = useState(false);
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
@@ -651,7 +730,11 @@ export default function MapPage() {
 
     const doorId = roads.doors[locId];
     if (!doorId) {
-      handleLocationClick(locId);
+      if (locId === 'home') {
+        setIsHomeModalOpen(true);
+      } else {
+        handleLocationClick(locId);
+      }
       return;
     }
 
@@ -667,7 +750,11 @@ export default function MapPage() {
     const arrive = async () => {
       walkFrame.current = null;
       setLastLocationId(locId);
-      await handleLocationClick(locId);
+      if (locId === 'home') {
+        setIsHomeModalOpen(true);
+      } else {
+        await handleLocationClick(locId);
+      }
       setWalkingTo(null);
       setWalkPos(null);
     };
@@ -718,7 +805,11 @@ export default function MapPage() {
     const arrive = async () => {
       walkFrame.current = null;
       setLastLocationId(locId);
-      await handleLocationClick(locId);
+      if (locId === 'home') {
+        setIsHomeModalOpen(true);
+      } else {
+        await handleLocationClick(locId);
+      }
       setWalkingTo(null);
       setWalkPos(null);
     };
@@ -894,36 +985,44 @@ export default function MapPage() {
     );
 
   const getLocationActionText = (loc: { id: string; name: string }) => {
+    if (loc.id === 'home') {
+      return isNight ? 'Eve Dön (Uyu)' : 'Evime Git';
+    }
+
     if (scenarioType === 'modern') {
       if (loc.id === 'tavern') return "Karakol'a Git";
-      if (loc.id === 'church') return "Kilise'ye Git";
-      if (loc.id === 'mill') return "Acik Hava Sinemasi'na Git";
-      if (loc.id === 'graveyard') return "Kaset Dukkani'na Git";
-      if (loc.id === 'farm') return "Benzinlige Git";
-      if (loc.id === 'clinic') return "Prefabrik Evlere Git";
+      if (loc.id === 'farm') return "Petrol İstasyonu'na Git";
+      if (loc.id === 'clinic') return "Bar'a Git";
+      if (loc.id === 'church') return "Hotel'e Git";
+      if (loc.id === 'graveyard') return "Video Oyuncusu'na Git";
+      if (loc.id === 'mill') return "Lokanta'ya Git";
     } else if (scenarioType === 'cyberpunk') {
-      if (loc.id === 'tavern') return "Polis Karakolu'na Git";
-      if (loc.id === 'church') return "Lokantaya Git";
-      if (loc.id === 'mill') return "Robot\nDukkanina Git";
-      if (loc.id === 'graveyard') return "Hurdaliga Git";
-      if (loc.id === 'farm') return "Kopru Altina Git";
-      if (loc.id === 'clinic') return "Bara Git";
+      if (loc.id === 'tavern') return "Karakol'a Git";
+      if (loc.id === 'church') return "Lokanta'ya Git";
+      if (loc.id === 'mill') return "Tamirhane'ye Git";
+      if (loc.id === 'graveyard') return "Klinik'e Git";
+      if (loc.id === 'farm') return "Sokak Pazarı'na Git";
+      if (loc.id === 'clinic') return "Bar'a Git";
     } else if (scenarioType === 'china') {
+      if (loc.id === 'home') return "Eve Git";
       if (loc.id === 'tavern') return "Çay Evi'ne Git";
       if (loc.id === 'church') return "Karargah'a Git";
       if (loc.id === 'graveyard') return "Tapınak'a Git";
       if (loc.id === 'mill') return "Demirci'ye Git";
-      if (loc.id === 'farm') return "Bahçıvan'a Git";
+      if (loc.id === 'farm') return "Balıkçı İskelesi'ne Git";
       if (loc.id === 'clinic') return "Şifacı'ya Git";
     } else if (scenarioType === 'winter') {
+      if (loc.id === 'home') return "Eve Git";
       if (loc.id === 'tavern') return "Kış Hanı'na Git";
       if (loc.id === 'church') return "Yürek Ağacı'na Git";
       if (loc.id === 'graveyard') return "Gözcü Kalesi'ne Git";
       if (loc.id === 'mill') return "Maden'e Git";
-      if (loc.id === 'farm') return "Avcı Kulübesi'ne Git";
+      if (loc.id === 'farm') return "Sur'a Git";
       if (loc.id === 'clinic') return "İnfaz Meydanı'na Git";
     }
 
+    if (loc.id === 'clinic') return "Revir'e Git";
+    if (loc.id === 'farm') return "Çiftliğe Git";
     return `${loc.name}'a Git`;
   };
 
@@ -945,7 +1044,11 @@ export default function MapPage() {
               ? 'Millfield Kasabasi'
               : scenarioType === 'cyberpunk'
                 ? 'Neon Prime'
-                : 'Ashenmoor Koyu'}
+                : scenarioType === 'china'
+                  ? 'Jinling'
+                  : scenarioType === 'winter'
+                    ? 'Frosthold'
+                    : 'Ashenmoor Koyu'}
           </h1>
           <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
         </div>
@@ -965,7 +1068,7 @@ export default function MapPage() {
         style={{ backgroundImage: `url(${getMapBg()})` }}
       >
         {visibleLocations.map((loc) => {
-          const isAvailable = loc.available && !isNight && !walkingTo;
+          const isAvailable = (loc.available && !isNight && !walkingTo) || (loc.id === 'home' && !walkingTo);
 
           return (
             <div 
@@ -1095,6 +1198,74 @@ export default function MapPage() {
         </div>
       </footer>
 
+      {/* Home Modal */}
+      {isHomeModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsHomeModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsHomeModalOpen(false)}>&times;</button>
+            <h2 className={styles.modalTitle}>🏡 Evim (Engizisyoncu Odası)</h2>
+            <p className={styles.modalMessage}>
+              Köydeki ikametgahındasın. Kapıyı kilitleyip dinlenebilir, günü tamamlayabilir,
+              soruşturma notlarını inceleyebilir veya envanterindeki delilleri gözden geçirebilirsin.
+            </p>
+            <div className={styles.homeActionList}>
+              <button
+                className={`${styles.homeActionBtn} ${styles.homeActionSleep}`}
+                onClick={() => {
+                  setIsHomeModalOpen(false);
+                  handleEndDay();
+                }}
+                disabled={endingDay}
+              >
+                <span className={styles.homeActionIcon}>🛌</span>
+                <div className={styles.homeActionInfo}>
+                  <span className={styles.homeActionTitle}>Dinlen & Günü Bitir</span>
+                  <span className={styles.homeActionDesc}>
+                    {isNight ? 'Geceyi uykuda geçir ve bir sonraki güne başla.' : 'Günü erken sonlandırıp dinlen.'}
+                  </span>
+                </div>
+              </button>
+              <button
+                className={styles.homeActionBtn}
+                onClick={() => {
+                  setIsHomeModalOpen(false);
+                  setIsNotebookOpen(true);
+                }}
+              >
+                <span className={styles.homeActionIcon}>📖</span>
+                <div className={styles.homeActionInfo}>
+                  <span className={styles.homeActionTitle}>Soruşturma Notları</span>
+                  <span className={styles.homeActionDesc}>Köy halkından aldığın ifadeleri ve gözlemlerini oku.</span>
+                </div>
+              </button>
+              <button
+                className={styles.homeActionBtn}
+                onClick={() => {
+                  setIsHomeModalOpen(false);
+                  setIsInventoryOpen(true);
+                }}
+              >
+                <span className={styles.homeActionIcon}>🎒</span>
+                <div className={styles.homeActionInfo}>
+                  <span className={styles.homeActionTitle}>Envanter ve Deliller</span>
+                  <span className={styles.homeActionDesc}>Bulduğun fiziksel kanıtları ve arama izinlerini incele.</span>
+                </div>
+              </button>
+              <button
+                className={styles.homeActionBtn}
+                onClick={() => setIsHomeModalOpen(false)}
+              >
+                <span className={styles.homeActionIcon}>🚪</span>
+                <div className={styles.homeActionInfo}>
+                  <span className={styles.homeActionTitle}>Dışarı Çık</span>
+                  <span className={styles.homeActionDesc}>Köy sokaklarına geri dön.</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notebook Modal */}
       {isNotebookOpen && (
         <div className={styles.modalOverlay} onClick={() => setIsNotebookOpen(false)}>
@@ -1177,28 +1348,54 @@ export default function MapPage() {
                 if (scenarioType === 'modern') {
                   villagers = [
                     { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Polis Amiri' },
-                    { id: 'church', name: 'Papaz Gerald', icon: '⛪', role: 'Papaz' },
-                    { id: 'mill', name: 'Donna', icon: '🎬', role: 'Gişe Görevlisi' },
-                    { id: 'graveyard', name: 'Randy', icon: '📼', role: 'Video Kasetçi' },
+                    { id: 'church', name: 'Gerald', icon: '🏨', role: 'Otel İşletmecisi' },
+                    { id: 'mill', name: 'Donna', icon: '🍽️', role: 'Lokantacı' },
+                    { id: 'graveyard', name: 'Randy', icon: '🎮', role: 'Video Oyuncusu' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
                     villagers.push({ id: 'farm', name: 'Earl', icon: '⛽', role: 'Pompacı' });
                   }
                   if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Old Marge', icon: '🏠', role: 'Köyün Yaşlısı' });
+                    villagers.push({ id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' });
                   }
                 } else if (scenarioType === 'cyberpunk') {
                   villagers = [
-                    { id: 'tavern', name: 'Officer Kael Voss', icon: '👮', role: 'Memur Bey' },
-                    { id: 'church', name: 'Mirel Sato', icon: '🍜', role: 'Restoran Sahibi' },
-                    { id: 'mill', name: 'AURA-9', icon: '🤖', role: 'Satici Android' },
-                    { id: 'graveyard', name: 'Brakk Coil', icon: '🛠️', role: 'Hurdaci' },
+                    { id: 'tavern', name: 'Officer Kael Voss', icon: '👮', role: 'Polis Memuru' },
+                    { id: 'church', name: 'Mirel Sato', icon: '🍜', role: 'Lokantacı' },
+                    { id: 'mill', name: 'AURA-9', icon: '🛠️', role: 'Tamirci Android' },
+                    { id: 'graveyard', name: 'Brakk Coil', icon: '🏥', role: 'Klinik Hekimi' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Ash', icon: '🧥', role: 'Dilenci' });
+                    villagers.push({ id: 'farm', name: 'Ash', icon: '🏮', role: 'Pazar Satıcısı' });
                   }
                   if (difficulty === 'hard') {
                     villagers.push({ id: 'clinic', name: 'Vera Nyx', icon: '🍸', role: 'Barmen' });
+                  }
+                } else if (scenarioType === 'china') {
+                  villagers = [
+                    { id: 'tavern', name: 'Lin Feng', icon: '🍵', role: 'Çay Evi Sahibi' },
+                    { id: 'church', name: 'Komutan Zhao', icon: '🏯', role: 'Garnizon Komutanı' },
+                    { id: 'graveyard', name: 'Keşiş Huikang', icon: '⛩️', role: 'Tapınak Bilgesi' },
+                    { id: 'mill', name: 'Usta Guan', icon: '⚒️', role: 'Demirci Ustası' },
+                  ];
+                  if (difficulty === 'medium' || difficulty === 'hard') {
+                    villagers.push({ id: 'farm', name: 'Mei Teyze', icon: '🎣', role: 'Balıkçı İskelesi Gözcüsü' });
+                  }
+                  if (difficulty === 'hard') {
+                    villagers.push({ id: 'clinic', name: 'Bilgin Song', icon: '🌿', role: 'Saray Eczacısı' });
+                  }
+                } else if (scenarioType === 'winter') {
+                  villagers = [
+                    { id: 'tavern', name: 'Torstein', icon: '🔥', role: 'Hancı' },
+                    { id: 'church', name: 'Kahin Valda', icon: '🍁', role: 'Yürek Ağacı Bekçisi' },
+                    { id: 'graveyard', name: 'Komutan Bjorn', icon: '🏰', role: 'Kale Muhafızı' },
+                    { id: 'mill', name: 'Madenci Durn', icon: '⛏️', role: 'Ustabaşı' },
+                  ];
+                  if (difficulty === 'medium' || difficulty === 'hard') {
+                    villagers.push({ id: 'farm', name: 'Einar', icon: '🛡️', role: 'Sur Muhafızı' });
+                  }
+                  if (difficulty === 'hard') {
+                    villagers.push({ id: 'clinic', name: 'Muhafız Kenneth', icon: '⚔️', role: 'Meydan Çavuşu' });
                   }
                 } else {
                   villagers = [

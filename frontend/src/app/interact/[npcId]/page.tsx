@@ -28,11 +28,11 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
       tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
-      church: { name: 'Papaz Gerald', title: 'Papaz — Kilisenin Sessiz Tanığı', icon: '⛪' },
-      graveyard: { name: 'Randy', title: 'Kasetçi — Herkesin Uğradığı Dükkân', icon: '📼' },
-      mill: { name: 'Donna', title: 'Gişe Görevlisi — Açık Hava Sinemasının Gözü', icon: '🎬' },
-      farm: { name: 'Earl', title: 'Pompacı — Benzinliğin Sessiz Bekçisi', icon: '⛽' },
-      clinic: { name: 'Old Marge', title: 'Kasabanın Yaşlısı — Her Şeyi Bilen Ama Söylemeyen', icon: '🏠' },
+      church: { name: 'Gerald', title: 'Otel İşletmecisi — Millfield Oteli', icon: '🏨' },
+      graveyard: { name: 'Randy', title: 'Video Oyuncusu — Pixel Arcade Salonu', icon: '🎮' },
+      mill: { name: 'Donna', title: 'Lokantacı — The Maple Cafe & Diner', icon: '🍽️' },
+      farm: { name: 'Earl', title: 'Pompacı — Petrol İstasyonunun Bekçisi', icon: '⛽' },
+      clinic: { name: 'David', title: "Barmen — David's Bar", icon: '🍺' },
       crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
@@ -40,10 +40,10 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
       tavern: { name: 'Officer Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
       church: { name: 'Mirel Sato', title: 'Lokanta Sahibi — Static Spoon', icon: '🍜' },
-      graveyard: { name: 'Brakk Coil', title: 'Hurdacı — Coil Yard', icon: '🛠️' },
-      mill: { name: 'AURA-9', title: 'Satıcı Android — AURA Robotics', icon: '🤖' },
-      farm: { name: 'Ash', title: 'Dilenci — Köprü Altının Muhbiri', icon: '🧥' },
-      clinic: { name: 'Vera Nyx', title: 'Barmen — Velvet Static', icon: '🍸' },
+      graveyard: { name: 'Brakk Coil', title: 'Siber Cerrah — Neon Prime Kliniği', icon: '🏥' },
+      mill: { name: 'AURA-9', title: 'Usta Android — AURA Tamirhanesi', icon: '🛠️' },
+      farm: { name: 'Ash', title: 'Sokak Muhbiri — Gece Pazarı', icon: '🏮' },
+      clinic: { name: 'Vera Nyx', title: 'Barmen — Velvet Static Bar', icon: '🍸' },
       crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
@@ -53,7 +53,7 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
       church: { name: 'Komutan Zhao', title: 'Muhafız Amiri — İmparatorluk Garnizonu', icon: '🏯' },
       graveyard: { name: 'Keşiş Huikang', title: 'Kadim Tapınak Bilgesi', icon: '⛩️' },
       mill: { name: 'Usta Guan', title: 'Silah Ustası — Demirci Ocağı', icon: '⚒️' },
-      farm: { name: 'Mei Teyze', title: 'Şifalı Ot Bahçıvanı', icon: '🎋' },
+      farm: { name: 'Mei Teyze', title: 'Balıkçı ve İskele Gözcüsü', icon: '🎣' },
       clinic: { name: 'Bilgin Song', title: 'Saray Eczacısı ve Hekim', icon: '🌿' },
       crime_scene: { name: 'Pazar Meydanı', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
@@ -64,7 +64,7 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
       church: { name: 'Kahin Valda', title: 'Kutsal Yürek Ağacının Bekçisi', icon: '🍁' },
       graveyard: { name: 'Komutan Bjorn', title: 'Kale Muhafızı — Gözcü Kalesi', icon: '🏰' },
       mill: { name: 'Madenci Durn', title: 'Terk Edilmiş Madenin Ustabaşısı', icon: '⛏️' },
-      farm: { name: 'Avcı Einar', title: 'Vahşi Doğa ve Tuzak Avcısı', icon: '🏹' },
+      farm: { name: 'Einar', title: 'Sur Nöbetçisi ve Okçu', icon: '🛡️' },
       clinic: { name: 'Muhafız Kenneth', title: 'İnfaz ve Yargı Meydanı Çavuşu', icon: '⚔️' },
       crime_scene: { name: 'Buzlu Geçit', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
@@ -87,11 +87,11 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
   if (scenarioType === 'modern') {
     const labels: Record<string, string> = {
       tavern: 'Karakol',
-      church: 'Kilise',
-      graveyard: 'Kaset Dükkânı',
-      mill: 'Açık Hava Sineması',
-      farm: 'Benzinlik',
-      clinic: 'Prefabrik Evler',
+      farm: 'Petrol İstasyonu',
+      clinic: 'Bar',
+      church: 'Hotel',
+      graveyard: 'Video Oyuncusu',
+      mill: 'Lokanta',
       crime_scene: 'Olay Yeri',
     };
     return labels[locationId] ?? locationId.toUpperCase();
@@ -99,11 +99,11 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
   if (scenarioType === 'cyberpunk') {
     const labels: Record<string, string> = {
-      tavern: 'Polis Karakolu',
+      tavern: 'Karakol',
       church: 'Lokanta',
-      graveyard: 'Hurdalık',
-      mill: 'Robot Dükkânı',
-      farm: 'Köprü Altı',
+      graveyard: 'Klinik',
+      mill: 'Tamirhane',
+      farm: 'Sokak Pazarı',
       clinic: 'Bar',
       crime_scene: 'Olay Yeri',
     };
@@ -116,7 +116,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       church: 'Muhafız Karargahı',
       graveyard: 'Kadim Tapınak',
       mill: 'Demirci Ocağı',
-      farm: 'Bahçıvan Kulübesi',
+      farm: 'Balıkçı İskelesi',
       clinic: 'Şifacı & Baharatçı',
       crime_scene: 'Pazar Meydanı',
     };
@@ -129,7 +129,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       church: 'Kutsal Yürek Ağacı',
       graveyard: 'Gözcü Kalesi',
       mill: 'Terk Edilmiş Maden',
-      farm: 'Avcı Kulübesi',
+      farm: 'Sur',
       clinic: 'İnfaz Meydanı',
       crime_scene: 'Buzlu Geçit',
     };
@@ -142,7 +142,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
     graveyard: 'Mezarlık',
     mill: 'Değirmen',
     farm: 'Çiftlik',
-    clinic: 'Klinik',
+    clinic: 'Revir',
     crime_scene: 'Cinayet Mahalli',
   };
   return labels[locationId] ?? locationId.toUpperCase();
