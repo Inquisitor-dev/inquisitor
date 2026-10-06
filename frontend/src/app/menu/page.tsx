@@ -407,6 +407,16 @@ export default function HomePage() {
       era: 'Distopik Cyberpunk',
       desc: 'Yozlaşmış mega şirketler, siber geliştirmeler ve hafızaların bile satılık olduğu tech-noir bir şehir.',
     },
+    china: {
+      title: 'Jinling',
+      era: 'Antik Doğu / Feodal Hanedanlık',
+      desc: 'Bambu korulukları, tapınaklar ve çay evleri. Hanedan entrikaları ve kadim sırlar.',
+    },
+    winter: {
+      title: 'Frosthold',
+      era: 'Kutup / Kar Fırtınası',
+      desc: 'Buz tutmuş sığınaklar, gözetleme kuleleri ve donmuş cesetler. Soğukta saklanan tecrit edilmiş sırlar.',
+    },
   };
 
   const story = STORY_DETAILS[selectedStory] ?? STORY_DETAILS.medieval;
@@ -435,6 +445,8 @@ export default function HomePage() {
     switch (story) {
       case 'modern': return '/map/town_map_night.png';
       case 'cyberpunk': return '/map/cyberpunk_map_night.png';
+      case 'china': return '/map/china_night.png';
+      case 'winter': return '/map/winter_night.jpg';
       case 'medieval':
       default: return '/map/village_map.png';
     }
@@ -977,6 +989,26 @@ export default function HomePage() {
                 </button>
                 <button className={styles.sheetPrimary} onClick={handleConfigSave}>
                   Seçimi Onayla
+                </button>
+
+                <button
+                  onClick={() => setTempStory('china')}
+                  className={`${styles.selectionBtn} ${styles.scenarioChina ?? ''} ${tempStory === 'china' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Jinling</span>
+                  </div>
+                  <p>Antik Doğu / Feodal Hanedanlık. Bambu korulukları, tapınaklar ve çay evleri.</p>
+                </button>
+
+                <button
+                  onClick={() => setTempStory('winter')}
+                  className={`${styles.selectionBtn} ${styles.scenarioWinter ?? ''} ${tempStory === 'winter' ? styles.activeSelection : ''}`}
+                >
+                  <div>
+                    <span>Frosthold</span>
+                  </div>
+                  <p>Kutup / Kar Fırtınası. Buz tutmuş sığınaklar, gözetleme kuleleri ve donmuş sırlar.</p>
                 </button>
               </div>
             </footer>

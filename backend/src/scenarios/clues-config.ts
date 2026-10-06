@@ -126,4 +126,68 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
       associatedNpcIds: ['tavern', 'graveyard', 'mill', 'farm'],
     },
   ],
+  china: [
+    {
+      id: 'yesim_tasi_parcasi',
+      clueText: 'Yerde kırılmış, üzerinde imparatorluk oymaları bulunan ince bir yeşim taşı parçası.',
+      associatedNpcIds: ['tavern', 'church', 'clinic'],
+    },
+    {
+      id: 'nadir_cay_yapraklari',
+      clueText: 'Cesedin yakınına dökülmüş, sadece saray erkanının tükettiği kurutulmuş altın lotus çay yaprakları.',
+      associatedNpcIds: ['tavern', 'graveyard', 'farm'],
+    },
+    {
+      id: 'ipek_kumas_yirtigi',
+      clueText: 'Kurbanın tırnakları arasına sıkışmış, ejderha işlemeli pahalı kırmızı ipek kumaş parçası.',
+      associatedNpcIds: ['church', 'tavern', 'clinic'],
+    },
+    {
+      id: 'kokulu_tutsun_kulleri',
+      clueText: 'Kurbanın omzuna dökülmüş, dağ tapınağında yakılan sandal ağacı tütsüsünün taze külü.',
+      associatedNpcIds: ['graveyard', 'clinic', 'farm'],
+    },
+    {
+      id: 'demirci_curufu',
+      clueText: 'Yerdeki çamura bulanmış, dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıkları.',
+      associatedNpcIds: ['mill', 'church', 'farm'],
+    },
+    {
+      id: 'zehirli_toz_sisesi',
+      clueText: 'Taşların arasına saklanmış, tıp bilginlerinin kullandığı küçük porselen bir merhem şişesi.',
+      associatedNpcIds: ['clinic', 'farm', 'graveyard'],
+    },
+  ],
+  winter: [
+    {
+      id: 'kurt_kurku_kil',
+      clueText: 'Kurbanın ceketine takılmış, kalın gri bir kurt kürkünden dökülmüş sert kıllar.',
+      associatedNpcIds: ['graveyard', 'farm', 'tavern'],
+    },
+    {
+      id: 'donmus_kanli_kar',
+      clueText: 'Ayak izlerinin yanında donmuş, kurbanınkinden farklı birine ait damlamış kan pıhtısı.',
+      associatedNpcIds: ['tavern', 'church', 'clinic'],
+    },
+    {
+      id: 'madenci_fitili',
+      clueText: 'Karda çiğnenmiş, ucu yanık kükürt kokan eski bir maden fitili parçası.',
+      associatedNpcIds: ['mill', 'graveyard', 'farm'],
+    },
+    {
+      id: 'kirmizi_agac_yapragi',
+      clueText: 'Cesedin avucunda sıkılmış, kutsal yürek ağacına ait kan kırmızı donmuş bir yaprak.',
+      associatedNpcIds: ['church', 'tavern', 'clinic'],
+    },
+    {
+      id: 'zincir_halkasi',
+      clueText: 'Buzların arasına düşmüş, infaz muhafızlarının prangalarından kopmuş soğuk demir bir halka.',
+      associatedNpcIds: ['clinic', 'graveyard', 'mill'],
+    },
+    {
+      id: 'baharatli_sicak_sarap_kokusu',
+      clueText: 'Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu.',
+      associatedNpcIds: ['tavern', 'farm', 'graveyard'],
+    },
+  ],
 };
