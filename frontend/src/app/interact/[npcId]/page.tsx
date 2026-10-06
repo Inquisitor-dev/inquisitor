@@ -210,6 +210,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [isInvestigating, setIsInvestigating] = useState(isCrimeScene);
   const currentNpcKey = isInvestigating ? `narrator_${npcKey}` : npcKey;
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(npcKey);
+
+  // İç mekândaki "Burayı Araştır" (?ara=1) doğrudan arama moduyla açar
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ara') !== '1') return;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (canInvestigate) setIsInvestigating(true);
+    else setToast('Bu mekânı araştırmak için önce arama izni almalısın.');
+  }, [hasHydrated, canInvestigate]);
   const items = evidence.filter((e) => e.category === 'ITEM');
   const statements = evidence.filter((e) => e.category === 'STATEMENT');
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
