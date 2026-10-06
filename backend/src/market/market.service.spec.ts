@@ -111,6 +111,49 @@ describe('MarketService', () => {
       );
     });
 
+    it('china ve winter evrenlerini doğru fiyatla (650 token) satın alır', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        tokenBalance: 1000,
+        isAdmin: false,
+      });
+      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.create.mockResolvedValue({
+        id: 'p-china',
+        userId: 'user-1',
+        itemId: 'universe_china',
+        pricePaid: 650,
+      });
+      mockPrisma.userPurchase.findMany.mockResolvedValue([
+        { itemId: 'universe_china' },
+      ]);
+
+      const resultChina = await service.purchaseItem('user-1', 'universe_china');
+      expect(resultChina.success).toBe(true);
+      expect(resultChina.tokenBalance).toBe(350);
+      expect(resultChina.purchasedItem.title).toBe('Jinling');
+
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        tokenBalance: 1000,
+        isAdmin: false,
+      });
+      mockPrisma.userPurchase.create.mockResolvedValue({
+        id: 'p-winter',
+        userId: 'user-1',
+        itemId: 'universe_winter',
+        pricePaid: 650,
+      });
+      mockPrisma.userPurchase.findMany.mockResolvedValue([
+        { itemId: 'universe_winter' },
+      ]);
+
+      const resultWinter = await service.purchaseItem('user-1', 'universe_winter');
+      expect(resultWinter.success).toBe(true);
+      expect(resultWinter.tokenBalance).toBe(350);
+      expect(resultWinter.purchasedItem.title).toBe('Frosthold');
+    });
+
     it('yetersiz bakiyede BadRequestException fırlatır', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-1',
