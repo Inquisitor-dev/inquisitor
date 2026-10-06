@@ -36,3 +36,5 @@ art/characters/*/source/
 art/characters/*/ref/
 art/characters/*/render/
 art/characters/*/preview/
+art/characters/*/preview_thumb.png
+art/tools/__pycache__/
