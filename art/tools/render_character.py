@@ -11,7 +11,7 @@
 # Beklenen dosyalar (art/characters/<id>/source/):
 #   <id>_walk.fbx   Mixamo yürüme, "In Place", With Skin
 #   <id>_idle.fbx   Mixamo durma, With Skin
-#   <id>_meshy.glb  Meshy'nin orijinal modeli (malzeme/dokular buradan alınır)
+#   <id>_model.glb  görselden-3D aracının orijinal modeli (malzeme/dokular buradan alınır)
 import argparse
 import json
 import math
@@ -281,7 +281,7 @@ def main():
     for o in [idle_arm, *idle_meshes]:
         bpy.data.objects.remove(o, do_unlink=True)
 
-    mat = glb_material(os.path.join(src, f"{args.outfit}_meshy.glb"))
+    mat = glb_material(os.path.join(src, f"{args.outfit}_model.glb"))
     for m in meshes:
         m.data.materials.clear()
         m.data.materials.append(mat)
