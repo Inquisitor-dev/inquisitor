@@ -535,6 +535,48 @@
   }
 }
 
+/* ── İÇ MEKÂNI HAZIR OLMAYAN EVREN ── */
+.unavailable {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #030303;
+}
+
+.unavailableCard {
+  max-width: 460px;
+  width: 100%;
+  padding: 32px 28px;
+  text-align: center;
+  background: rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(232, 220, 196, 0.15);
+  border-radius: $radius-sm;
+}
+
+.unavailableTitle {
+  margin: 0 0 12px;
+  font-family: $font-title;
+  font-size: 22px;
+  color: $text-parchment;
+}
+
+.unavailableText {
+  margin: 0 0 24px;
+  font-family: $font-body;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(232, 220, 196, 0.65);
+}
+
+.unavailableActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
 .noteBtn {
   background: rgba(232, 220, 196, 0.08);
   border: 1px solid rgba(232, 220, 196, 0.2);

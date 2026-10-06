@@ -14,6 +14,8 @@ export interface InteriorHotspot {
 
 export interface LocationInteriorData {
   id: string;
+  // Mekân seçim menüsünde görünen kısa ad
+  menuLabel: string;
   name: string;
   subtitle: string;
   scenarioType: string;
@@ -26,9 +28,11 @@ export interface LocationInteriorData {
   hotspots: InteriorHotspot[];
 }
 
-export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
+// İç mekânlar evrene göre ayrılır: aynı mekân id'si (ör. tavern) her evrende başka bir yerdir
+const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   tavern: {
     id: 'tavern',
+    menuLabel: '🍺 Taverna (Kardeş Aldric)',
     name: 'Ashenmoor Tavernası',
     subtitle: 'Karga ve Kadeh — Sırların ve Fısıltıların Sığınağı',
     scenarioType: 'medieval',
@@ -103,6 +107,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
   },
   church: {
     id: 'church',
+    menuLabel: '⛪ Kilise (Peder Malachar)',
     name: 'Ashenmoor Kilisesi',
     subtitle: 'Aziz Jude Bazilikası — Taş Sütunlar ve Soğuk Dualar',
     scenarioType: 'medieval',
@@ -164,6 +169,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
   },
   mill: {
     id: 'mill',
+    menuLabel: '⚙️ Değirmen (Giles)',
     name: 'Ashenmoor Değirmeni',
     subtitle: 'Eski Un Değirmeni — Gıcırdayan Çarklar ve Beyaz Tozlar',
     scenarioType: 'medieval',
@@ -226,6 +232,7 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
   },
   graveyard: {
     id: 'graveyard',
+    menuLabel: '🪦 Mezarlık (İhtiyar Silas)',
     name: 'Ashenmoor Mezarlığı',
     subtitle: 'Sisli Kabirler — Sessizliğin ve Toprağın Şahitliği',
     scenarioType: 'medieval',
@@ -276,3 +283,16 @@ export const INTERIOR_LOCATIONS: Record<string, LocationInteriorData> = {
     ],
   },
 };
+
+// İç mekânı hazırlanmış evrenler. Listede olmayan evrende iç mekân sayfası "henüz hazır değil" der.
+const INTERIORS_BY_SCENARIO: Record<string, Record<string, LocationInteriorData>> = {
+  medieval: MEDIEVAL_INTERIORS,
+};
+
+export function getInterior(scenarioType: string, locationId: string): LocationInteriorData | null {
+  return INTERIORS_BY_SCENARIO[scenarioType]?.[locationId] ?? null;
+}
+
+export function getScenarioInteriors(scenarioType: string): LocationInteriorData[] {
+  return Object.values(INTERIORS_BY_SCENARIO[scenarioType] ?? {});
+}

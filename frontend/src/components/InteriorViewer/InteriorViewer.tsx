@@ -3,7 +3,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { INTERIOR_LOCATIONS, InteriorHotspot } from '@/config/interiorConfig';
+import {
+  getInterior,
+  getScenarioInteriors,
+  InteriorHotspot,
+  LocationInteriorData,
+} from '@/config/interiorConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
@@ -13,8 +18,55 @@ interface InteriorViewerProps {
 }
 
 export default function InteriorViewer({ locationId }: InteriorViewerProps) {
+  const { scenarioType, hasHydrated } = useGameStore();
+  // Kayıtlı evren yüklenmeden önce varsayılan evrenin mekânı bir an görünmesin
+  if (!hasHydrated) return <div className={styles.unavailable} />;
+
+  const scenario = scenarioType || 'medieval';
+  const locationData = getInterior(scenario, locationId);
+  if (!locationData) {
+    return (
+      <div className={styles.unavailable}>
+        <div className={styles.unavailableCard}>
+          <h1 className={styles.unavailableTitle}>Bu mekânın içi henüz hazır değil</h1>
+          <p className={styles.unavailableText}>
+            Bu evrenin iç mekânları üzerinde çalışılıyor. Sorgunu mekânın kendisinden sürdürebilirsin.
+          </p>
+          <div className={styles.unavailableActions}>
+            <Link href="/map" className={styles.backBtn}>
+              Haritaya Dön
+            </Link>
+            {locationId !== 'crime_scene' && (
+              <Link href={`/interact/${locationId}`} className={styles.actionBtn}>
+                Mekâna Dön
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <InteriorScene
+      key={`${scenario}-${locationId}`}
+      locationId={locationId}
+      locationData={locationData}
+      scenarioInteriors={getScenarioInteriors(scenario)}
+    />
+  );
+}
+
+function InteriorScene({
+  locationId,
+  locationData,
+  scenarioInteriors,
+}: {
+  locationId: string;
+  locationData: LocationInteriorData;
+  scenarioInteriors: LocationInteriorData[];
+}) {
   const router = useRouter();
-  const locationData = INTERIOR_LOCATIONS[locationId] || INTERIOR_LOCATIONS.tavern;
   const { sessionId, authToken, notes, setNotes } = useGameStore();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -457,10 +509,11 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
             value={locationId}
             onChange={(e) => router.push(`/interior/${e.target.value}`)}
           >
-            <option value="tavern">🍺 Taverna (Kardeş Aldric)</option>
-            <option value="church">⛪ Kilise (Peder Malachar)</option>
-            <option value="mill">⚙️ Değirmen (Giles)</option>
-            <option value="graveyard">🪦 Mezarlık (İhtiyar Silas)</option>
+            {scenarioInteriors.map((interior) => (
+              <option key={interior.id} value={interior.id}>
+                {interior.menuLabel}
+              </option>
+            ))}
           </select>
         </div>
 
