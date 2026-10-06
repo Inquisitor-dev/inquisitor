@@ -431,7 +431,7 @@ export default function HomePage() {
 
   // Hesapta açık olanlar: varsayılanlar (Ashenmoor, Kolay), markette satın alınanlar ve
   // eski Premium/admin hesaplarda her şey. Market henüz tarayıcıda tutulur (useMarketStore).
-  const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk'];
+  const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'];
   const DIFFICULTY_IDS = ['easy', 'medium', 'hard'];
   const unlocksEverything = effectiveIsAdmin || effectiveIsPremium;
   const ownsMarketItem = (itemId: string) => marketHydrated && ownedItemIds.includes(itemId);
