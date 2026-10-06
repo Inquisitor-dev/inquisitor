@@ -47,6 +47,28 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
       crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
     return profiles[npcKey];
+  } else if (scenarioType === 'china') {
+    const profiles: Record<string, { name: string; title: string; icon: string }> = {
+      tavern: { name: 'Lin Feng', title: 'Çay Ustası — Altın Lotus Çay Evi', icon: '🍵' },
+      church: { name: 'Komutan Zhao', title: 'Muhafız Amiri — İmparatorluk Garnizonu', icon: '🏯' },
+      graveyard: { name: 'Keşiş Huikang', title: 'Kadim Tapınak Bilgesi', icon: '⛩️' },
+      mill: { name: 'Usta Guan', title: 'Silah Ustası — Demirci Ocağı', icon: '⚒️' },
+      farm: { name: 'Mei Teyze', title: 'Şifalı Ot Bahçıvanı', icon: '🎋' },
+      clinic: { name: 'Bilgin Song', title: 'Saray Eczacısı ve Hekim', icon: '🌿' },
+      crime_scene: { name: 'Pazar Meydanı', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    };
+    return profiles[npcKey];
+  } else if (scenarioType === 'winter') {
+    const profiles: Record<string, { name: string; title: string; icon: string }> = {
+      tavern: { name: 'Torstein', title: 'Hancı — Ocak Ateşi Hanı', icon: '🔥' },
+      church: { name: 'Kahin Valda', title: 'Kutsal Yürek Ağacının Bekçisi', icon: '🍁' },
+      graveyard: { name: 'Komutan Bjorn', title: 'Kale Muhafızı — Gözcü Kalesi', icon: '🏰' },
+      mill: { name: 'Madenci Durn', title: 'Terk Edilmiş Madenin Ustabaşısı', icon: '⛏️' },
+      farm: { name: 'Avcı Einar', title: 'Vahşi Doğa ve Tuzak Avcısı', icon: '🏹' },
+      clinic: { name: 'Muhafız Kenneth', title: 'İnfaz ve Yargı Meydanı Çavuşu', icon: '⚔️' },
+      crime_scene: { name: 'Buzlu Geçit', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    };
+    return profiles[npcKey];
   } else {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
       tavern: { name: 'Kardeş Aldric', title: 'Hancı — Sırların Bekçisi', icon: '🍺' },
@@ -84,6 +106,32 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       farm: 'Köprü Altı',
       clinic: 'Bar',
       crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  if (scenarioType === 'china') {
+    const labels: Record<string, string> = {
+      tavern: 'Çay Evi & Han',
+      church: 'Muhafız Karargahı',
+      graveyard: 'Kadim Tapınak',
+      mill: 'Demirci Ocağı',
+      farm: 'Bahçıvan Kulübesi',
+      clinic: 'Şifacı & Baharatçı',
+      crime_scene: 'Pazar Meydanı',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+
+  if (scenarioType === 'winter') {
+    const labels: Record<string, string> = {
+      tavern: 'Kış Hanı',
+      church: 'Kutsal Yürek Ağacı',
+      graveyard: 'Gözcü Kalesi',
+      mill: 'Terk Edilmiş Maden',
+      farm: 'Avcı Kulübesi',
+      clinic: 'İnfaz Meydanı',
+      crime_scene: 'Buzlu Geçit',
     };
     return labels[locationId] ?? locationId.toUpperCase();
   }
