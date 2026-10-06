@@ -17,6 +17,8 @@ interface GameState {
   userEmail: string | null;
   userId: string | null;
   authToken: string | null;
+  username: string | null;
+  avatar: string;
   isAdmin: boolean;
   isPremium: boolean;
 
@@ -42,7 +44,16 @@ interface GameState {
   lastLocationId: string | null;
   hasHydrated: boolean;
 
-  setUser: (email: string, userId: string, token: string, isAdmin: boolean, isPremium: boolean) => void;
+  setUser: (
+    email: string,
+    userId: string,
+    token: string,
+    isAdmin: boolean,
+    isPremium: boolean,
+    username?: string | null,
+    avatar?: string,
+  ) => void;
+  setProfile: (username: string | null, avatar: string) => void;
   setIsPremium: (val: boolean) => void;
   setHasHydrated: (val: boolean) => void;
   logout: () => void;
@@ -77,6 +88,8 @@ export const useGameStore = create<GameState>()(
       userEmail: null,
       userId: null,
       authToken: null,
+      username: null,
+      avatar: 'avatar_1',
       isAdmin: false,
       isPremium: false,
 
@@ -87,7 +100,7 @@ export const useGameStore = create<GameState>()(
       selectedNpcId: null,
       npcStates: {},
       dialoguesUsedToday: 0,
-      maxDailyDialogues: 30,
+      maxDailyDialogues: 100,
       currentDay: 1,
       timeOfDay: 0,
       notes: '',
@@ -99,21 +112,26 @@ export const useGameStore = create<GameState>()(
       lastLocationId: null,
       hasHydrated: false,
 
-      setUser: (email, userId, token, isAdmin, isPremium) => set({ 
+      setUser: (email, userId, token, isAdmin, isPremium = false, username?: string | null, avatar?: string) => set({ 
         userEmail: email, 
         userId, 
         authToken: token, 
         isAdmin,
         isPremium,
-        maxDailyDialogues: isPremium ? 100 : 30,
+        username: username ?? null,
+        avatar: avatar || 'avatar_1',
+        maxDailyDialogues: 100,
       }),
-      setIsPremium: (val) => set({ isPremium: val, maxDailyDialogues: val ? 100 : 30 }),
+      setProfile: (username, avatar) => set({ username, avatar }),
+      setIsPremium: (val) => set({ isPremium: val, maxDailyDialogues: 100 }),
       setHasHydrated: (val) => set({ hasHydrated: val }),
 
       logout: () => set({
         userEmail: null,
         userId: null,
         authToken: null,
+        username: null,
+        avatar: 'avatar_1',
         isAdmin: false,
         isPremium: false,
         sessionId: null,

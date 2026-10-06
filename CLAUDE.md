@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **The Inquisitor** is an LLM-driven detective/interrogation game. Each game session generates a murder scenario and secretly picks a culprit among the NPCs. The player interrogates AI-driven NPCs across village locations, then condemns one. The product spec (Turkish) is in `proje.md`. Code comments, log messages and user-facing strings are mostly Turkish — keep that convention.
 
 This is a student team project, built to be launch-ready but not actually launched.
-- **Premium is legacy.** The Premium subscription in `proje.md` and in the code is no longer the plan; do not add new Premium gating.
-- **Planned revenue model:** an in-game token market (tokens earned by playing or bought with EUR) plus selling community editor access.
-- **No real payments:** any payment work uses the provider's test/sandbox mode.
+- **Premium removed:** All legacy Premium gating was replaced with the Token Economy. Default daily quota is 5 sessions and 100 messages for all users.
+- **Token economy & market:** In-game tokens (akçe) stored in backend (`User.tokenBalance`, `UserPurchase`, `TokenTransaction` ledger). Players earn tokens by solving cases (100 base + 50 fast bonus) and can purchase universes, difficulties, ready stories and cosmetics.
+- **Payments:** Stripe test mode checkout flow (`/payments/create-checkout-session`, `/payments/webhook`, `/payments/simulate-success`). Accepts test cards (e.g. `4242 4242 4242 4242`). Supports dev simulation fallback when Stripe keys are not set.
 
 The repo is a monorepo with three independent npm projects (no root `package.json`, no workspaces):
 
@@ -31,9 +31,8 @@ Run each in its own directory.
 - `npm run seed` — seed base NPCs
 - `npm run build`
 - `npm run lint` runs ESLint with `--fix` across the whole backend. Many files are not Prettier-clean yet, so this reformats unrelated code. To check only your own changes, run `npx eslint <file>` without `--fix`.
-- `npm test` — Jest unit tests (`src/**/*.spec.ts`). Single file: `npx jest src/npcs/npcs.service.spec.ts`; single test: `npx jest -t "name"`.
-  - The three `*.controller.spec.ts` files are untouched NestJS stubs that fail on dependency injection; expect those failures.
-  - Service specs build services by hand with mocked Prisma/LLM objects; see `game-sessions.service.spec.ts`.
+- `npm test` — Jest unit tests (`src/**/*.spec.ts`). All test suites pass.
+  - Service specs build services with mocked Prisma/LLM objects; see `game-sessions.service.spec.ts`.
 - `npm run test:e2e` — `test/*.e2e-spec.ts`
 - Production build output is `dist/src/main` (`render:start`), not `dist/main`.
 

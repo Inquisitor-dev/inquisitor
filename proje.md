@@ -40,37 +40,41 @@
 
 ---
 
-## 4. 💰 Paketleme Modeli (Free & Premium)
+## 4. 💰 Gelir Modeli — Token Ekonomisi ve İçerik Marketi
 
-### 4.1 Free (Ücretsiz) Paket
+> **Not:** Önceki aylık/yıllık abonelik modelinden vazgeçilmiş, yerine hem oynayarak kazanılabilen hem de mikro-ödeme ile alınabilen **Token Ekonomisi (Akçe/Hazine)** ve **İçerik/Editörlük Satışı** modeline geçilmiştir.
 
-| Özellik | Açıklama |
-|---------|----------|
-| **Temel Senaryo** | Etkileşimli köy haritası ve temel mekanlara (Kilise, Taverna vb.) erişim. |
-| **Kısıtlı Ajan Etkileşimi** | Maksimum 5 aktif AI ajan (NPC) ile oynanış. |
-| **Günlük Sorgu Limiti** | Günde 1 oyun oturumu hakkı. |
-| **Temel İstatistikler** | Sadece oyuncunun kazandı/kaybetti durumunu gösteren basit rapor. |
-| **Kısıtlamalar** | LLM API maliyetlerini kontrol altında tutmak için günlük maksimum 40 diyalog (prompt) etkileşimi limiti. |
-
-### 4.2 Premium (Ücretli) Paket
+### 4.1 Standart Erişim (Ücretsiz ve Kapsayıcı)
 
 | Özellik | Açıklama |
 |---------|----------|
-| **Aylık Fiyat** | $4.99 |
-| **Yıllık Fiyat** | $49.99 (2 ay ücretsiz) |
-| **Sınırsız Etkileşim** | Sorgularda ve diyaloglarda hiçbir token/mesaj kısıtlaması olmaması. |
-| **Genişletilmiş Cemaat** | Köydeki AI ajan sayısının 15+ seviyesine çıkarılması, daha karmaşık yalan ağları. |
-| **Derin Analitik Raporu** | Oyun sonrasında ajanların gizli "korku, yalan söyleme eğilimi, sadakat" gibi içsel parametrelerini (state) gösteren detaylı dashboard. |
-| **Özel Senaryolar** | Farklı tarihi dönemler veya kilise içi politik fraksiyon senaryoları. |
-| **Ek Avantajlar** | LLM API'lerine öncelikli sunucu erişimi (Daha hızlı AI yanıt süreleri ve düşük gecikme). |
+| **Başlangıç İçeriği** | Ashenmoor (Ortaçağ) evreni ve Kolay zorluk seviyesi tüm oyunculara varsayılan olarak açıktır. |
+| **Günlük Sorgu Kotası** | Günde 5 oyun oturumu ve 100 diyalog mesajı hakkı tüm kullanıcılara standart olarak sunulur. |
+| **Başlangıç Bakiyesi** | Her yeni hesaba 1.000 başlangıç tokeni (akçe) hediye edilir. |
+| **Oynayarak Kazanma** | Çözülen her vaka için +100 token, ilk 2 günde erken çözüm için +50 bonus token ve dedektiflik sıralama puanı kazanılır. |
 
-### 4.3 Premium Paket Gerekçesi — Neden Bir Kullanıcı Bunun İçin Para Öder?
+### 4.2 Token Marketi ve İçerik Paketleri
 
-**Paragraf 1 — Gerçek İhtiyaç Analizi:**
-Projenin temel mekaniği, arka planda çalışan Büyük Dil Modelleri (LLM) ile sağlanan dinamik ve öngörülemez diyaloglara dayanmaktadır. Ücretsiz sürüm, oyuncuya bu yenilikçi "yapay zeka ajanları ile sorgu" konseptini tatma imkanı sunarken, 40 diyalog limiti derinlemesine bir çıkarım yapmak ve manipülatif NPC'leri köşeye sıkıştırmak için çoğu zaman yetersiz kalacaktır. Gerçek bir psikolojik gerilim yaşamak, çapraz sorgulama teknikleri denemek ve yalanları sabırla çözmek isteyen bir kullanıcı, kaçınılmaz olarak etkileşim sınırına takılacaktır. Premium paket, kullanıcının bu engeli aşmasını sağlayarak kısıtlamasız bir dedektiflik deneyimi sunar ve ajanların gizli metriklerini inceleme şansı vererek teknik merakı da tatmin eder.
+| Kategori | İçerik ve Fiyatlandırma |
+|----------|--------------------------|
+| **Yeni Evrenler** | Oakhaven (90'lar Kasabası - 500 Token), Neon Prime (Cyberpunk - 800 Token). Kendi haritaları, mekanları ve tematik şüphelileriyle gelir. |
+| **Zorluk Mühürleri** | Kıdemli Engizitör (Orta - 300 Token), Baş Engizitör (Zor, 6 şüpheli ve çakışan alibiler - 600 Token). |
+| **Mühürlü Dosyalar** | Elle yazılmış hazır hikâyeler (Yılanın Sarmalı, Son İtiraf, Kara Değirmen - 400 ila 500 Token). |
+| **Kozmetik & Görünüm** | Mühürler, cüppeler, çizmeler, şapkalar ve veba doktoru maskesi (200 ila 1500 Token). |
 
-**Paragraf 2 — Piyasa Karşılaştırması ve Fiyat Gerekçesi:**
-Piyasada "AI Town" veya benzeri çoklu ajan simülasyonları genellikle açık kaynaklı ve teknik kurulum gerektiren (API key girme vb.) projeler olarak yer almaktadır. Sırf metin tabanlı veya görsel roman (visual novel) tarzı dedektiflik oyunları ise statik, önceden yazılmış diyaloglara sahiptir. The Inquisitor, kullanıcının hiçbir teknik kurulum yapmadan doğrudan web tarayıcısı üzerinden karmaşık bir LLM ekosistemine erişebilmesini ve her seferinde farklı bir hikaye üreten dinamik bir sisteme girmesini sağlar. Aylık $4.99 gibi bir ücret, arka planda harcanan LLM API token maliyetlerini karşılamakla kalmaz, kullanıcının sıradan bir oyun yerine sürekli evrimleşen bir yapay zeka simülasyonuna erişmesi için oldukça makul bir bedeldir.
+### 4.3 Mikro-Ödeme Paketleri (Stripe Test Modu Entegrasyonu)
+
+Oyuncular beklemek istemediklerinde doğrudan güvenli ödeme ile token satın alabilir:
+- **Bir Avuç Akçe:** 300 Token — 1.99 €
+- **Deri Kese:** 900 Token (800 + 100 bonus) — 4.99 €
+- **Engizitör Sandığı:** 2.100 Token (1.800 + 300 bonus) — 9.99 € *(En Popüler)*
+- **Kilise Hazinesi:** 5.000 Token (4.000 + 1.000 bonus) — 19.99 € *(En İyi Değer)*
+
+### 4.4 Modelin Gerekçesi — Neden Token Ekonomisi?
+
+**1. Oyna-Kazan ve İlerleme Hissi:** Klasik zorunlu abonelikler indie oyuncularda bariyer yaratırken, token ekonomisi her başarılı soruşturmayı ödüllendirerek oyuncuya gerçek bir ilerleme hissi verir. Oyuncular emek vererek tüm evrenleri açabilir veya süreci hızlandırmak için ufak paketler satın alabilir.
+
+**2. LLM Maliyet Dengesi ve Esneklik:** Sabit abonelik yerine içerik bazlı mikro-işlemler, sunucunun LLM token tüketim maliyetlerini doğrudan oyuncunun aktif kullanımına ve satın aldığı zengin içeriklere endeksler. Ayrıca topluluk hikaye editörü sayesinde kullanıcılar kendi ürettikleri vakaları satabilecekleri bir ekosisteme zemin hazırlar.
 
 ---
 

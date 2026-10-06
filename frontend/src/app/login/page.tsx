@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
+import { DEFAULT_AVATARS, getAvatarInfo } from '@/config/avatars';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [step, setStep] = useState<'details' | 'code'>('details');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('avatar_1');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +42,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('E-posta adresini ve şifreni gir.');
+      setError('Kullanıcı adı/e-posta adresini ve şifreni gir.');
       return;
     }
     setLoading(true);
@@ -48,11 +51,19 @@ export default function LoginPage() {
       const res = await fetch(apiUrl('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier: email.trim(), password }),
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
+        setUser(
+          data.email,
+          data.userId,
+          data.token,
+          data.isAdmin,
+          data.isPremium || false,
+          data.username,
+          data.avatar,
+        );
         router.push('/menu');
       } else {
         setError(data.message || data.error || 'Giriş başarısız.');
@@ -65,6 +76,10 @@ export default function LoginPage() {
   };
 
   const handleSendCode = async () => {
+    if (username.trim().length < 3) {
+      setError('Kullanıcı adı en az 3 karakter olmalıdır.');
+      return;
+    }
     if (!email.includes('@') || password.length < 6) {
       setError('Geçerli bir e-posta adresi ve en az 6 karakterli bir şifre gir.');
       return;
@@ -75,7 +90,12 @@ export default function LoginPage() {
       const res = await fetch(apiUrl('/auth/send-code'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          username: username.trim(),
+          avatar: selectedAvatar,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -103,11 +123,19 @@ export default function LoginPage() {
       const res = await fetch(apiUrl('/auth/verify'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email: email.trim(), code }),
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        setUser(email, data.userId, data.token, data.isAdmin, data.isPremium || false);
+        setUser(
+          data.email,
+          data.userId,
+          data.token,
+          data.isAdmin,
+          data.isPremium || false,
+          data.username,
+          data.avatar,
+        );
         router.push('/menu');
       } else {
         setError(data.message || data.error || 'Kod hatalı.');
@@ -208,10 +236,11 @@ export default function LoginPage() {
           <>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                E-posta
+                E-posta veya Kullanıcı Adı
               </label>
               <input
-                type="email"
+                type="text"
+                placeholder="Örn: ornek@engizisyon.org veya dedektif"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
@@ -254,12 +283,72 @@ export default function LoginPage() {
 
         {mode === 'register' && step === 'details' && (
           <>
+            {/* Avatar Seçici */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#aaa', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Engizisyon Avatarı Seç
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '8px' }}>
+                {DEFAULT_AVATARS.map((av) => {
+                  const isSelected = selectedAvatar === av.id;
+                  return (
+                    <button
+                      key={av.id}
+                      type="button"
+                      onClick={() => setSelectedAvatar(av.id)}
+                      style={{
+                        background: isSelected ? 'rgba(138, 3, 3, 0.45)' : 'rgba(255, 255, 255, 0.03)',
+                        border: isSelected ? '2px solid #daa520' : '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        boxShadow: isSelected ? '0 0 14px rgba(218, 165, 32, 0.45)' : 'none',
+                        transform: isSelected ? 'scale(1.06)' : 'scale(1)',
+                        transition: 'all 0.2s ease',
+                      }}
+                      title={`${av.name} — ${av.role}`}
+                    >
+                      <img
+                        src={av.src}
+                        alt={av.name}
+                        style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#daa520', fontFamily: 'Inter, sans-serif' }}>
+                <strong>{getAvatarInfo(selectedAvatar).name}</strong>
+                <span style={{ color: '#888', marginLeft: '6px' }}>— {getAvatarInfo(selectedAvatar).role}</span>
+              </div>
+            </div>
+
+            {/* Kullanıcı Adı */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Kullanıcı Adı
+              </label>
+              <input
+                type="text"
+                placeholder="Örn: engizitor_marcus"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* E-posta */}
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
                 E-posta
               </label>
               <input
                 type="email"
+                placeholder="ornek@engizisyon.org"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}

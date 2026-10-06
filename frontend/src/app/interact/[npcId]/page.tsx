@@ -331,7 +331,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   };
 
   const handleConfront = async (item: EvidenceItem) => {
-    const maxLimit = isPremium ? 100 : 30;
+    const maxLimit = isAdmin ? 999 : 100;
     if (loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
 
     setIsEvidencePickerOpen(false);
@@ -379,7 +379,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
 
   const handleSend = async () => {
     const trimmed = input.trim();
-    const maxLimit = isPremium ? 100 : 30;
+    const maxLimit = isAdmin ? 999 : 100;
     if (!trimmed || loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
@@ -490,7 +490,9 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           if (data.session && data.session.locationClues) {
             useGameStore.getState().setLocationClues(data.session.locationClues);
           }
-          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
+          const rewardTokens = data.reward?.tokens ? `&rewardTokens=${data.reward.tokens}` : '';
+          const scoreEarned = data.reward?.score ? `&scoreEarned=${data.reward.score}` : '';
+          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}${rewardTokens}${scoreEarned}`);
         } catch (err) {
           console.error('Failed to condemn', err);
         }
@@ -498,7 +500,7 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     });
   };
 
-  const maxDailyDialogues = isPremium ? 100 : 30;
+  const maxDailyDialogues = isAdmin ? 999 : 100;
 
   return (
     <main

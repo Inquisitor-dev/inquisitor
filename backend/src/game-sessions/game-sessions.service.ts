@@ -8,6 +8,8 @@ import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { startingFear } from '../npcs/fear';
 
+import { MarketService } from '../market/market.service';
+
 @Injectable()
 export class GameSessionsService {
   private readonly logger = new Logger(GameSessionsService.name);
@@ -15,6 +17,7 @@ export class GameSessionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
+    private readonly marketService?: MarketService,
   ) {}
 
   async createSession(
@@ -227,12 +230,26 @@ export class GameSessionsService {
       data: { status: newStatus },
     });
 
+    let reward = null;
+    if (won && this.marketService) {
+      try {
+        reward = await this.marketService.awardCaseReward(
+          userId,
+          session.id,
+          session.currentDay,
+        );
+      } catch (err: any) {
+        this.logger.error(`Error awarding case reward: ${err.message}`);
+      }
+    }
+
     return {
       success: true,
       won,
       culpritId: session.culpritId,
       message: won ? 'Doğru kişiyi buldun! Adalet yerini buldu.' : 'Masum birini mahkûm ettin.',
       session: updatedSession,
+      reward,
     };
   }
 

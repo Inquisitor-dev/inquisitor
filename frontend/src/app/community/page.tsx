@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
+import { getAvatarSrc } from '@/config/avatars';
 import styles from './page.module.scss';
 
 interface SuspectEntry {
@@ -132,7 +133,7 @@ const SAMPLE_SCENARIO: ScenarioForm = {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const { userEmail, isAdmin } = useGameStore();
+  const { userEmail, username, avatar, isAdmin } = useGameStore();
 
   const [activeTab, setActiveTab] = useState<'story' | 'feedback' | 'rules'>('story');
   const [form, setForm] = useState<ScenarioForm>(INITIAL_FORM);
@@ -149,12 +150,13 @@ export default function CommunityPage() {
   const [includeSystemSpecs, setIncludeSystemSpecs] = useState(true);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  // Giriş yapılmışsa yazar adını e-postadan doldur
+  // Giriş yapılmışsa yazar adını kullanıcı adından / e-postadan doldur
   useEffect(() => {
-    if (userEmail && !form.authorName) {
-      setForm((prev) => ({ ...prev, authorName: userEmail.split('@')[0] }));
+    const preferredName = username || (userEmail ? userEmail.split('@')[0] : '');
+    if (preferredName && !form.authorName) {
+      setForm((prev) => ({ ...prev, authorName: preferredName }));
     }
-  }, [userEmail]);
+  }, [username, userEmail]);
 
   // Açılışta tarayıcıdaki taslağı yükle
   useEffect(() => {
@@ -344,9 +346,19 @@ export default function CommunityPage() {
             <ArrowLeft size={16} /> Ana Menüye Dön
           </button>
 
-          <div className={styles.userBadge}>
-            <Feather size={14} />
-            <span className={styles.userName}>{userEmail ? userEmail.split('@')[0] : 'Misafir'}</span>
+          <div className={styles.userBadge} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img
+              src={getAvatarSrc(avatar)}
+              alt="Avatar"
+              style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                border: '1px solid #daa520',
+                objectFit: 'cover',
+              }}
+            />
+            <span className={styles.userName}>{username || (userEmail ? userEmail.split('@')[0] : 'Misafir')}</span>
             {isAdmin && <span className={styles.adminBadge}>Konsey Yöneticisi</span>}
           </div>
         </div>

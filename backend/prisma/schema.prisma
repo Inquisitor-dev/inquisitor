@@ -12,6 +12,8 @@ datasource db {
 model User {
   id                String        @id @default(uuid())
   email             String        @unique
+  username          String?       @unique       // Kullanıcı tarafından seçilen takma ad
+  avatar            String        @default("avatar_1") // Seçilen avatar (avatar_1 .. avatar_5)
   passwordHash      String?
   isAdmin           Boolean       @default(false)
   isPremium         Boolean       @default(false)
@@ -23,8 +25,12 @@ model User {
   lastResetDate     String        @default("")
   musicVolume       Float         @default(0.4) // Ana menü müziği, 0..1
   musicMuted        Boolean       @default(false)
+  tokenBalance      Int           @default(1000) // Başlangıç bakiyesi (akçe/token)
+  score             Int           @default(0)    // Sıralama için toplam dedektiflik puanı
   createdAt         DateTime      @default(now())
   sessions          GameSession[]
+  purchases         UserPurchase[]
+  tokenTransactions TokenTransaction[]
 }
 
 model GameSession {
@@ -100,4 +106,31 @@ model Evidence {
   createdAt DateTime    @default(now())
 
   @@unique([sessionId, kind, sourceId])
+}
+
+// Satın alınan market eşyaları (evrenler, zorluklar, hikâyeler, kozmetikler)
+model UserPurchase {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  itemId    String   // örn: universe_modern, difficulty_hard, cosmetic_plague_mask
+  category  String   // universe, difficulty, story, cosmetic
+  pricePaid Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemId])
+}
+
+// Token hareket defteri (ledger): her giriş ve çıkışın değişmez kaydı
+model TokenTransaction {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  amount       Int      // Pozitif: kazanılan / yüklenen, Negatif: harcanan
+  balanceAfter Int      // İşlem sonrası güncel bakiye
+  reason       String   // INITIAL_GRANT, CASE_REWARD, ITEM_PURCHASE, STRIPE_PURCHASE
+  metadata     Json?    // { itemId, sessionId, stripeSessionId, amountEur ... }
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

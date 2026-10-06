@@ -11,11 +11,13 @@ const ADMIN = 'admin@inquisitor.test';
 function setup(
   existingUser: Record<string, unknown> | null,
   mailWorks: boolean,
+  existingByUsername: Record<string, unknown> | null = null,
 ) {
   const upsert = jest.fn().mockResolvedValue({});
   const prisma = {
     user: {
       findUnique: jest.fn().mockResolvedValue(existingUser),
+      findFirst: jest.fn().mockResolvedValue(existingByUsername),
       upsert,
     },
   } as unknown as PrismaService;
@@ -25,7 +27,7 @@ function setup(
     : jest.fn().mockRejectedValue(new Error('SMTP kapali'));
   (service as unknown as { transporter: { sendMail: jest.Mock } }).transporter =
     { sendMail };
-  return { service, upsert, sendMail };
+  return { service, upsert, sendMail, prisma };
 }
 
 // Sabit bir kod üretsin diye Math.random sabitlenir: 100000 + 0.5 * 900000
@@ -94,5 +96,32 @@ describe('AuthService.sendVerificationCode', () => {
       service.sendVerificationCode('oyuncu@test.com', 'sifre123'),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(upsert).not.toHaveBeenCalled();
+  });
+
+  it('kullanıcı adı 3 karakterden kısa veya geçersiz ise hata verir', async () => {
+    const { service } = setup(null, true);
+    await expect(
+      service.sendVerificationCode('yeni@test.com', 'sifre123', 'ab'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('başkası tarafından kullanılan kullanıcı adı seçilirse hata verir', async () => {
+    const { service } = setup(null, true, { id: 'other', username: 'dedektif', email: 'other@test.com' });
+    await expect(
+      service.sendVerificationCode('yeni@test.com', 'sifre123', 'dedektif'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('geçerli kullanıcı adı ve avatar upsert verisine eklenir', async () => {
+    const { service, upsert } = setup(null, true);
+    await service.sendVerificationCode('yeni@test.com', 'sifre123', 'usta_engizitor', 'avatar_3');
+    expect(upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          username: 'usta_engizitor',
+          avatar: 'avatar_3',
+        }),
+      }),
+    );
   });
 });

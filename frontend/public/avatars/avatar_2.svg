@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#4a0815"/>
+      <stop offset="60%" stop-color="#1f0308"/>
+      <stop offset="100%" stop-color="#0a0103"/>
+    </radialGradient>
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fae29c"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#805d15"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Zemin ve Dış Halka -->
+  <circle cx="60" cy="60" r="56" fill="url(#bg2)" stroke="url(#gold2)" stroke-width="3"/>
+  <circle cx="60" cy="60" r="51" fill="none" stroke="#7a1426" stroke-width="1.2" stroke-dasharray="2 2"/>
+
+  <!-- Kızıl Kardinal Cübbesi -->
+  <path d="M20 110 C24 82 42 74 60 74 C78 74 96 82 100 110 Z" fill="#7a0c1a"/>
+  <path d="M44 76 L60 110 L76 76 Z" fill="#a1152a"/>
+  
+  <!-- Altın Yaka ve İşlemeler -->
+  <path d="M42 76 C52 86 68 86 78 76" stroke="url(#gold2)" stroke-width="2.5" fill="none"/>
+  <circle cx="60" cy="94" r="4.5" fill="#d4af37" stroke="#3d0505" stroke-width="1.5"/>
+
+  <!-- Kardinal Başlığı (Mitra / Kırmızı Kukuleta) -->
+  <path d="M38 60 C38 32 46 16 60 16 C74 16 82 32 82 60 C82 70 72 74 60 74 C48 74 38 70 38 60 Z" fill="#8c1122"/>
+  <path d="M57 16 H63 V74 H57 Z" fill="url(#gold2)"/>
+
+  <!-- Yüz Hatları -->
+  <ellipse cx="60" cy="54" rx="14" ry="16" fill="#140608"/>
+  <circle cx="55" cy="52" r="2.2" fill="#e8dcc4"/>
+  <circle cx="65" cy="52" r="2.2" fill="#e8dcc4"/>
+  <path d="M56 61 C58 63 62 63 64 61" stroke="#a38240" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+</svg>

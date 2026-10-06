@@ -4,9 +4,10 @@ import { GameSessionsController } from './game-sessions.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { LlmModule } from '../llm/llm.module';
 import { AuthModule } from '../auth/auth.module';
+import { MarketModule } from '../market/market.module';
 
 @Module({
-  imports: [PrismaModule, LlmModule, AuthModule],
+  imports: [PrismaModule, LlmModule, AuthModule, MarketModule],
   providers: [GameSessionsService],
   controllers: [GameSessionsController]
 })

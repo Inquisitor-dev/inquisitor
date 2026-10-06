@@ -70,7 +70,7 @@ export class NpcsController {
     // Günlük mesaj kotası (test oturumları kota harcamaz)
     if (usesQuota && !session.isTestMode) {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
-      const maxMessages = quota.isPremium ? 100 : 30;
+      const maxMessages = quota.isAdmin ? 999 : 100;
       if (quota.dailyMessageCount >= maxMessages) {
         throw new ForbiddenException(`Bugünkü sorgu hakkın doldu (${maxMessages}/${maxMessages}). Yarın tekrar gel.`);
       }

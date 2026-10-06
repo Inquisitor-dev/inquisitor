@@ -16,6 +16,8 @@ import { isTestModeEnabled } from '../test-mode';
 
 type AuthedRequest = { user: { userId: string } };
 
+import { MarketService } from '../market/market.service';
+
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
 const VALID_SCENARIOS = ['medieval', 'modern', 'cyberpunk'];
 
@@ -24,6 +26,7 @@ export class GameSessionsController {
   constructor(
     private readonly gameSessionsService: GameSessionsService,
     private readonly authService: AuthService,
+    private readonly marketService: MarketService,
   ) {}
 
   @Get('active')
@@ -52,14 +55,26 @@ export class GameSessionsController {
     const diff = difficulty || 'easy';
     const sType = scenarioType || 'medieval';
 
-    // Evren ve zorluk kilitleri artık Premium'a değil market satın alımlarına bağlı. Satın alımlar
-    // henüz sadece istemcide tutulduğu için burada yalnızca değerlerin geçerliliği kontrol edilir;
-    // token sistemi backend'e taşındığında sahiplik kontrolü buraya eklenmeli.
     if (!VALID_DIFFICULTIES.includes(diff) || !VALID_SCENARIOS.includes(sType)) {
       throw new BadRequestException('Geçersiz evren ya da zorluk seçimi.');
     }
 
-    // Yapay zekasız test oturumu: kota ve Premium kısıtları uygulanmaz, sayaç artmaz
+    // Evren ve zorluk kilitleri sunucu tarafında doğrulanır
+    if (diff !== 'easy') {
+      const ownsDiff = await this.marketService.hasPurchased(userId, `difficulty_${diff}`);
+      if (!ownsDiff) {
+        throw new ForbiddenException(`"${diff}" zorluğu henüz açılmamış. Markette token ile açabilirsin.`);
+      }
+    }
+
+    if (sType !== 'medieval') {
+      const ownsUniverse = await this.marketService.hasPurchased(userId, `universe_${sType}`);
+      if (!ownsUniverse) {
+        throw new ForbiddenException(`"${sType}" evreni henüz açılmamış. Markette token ile açabilirsin.`);
+      }
+    }
+
+    // Yapay zekasız test oturumu: kota kısıtları uygulanmaz, sayaç artmaz
     if (testMode === true) {
       if (!isTestModeEnabled()) {
         throw new ForbiddenException('Test modu bu sunucuda kapalı.');
@@ -67,9 +82,9 @@ export class GameSessionsController {
       return this.gameSessionsService.createSession(userId, diff, sType, true);
     }
 
-    // Günlük kota kontrolü
+    // Günlük kota kontrolü (Premium kaldırıldı, standart limit 5 oturum)
     const quota = await this.authService.checkAndResetDailyQuota(userId);
-    const maxSessions = quota.isPremium ? 5 : 2;
+    const maxSessions = quota.isAdmin ? 999 : 5;
     if (quota.dailySessionCount >= maxSessions) {
       throw new ForbiddenException(`Bugünkü soruşturma hakkın doldu (${maxSessions}/${maxSessions}). Yarın tekrar gel.`);
     }

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg4" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#332214"/>
+      <stop offset="60%" stop-color="#1c1108"/>
+      <stop offset="100%" stop-color="#080401"/>
+    </radialGradient>
+    <linearGradient id="amber4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fae09d"/>
+      <stop offset="50%" stop-color="#d99b3b"/>
+      <stop offset="100%" stop-color="#7a4911"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Zemin ve Dış Halka -->
+  <circle cx="60" cy="60" r="56" fill="url(#bg4)" stroke="url(#amber4)" stroke-width="3"/>
+  <circle cx="60" cy="60" r="51" fill="none" stroke="#5c3f24" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+  <!-- Kahverengi Keşiş Cübbesi -->
+  <path d="M22 110 C24 84 40 76 60 76 C80 76 96 84 98 110 Z" fill="#291a10"/>
+  <path d="M50 78 L60 98 L70 78 Z" fill="#422c1d"/>
+
+  <!-- Kapüşon -->
+  <path d="M36 58 C36 34 46 22 60 22 C74 22 84 34 84 58 C84 72 72 76 60 76 C48 76 36 72 36 58 Z" fill="#3b271a"/>
+  <ellipse cx="60" cy="54" rx="14" ry="16" fill="#120b06"/>
+
+  <!-- Gözler ve Sakal / Yüz Hatları -->
+  <circle cx="54" cy="50" r="2" fill="#fae09d"/>
+  <circle cx="66" cy="50" r="2" fill="#fae09d"/>
+  <path d="M50 60 C55 68 65 68 70 60 C66 66 54 66 50 60 Z" fill="#806248"/>
+
+  <!-- Tüy Kalem Rozeti -->
+  <path d="M56 86 C64 80 66 74 68 68 C66 74 60 78 54 84 Z" fill="url(#amber4)"/>
+  <line x1="53" y1="88" x2="68" y2="68" stroke="#fae09d" stroke-width="1.2"/>
+</svg>

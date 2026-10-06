@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg5" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#142138"/>
+      <stop offset="60%" stop-color="#09101c"/>
+      <stop offset="100%" stop-color="#02050a"/>
+    </radialGradient>
+    <linearGradient id="silver5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8f0fe"/>
+      <stop offset="50%" stop-color="#93a8cf"/>
+      <stop offset="100%" stop-color="#46587d"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Zemin ve Dış Halka -->
+  <circle cx="60" cy="60" r="56" fill="url(#bg5)" stroke="url(#silver5)" stroke-width="3"/>
+  <circle cx="60" cy="60" r="51" fill="none" stroke="#223659" stroke-width="1.2" stroke-dasharray="2 3"/>
+
+  <!-- Koyu Palto / Pelerin -->
+  <path d="M22 110 C24 84 40 76 60 76 C80 76 96 84 98 110 Z" fill="#0f192b"/>
+  <path d="M46 76 L60 92 L74 76 Z" fill="#1b2a47"/>
+
+  <!-- Geniş Kenarlı Dedektif Şapkası -->
+  <path d="M24 46 C34 40 86 40 96 46 C84 48 36 48 24 46 Z" fill="#152136" stroke="url(#silver5)" stroke-width="1.2"/>
+  <path d="M42 44 C44 26 50 20 60 20 C70 20 76 26 78 44 Z" fill="#1f2f4d"/>
+  <path d="M42 40 H78" stroke="#3b5282" stroke-width="2"/>
+
+  <!-- Gölgedeki Yüz ve Gizemli Bakış -->
+  <ellipse cx="60" cy="56" rx="14" ry="14" fill="#090f1a"/>
+  
+  <!-- Keskin Gözler ve Maske/Yaka -->
+  <circle cx="53" cy="53" r="2.2" fill="#70d6ff"/>
+  <circle cx="67" cy="53" r="2.2" fill="#70d6ff"/>
+  <path d="M44 60 C52 64 68 64 76 60 L74 74 C66 76 54 76 46 74 Z" fill="#152136"/>
+
+  <!-- Gözcü Rozeti -->
+  <circle cx="60" cy="98" r="4.5" fill="#70d6ff" opacity="0.8"/>
+  <circle cx="60" cy="98" r="2" fill="#ffffff"/>
+</svg>

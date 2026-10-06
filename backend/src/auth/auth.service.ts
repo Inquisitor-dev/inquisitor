@@ -61,7 +61,12 @@ export class AuthService implements OnModuleInit {
     console.log(`Admin account configured for ${adminEmail}`);
   }
 
-  async sendVerificationCode(email: string, password?: string): Promise<{ message: string }> {
+  async sendVerificationCode(
+    email: string,
+    password?: string,
+    username?: string,
+    avatar?: string,
+  ): Promise<{ message: string }> {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 haneli kod
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dakika gecerli
 
@@ -77,6 +82,29 @@ export class AuthService implements OnModuleInit {
       throw new BadRequestException('Bu e-posta adresi zaten kayıtlı.');
     }
 
+    let cleanUsername: string | undefined = undefined;
+    if (username && username.trim().length > 0) {
+      cleanUsername = username.trim();
+      if (cleanUsername.length < 3 || cleanUsername.length > 20) {
+        throw new BadRequestException('Kullanıcı adı 3 ile 20 karakter arasında olmalıdır.');
+      }
+      if (!/^[a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+$/.test(cleanUsername)) {
+        throw new BadRequestException('Kullanıcı adı yalnızca harf, rakam ve alt çizgi içerebilir.');
+      }
+      const existingWithUsername = await this.prisma.user.findFirst({
+        where: {
+          username: cleanUsername,
+          NOT: { email },
+        },
+      });
+      if (existingWithUsername) {
+        throw new BadRequestException('Bu kullanıcı adı zaten alınmış.');
+      }
+    }
+
+    const validAvatars = ['avatar_1', 'avatar_2', 'avatar_3', 'avatar_4', 'avatar_5'];
+    const cleanAvatar = avatar && validAvatars.includes(avatar) ? avatar : 'avatar_1';
+
     let passwordHash = existingUser?.passwordHash;
     if (password) {
       passwordHash = await bcrypt.hash(password, 10);
@@ -88,6 +116,8 @@ export class AuthService implements OnModuleInit {
         verificationCode: code,
         codeExpiresAt: expiresAt,
         ...(passwordHash && { passwordHash }),
+        ...(cleanUsername && { username: cleanUsername }),
+        ...(cleanAvatar && { avatar: cleanAvatar }),
       },
       create: {
         email,
@@ -95,6 +125,8 @@ export class AuthService implements OnModuleInit {
         verificationCode: code,
         codeExpiresAt: expiresAt,
         ...(passwordHash && { passwordHash }),
+        ...(cleanUsername && { username: cleanUsername }),
+        avatar: cleanAvatar,
       },
     });
 
@@ -137,7 +169,15 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  async verifyCode(email: string, code: string): Promise<{ token: string; email: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
+  async verifyCode(email: string, code: string): Promise<{
+    token: string;
+    email: string;
+    userId: string;
+    isAdmin: boolean;
+    isPremium: boolean;
+    username: string | null;
+    avatar: string;
+  }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.verificationCode || !user.codeExpiresAt) {
@@ -153,7 +193,7 @@ export class AuthService implements OnModuleInit {
     }
 
     // Kodu temizle, kullaniciyi dogrulanmis olarak isaretle
-    await this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { email },
       data: {
         verificationCode: null,
@@ -163,16 +203,47 @@ export class AuthService implements OnModuleInit {
     });
 
     // JWT token uret
-    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
+    const token = this.jwt.sign({
+      sub: updated.id,
+      email: updated.email,
+      isAdmin: updated.isAdmin,
+      isPremium: updated.isPremium,
+      username: updated.username,
+      avatar: updated.avatar,
+    });
 
-    return { token, email: user.email, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
+    return {
+      token,
+      email: updated.email,
+      userId: updated.id,
+      isAdmin: updated.isAdmin,
+      isPremium: updated.isPremium,
+      username: updated.username,
+      avatar: updated.avatar,
+    };
   }
 
-  async login(email: string, password: string): Promise<{ token: string; email: string; userId: string; isAdmin: boolean; isPremium: boolean }> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async login(identifier: string, password: string): Promise<{
+    token: string;
+    email: string;
+    userId: string;
+    isAdmin: boolean;
+    isPremium: boolean;
+    username: string | null;
+    avatar: string;
+  }> {
+    const cleanId = identifier.trim();
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: cleanId.toLowerCase() },
+          { username: cleanId },
+        ],
+      },
+    });
 
     if (!user) {
-      throw new UnauthorizedException('E-posta ya da şifre hatalı.');
+      throw new UnauthorizedException('Kullanıcı adı/e-posta ya da şifre hatalı.');
     }
 
     if (!user.isVerified) {
@@ -185,11 +256,27 @@ export class AuthService implements OnModuleInit {
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('E-posta ya da şifre hatalı.');
+      throw new UnauthorizedException('Kullanıcı adı/e-posta ya da şifre hatalı.');
     }
 
-    const token = this.jwt.sign({ sub: user.id, email: user.email, isAdmin: user.isAdmin, isPremium: user.isPremium });
-    return { token, email: user.email, userId: user.id, isAdmin: user.isAdmin, isPremium: user.isPremium };
+    const token = this.jwt.sign({
+      sub: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isPremium: user.isPremium,
+      username: user.username,
+      avatar: user.avatar,
+    });
+
+    return {
+      token,
+      email: user.email,
+      userId: user.id,
+      isAdmin: user.isAdmin,
+      isPremium: user.isPremium,
+      username: user.username,
+      avatar: user.avatar,
+    };
   }
 
   // Gunluk kotayi kontrol et ve gerekirse sifirla
@@ -251,8 +338,12 @@ export class AuthService implements OnModuleInit {
 
   async getAccountSummary(userId: string): Promise<{
     email: string;
+    username: string | null;
+    avatar: string;
     isAdmin: boolean;
     isPremium: boolean;
+    tokenBalance: number;
+    score: number;
     dailySessionCount: number;
     dailyMessageCount: number;
     maxSessionsPerDay: number;
@@ -262,17 +353,71 @@ export class AuthService implements OnModuleInit {
     if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
 
     const quota = await this.checkAndResetDailyQuota(userId);
-    const maxSessionsPerDay = quota.isAdmin ? 999 : quota.isPremium ? 5 : 2;
-    const maxMessagesPerDay = quota.isAdmin ? 999 : quota.isPremium ? 100 : 30;
+    // Premium abonelik kaldırıldı: Standart kota 5 oturum / 100 mesaj, admin sınırsız
+    const maxSessionsPerDay = quota.isAdmin ? 999 : 5;
+    const maxMessagesPerDay = quota.isAdmin ? 999 : 100;
 
     return {
       email: user.email,
+      username: user.username,
+      avatar: user.avatar || 'avatar_1',
       isAdmin: user.isAdmin,
-      isPremium: user.isPremium,
+      isPremium: false,
+      tokenBalance: user.tokenBalance,
+      score: user.score,
       dailySessionCount: quota.dailySessionCount,
       dailyMessageCount: quota.dailyMessageCount,
       maxSessionsPerDay,
       maxMessagesPerDay,
+    };
+  }
+
+  async updateProfile(
+    userId: string,
+    data: { username?: string; avatar?: string },
+  ): Promise<{ success: boolean; username: string | null; avatar: string }> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
+
+    const updateData: { username?: string; avatar?: string } = {};
+
+    if (data.username !== undefined) {
+      const trimmed = data.username.trim();
+      if (trimmed.length < 3 || trimmed.length > 20) {
+        throw new BadRequestException('Kullanıcı adı 3 ile 20 karakter arasında olmalıdır.');
+      }
+      if (!/^[a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+$/.test(trimmed)) {
+        throw new BadRequestException('Kullanıcı adı yalnızca harf, rakam ve alt çizgi içerebilir.');
+      }
+      const taken = await this.prisma.user.findFirst({
+        where: {
+          username: trimmed,
+          NOT: { id: userId },
+        },
+      });
+      if (taken) {
+        throw new BadRequestException('Bu kullanıcı adı zaten kullanılıyor.');
+      }
+      updateData.username = trimmed;
+    }
+
+    if (data.avatar !== undefined) {
+      const validAvatars = ['avatar_1', 'avatar_2', 'avatar_3', 'avatar_4', 'avatar_5'];
+      if (!validAvatars.includes(data.avatar)) {
+        throw new BadRequestException('Geçersiz avatar seçimi.');
+      }
+      updateData.avatar = data.avatar;
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    return {
+      success: true,
+      username: updated.username,
+      avatar: updated.avatar,
     };
   }
 
@@ -303,26 +448,11 @@ export class AuthService implements OnModuleInit {
     });
   }
 
-  // Premium aktivasyonu (simule edilmis odeme)
-  async activatePremium(userId: string, activationCode: string): Promise<{ success: boolean; message: string }> {
-    const VALID_CODE = 'PREMIUM246741';
-
-    if (activationCode !== VALID_CODE) {
-      throw new BadRequestException('Aktivasyon kodu geçersiz.');
-    }
-
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
-
-    if (user.isPremium) {
-      return { success: true, message: 'Hesabın zaten Premium.' };
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { isPremium: true },
-    });
-
-    return { success: true, message: 'Premium başarıyla etkinleştirildi! Artık tüm özelliklere erişebilirsin.' };
+  // Premium aktivasyonu (eski metod — token ekonomisine geçildi)
+  async activatePremium(userId: string, _activationCode: string): Promise<{ success: boolean; message: string }> {
+    return {
+      success: true,
+      message: 'Abonelik modeli yerine Token Marketi devrededir. Standart kotalar tüm kullanıcılara tanımlanmıştır.',
+    };
   }
 }

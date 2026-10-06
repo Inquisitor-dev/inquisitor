@@ -1,288 +1,133 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
-import { useGameStore } from '../../store/useGameStore';
+import Link from 'next/link';
+import { Coins, ArrowRight } from 'lucide-react';
 
 export default function PremiumPage() {
   const router = useRouter();
-  const { authToken, isPremium, setIsPremium } = useGameStore();
-  const [activationCode, setActivationCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const handleActivate = async () => {
-    if (!termsAccepted) {
-      setError('Devam etmek için kullanım koşullarını kabul etmelisin.');
-      return;
-    }
-    if (!activationCode.trim()) {
-      setError('Aktivasyon kodunu girin.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(apiUrl('/auth/activate-premium'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ activationCode: activationCode.trim() }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setIsPremium(true);
-        setSuccess(true);
-      } else {
-        setError(data.message || 'Aktivasyon başarısız.');
-      }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    // 3 saniye sonra otomatik olarak markete yönlendir
+    const timer = setTimeout(() => {
+      router.replace('/market');
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [router]);
 
-  if (isPremium || success) {
-    return (
-      <main style={{
+  return (
+    <main
+      style={{
         minHeight: '100vh',
-        background: 'radial-gradient(ellipse at center, #0d0404 0%, #000 100%)',
+        background: 'radial-gradient(ellipse at center, #0f0707 0%, #050202 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: "'Playfair Display', serif",
+        fontFamily: "'Playfair Display', Georgia, serif",
         padding: '24px',
-      }}>
-        <div style={{
+        color: '#e8dcc4',
+      }}
+    >
+      <div
+        style={{
           width: '100%',
-          maxWidth: '500px',
-          background: 'rgba(10,5,5,0.8)',
-          border: '1px solid rgba(218,165,32,0.4)',
+          maxWidth: '520px',
+          background: 'rgba(18, 10, 10, 0.85)',
+          border: '1px solid rgba(200, 150, 60, 0.35)',
           backdropFilter: 'blur(20px)',
-          padding: '48px 40px',
+          padding: '48px 36px',
           textAlign: 'center',
-          boxShadow: '0 0 60px rgba(218,165,32,0.1)',
-        }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⭐</div>
-          <h1 style={{ color: '#DAA520', fontSize: '1.6rem', letterSpacing: '3px', marginBottom: '16px' }}>
-            PREMIUM AKTİF
-          </h1>
-          <p style={{ color: '#e5d9c5', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '24px' }}>
-            Tebrikler! Artık tüm Premium özelliklere erişebilirsin.
-          </p>
-          <div style={{ color: '#888', fontSize: '0.85rem', lineHeight: 2, marginBottom: '32px', textAlign: 'left', padding: '16px', background: 'rgba(218,165,32,0.05)', border: '1px solid rgba(218,165,32,0.15)' }}>
-            ✓ Günlük 100 diyalog hakkı<br/>
-            ✓ Günlük 5 soruşturma hakkı<br/>
-            ✓ Sunuculara öncelikli erişim<br/>
-            ✓ Zorluk seçimi (Orta & Zor)<br/>
-            ✓ Ek senaryolar (Modern & Cyberpunk)
-          </div>
-          <button
-            onClick={() => router.push('/menu')}
-            style={{
-              width: '100%',
-              background: '#DAA520',
-              border: 'none',
-              color: '#000',
-              padding: '14px',
-              fontSize: '0.85rem',
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              fontFamily: 'Playfair Display, serif',
-              fontWeight: 700,
-            }}
-          >
-            Ana Sayfaya Dön
-          </button>
+          boxShadow: '0 0 60px rgba(0, 0, 0, 0.8)',
+          borderRadius: '4px',
+        }}
+      >
+        <div style={{ display: 'inline-flex', padding: '16px', background: 'rgba(218, 165, 32, 0.1)', borderRadius: '50%', marginBottom: '20px', color: '#c99a3e' }}>
+          <Coins size={36} />
         </div>
-      </main>
-    );
-  }
-
-  const inputStyle = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: '#e5d9c5',
-    padding: '14px 16px',
-    fontSize: '1rem',
-    fontFamily: 'Inter, sans-serif',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-    transition: 'border-color 0.2s',
-  };
-
-  return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse at center, #0d0404 0%, #000 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Playfair Display', serif",
-      padding: '24px',
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '500px',
-        background: 'rgba(10,5,5,0.8)',
-        border: '1px solid rgba(218,165,32,0.3)',
-        backdropFilter: 'blur(20px)',
-        padding: '48px 40px',
-        boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
-      }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>⭐</div>
-          <h1 style={{ color: '#DAA520', fontSize: '1.4rem', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Premium Üyelik
-          </h1>
-          <p style={{ color: '#888', fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase' }}>
-            — Tam Engizisyon Yetkisi —
-          </p>
-        </div>
-
-        {/* Benefits */}
-        <div style={{ 
-          marginBottom: '32px', 
-          padding: '20px', 
-          background: 'rgba(218,165,32,0.03)', 
-          border: '1px solid rgba(218,165,32,0.15)',
-        }}>
-          <h3 style={{ color: '#DAA520', fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
-            Premium Avantajları
-          </h3>
-          <div style={{ color: '#aaa', fontSize: '0.85rem', lineHeight: 2.2 }}>
-            ⚡ Sunuculara öncelikli erişim<br/>
-            🎯 Zorluk seçimi (Orta ve Zor)<br/>
-            🌍 Ek evrenler (Oakhaven ve Neon Prime)<br/>
-            💬 Günde 100 diyalog hakkı (30 yerine)<br/>
-            🔍 Günde 5 soruşturma hakkı (2 yerine)<br/>
-            👥 Ek şüpheliler (Orta ve Zor zorluklarda)
-          </div>
-        </div>
-
-        {/* Simulated Payment */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Kart Numarası (Aktivasyon Kodu)
-          </label>
-          <input
-            type="text"
-            value={activationCode}
-            onChange={(e) => setActivationCode(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleActivate()}
-            placeholder="Aktivasyon kodunu gir"
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Simulated card fields (decorative) */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', color: '#444', textTransform: 'uppercase', marginBottom: '6px' }}>
-              Son Kullanma
-            </label>
-            <input
-              type="text"
-              placeholder="AA/YY"
-              disabled
-              style={{ ...inputStyle, opacity: 0.4, cursor: 'not-allowed' }}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', color: '#444', textTransform: 'uppercase', marginBottom: '6px' }}>
-              CVV
-            </label>
-            <input
-              type="text"
-              placeholder="•••"
-              disabled
-              style={{ ...inputStyle, opacity: 0.4, cursor: 'not-allowed' }}
-            />
-          </div>
-        </div>
-
-        {/* Terms */}
-        <label style={{ 
-          display: 'flex', 
-          alignItems: 'flex-start', 
-          gap: '10px', 
-          marginBottom: '24px',
-          cursor: 'pointer',
-          color: '#888',
-          fontSize: '0.8rem',
-          fontFamily: 'Inter, sans-serif',
-          lineHeight: 1.5,
-        }}>
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={(e) => setTermsAccepted(e.target.checked)}
-            style={{ marginTop: '3px', accentColor: '#DAA520' }}
-          />
-          <span>
-            <strong style={{ color: '#aaa' }}>Kullanım Koşulları</strong> ve <strong style={{ color: '#aaa' }}>Gizlilik Politikası</strong>&apos;nı okudum ve kabul ediyorum. Premium üyelik aboneliktir ve istediğin zaman iptal edilebilir.
-          </span>
-        </label>
-
-        {/* Submit */}
-        <button
-          onClick={handleActivate}
-          disabled={loading}
+        <h1
           style={{
-            width: '100%',
-            background: loading ? 'rgba(218,165,32,0.3)' : '#DAA520',
-            border: 'none',
-            color: '#000',
-            padding: '14px',
-            fontSize: '0.85rem',
+            color: '#c99a3e',
+            fontSize: '1.6rem',
             letterSpacing: '2px',
-            textTransform: 'uppercase',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            transition: 'all 0.3s ease',
-            fontFamily: 'Playfair Display, serif',
-            fontWeight: 700,
+            marginBottom: '16px',
           }}
         >
-          {loading ? 'İşleniyor...' : 'Premium\'u Aktifleştir'}
-        </button>
-
-        {/* Back */}
-        <button
-          onClick={() => router.push('/menu')}
+          Abonelik Modeli Kaldırıldı
+        </h1>
+        <p
           style={{
-            width: '100%',
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#666',
-            padding: '12px',
-            fontSize: '0.8rem',
-            letterSpacing: '1px',
-            cursor: 'pointer',
-            marginTop: '12px',
+            fontSize: '0.95rem',
+            lineHeight: 1.7,
+            color: '#c4b69c',
+            marginBottom: '24px',
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          ← Geri Dön
-        </button>
-
-        {error && (
-          <div style={{ marginTop: '16px', padding: '10px 14px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif', textAlign: 'center' }}>
-            ⚠️ {error}
-          </div>
-        )}
-
-        <p style={{ color: '#333', fontSize: '0.7rem', textAlign: 'center', marginTop: '20px', fontFamily: 'Inter, sans-serif' }}>
-          🔒 Ödeme bilgileriniz 256-bit SSL ile şifrelenmektedir.
+          Aylık Premium abonelik yerine <strong>Token Marketi</strong> sistemine geçtik!
+          Günlük 100 diyalog ve 5 soruşturma hakkı artık tüm oyunculara standart olarak tanımlandı.
+          Evrenleri, zorlukları ve kozmetikleri dilediğin gibi token ile açabilirsin.
         </p>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            marginTop: '28px',
+          }}
+        >
+          <Link
+            href="/market"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              background: '#8a0303',
+              color: '#fff',
+              padding: '14px 24px',
+              fontSize: '0.9rem',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontFamily: 'Inter, sans-serif',
+              borderRadius: '2px',
+            }}
+          >
+            Markete Git <ArrowRight size={16} />
+          </Link>
+
+          <Link
+            href="/menu"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              color: '#8e826e',
+              padding: '10px',
+              fontSize: '0.85rem',
+              textDecoration: 'none',
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            Ana Menüye Dön
+          </Link>
+        </div>
+
+        <small
+          style={{
+            display: 'block',
+            marginTop: '20px',
+            color: '#6e6250',
+            fontSize: '0.75rem',
+            fontFamily: 'Inter, sans-serif',
+          }}
+        >
+          Otomatik olarak markete yönlendiriliyorsunuz...
+        </small>
       </div>
     </main>
   );

@@ -11,6 +11,8 @@ function ResultContent() {
 
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
+  const rewardTokens = searchParams.get('rewardTokens');
+  const scoreEarned = searchParams.get('scoreEarned');
 
   return (
     <main
@@ -48,7 +50,7 @@ function ResultContent() {
           fontSize: '1.25rem',
           maxWidth: '600px',
           lineHeight: 1.6,
-          marginBottom: '32px',
+          marginBottom: '24px',
           opacity: 0.9,
         }}
       >
@@ -58,6 +60,33 @@ function ResultContent() {
             ? `Sana verilen dört günde katili bulamadın. Engizisyon başarısızlığı ve zaafı affetmez; görevinden derhal alındın...`
             : `Masum bir ruhu alevlere teslim ettin. Gerçek katil ise karanlıkta saklanmaya devam ediyor... Bu toprakların kaderi artık mühürlendi.`}
       </p>
+
+      {won && (rewardTokens || scoreEarned) && (
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '12px 24px',
+            background: 'rgba(218, 165, 32, 0.12)',
+            border: '1px solid rgba(218, 165, 32, 0.4)',
+            borderRadius: '4px',
+            marginBottom: '32px',
+            fontFamily: 'sans-serif',
+          }}
+        >
+          {rewardTokens && (
+            <span style={{ color: '#daa520', fontWeight: 700, fontSize: '1.1rem' }}>
+              🪙 +{rewardTokens} Token
+            </span>
+          )}
+          {scoreEarned && (
+            <span style={{ color: '#e5d9c5', fontWeight: 600, fontSize: '1rem' }}>
+              🎖️ +{scoreEarned} Sıralama Puanı
+            </span>
+          )}
+        </div>
+      )}
 
       {(truthReveal || (locationClues && Object.keys(locationClues).length > 0)) && (
         <div style={{ maxWidth: '800px', marginBottom: '24px', width: '100%' }}>

@@ -22,8 +22,9 @@ import {
   VenetianMask,
   X,
 } from 'lucide-react';
-import styles from './page.module.scss';
+import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
+import styles from './page.module.scss';
 import {
   CATEGORY_LABELS,
   EARN_WAYS,
@@ -33,6 +34,7 @@ import {
   formatEur,
   type MarketCategory,
   type MarketItem,
+  type TokenPack,
 } from './marketItems';
 
 type Tab = 'all' | MarketCategory | 'tokens';
@@ -60,15 +62,60 @@ const COSMETIC_ICONS = {
 };
 
 export default function MarketPage() {
-  const { tokenBalance, ownedItemIds, equippedCosmeticIds, hasHydrated, purchase, toggleEquip } =
-    useMarketStore();
+  const { authToken } = useGameStore();
+  const {
+    tokenBalance,
+    ownedItemIds,
+    equippedCosmeticIds,
+    hasHydrated,
+    fetchMarketData,
+    purchaseServer,
+    purchase,
+    toggleEquip,
+    createCheckout,
+    simulatePayment,
+  } = useMarketStore();
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [pendingItem, setPendingItem] = useState<MarketItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const tabsRef = useRef<HTMLElement | null>(null);
 
-  // localStorage yüklenene kadar varsayılanları göster; sunucu çıktısıyla uyuşmazlık olmasın
+  // Sayfa açıldığında backend'den güncel bakiye ve sahip olunanları çek
+  useEffect(() => {
+    if (authToken) {
+      fetchMarketData(authToken);
+    }
+  }, [authToken, fetchMarketData]);
+
+  // Ödeme dönüş parametrelerini kontrol et (Stripe veya test simülasyonu)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const payment = urlParams.get('payment');
+    const packId = urlParams.get('pack_id');
+    const testSimulated = urlParams.get('test_simulated');
+
+    if (payment === 'success') {
+      if (testSimulated === '1' && packId && authToken) {
+        simulatePayment(packId, authToken).then((res) => {
+          if (res.success) {
+            setToast('Test ödemesi başarıyla tamamlandı! Tokenler hesabına aktarıldı.');
+          }
+        });
+      } else {
+        setToast('Ödeme başarıyla alındı! Tokenler hazineye aktarıldı.');
+        if (authToken) fetchMarketData(authToken);
+      }
+      // Parametreleri temizle
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (payment === 'cancelled') {
+      setToast('Ödeme işlemi iptal edildi.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [authToken, fetchMarketData, simulatePayment]);
+
   const owned = useMemo(
     () => new Set(hasHydrated ? ownedItemIds : []),
     [hasHydrated, ownedItemIds]
@@ -78,7 +125,7 @@ export default function MarketPage() {
 
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 3200);
+    const timer = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -101,15 +148,56 @@ export default function MarketPage() {
     tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Gerçek para ile satın alma henüz bağlı değil; sadece görsel
-  const onTokenPackClick = () => {
-    setToast('Ödeme sistemi yakında açılıyor. Şimdilik tokenler oynayarak kazanılıyor.');
+  const onTokenPackClick = async (pack: TokenPack) => {
+    if (!authToken) {
+      setToast('Token satın almak için önce giriş yapmalısın.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setToast('Ödeme sayfası hazırlanıyor...');
+
+    const res = await createCheckout(pack.id, authToken);
+    setIsProcessing(false);
+
+    if (res.error) {
+      setToast(`Hata: ${res.error}`);
+      return;
+    }
+
+    if (res.checkoutUrl) {
+      if (res.isSimulated) {
+        setToast('Test ödemesi yapılıyor...');
+        const simRes = await simulatePayment(pack.id, authToken);
+        if (simRes.success) {
+          setToast(`${pack.name} başarıyla satın alındı! +${pack.tokens + pack.bonus} token eklendi.`);
+        } else {
+          setToast(simRes.error || 'İşlem başarısız.');
+        }
+      } else {
+        // Gerçek Stripe Checkout sayfasına yönlendir
+        window.location.href = res.checkoutUrl;
+      }
+    }
   };
 
-  const confirmPurchase = () => {
+  const confirmPurchase = async () => {
     if (!pendingItem) return;
-    const ok = purchase(pendingItem.id, pendingItem.price);
-    if (ok) setToast(`${pendingItem.title} artık senin.`);
+
+    if (authToken) {
+      setIsProcessing(true);
+      const res = await purchaseServer(pendingItem.id, authToken);
+      setIsProcessing(false);
+      if (res.success) {
+        setToast(`${pendingItem.title} başarıyla mühürlendi ve satın alındı.`);
+      } else {
+        setToast(res.message || 'Satın alma başarısız oldu.');
+      }
+    } else {
+      const ok = purchase(pendingItem.id, pendingItem.price);
+      if (ok) setToast(`${pendingItem.title} artık senin.`);
+      else setToast('Yetersiz bakiye.');
+    }
     setPendingItem(null);
   };
 
@@ -374,7 +462,11 @@ export default function MarketPage() {
                   <span className={styles.packBonus}>
                     {pack.bonus > 0 ? `${pack.tokens.toLocaleString('tr-TR')} + ${pack.bonus.toLocaleString('tr-TR')} bonus` : ' '}
                   </span>
-                  <button className={styles.packBtn} onClick={onTokenPackClick}>
+                  <button
+                    className={styles.packBtn}
+                    onClick={() => onTokenPackClick(pack)}
+                    disabled={isProcessing}
+                  >
                     {formatEur(pack.priceEur)}
                   </button>
                 </article>
@@ -382,7 +474,7 @@ export default function MarketPage() {
             </div>
 
             <p className={styles.packNote}>
-              <Lock size={14} /> Ödemeler yakında güvenli ödeme sağlayıcısı üzerinden alınacak. Fiyatlara KDV dahildir.
+              <Lock size={14} /> Güvenli Stripe test modu ödemesi. Gerçek para hareket etmez; test kartı (4242 4242 4242 4242) ile test edebilirsiniz.
             </p>
 
             <div className={styles.earnPanel}>

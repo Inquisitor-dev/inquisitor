@@ -34,6 +34,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
+import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -56,13 +57,21 @@ export default function HomePage() {
     setLocationClues,
     authToken,
     userEmail,
+    username,
+    avatar,
+    setProfile,
     isAdmin,
     logout,
     hasHydrated,
-    isPremium,
   } = useGameStore();
 
-  const { tokenBalance, ownedItemIds, equippedOutfitId, hasHydrated: marketHydrated } = useMarketStore();
+  const {
+    tokenBalance,
+    ownedItemIds,
+    equippedOutfitId,
+    hasHydrated: marketHydrated,
+    fetchMarketData,
+  } = useMarketStore();
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -81,6 +90,12 @@ export default function HomePage() {
   const [tempDifficulty, setTempDifficulty] = useState<string>('easy');
   const [tempStory, setTempStory] = useState<string>('medieval');
 
+  // Profil düzenleme state'i
+  const [editUsername, setEditUsername] = useState<string>('');
+  const [editAvatar, setEditAvatar] = useState<string>('avatar_1');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
   const [testModeAvailable, setTestModeAvailable] = useState(false);
   const [isTestModeStart, setIsTestModeStart] = useState(false);
@@ -91,13 +106,29 @@ export default function HomePage() {
   const saveAudioTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
+    username?: string | null;
+    avatar?: string;
     isAdmin: boolean;
-    isPremium: boolean;
+    tokenBalance?: number;
+    score?: number;
     dailySessionCount: number;
     dailyMessageCount: number;
     maxSessionsPerDay: number;
     maxMessagesPerDay: number;
   }>(null);
+
+  interface LeaderboardEntry {
+    rank: number;
+    userId: string;
+    name: string;
+    score: number;
+    avatar?: string;
+    username?: string | null;
+    isSelf?: boolean;
+  }
+
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [selfRankEntry, setSelfRankEntry] = useState<LeaderboardEntry | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Ses seviyesi ve sessiz ayarı hesapta saklanır; menüye her girişte oradan okunur
@@ -141,10 +172,23 @@ export default function HomePage() {
         if (!cancelled && data?.enabled) setTestModeAvailable(true);
       })
       .catch(() => {});
+
+    // Backend'den pazar bakiyesi ve gerçek sıralama verilerini çek
+    fetchMarketData(authToken);
+    fetch(apiUrl('/market/leaderboard'))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.leaderboard) {
+          setLeaderboard(data.leaderboard);
+          if (data.self) setSelfRankEntry(data.self);
+        }
+      })
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
-  }, [authToken, hasHydrated]);
+  }, [authToken, hasHydrated, fetchMarketData]);
 
   // Tam ekran: F11 ile aynı işi görür. Esc ile çıkıldığında da düğme güncel kalsın diye olay dinlenir.
   // Tam ekranı desteklemeyen tarayıcılarda (ör. iPhone Safari) düğme hiç gösterilmez.
@@ -257,26 +301,88 @@ export default function HomePage() {
     }
   }, [authToken, hasHydrated]);
 
-  useEffect(() => {
-    const fetchAccountSummary = async () => {
-      if (!isSettingsOpen || !authToken) return;
+  const fetchAccountSummary = async () => {
+    if (!authToken) return;
 
-      try {
-        const res = await fetch(apiUrl('/auth/me'), {
-          headers: { Authorization: `Bearer ${authToken}` },
-          cache: 'no-store',
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setAccountSummary(data);
+    try {
+      const res = await fetch(apiUrl('/auth/me'), {
+        headers: { Authorization: `Bearer ${authToken}` },
+        cache: 'no-store',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAccountSummary(data);
+        if (data.username || data.avatar) {
+          setProfile(data.username ?? null, data.avatar || 'avatar_1');
         }
-      } catch (err) {
-        console.error('Failed to load account summary', err);
       }
-    };
+    } catch (err) {
+      console.error('Failed to load account summary', err);
+    }
+  };
 
-    void fetchAccountSummary();
-  }, [authToken, isSettingsOpen]);
+  useEffect(() => {
+    if (hasHydrated && authToken) {
+      void fetchAccountSummary();
+    }
+  }, [authToken, hasHydrated, isSettingsOpen]);
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      const effUser = accountSummary?.username ?? username ?? '';
+      const effAv = accountSummary?.avatar ?? avatar ?? 'avatar_1';
+      setEditUsername(effUser);
+      setEditAvatar(effAv);
+      setProfileMsg(null);
+    }
+  }, [isSettingsOpen, accountSummary, username, avatar]);
+
+  const handleSaveProfile = async () => {
+    if (!authToken) return;
+    if (editUsername.trim().length < 3) {
+      setProfileMsg({ type: 'error', text: 'Kullanıcı adı en az 3 karakter olmalıdır.' });
+      return;
+    }
+    setProfileSaving(true);
+    setProfileMsg(null);
+    try {
+      const res = await fetch(apiUrl('/auth/profile'), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          username: editUsername.trim(),
+          avatar: editAvatar,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setProfile(data.username, data.avatar);
+        setAccountSummary((prev) =>
+          prev ? { ...prev, username: data.username, avatar: data.avatar } : null
+        );
+        setProfileMsg({ type: 'success', text: 'Profil başarıyla güncellendi.' });
+        fetch(apiUrl('/market/leaderboard'))
+          .then((r) => (r.ok ? r.json() : null))
+          .then((lb) => {
+            if (lb?.leaderboard) setLeaderboard(lb.leaderboard);
+            if (lb?.self) setSelfRankEntry(lb.self);
+          })
+          .catch(() => {});
+      } else {
+        setProfileMsg({
+          type: 'error',
+          text: data.message || data.error || 'Profil güncellenemedi.',
+        });
+      }
+    } catch {
+      setProfileMsg({ type: 'error', text: 'Sunucuya bağlanılamadı.' });
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const handleResume = async () => {
     if (!activeSession) return;
@@ -411,19 +517,19 @@ export default function HomePage() {
 
   const story = STORY_DETAILS[selectedStory] ?? STORY_DETAILS.medieval;
   const difficulty = DIFFICULTY_DETAILS[selectedDifficulty] ?? DIFFICULTY_DETAILS.easy;
-  const inquisitorName = userEmail ? userEmail.split('@')[0] : 'Engizitör';
 
   const effectiveIsAdmin = accountSummary?.isAdmin ?? isAdmin;
-  const effectiveIsPremium = accountSummary?.isPremium ?? isPremium;
   const effectiveEmail = accountSummary?.email ?? userEmail ?? '-';
-  const fallbackMaxSessions = effectiveIsAdmin ? 999 : effectiveIsPremium ? 5 : 2;
-  const fallbackMaxMessages = effectiveIsAdmin ? 999 : effectiveIsPremium ? 100 : 30;
+  const effectiveUsername = accountSummary?.username ?? username;
+  const effectiveAvatar = accountSummary?.avatar ?? avatar ?? 'avatar_1';
+  const inquisitorName = effectiveUsername || (userEmail ? userEmail.split('@')[0] : 'Engizitör');
+  const fallbackMaxSessions = effectiveIsAdmin ? 999 : 5;
+  const fallbackMaxMessages = effectiveIsAdmin ? 999 : 100;
 
-  // Hesapta açık olanlar: varsayılanlar (Ashenmoor, Kolay), markette satın alınanlar ve
-  // eski Premium/admin hesaplarda her şey. Market henüz tarayıcıda tutulur (useMarketStore).
+  // Hesapta açık olanlar: varsayılanlar (Ashenmoor, Kolay), markette satın alınanlar ve admin
   const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk'];
   const DIFFICULTY_IDS = ['easy', 'medium', 'hard'];
-  const unlocksEverything = effectiveIsAdmin || effectiveIsPremium;
+  const unlocksEverything = effectiveIsAdmin;
   const ownsMarketItem = (itemId: string) => marketHydrated && ownedItemIds.includes(itemId);
   const ownsUniverse = (id: string) =>
     id === 'medieval' || unlocksEverything || ownsMarketItem(`universe_${id}`);
@@ -512,7 +618,21 @@ export default function HomePage() {
       <div className={styles.lobby}>
         {/* KARAKTER */}
         <section className={`${styles.panel} ${styles.characterPanel}`}>
-          <span className={styles.panelEyebrow}>Engizitör</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+            <img
+              src={getAvatarSrc(effectiveAvatar)}
+              alt="Avatar"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: '1.5px solid #daa520',
+                boxShadow: '0 0 10px rgba(218, 165, 32, 0.3)',
+                objectFit: 'cover',
+              }}
+            />
+            <span className={styles.panelEyebrow}>Engizitör</span>
+          </div>
           <div className={styles.characterStage}>
             <span className={styles.characterHalo} />
             <CharacterTurntable
@@ -523,10 +643,30 @@ export default function HomePage() {
             <span className={styles.characterPedestal} />
           </div>
           <h2 className={styles.characterName}>{inquisitorName}</h2>
-          <span className={styles.characterRank}>Çaylak Engizitör</span>
-          <Link href="/market" className={styles.wardrobeBtn}>
-            <Shirt size={15} /> Gardırop
-          </Link>
+          <span className={styles.characterRank}>{getAvatarInfo(effectiveAvatar).role}</span>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'center' }}>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              style={{
+                background: 'rgba(218, 165, 32, 0.08)',
+                border: '1px solid rgba(218, 165, 32, 0.3)',
+                color: '#e8dcc4',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              <Settings size={13} /> Avatar & İsim
+            </button>
+            <Link href="/market" className={styles.wardrobeBtn}>
+              <Shirt size={15} /> Gardırop
+            </Link>
+          </div>
         </section>
 
         {/* AKTİF DOSYA */}
@@ -619,20 +759,60 @@ export default function HomePage() {
             <h3 className={styles.leaderboardTitle}>Engizitör Sıralaması</h3>
           </header>
           <ol className={styles.leaderboardList}>
-            {[1, 2, 3, 4, 5].map((rank) => (
-              <li key={rank} className={`${styles.leaderboardItem} ${rank <= 3 ? styles[`podium${rank}`] : ''}`}>
-                <span className={styles.lbRank}>{rank}</span>
-                <span className={styles.lbName}>—</span>
-                <span className={styles.lbScore}>0</span>
+            {(leaderboard.length > 0
+              ? leaderboard.slice(0, 5)
+              : [1, 2, 3, 4, 5].map((rank) => ({
+                  rank,
+                  name: '—',
+                  score: 0,
+                  userId: String(rank),
+                  avatar: 'avatar_1',
+                }))
+            ).map((entry) => (
+              <li
+                key={entry.rank}
+                className={`${styles.leaderboardItem} ${entry.rank <= 3 ? styles[`podium${entry.rank}`] : ''}`}
+              >
+                <span className={styles.lbRank}>{entry.rank}</span>
+                <span className={styles.lbName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img
+                    src={getAvatarSrc(entry.avatar)}
+                    alt=""
+                    style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      border: '1px solid rgba(218, 165, 32, 0.4)',
+                      flexShrink: 0,
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <span>{entry.name}</span>
+                </span>
+                <span className={styles.lbScore}>{entry.score}</span>
               </li>
             ))}
           </ol>
           <div className={styles.lbSelf}>
-            <span className={styles.lbRank}>—</span>
-            <span className={styles.lbName}>{inquisitorName} <em>(sen)</em></span>
-            <span className={styles.lbScore}>0</span>
+            <span className={styles.lbRank}>{selfRankEntry?.rank ?? '—'}</span>
+            <span className={styles.lbName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img
+                src={getAvatarSrc(selfRankEntry?.avatar ?? effectiveAvatar)}
+                alt=""
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '50%',
+                  border: '1.5px solid #daa520',
+                  flexShrink: 0,
+                  objectFit: 'cover',
+                }}
+              />
+              <span>{selfRankEntry?.name ?? `${inquisitorName} (sen)`}</span>
+            </span>
+            <span className={styles.lbScore}>{selfRankEntry?.score ?? accountSummary?.score ?? 0}</span>
           </div>
-          <p className={styles.lbNote}>İlk sezon yakında başlıyor. Çözdüğün her vaka seni üst sıralara taşıyacak.</p>
+          <p className={styles.lbNote}>Çözülen her vaka dedektiflik puanını artırır ve seni üst sıralara taşır.</p>
         </section>
       </div>
 
@@ -746,16 +926,139 @@ export default function HomePage() {
             <h2 id="settings-title" className={styles.sheetTitle}>Ayarlar</h2>
 
             <section className={styles.settingsBlock}>
-              <h3 className={styles.blockLabel}>Hesap</h3>
+              <h3 className={styles.blockLabel}>Hesap & Profil</h3>
               <div className={styles.profileRow}>
-                <span className={styles.profileAvatar}>{(effectiveEmail[0] ?? '?').toUpperCase()}</span>
+                <img
+                  src={getAvatarSrc(effectiveAvatar)}
+                  alt="Avatar"
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    border: '2px solid #daa520',
+                    boxShadow: '0 0 14px rgba(218, 165, 32, 0.35)',
+                    objectFit: 'cover',
+                  }}
+                />
                 <div className={styles.profileText}>
                   <strong>{inquisitorName}</strong>
                   <span>{effectiveEmail}</span>
+                  <small style={{ color: '#daa520', fontSize: '0.74rem', marginTop: '2px' }}>
+                    {getAvatarInfo(effectiveAvatar).name} ({getAvatarInfo(effectiveAvatar).role})
+                  </small>
                 </div>
                 <span className={styles.planBadge}>
-                  {effectiveIsAdmin ? 'Admin' : effectiveIsPremium ? 'Premium' : 'Ücretsiz'}
+                  {effectiveIsAdmin ? 'Admin' : 'Standart'}
                 </span>
+              </div>
+
+              {/* Avatar ve İsim Değiştir */}
+              <div style={{ marginTop: '16px', padding: '14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(232, 220, 196, 0.1)', borderRadius: '6px' }}>
+                <span style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '2px', color: '#daa520', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
+                  Avatar ve Kullanıcı Adını Değiştir
+                </span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
+                  {DEFAULT_AVATARS.map((av) => {
+                    const isSelected = editAvatar === av.id;
+                    return (
+                      <button
+                        key={av.id}
+                        type="button"
+                        onClick={() => setEditAvatar(av.id)}
+                        style={{
+                          background: isSelected ? 'rgba(138, 3, 3, 0.45)' : 'rgba(0, 0, 0, 0.35)',
+                          border: isSelected ? '2px solid #daa520' : '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '8px',
+                          padding: '6px 4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          boxShadow: isSelected ? '0 0 10px rgba(218, 165, 32, 0.4)' : 'none',
+                          transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                          transition: 'all 0.2s ease',
+                        }}
+                        title={`${av.name} — ${av.role}`}
+                      >
+                        <img
+                          src={av.src}
+                          alt={av.name}
+                          style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <span style={{ fontSize: '0.62rem', color: isSelected ? '#daa520' : '#888', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                          {av.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value)}
+                    placeholder="Kullanıcı adı"
+                    style={{
+                      flex: 1,
+                      background: 'rgba(0, 0, 0, 0.4)',
+                      border: '1px solid rgba(232, 220, 196, 0.15)',
+                      color: '#e5d9c5',
+                      padding: '8px 12px',
+                      fontSize: '0.85rem',
+                      fontFamily: 'Inter, sans-serif',
+                      borderRadius: '4px',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveProfile}
+                    disabled={profileSaving}
+                    style={{
+                      background: profileSaving ? 'rgba(138,3,3,0.3)' : '#8A0303',
+                      border: '1px solid rgba(218, 165, 32, 0.4)',
+                      color: '#e8dcc4',
+                      padding: '8px 14px',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      cursor: profileSaving ? 'not-allowed' : 'pointer',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease',
+                      fontFamily: 'Playfair Display, serif',
+                    }}
+                  >
+                    {profileSaving ? '...' : 'Kaydet'}
+                  </button>
+                </div>
+
+                {profileMsg && (
+                  <div
+                    style={{
+                      marginTop: '10px',
+                      padding: '6px 10px',
+                      borderRadius: '4px',
+                      fontSize: '0.78rem',
+                      fontFamily: 'Inter, sans-serif',
+                      background: profileMsg.type === 'success' ? 'rgba(0, 150, 0, 0.15)' : 'rgba(150, 0, 0, 0.2)',
+                      border: profileMsg.type === 'success' ? '1px solid rgba(0, 200, 0, 0.3)' : '1px solid rgba(200, 0, 0, 0.3)',
+                      color: profileMsg.type === 'success' ? '#8fdf8f' : '#f08080',
+                    }}
+                  >
+                    {profileMsg.type === 'success' ? '✓ ' : '⚠️ '}
+                    {profileMsg.text}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(218, 165, 32, 0.08)', border: '1px solid rgba(218, 165, 32, 0.25)', borderRadius: '4px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8dcc4', fontSize: '0.88rem' }}>
+                  <Coins size={16} color="#daa520" /> Hazine: <strong style={{ color: '#daa520' }}>{tokenBalance} Token</strong>
+                </span>
+                <Link href="/market" style={{ color: '#daa520', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 600 }}>
+                  Markete Git →
+                </Link>
               </div>
 
               <div className={styles.quotaGrid}>
