@@ -36,7 +36,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Uzun palto, fötr şapka ve cebinde saat. Sisli sokaklarda hiçbir ayrıntı gözünden kaçmaz.',
     price: 700,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'china_girl',
@@ -45,7 +45,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Erik çiçeği desenli ipek, altın püsküller. Tapınak avlusunda adımları duyulmaz.',
     price: 900,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'fantastic_girl',
@@ -54,7 +54,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Deri korse, işlemeli kolluklar ve dize kadar çizmeler. Verdiği sözü kılıcıyla tutar.',
     price: 900,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'cyber_girl',
@@ -63,7 +63,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Kızıl ışıklı zırhlı deri, kemer ve kayışlar. Neon sokaklarda iz bırakmadan dolaşır.',
     price: 1200,
     rarity: 'legendary',
-    ready: false,
+    ready: true,
   },
   {
     id: 'cyber_man',
@@ -72,7 +72,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Işıklı trençkot, krom eldivenler ve kovboy şapkası. Şehrin kanunu ondan sorulur.',
     price: 1200,
     rarity: 'legendary',
-    ready: false,
+    ready: true,
   },
 ];
 
