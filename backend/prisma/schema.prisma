@@ -114,7 +114,7 @@ model UserPurchase {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   itemId    String   // örn: universe_modern, difficulty_hard, cosmetic_plague_mask
-  category  String   // universe, difficulty, story, cosmetic
+  category  String   // universe, difficulty, story, cosmetic, outfit
   pricePaid Int
   createdAt DateTime @default(now())
 

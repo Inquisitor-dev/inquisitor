@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
+import { wearableOutfitId } from '@/config/outfits';
 import {
   directionFromDelta,
   screenStride,
@@ -516,8 +517,11 @@ export default function MapPage() {
   }, []);
 
   // Giyili kıyafetin karakteri tüm haritalarda kullanılır; tüm yön görselleri yüklenince görünür
-  const { equippedOutfitId, hasHydrated: marketHydrated } = useMarketStore();
-  const character = useCharacterManifest(marketHydrated ? equippedOutfitId : null, 'map');
+  const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
+  const character = useCharacterManifest(
+    marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null,
+    'map'
+  );
   
   // Modal states
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);

@@ -1,0 +1,602 @@
+@use '../../styles/variables' as *;
+
+// Market sayfasıyla aynı görsel dil: koyu zemin, kan kırmızısı, altın vurgular.
+$gold: #c9a24a;
+$gold-bright: #e0bb5e;
+$gold-soft: rgba(201, 162, 74, 0.14);
+$gold-line: rgba(201, 162, 74, 0.35);
+$panel-bg: rgba(18, 14, 12, 0.82);
+$rare: #b23a3a;
+$legendary: $gold-bright;
+
+// ─── Sayfa iskeleti ──────────────────────────────────────────
+
+.container {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(138, 3, 3, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(201, 162, 74, 0.05) 0%, transparent 50%),
+    #0a0807;
+  color: $text-parchment;
+  font-family: $font-body;
+  padding: 40px 40px 64px;
+  position: relative;
+  overflow-x: clip;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: $text-muted;
+  font-family: $font-title;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: color $transition-normal;
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+.purse {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-family: $font-title;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $gold-bright;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid $gold-line;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(201, 162, 74, 0.12), rgba(201, 162, 74, 0.04));
+  transition: border-color $transition-normal;
+
+  &:hover {
+    border-color: rgba(224, 187, 94, 0.7);
+  }
+}
+
+.header {
+  text-align: center;
+  margin: 24px auto 36px;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: $font-title;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 40px rgba(138, 3, 3, 0.5), 0 0 80px rgba(138, 3, 3, 0.15);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 18px auto 0;
+  max-width: 260px;
+
+  > span:not(.dividerIcon) {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(138, 3, 3, 0.7), transparent);
+  }
+}
+
+.dividerIcon {
+  color: $primary;
+}
+
+// ─── Düzen ───────────────────────────────────────────────────
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+%panel {
+  background: $panel-bg;
+  border: 1px solid rgba(138, 3, 3, 0.22);
+  border-radius: $radius-sm;
+}
+
+// Nadirlik renkleri: sahnede ve karolarda vurgu olarak kullanılır
+.rarity_common {
+  --rarity: #8a7f72;
+  --rarity-glow: rgba(138, 127, 114, 0.18);
+}
+
+.rarity_rare {
+  --rarity: #{$rare};
+  --rarity-glow: rgba(178, 58, 58, 0.28);
+}
+
+.rarity_legendary {
+  --rarity: #{$legendary};
+  --rarity-glow: rgba(224, 187, 94, 0.25);
+}
+
+// ─── Önizleme sahnesi ────────────────────────────────────────
+
+.stagePanel {
+  @extend %panel;
+  padding: 24px 28px 28px;
+  position: sticky;
+  top: 24px;
+}
+
+.stage {
+  position: relative;
+  height: 440px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.halo {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  width: 340px;
+  height: 340px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--rarity-glow, rgba(138, 3, 3, 0.18)) 0%, transparent 68%);
+  transition: background $transition-slow;
+}
+
+.turntable,
+.stillPreview {
+  position: relative;
+  z-index: 1;
+  height: 430px;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.85));
+}
+
+.stillPreview {
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(0.8) brightness(0.55) drop-shadow(0 16px 18px rgba(0, 0, 0, 0.85));
+}
+
+.pedestal {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 220px;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.9) 0%, rgba(138, 3, 3, 0.22) 55%, transparent 72%);
+  border: 1px solid rgba(138, 3, 3, 0.25);
+}
+
+.details {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(232, 220, 196, 0.07);
+}
+
+.rarity {
+  float: right;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+.detailsEyebrow {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 6px;
+}
+
+.detailsName {
+  font-family: $font-title;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.detailsDesc {
+  color: $text-muted;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 10px 0 20px;
+}
+
+.detailsActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dragHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: $text-dim;
+}
+
+// ─── Butonlar ────────────────────────────────────────────────
+
+%btnBase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  font-family: $font-title;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: all $transition-normal;
+  white-space: nowrap;
+}
+
+.buyBtn {
+  @extend %btnBase;
+  background: linear-gradient(180deg, #a10606, $primary);
+  color: $text-parchment;
+  border: 1px solid rgba(255, 120, 120, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, #b80a0a, #9a0505);
+    box-shadow: $shadow-red;
+  }
+
+  &:disabled {
+    background: #2a2524;
+    color: #6b625a;
+    border-color: transparent;
+    cursor: not-allowed;
+  }
+}
+
+.equipBtn {
+  @extend %btnBase;
+  color: $text-parchment;
+  border: 1px solid rgba(232, 220, 196, 0.25);
+
+  &:hover {
+    border-color: $gold-line;
+    color: $gold-bright;
+    background: $gold-soft;
+  }
+}
+
+.wornBtn {
+  @extend %btnBase;
+  color: $gold-bright;
+  border: 1px solid $gold-line;
+  background: $gold-soft;
+  cursor: default;
+}
+
+.ghostBtn {
+  @extend %btnBase;
+  color: $text-parchment;
+  border: 1px solid rgba(232, 220, 196, 0.2);
+
+  &:hover {
+    border-color: rgba(232, 220, 196, 0.5);
+  }
+}
+
+.soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+// ─── Karakter listesi ────────────────────────────────────────
+
+.listPanel {
+  @extend %panel;
+  padding: 22px;
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+
+  h2 {
+    font-family: $font-title;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  span {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.tile {
+  position: relative;
+  color: $text-parchment;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 10px 12px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(232, 220, 196, 0.08);
+  border-radius: $radius-sm;
+  transition: border-color $transition-normal, transform $transition-normal, box-shadow $transition-normal;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: var(--rarity);
+  }
+}
+
+.tileActive {
+  border-color: var(--rarity);
+  box-shadow: 0 0 0 1px var(--rarity), 0 0 22px var(--rarity-glow);
+}
+
+.tileImage {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, 0.7) 0%, transparent 40%),
+    radial-gradient(circle at 50% 45%, var(--rarity-glow), transparent 70%);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.tileSoon .tileImage img {
+  filter: grayscale(0.85) brightness(0.5);
+}
+
+.tileName {
+  font-family: $font-title;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tileState {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.66rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: $text-muted;
+
+  .tileActive & {
+    color: var(--rarity);
+  }
+}
+
+// ─── Satın alma modalı ───────────────────────────────────────
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 32px 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(138, 3, 3, 0.18), transparent 60%),
+    #120e0c;
+  border: 1px solid $border-red;
+  border-radius: $radius-sm;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(138, 3, 3, 0.2);
+}
+
+.modalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: $text-muted;
+  padding: 6px;
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+.modalTitle {
+  font-family: $font-title;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.ledger {
+  text-align: left;
+  padding: 14px 18px;
+  border: 1px dashed rgba(201, 162, 74, 0.3);
+  background: rgba(201, 162, 74, 0.04);
+  font-variant-numeric: tabular-nums;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9rem;
+  }
+
+  dt {
+    color: $text-muted;
+  }
+}
+
+.ledgerCost {
+  color: #d05050;
+}
+
+.ledgerTotal {
+  border-top: 1px solid rgba(201, 162, 74, 0.25);
+  margin-top: 6px;
+  padding-top: 8px !important;
+
+  dt,
+  dd {
+    font-family: $font-title;
+    font-weight: 700;
+    color: $gold-bright !important;
+  }
+}
+
+.modalWarning {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #d05050;
+}
+
+.inlineLink {
+  color: $gold-bright;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 60;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 22px;
+  font-family: $font-title;
+  color: $gold-bright;
+  background: #15100c;
+  border: 1px solid $gold-line;
+  border-radius: 2px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+// ─── Dar ekranlar ────────────────────────────────────────────
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .stagePanel {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 24px 16px 48px;
+  }
+
+  .stage {
+    height: 340px;
+  }
+
+  .turntable,
+  .stillPreview {
+    height: 330px;
+  }
+
+  .halo {
+    width: 260px;
+    height: 260px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

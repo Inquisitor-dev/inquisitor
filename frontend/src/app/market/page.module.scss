@@ -417,6 +417,10 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
+.grid_outfit {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
 // ─── Ortak kart ──────────────────────────────────────────────
 
 .card {
@@ -767,6 +771,79 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   flex-direction: column;
   flex-grow: 1;
   padding: 24px;
+}
+
+// ─── Karakter kartı ──────────────────────────────────────────
+// Nadirlik renklerini kozmetik kartıyla paylaşır; ikon yerine karakterin market görseli gösterilir.
+
+.outfitCard {
+  align-items: center;
+  text-align: center;
+  padding: 34px 20px 20px;
+  --rarity: #8a7f72;
+  --rarity-glow: rgba(138, 127, 114, 0.15);
+
+  .cardFooter {
+    width: 100%;
+  }
+}
+
+.outfitPortrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--rarity);
+  border: 1px solid rgba(232, 220, 196, 0.06);
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, 0.75) 0%, transparent 38%),
+    radial-gradient(circle at 50% 45%, var(--rarity-glow), transparent 68%),
+    rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.8));
+    transition: transform $transition-slow;
+  }
+
+  .outfitCard:hover & img {
+    transform: scale(1.04);
+  }
+}
+
+.isSoon .outfitPortrait img {
+  filter: grayscale(0.85) brightness(0.55) drop-shadow(0 10px 14px rgba(0, 0, 0, 0.8));
+}
+
+.soonTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.wardrobeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $gold;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $gold-bright;
+  }
 }
 
 // ─── Kozmetik kartı ──────────────────────────────────────────
