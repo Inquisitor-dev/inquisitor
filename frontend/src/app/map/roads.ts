@@ -23,8 +23,8 @@ export type RoadNetwork = {
 const village: RoadNetwork = {
   image: { width: 2752, height: 1536 },
   nodes: {
-    square: { x: 1265, y: 935 },
-    plaza: { x: 1440, y: 905 },
+    square: { x: 1285, y: 945 },
+    plaza: { x: 1440, y: 930 },
     ne: { x: 1620, y: 835 },
     se: { x: 1585, y: 945 },
     millFork: { x: 1755, y: 1068 },
@@ -42,17 +42,16 @@ const village: RoadNetwork = {
       { x: 955, y: 690 }, { x: 920, y: 660 }, { x: 870, y: 655 }, { x: 825, y: 650 },
     ]],
     // Tavernaya her zaman meydandan, toprak alandan yaklaşılır (önündeki çimenli şeritten geçmez)
-    ['square', 'tavernDoor', [{ x: 1262, y: 885 }]],
-    ['square', 'plaza', [{ x: 1350, y: 918 }]],
-    ['plaza', 'ne', [{ x: 1530, y: 862 }]],
+    ['square', 'tavernDoor', [{ x: 1270, y: 885 }]],
+    ['square', 'plaza', [{ x: 1360, y: 940 }]],
+    ['plaza', 'ne', [{ x: 1580, y: 890 }]],
     ['plaza', 'se', [{ x: 1530, y: 930 }]],
     ['se', 'ne', [{ x: 1600, y: 890 }]],
     // Kıvrılan kuzeydoğu yolu kuyunun batısından geçip çitin bittiği yerden mezarlığa girer
     ['ne', 'graveyardDoor', [
-      { x: 1700, y: 810 }, { x: 1765, y: 770 }, { x: 1800, y: 715 }, { x: 1815, y: 665 },
-      { x: 1810, y: 618 }, { x: 1820, y: 572 }, { x: 1845, y: 538 }, { x: 1900, y: 512 },
-      { x: 1960, y: 492 }, { x: 2010, y: 480 }, { x: 2050, y: 462 }, { x: 2072, y: 430 },
-      { x: 2060, y: 395 },
+      { x: 1720, y: 815 }, { x: 1790, y: 772 }, { x: 1830, y: 715 }, { x: 1848, y: 662 },
+      { x: 1854, y: 618 }, { x: 1866, y: 572 }, { x: 1897, y: 538 }, { x: 1945, y: 508 },
+      { x: 1995, y: 488 }, { x: 2045, y: 462 }, { x: 2072, y: 430 }, { x: 2060, y: 395 },
     ]],
     // Güneydoğu yolu tabelanın solundan geçer, değirmen önünde ikiye ayrılır
     ['se', 'millFork', [{ x: 1640, y: 1000 }, { x: 1700, y: 1043 }]],
@@ -63,8 +62,8 @@ const village: RoadNetwork = {
     ]],
     // Güneybatı yolu tabelanın sağından inip ahırın önüne gider
     ['square', 'farmDoor', [
-      { x: 1240, y: 980 }, { x: 1220, y: 1020 }, { x: 1160, y: 1060 }, { x: 1070, y: 1090 },
-      { x: 980, y: 1120 }, { x: 920, y: 1170 }, { x: 840, y: 1205 }, { x: 760, y: 1220 },
+      { x: 1250, y: 985 }, { x: 1222, y: 1022 }, { x: 1160, y: 1062 }, { x: 1075, y: 1120 },
+      { x: 990, y: 1160 }, { x: 920, y: 1182 }, { x: 840, y: 1207 }, { x: 760, y: 1220 },
     ]],
   ],
   doors: {

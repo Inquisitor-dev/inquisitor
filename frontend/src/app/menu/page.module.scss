@@ -571,13 +571,11 @@ $panel-border: rgba(138, 3, 3, 0.28);
   60%      { opacity: 0.75; transform: translateX(-50%) scale(0.98); }
 }
 
+// CharacterTurntable'a uygulanır; karenin ~%88'i karakter, 260px kare ≈ 230px boy
 .characterSprite {
   position: relative;
   z-index: 1;
-  height: 230px;
-  width: auto;
-  object-fit: contain;
-  image-rendering: pixelated;
+  height: 260px;
   filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.85));
   animation: idleFloat 4s ease-in-out infinite;
 }
@@ -1040,7 +1038,7 @@ $panel-border: rgba(138, 3, 3, 0.28);
   }
 
   .characterSprite {
-    height: 190px;
+    height: 215px;
   }
 }
 

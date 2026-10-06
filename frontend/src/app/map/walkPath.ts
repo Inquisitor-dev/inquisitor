@@ -1,5 +1,5 @@
 import type { Point } from './roads';
-import type { Direction } from './PixelCharacter';
+import { DIRECTIONS, type Direction } from '@/components/character/characterManifest';
 
 // Noktalardan geçen yumuşak bir eğri (centripetal Catmull-Rom) üretir.
 // Eğri tüm kontrol noktalarından geçer, sadece köşeleri yuvarlar; bu yüzden noktalar yolun ortasında kalır.
@@ -73,17 +73,6 @@ export function createRoute(points: Point[]): Route {
 
   return { length, pointAt };
 }
-
-const DIRECTIONS: Direction[] = [
-  'east',
-  'south-east',
-  'south',
-  'south-west',
-  'west',
-  'north-west',
-  'north',
-  'north-east',
-];
 
 // Bakış yönünü, mevcut yönden belirgin şekilde sapmadıkça değiştirmez (dilim sınırında titremeyi önler)
 export function directionWithHysteresis(dx: number, dy: number, current: Direction): Direction {

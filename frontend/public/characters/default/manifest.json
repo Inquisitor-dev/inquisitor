@@ -1,0 +1,58 @@
+{
+  "id": "default",
+  "map": {
+    "frameWidth": 192,
+    "frameHeight": 256,
+    "anchorX": 96,
+    "anchorY": 210,
+    "pxPerMeter": 120.0,
+    "elevation": 35.0
+  },
+  "walk": {
+    "frames": 16,
+    "cycleSeconds": 0.9667,
+    "strideMeters": 1.6789,
+    "stridePx": {
+      "east": 201.47,
+      "south-east": 141.76,
+      "south": 115.56,
+      "south-west": 141.76,
+      "west": 201.47,
+      "north-west": 141.76,
+      "north": 115.56,
+      "north-east": 141.76
+    },
+    "sheets": {
+      "east": "walk/east.webp",
+      "south-east": "walk/south-east.webp",
+      "south": "walk/south.webp",
+      "south-west": "walk/south-west.webp",
+      "west": "walk/west.webp",
+      "north-west": "walk/north-west.webp",
+      "north": "walk/north.webp",
+      "north-east": "walk/north-east.webp"
+    }
+  },
+  "idle": {
+    "frames": 37,
+    "fps": 10,
+    "sheets": {
+      "east": "idle/east.webp",
+      "south-east": "idle/south-east.webp",
+      "south": "idle/south.webp",
+      "south-west": "idle/south-west.webp",
+      "west": "idle/west.webp",
+      "north-west": "idle/north-west.webp",
+      "north": "idle/north.webp",
+      "north-east": "idle/north-east.webp"
+    }
+  },
+  "turntable": {
+    "frames": 72,
+    "frameWidth": 512,
+    "frameHeight": 640,
+    "columns": 12,
+    "src": "turntable.webp"
+  },
+  "thumb": "thumb.webp"
+}

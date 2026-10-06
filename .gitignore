@@ -30,3 +30,9 @@ ngrok.yml
 
 # Antigravity Customizations
 .agents/mcp_config.json
+
+# Karakter kaynak dosyaları (GLB/FBX/blend) büyük; OneDrive yedekliyor, repoya girmiyor
+art/characters/*/source/
+art/characters/*/ref/
+art/characters/*/render/
+art/characters/*/preview/

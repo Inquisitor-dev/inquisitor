@@ -33,6 +33,7 @@ import { apiUrl } from '@/config/api';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
+import CharacterTurntable from '@/components/character/CharacterTurntable';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -61,7 +62,7 @@ export default function HomePage() {
     isPremium,
   } = useGameStore();
 
-  const { tokenBalance, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
+  const { tokenBalance, ownedItemIds, equippedOutfitId, hasHydrated: marketHydrated } = useMarketStore();
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -514,8 +515,8 @@ export default function HomePage() {
           <span className={styles.panelEyebrow}>Engizitör</span>
           <div className={styles.characterStage}>
             <span className={styles.characterHalo} />
-            <img
-              src="/characters/inquisitor2/idle/south.png"
+            <CharacterTurntable
+              outfitId={marketHydrated ? equippedOutfitId : null}
               alt="Engizitör karakteri"
               className={styles.characterSprite}
             />

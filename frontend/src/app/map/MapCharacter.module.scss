@@ -1,0 +1,72 @@
+/* MapCharacter.module.scss */
+
+.player {
+  position: absolute;
+  z-index: 15;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Günün saatine göre karakterin rengi ve gölgelerin koyuluğu.
+   Render zaten haritanın paletinde; renkler az değiştirilir. Gece siyah ceket koyu zemine
+   karışmasın diye çok hafif soğuk bir kenar ışığı alır. */
+.day {
+  --sprite-light: contrast(1.04);
+  --sprite-extra: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+  --cast-opacity: 0.5;
+  --contact-opacity: 0.8;
+}
+
+.dusk {
+  --sprite-light: brightness(0.92) saturate(0.9) sepia(0.15);
+  --sprite-extra: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+  --cast-opacity: 0.42;
+  --contact-opacity: 0.8;
+}
+
+.night {
+  --sprite-light: brightness(0.8) saturate(0.6);
+  --sprite-extra: drop-shadow(0 0 1px rgba(170, 185, 210, 0.35));
+  --cast-opacity: 0.22;
+  --contact-opacity: 0.85;
+}
+
+.sprite,
+.castShadow {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+.sprite {
+  filter: var(--sprite-light) var(--sprite-extra);
+}
+
+/* Siluet ayak noktası etrafında yere yatırılır: dikeyde ezilip ters çevrilir, sonra sağa eğilir */
+.castShadow {
+  transform: skewX(42deg) scaleY(-0.32);
+  filter: brightness(0) blur(1.2px);
+  opacity: var(--cast-opacity);
+}
+
+/* Ayakların hemen altında küçük, yumuşak temas gölgesi */
+.contactShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 45%, transparent 72%);
+  opacity: var(--contact-opacity);
+}
+
+/* Durma döngüsü: nefes alıp ağırlık aktaran kareler sırayla oynar */
+.idle {
+  animation: playFrames var(--duration) steps(var(--frames)) infinite;
+}
+
+@keyframes playFrames {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(-1 * var(--sheet-width)); }
+}
