@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { DEFAULT_OUTFIT_ID } from '@/config/outfits';
 
 // Market bakiyesi ve satın alınan eşyalar. Backend'de token sistemi kurulana kadar
 // tarayıcıda (localStorage) saklanır.
@@ -9,10 +10,13 @@ interface MarketState {
   tokenBalance: number;
   ownedItemIds: string[];
   equippedCosmeticIds: string[];
+  // Karakterin giydiği tam kıyafet (lobi ve harita)
+  equippedOutfitId: string;
   hasHydrated: boolean;
 
   purchase: (itemId: string, price: number) => boolean;
   toggleEquip: (itemId: string) => void;
+  equipOutfit: (outfitId: string) => void;
   setHasHydrated: (val: boolean) => void;
 }
 
@@ -22,6 +26,7 @@ export const useMarketStore = create<MarketState>()(
       tokenBalance: STARTING_BALANCE,
       ownedItemIds: [],
       equippedCosmeticIds: [],
+      equippedOutfitId: DEFAULT_OUTFIT_ID,
       hasHydrated: false,
 
       purchase: (itemId, price) => {
@@ -41,6 +46,8 @@ export const useMarketStore = create<MarketState>()(
             : [...state.equippedCosmeticIds, itemId],
         })),
 
+      equipOutfit: (outfitId) => set({ equippedOutfitId: outfitId }),
+
       setHasHydrated: (val) => set({ hasHydrated: val }),
     }),
     {
@@ -49,6 +56,7 @@ export const useMarketStore = create<MarketState>()(
         tokenBalance: state.tokenBalance,
         ownedItemIds: state.ownedItemIds,
         equippedCosmeticIds: state.equippedCosmeticIds,
+        equippedOutfitId: state.equippedOutfitId,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

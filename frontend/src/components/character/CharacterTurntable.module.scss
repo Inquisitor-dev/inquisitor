@@ -1,0 +1,19 @@
+/* CharacterTurntable.module.scss */
+
+.turntable {
+  // Manifest gelmeden önce de yer kaplasın (512×640 kare oranı), sayfa yüklenirken kaymasın
+  aspect-ratio: 512 / 640;
+  background-repeat: no-repeat;
+  user-select: none;
+  -webkit-user-select: none;
+  // Dikey kaydırma sayfaya kalsın, yatay sürükleme karakteri çevirsin
+  touch-action: pan-y;
+}
+
+.ready {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}

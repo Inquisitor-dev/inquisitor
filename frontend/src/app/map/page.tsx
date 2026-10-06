@@ -5,16 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { useGameStore } from '../../store/useGameStore';
-import styles from './map.module.scss';
-import PlayerCharacter from './PlayerCharacter';
-import PixelCharacter, {
-  MEDIEVAL_SPRITE,
+import { useMarketStore } from '@/store/useMarketStore';
+import {
   directionFromDelta,
-  spriteUrls,
-  walkCycle,
+  screenStride,
+  useCharacterManifest,
   type Direction,
-  type CharacterSprite,
-} from './PixelCharacter';
+} from '@/components/character/characterManifest';
+import styles from './map.module.scss';
+import MapCharacter from './MapCharacter';
 import { getRoadNetwork, findPath, distance, expandPath, type Point, type RoadNetwork } from './roads';
 import { smoothPath, createRoute, directionWithHysteresis } from './walkPath';
 
@@ -230,9 +229,12 @@ const WALK_SPEED = 15;
 // Karakter haritayla birlikte ölçeklenir: harita görseli bu ölçekte çizilirken sprite kendi boyundadır.
 // Böylece her ekranda karakter/bina oranı ve rota süreleri aynı kalır.
 const CHARACTER_REF_LAYER_SCALE = 0.6;
-// Referans ölçekte, derinlik 1 iken px/sn. Adım animasyonu bu hıza birebir oturur (saniyede ~3.5 adım,
-// kararlı ve biraz aceleci bir yürüyüş); gerçekçi tempo haritadaki mesafeler için fazla yavaş kalıyor.
-const SCREEN_WALK_SPEED = 85;
+// Referans ölçekte karakter karesinin ekrandaki ölçeği (kare pikseli başına ekran pikseli).
+// 1,9 m'lik karakter karede ~185 px; 0.36 ile ekranda ~67 px boyunda görünür.
+const CHARACTER_SPRITE_SCALE = 0.36;
+// Referans ölçekte, derinlik 1 iken yatay yürüyüşte px/sn (saniyede ~2 adım, kararlı bir tempo).
+// Dikey yürüyüşte kamera açısı yüzünden ekranda daha az yol alınır; adım temposu her yönde aynı kalır.
+const SCREEN_WALK_SPEED = 75;
 const WALK_MAX_DURATION = 6; // sn, uzun rotalarda hız bu süreyi aşmayacak kadar artar
 const WALK_ACCEL_TIME = 0.25; // sn, kalkışta tam hıza çıkma süresi
 const WALK_DECEL_DISTANCE = 30; // px (referans ölçekte), varmadan önce yavaşlamaya başlanan mesafe
@@ -308,7 +310,8 @@ export default function MapPage() {
   const [walkPos, setWalkPos] = useState<Point | null>(null);
   const [playerFacing, setPlayerFacing] = useState<Direction>('south');
   const [walkingTo, setWalkingTo] = useState<string | null>(null);
-  const [walkScreenSpeed, setWalkScreenSpeed] = useState(SCREEN_WALK_SPEED);
+  // Yürüme döngüsünün ilerlemesi (kesirli döngü sayısı); adım kareleri buna göre seçilir
+  const [walkPhase, setWalkPhase] = useState(0);
   const walkFrame = useRef<number | null>(null);
   const imageLayerRef = useRef<HTMLDivElement>(null);
   const playerPos = (walkingTo && walkPos) || roads.nodes[restNodeId];
@@ -351,34 +354,9 @@ export default function MapPage() {
     };
   }, []);
 
-  // Engizisyoncu sprite'ı tüm haritalarda kullanılır; görsel yüklenemezse SVG karaktere düşer
-  const pixelSprite = MEDIEVAL_SPRITE;
-  const [loadedSprite, setLoadedSprite] = useState<CharacterSprite | null>(null);
-  const pixelSpriteReady = pixelSprite !== null && loadedSprite === pixelSprite;
-
-  useEffect(() => {
-    if (!pixelSprite) return;
-    // Yön değişiminde titreme olmasın diye tüm yön görselleri baştan yüklenir
-    let cancelled = false;
-    Promise.all(
-      spriteUrls(pixelSprite).map(
-        (src) =>
-          new Promise<void>((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = reject;
-            img.src = src;
-          })
-      )
-    )
-      .then(() => {
-        if (!cancelled) setLoadedSprite(pixelSprite);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [pixelSprite]);
+  // Giyili kıyafetin karakteri tüm haritalarda kullanılır; tüm yön görselleri yüklenince görünür
+  const { equippedOutfitId, hasHydrated: marketHydrated } = useMarketStore();
+  const character = useCharacterManifest(marketHydrated ? equippedOutfitId : null, 'map');
   
   // Modal states
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
@@ -554,6 +532,7 @@ export default function MapPage() {
       const to = points[i + 1];
       const t = segmentLengths[i] === 0 ? 1 : travelled / segmentLengths[i];
       if (to.x !== from.x || to.y !== from.y) setPlayerFacing(directionFromDelta(to.x - from.x, to.y - from.y));
+      setWalkPhase((now - startTime) / 1000 / (character?.walk.cycleSeconds ?? 1));
       setWalkPos({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
       walkFrame.current = requestAnimationFrame(step);
     };
@@ -591,7 +570,6 @@ export default function MapPage() {
       SCREEN_WALK_SPEED,
       (route.length * layerScale) / sizeScale / WALK_MAX_DURATION
     );
-    setWalkScreenSpeed(baseSpeed);
 
     const lookahead = WALK_LOOKAHEAD / layerScale;
     const firstAhead = route.pointAt(lookahead);
@@ -600,6 +578,7 @@ export default function MapPage() {
 
     let travelled = 0;
     let elapsed = 0;
+    let phase = 0;
     let lastTime: number | null = null;
     const step = (now: number) => {
       // Sekme arka plandan dönünce oluşan uzun boşlukta karakter ışınlanmasın diye üst sınır var
@@ -614,9 +593,21 @@ export default function MapPage() {
         0.35 + (0.65 * elapsed) / WALK_ACCEL_TIME,
         0.35 + (0.65 * remaining) / (WALK_DECEL_DISTANCE * sizeScale)
       );
+      const depth = depthScaleAt(pos.y, image.height);
+      // Gidilen yöndeki adım boyu (kare pikseli); yataydaki adıma oranı ekrandaki hız çarpanıdır.
+      // Böylece karakter yerde sabit hızla yürür: dikeyde ekranda yavaşlar ama adım temposu değişmez.
+      const towards = route.pointAt(travelled + 2);
+      const stride = character ? screenStride(character, towards.x - pos.x, towards.y - pos.y) : 0;
+      const directionFactor = character ? stride / screenStride(character, 1, 0) : 1;
       // Uzaktaki karakter ekranda daha yavaş ilerler, böylece adım boyu da ölçekle uyumlu kalır
-      const screenSpeed = baseSpeed * sizeScale * depthScaleAt(pos.y, image.height) * ease;
-      travelled += (screenSpeed / layerScale) * dt;
+      const screenSpeed = baseSpeed * sizeScale * depth * ease * directionFactor;
+      const advance = (screenSpeed / layerScale) * dt;
+      travelled += advance;
+      // Ekranda kat edilen yol / ekrandaki adım boyu (sizeScale ve layerScale birbirini götürür)
+      if (stride > 0) {
+        phase += (advance * CHARACTER_REF_LAYER_SCALE) / (stride * CHARACTER_SPRITE_SCALE * depth);
+        setWalkPhase(phase);
+      }
 
       if (travelled >= route.length) {
         setWalkPos(route.pointAt(route.length));
@@ -711,24 +702,17 @@ export default function MapPage() {
     return '/map/village_map.png';
   };
 
-  const renderPlayer = (x: number, y: number, depthScale?: number) =>
-    pixelSprite && pixelSpriteReady ? (
-      <PixelCharacter
-        sprite={pixelSprite}
+  const renderPlayer = (x: number, y: number, depthScale = 1) =>
+    character && (
+      <MapCharacter
+        manifest={character}
         x={x}
         y={y}
         facing={playerFacing}
         walking={Boolean(walkingTo)}
-        cycle={walkCycle(pixelSprite, walkScreenSpeed)}
-        depthScale={depthScale}
+        walkPhase={walkPhase}
+        scale={CHARACTER_SPRITE_SCALE * depthScale}
         ambient={timeOfDay <= 1 ? 'day' : timeOfDay <= 3 ? 'dusk' : 'night'}
-      />
-    ) : (
-      <PlayerCharacter
-        x={x}
-        y={y}
-        facing={playerFacing.endsWith('west') ? 'left' : 'right'}
-        walking={Boolean(walkingTo)}
       />
     );
 
