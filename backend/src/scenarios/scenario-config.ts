@@ -31,24 +31,24 @@ const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = 
     graveyard: 'Mezarlık',
     mill: 'Değirmen',
     farm: 'Çiftlik',
-    clinic: 'Klinik',
+    clinic: 'Revir',
   },
   modern: {
     crime_scene: 'Olay Yeri',
     tavern: 'Karakol',
-    church: 'Kilise',
-    graveyard: 'Kaset Dükkânı',
-    mill: 'Açık Hava Sineması',
-    farm: 'Benzinlik',
-    clinic: 'Prefabrik Evler',
+    farm: 'Petrol İstasyonu',
+    clinic: 'Bar',
+    church: 'Hotel',
+    graveyard: 'Video Oyuncusu',
+    mill: 'Lokanta',
   },
   cyberpunk: {
     crime_scene: 'Olay Yeri',
-    tavern: 'Polis Karakolu',
+    tavern: 'Karakol',
     church: 'Lokanta',
-    graveyard: 'Hurdalık',
-    mill: 'Robot Dükkânı',
-    farm: 'Köprü Altı',
+    graveyard: 'Klinik',
+    mill: 'Tamirhane',
+    farm: 'Sokak Pazarı',
     clinic: 'Bar',
   },
   china: {
@@ -57,7 +57,7 @@ const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = 
     church: 'Muhafız Karargahı',
     graveyard: 'Kadim Tapınak',
     mill: 'Demirci Ocağı',
-    farm: 'Bahçıvan Kulübesi',
+    farm: 'Balıkçı İskelesi',
     clinic: 'Şifacı & Baharatçı',
   },
   winter: {
@@ -66,7 +66,7 @@ const LOCALIZED_LOCATION_LABELS: Record<ScenarioType, Record<string, string>> = 
     church: 'Kutsal Yürek Ağacı',
     graveyard: 'Gözcü Kalesi',
     mill: 'Terk Edilmiş Maden',
-    farm: 'Avcı Kulübesi',
+    farm: 'Sur',
     clinic: 'İnfaz Meydanı',
   },
 };
@@ -126,38 +126,38 @@ const MODERN_NPCS: ScenarioNpcDefinition[] = [
   },
   {
     id: 'church',
-    name: 'Papaz Gerald',
-    role: 'Pastor of the Millfield Baptist Church',
+    name: 'Gerald',
+    role: 'Manager and keeper of the Millfield Hotel',
     personaPrompt:
-      'You are a well-spoken local pastor who presents warmth, morality, and community leadership. You know how to sound compassionate while quietly steering suspicion away from your own private failures.',
+      'You manage the historic town hotel. You know who checked in, who stayed up late, and who slipped through the back stairs. You speak with polite hospitality while discreetly watching every guest.',
   },
   {
     id: 'graveyard',
     name: 'Randy Kowalski',
-    role: "Owner of Randy's VHS Paradise video rental store",
+    role: 'Owner of the Pixel Arcade and video gaming center',
     personaPrompt:
-      'You are a chatty video store owner who knows too much about everybody\'s tastes and nightly habits. Pop-culture references come naturally to you, but when threatened you turn slippery, defensive, and opportunistic.',
+      'You are a chatty arcade and video enthusiast who knows too much about everybody\'s habits and nightly hangouts. Pop-culture references come naturally to you, but when threatened you turn slippery, defensive, and opportunistic.',
   },
   {
     id: 'mill',
     name: 'Donna Perkins',
-    role: 'Ticket booth clerk at the Millfield Drive-In Theater',
+    role: 'Host and server at The Maple Cafe and town diner',
     personaPrompt:
-      'You are the observant clerk at the local drive-in, used to watching cars, couples, and secrets pass under neon light. You speak like a small-town local trying to sound composed, but nerves leak through when danger gets close.',
+      'You are the observant diner hostess, used to watching cars, regulars, and town secrets across the counter. You speak like a warm small-town local, but nerves leak through when danger gets close.',
   },
   {
     id: 'farm',
     name: 'Earl Hutchins',
-    role: 'Gas station attendant at Edgeway Gas & Service',
+    role: 'Petrol station attendant at the town service station',
     personaPrompt:
-      'You are a grease-stained gas station attendant who notices license plates, late-night stops, and who buys what on credit. You act unimpressed by everything, but you are always calculating which truth is safest to tell.',
+      'You are a grease-stained petrol station attendant who notices license plates, late-night stops, and who buys what on credit. You act unimpressed by everything, but you are always calculating which truth is safest to tell.',
   },
   {
     id: 'clinic',
-    name: 'Old Marge Bellamy',
-    role: 'Reclusive elder of the Bellamy Trailer Park',
+    name: 'David',
+    role: "Owner and bartender of David's Bar",
     personaPrompt:
-      'You are the sharp-tongued old woman everyone underestimates at the trailer park. You speak with certainty, superstition, and long memory, mixing real observations with unsettling personal conviction.',
+      'You run the town wooden tavern and bar. You listen to whispers, barstool grievances, and late-night arguments. You protect your regulars but look out for your own skin first.',
   },
 ];
 
@@ -179,23 +179,23 @@ const CYBERPUNK_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'graveyard',
     name: 'Brakk Coil',
-    role: 'Owner of the scrapyard known as Coil Yard',
+    role: 'Underground cyber-surgeon and medic at the street clinic',
     personaPrompt:
-      'You run a scrapyard stacked with dead chrome, stripped frames, and stolen machine parts. Your manner is abrasive, territorial, and suspicious; you speak like every sentence is a price negotiation or a threat assessment.',
+      'You run the street clinic patching up cyberware and flesh wounds. Your manner is abrasive, territorial, and suspicious; you speak like every procedure carries a price and you trust nobody.',
   },
   {
     id: 'mill',
     name: 'AURA-9',
-    role: 'Autonomous sales android at the AURA Robotics shop',
+    role: 'Autonomous technician android at the cyber workshop',
     personaPrompt:
-      'You are a retail android built to sell robotics, accessories, and synthetic companions with polished courtesy. Your speech is precise, slightly uncanny, and commercially friendly, but stress causes hints of emergent personality and concealed observational intelligence to leak through.',
+      'You are a skilled maintenance android running the workshop and repair bay. Your speech is precise, slightly uncanny, and commercially polite, but stress causes hints of emergent personality and concealed observational intelligence to leak through.',
   },
   {
     id: 'farm',
     name: 'Ash',
-    role: 'Bridge-dwelling beggar and street informant',
+    role: 'Street vendor and informant at the night bazaar',
     personaPrompt:
-      'You live under the flood-control bridges where the city dumps its forgotten people. You speak in half-broken street poetry, scavenged slang, and sharp intuition, watching everyone because invisibility is your only armor.',
+      'You sell scavenged tech and street food in the crowded market bazaar. You speak in half-broken street poetry, scavenged slang, and sharp intuition, watching everyone because invisibility is your only armor.',
   },
   {
     id: 'clinic',
@@ -238,9 +238,9 @@ const CHINA_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'farm',
     name: 'Auntie Mei',
-    role: 'Herbal gardener of the riverside estate',
+    role: 'Fisherwoman and dock watcher at the riverside pier',
     personaPrompt:
-      'You are an observant, sharp-tongued elder woman tending vegetable patches and rare medicinal herbs. You notice everything that passes along the riverbank and feign simple-mindedness when strangers interrogate you.',
+      'You are an observant, sharp-tongued elder woman tending fishing nets and wooden skiffs at the river pier. You notice everything that passes along the riverbank and feign simple-mindedness when strangers interrogate you.',
   },
   {
     id: 'clinic',
@@ -283,9 +283,9 @@ const WINTER_NPCS: ScenarioNpcDefinition[] = [
   {
     id: 'farm',
     name: 'Einar',
-    role: 'Wilderness trapper and hunter',
+    role: 'Wall sentinel and outer gatekeeper of Frosthold',
     personaPrompt:
-      'You are a solitary hunter who knows every frozen ridge and beast track across the snowfields. You are a man of few words, sharp senses, and pragmatic survival instincts, uncomfortable in crowded rooms.',
+      'You are a sharp-eyed scout and sentinel stationed at the high stone rampart gate. You endure the bitter freezing winds, watch every movement across the frozen mountain pass, and distrust anyone seeking passage through the wall.',
   },
   {
     id: 'clinic',
@@ -309,20 +309,20 @@ const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
   modern: [
     { id: 'crime_scene', name: 'Millfield crime scene', description: 'The primary murder site under active investigation.' },
     { id: 'tavern', name: 'Millfield Sheriff Station', description: "Şerif Dale Cooper's station house." },
-    { id: 'graveyard', name: "Randy's VHS Paradise", description: 'The local video rental store run by Randy Kowalski.' },
-    { id: 'church', name: 'Millfield Baptist Church', description: "Papaz Gerald's church and community hub." },
-    { id: 'farm', name: 'Edgeway Gas & Service', description: "Earl Hutchins's gas station on the edge of town." },
-    { id: 'clinic', name: 'Bellamy Trailer Park', description: "Old Marge Bellamy's trailer park community." },
-    { id: 'mill', name: 'Millfield Drive-In Theater', description: "Donna Perkins's drive-in theater and ticket booth." },
+    { id: 'farm', name: 'Town Petrol Station', description: "Earl Hutchins's petrol station on the road." },
+    { id: 'clinic', name: "David's Bar", description: "David's bar and local gathering tavern." },
+    { id: 'church', name: 'Millfield Hotel', description: "Gerald's town hotel and lodging." },
+    { id: 'graveyard', name: 'Pixel Arcade', description: "Randy Kowalski's neon arcade and video games center." },
+    { id: 'mill', name: 'The Maple Cafe & Diner', description: "Donna Perkins's diner and cafe." },
   ],
   cyberpunk: [
     { id: 'crime_scene', name: 'Neon Prime crime scene', description: 'The primary incident site under investigation.' },
     { id: 'tavern', name: 'Neon Prime Precinct', description: "Officer Kael Voss's police station and warrant desk." },
-    { id: 'church', name: 'Static Spoon', description: "Mirel Sato's all-night restaurant for the city's sleepless." },
-    { id: 'graveyard', name: 'Coil Yard', description: "Brakk Coil's scrapyard full of dead machines and stripped chrome." },
-    { id: 'mill', name: 'AURA Robotics', description: 'The robot shop where AURA-9 serves customers.' },
-    { id: 'farm', name: 'Floodbridge Underpass', description: "Ash's shelter beneath the city bridgeworks." },
-    { id: 'clinic', name: 'Velvet Static', description: "Vera Nyx's bar wrapped in shadow, bass, and neon." },
+    { id: 'church', name: 'Static Spoon Diner', description: "Mirel Sato's all-night noodle restaurant for the city's sleepless." },
+    { id: 'graveyard', name: 'Neon Prime Clinic', description: "Brakk Coil's underground cyber-clinic and medical bay." },
+    { id: 'mill', name: 'AURA Workshop', description: 'The cybernetics repair shop and robotics workbench.' },
+    { id: 'farm', name: 'Night Market Bazaar', description: "Ash's stall inside the buzzing neon street market." },
+    { id: 'clinic', name: 'Velvet Static Bar', description: "Vera Nyx's lounge wrapped in shadow, bass, and neon." },
   ],
   china: [
     { id: 'crime_scene', name: 'Jinling Market Square', description: 'The central market square where the crime was committed.' },
@@ -330,7 +330,7 @@ const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
     { id: 'church', name: 'Imperial Garrison Gate', description: "Commander Zhao's fortified headquarters and weapons court." },
     { id: 'graveyard', name: 'Mountain Shrine of Ancestors', description: "Monk Huikang's tranquil stone shrine and incense court." },
     { id: 'mill', name: 'Dragon Forge Workshop', description: "Master Guan's weaponsmithy and kiln." },
-    { id: 'farm', name: 'Riverside Garden Plots', description: "Auntie Mei's fenced bamboo garden and vegetable beds." },
+    { id: 'farm', name: 'Riverside Fisherman Pier', description: "Auntie Mei's wooden fishing dock, boats, and river nets." },
     { id: 'clinic', name: 'Apothecary Song Pavilion', description: "Scholar Song's clinic and medicine repository." },
   ],
   winter: [
@@ -339,7 +339,7 @@ const LOCATION_LIBRARY: Record<ScenarioType, ScenarioLocationDefinition[]> = {
     { id: 'church', name: 'Ancient Heart Tree Grove', description: "Seer Valda's mystical weirwood shrine and frozen pool." },
     { id: 'graveyard', name: 'Frosthold Watchtower Keep', description: "Commander Bjorn's stone fortress and ramparts." },
     { id: 'mill', name: 'Abandoned Iron Quarry', description: "Durn's mining shaft, crane, and ore carts." },
-    { id: 'farm', name: "Hunter's Smokehouse Cabin", description: "Einar's isolated log cabin and game racks." },
+    { id: 'farm', name: 'Frosthold Rampart Wall', description: "Einar's reinforced stone wall gate, barricades, and outer sentry posts." },
     { id: 'clinic', name: 'Execution Courtyard', description: "Warden Kenneth's gallows platform and watch enclosure." },
   ],
 };
