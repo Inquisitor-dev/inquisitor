@@ -3,7 +3,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { INTERIOR_LOCATIONS, InteriorHotspot } from '@/config/interiorConfig';
+import {
+  getInterior,
+  getScenarioInteriors,
+  InteriorHotspot,
+  LocationInteriorData,
+} from '@/config/interiorConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
@@ -13,9 +18,59 @@ interface InteriorViewerProps {
 }
 
 export default function InteriorViewer({ locationId }: InteriorViewerProps) {
+  const { scenarioType, hasHydrated } = useGameStore();
+  // Kayıtlı evren yüklenmeden önce varsayılan evrenin mekânı bir an görünmesin
+  if (!hasHydrated) return <div className={styles.unavailable} />;
+
+  const scenario = scenarioType || 'medieval';
+  const locationData = getInterior(scenario, locationId);
+  if (!locationData) {
+    return (
+      <div className={styles.unavailable}>
+        <div className={styles.unavailableCard}>
+          <h1 className={styles.unavailableTitle}>Bu mekânın içi henüz hazır değil</h1>
+          <p className={styles.unavailableText}>
+            Bu evrenin iç mekânları üzerinde çalışılıyor. Sorgunu mekânın kendisinden sürdürebilirsin.
+          </p>
+          <div className={styles.unavailableActions}>
+            <Link href="/map" className={styles.backBtn}>
+              Haritaya Dön
+            </Link>
+            {locationId !== 'crime_scene' && (
+              <Link href={`/interact/${locationId}`} className={styles.actionBtn}>
+                Mekâna Dön
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <InteriorScene
+      key={`${scenario}-${locationId}`}
+      locationId={locationId}
+      locationData={locationData}
+      scenarioInteriors={getScenarioInteriors(scenario)}
+    />
+  );
+}
+
+function InteriorScene({
+  locationId,
+  locationData,
+  scenarioInteriors,
+}: {
+  locationId: string;
+  locationData: LocationInteriorData;
+  scenarioInteriors: LocationInteriorData[];
+}) {
   const router = useRouter();
-  const locationData = INTERIOR_LOCATIONS[locationId] || INTERIOR_LOCATIONS.tavern;
-  const { sessionId, authToken, notes, setNotes } = useGameStore();
+  const { sessionId, authToken, notes, setNotes, inventory } = useGameStore();
+  // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
+  const isSearchSpot = (hotspot: InteriorHotspot) => hotspot.category === 'clue' && !hotspot.clueSnippet;
+  const hasWarrant = inventory?.activeWarrants?.includes(locationData.id) ?? false;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -89,14 +144,20 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
     const height = (canvas.height = window.innerHeight);
 
     const isEmbers = locationData.particleType === 'embers';
-    const count = isEmbers ? 45 : 35;
+    // Yağmur: neon ışığında parlayan ince, eğik damlalar
+    const isRain = locationData.particleType === 'rain';
+    const count = isRain ? 90 : isEmbers ? 45 : 35;
 
     const particles = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
-      speedY: isEmbers ? -(Math.random() * 0.9 + 0.3) : Math.random() * 0.4 - 0.2,
-      speedX: (Math.random() - 0.5) * 0.6,
+      size: isRain ? Math.random() * 12 + 10 : Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
+      speedY: isRain
+        ? Math.random() * 6 + 9
+        : isEmbers
+        ? -(Math.random() * 0.9 + 0.3)
+        : Math.random() * 0.4 - 0.2,
+      speedX: isRain ? -1.2 : (Math.random() - 0.5) * 0.6,
       opacity: Math.random() * 0.6 + 0.2,
       pulse: Math.random() * Math.PI * 2,
     }));
@@ -123,6 +184,17 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
           0.1,
           Math.min(0.85, p.opacity + Math.sin(p.pulse) * 0.25)
         );
+
+        if (isRain) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.speedX * 2, p.y + p.size);
+          ctx.strokeStyle = `rgba(170, 220, 255, ${currentOpacity * 0.35})`;
+          ctx.lineWidth = 1;
+          ctx.shadowBlur = 0;
+          ctx.stroke();
+          return;
+        }
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -439,7 +511,11 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
 
       {/* ─── ATMOSPHERIC OVERLAYS ─── */}
       <div className={styles.vignetteOverlay} />
-      <div className={styles.torchFlickerOverlay} />
+      <div
+        className={
+          locationData.lightingTone === 'neon' ? styles.neonFlickerOverlay : styles.torchFlickerOverlay
+        }
+      />
       <canvas ref={canvasRef} className={styles.dustCanvas} />
 
       {/* ─── TOP HUD ─── */}
@@ -457,10 +533,11 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
             value={locationId}
             onChange={(e) => router.push(`/interior/${e.target.value}`)}
           >
-            <option value="tavern">🍺 Taverna (Kardeş Aldric)</option>
-            <option value="church">⛪ Kilise (Peder Malachar)</option>
-            <option value="mill">⚙️ Değirmen (Giles)</option>
-            <option value="graveyard">🪦 Mezarlık (İhtiyar Silas)</option>
+            {scenarioInteriors.map((interior) => (
+              <option key={interior.id} value={interior.id}>
+                {interior.menuLabel}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -543,6 +620,8 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
                   <div className={styles.cardCategory}>
                     {activeHotspot.category === 'npc'
                       ? 'Şüpheli ya da Tanık'
+                      : isSearchSpot(activeHotspot)
+                      ? 'Aranabilecek Yer'
                       : activeHotspot.category === 'clue'
                       ? 'Gizli İpucu ve Kanıt'
                       : activeHotspot.category === 'passage'
@@ -571,6 +650,17 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
                   <div className={styles.clueText}>&ldquo;{activeHotspot.clueSnippet}&rdquo;</div>
                 </div>
               )}
+
+              {isSearchSpot(activeHotspot) && (
+                <div className={styles.clueBox}>
+                  <div className={styles.clueTitle}>{hasWarrant ? 'Arama iznin var' : 'Arama iznin yok'}</div>
+                  <div className={styles.clueText}>
+                    {hasWarrant
+                      ? 'Bu mekânı araştırabilirsin. Neyi, nerede aradığını anlat; bulduğun kanıt Envanter’ine düşer.'
+                      : 'Burayı araştırmak için önce bu mekân için arama izni almalısın.'}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className={styles.cardFooter}>
@@ -584,9 +674,13 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
                 </button>
               )}
 
-              {activeHotspot.actionHref && (
+              {activeHotspot.actionHref && (!isSearchSpot(activeHotspot) || hasWarrant) && (
                 <Link
-                  href={activeHotspot.actionHref}
+                  href={
+                    isSearchSpot(activeHotspot)
+                      ? `${activeHotspot.actionHref}?ara=1`
+                      : activeHotspot.actionHref
+                  }
                   className={styles.actionBtn}
                 >
                   {activeHotspot.actionText || 'İlerle'} →

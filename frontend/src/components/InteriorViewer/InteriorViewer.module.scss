@@ -64,6 +64,29 @@
   100% { opacity: 0.19; transform: scale(1); }
 }
 
+// Cyberpunk: meşale yerine iki renkli, ara ara titreyen neon ışığı
+.neonFlickerOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(circle at 20% 35%, rgba(255, 40, 170, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 80% 40%, rgba(0, 220, 255, 0.3) 0%, transparent 45%);
+  animation: neonFlicker 6s steps(1, end) infinite;
+}
+
+@keyframes neonFlicker {
+  0% { opacity: 0.16; }
+  62% { opacity: 0.16; }
+  63% { opacity: 0.05; }
+  64% { opacity: 0.18; }
+  66% { opacity: 0.07; }
+  67% { opacity: 0.16; }
+  100% { opacity: 0.16; }
+}
+
 .dustCanvas {
   position: absolute;
   inset: 0;
@@ -535,6 +558,48 @@
   }
 }
 
+/* ── İÇ MEKÂNI HAZIR OLMAYAN EVREN ── */
+.unavailable {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #030303;
+}
+
+.unavailableCard {
+  max-width: 460px;
+  width: 100%;
+  padding: 32px 28px;
+  text-align: center;
+  background: rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(232, 220, 196, 0.15);
+  border-radius: $radius-sm;
+}
+
+.unavailableTitle {
+  margin: 0 0 12px;
+  font-family: $font-title;
+  font-size: 22px;
+  color: $text-parchment;
+}
+
+.unavailableText {
+  margin: 0 0 24px;
+  font-family: $font-body;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(232, 220, 196, 0.65);
+}
+
+.unavailableActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
 .noteBtn {
   background: rgba(232, 220, 196, 0.08);
   border: 1px solid rgba(232, 220, 196, 0.2);
@@ -549,5 +614,62 @@
   &:hover {
     background: rgba(232, 220, 196, 0.16);
     border-color: rgba(232, 220, 196, 0.4);
+  }
+}
+
+// ─── TELEFON ──────────────────────────────────────────────────────────────
+// Üst çubuk tek satıra sığmaz: mekân adı en üste, butonlar altına iki yana dizilir
+@media (max-width: 640px) {
+  .topHud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px 24px;
+  }
+
+  .compassRibbon {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .locationTitle {
+    font-size: 16px;
+  }
+
+  .locationSubtitle,
+  .compassGauge {
+    display: none;
+  }
+
+  .hudGroup {
+    gap: 8px;
+  }
+
+  .backBtn,
+  .actionBtn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .locationDropdown {
+    max-width: 150px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .bottomHud {
+    padding: 0 16px;
+  }
+
+  // İpucu yazısı yakınlaştırma butonlarının üstüne çıkar
+  .dragHint {
+    bottom: 52px;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+
+  .dragHint .handIcon {
+    display: none;
   }
 }

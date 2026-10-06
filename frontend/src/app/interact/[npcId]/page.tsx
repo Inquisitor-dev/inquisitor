@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
+import { getInterior } from '@/config/interiorConfig';
 import { HeartPulse, Hand, ScrollText, Search } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '../../../store/useGameStore';
 import styles from './interact.module.scss';
@@ -209,6 +210,16 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
   const [isInvestigating, setIsInvestigating] = useState(isCrimeScene);
   const currentNpcKey = isInvestigating ? `narrator_${npcKey}` : npcKey;
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(npcKey);
+
+  // İç mekândaki "Burayı Araştır" (?ara=1) doğrudan arama moduyla açar
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ara') !== '1') return;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (canInvestigate) setIsInvestigating(true);
+    else setToast('Bu mekânı araştırmak için önce arama izni almalısın.');
+  }, [hasHydrated, canInvestigate]);
   const items = evidence.filter((e) => e.category === 'ITEM');
   const statements = evidence.filter((e) => e.category === 'STATEMENT');
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
@@ -566,21 +577,24 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <Link href="/map" className={styles.back}>
             Haritaya Dön
           </Link>
-          <Link 
-            href={`/interior/${npcKey}`} 
-            className={styles.back}
-            style={{ 
-              backgroundColor: 'rgba(138, 3, 3, 0.4)', 
-              borderColor: 'rgba(138, 3, 3, 0.8)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title="Mekânın içini 360° incele"
-          >
-            <span>🧭</span>
-            <span>Mekânı İncele (360°)</span>
-          </Link>
+          {/* İç mekân sadece o evren için hazırlanmış mekânlarda gösterilir */}
+          {getInterior(scenarioType || 'medieval', npcKey) && (
+            <Link 
+              href={`/interior/${npcKey}`} 
+              className={styles.back}
+              style={{ 
+                backgroundColor: 'rgba(138, 3, 3, 0.4)', 
+                borderColor: 'rgba(138, 3, 3, 0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              title="Mekânın içini 360° incele"
+            >
+              <span>🧭</span>
+              <span>Mekânı İncele (360°)</span>
+            </Link>
+          )}
         </div>
 
         <div className={styles.npcInfo}>
