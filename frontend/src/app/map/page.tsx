@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
+import { getInterior } from '@/config/interiorConfig';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { wearableOutfitId } from '@/config/outfits';
@@ -717,7 +718,8 @@ export default function MapPage() {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       advanceTime();
-      router.push(`/interact/${locId}`);
+      // İç görünümü hazırlanmış mekânlarda oyuncuyu önce mekânın içi karşılar
+      router.push(getInterior(scenarioType, locId) ? `/interior/${locId}` : `/interact/${locId}`);
     } catch (err) {
       console.error('Failed to advance time', err);
       setLoadingLoc(null);
