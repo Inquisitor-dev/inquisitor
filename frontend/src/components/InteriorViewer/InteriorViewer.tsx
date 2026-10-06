@@ -141,14 +141,20 @@ function InteriorScene({
     const height = (canvas.height = window.innerHeight);
 
     const isEmbers = locationData.particleType === 'embers';
-    const count = isEmbers ? 45 : 35;
+    // Yağmur: neon ışığında parlayan ince, eğik damlalar
+    const isRain = locationData.particleType === 'rain';
+    const count = isRain ? 90 : isEmbers ? 45 : 35;
 
     const particles = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
-      speedY: isEmbers ? -(Math.random() * 0.9 + 0.3) : Math.random() * 0.4 - 0.2,
-      speedX: (Math.random() - 0.5) * 0.6,
+      size: isRain ? Math.random() * 12 + 10 : Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
+      speedY: isRain
+        ? Math.random() * 6 + 9
+        : isEmbers
+        ? -(Math.random() * 0.9 + 0.3)
+        : Math.random() * 0.4 - 0.2,
+      speedX: isRain ? -1.2 : (Math.random() - 0.5) * 0.6,
       opacity: Math.random() * 0.6 + 0.2,
       pulse: Math.random() * Math.PI * 2,
     }));
@@ -175,6 +181,17 @@ function InteriorScene({
           0.1,
           Math.min(0.85, p.opacity + Math.sin(p.pulse) * 0.25)
         );
+
+        if (isRain) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.speedX * 2, p.y + p.size);
+          ctx.strokeStyle = `rgba(170, 220, 255, ${currentOpacity * 0.35})`;
+          ctx.lineWidth = 1;
+          ctx.shadowBlur = 0;
+          ctx.stroke();
+          return;
+        }
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -491,7 +508,11 @@ function InteriorScene({
 
       {/* ─── ATMOSPHERIC OVERLAYS ─── */}
       <div className={styles.vignetteOverlay} />
-      <div className={styles.torchFlickerOverlay} />
+      <div
+        className={
+          locationData.lightingTone === 'neon' ? styles.neonFlickerOverlay : styles.torchFlickerOverlay
+        }
+      />
       <canvas ref={canvasRef} className={styles.dustCanvas} />
 
       {/* ─── TOP HUD ─── */}
