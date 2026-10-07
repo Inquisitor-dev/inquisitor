@@ -13,6 +13,11 @@ import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
 
+// Sürüklerken kenarı bu kadar aşabilir (lastik efekti). Sınırlar bu pay kadar içeride tutulur;
+// böylece esneme görselin normalde ekran dışında kalan kenarından yapılır, siyah boşluk görünmez.
+const OVERSCROLL_X = 40;
+const OVERSCROLL_Y = 30;
+
 interface InteriorViewerProps {
   locationId: string;
 }
@@ -110,12 +115,14 @@ function InteriorScene({
 
     const maxDeltaX = Math.max(0, stageW - containerW);
     const maxDeltaY = Math.max(0, stageH - containerH);
+    const edgeX = Math.min(OVERSCROLL_X, maxDeltaX / 2);
+    const edgeY = Math.min(OVERSCROLL_Y, maxDeltaY / 2);
 
     return {
-      minX: -maxDeltaX,
-      maxX: 0,
-      minY: -maxDeltaY,
-      maxY: 0,
+      minX: -maxDeltaX + edgeX,
+      maxX: -edgeX,
+      minY: -maxDeltaY + edgeY,
+      maxY: -edgeY,
     };
   }, []);
 
@@ -123,9 +130,9 @@ function InteriorScene({
   useEffect(() => {
     if (!containerRef.current || !stageRef.current) return;
     const bounds = getPanBounds();
-    const initialCenterX = bounds.minX / 2 + (locationData.initialPan || 0) * 10;
+    const initialCenterX = (bounds.minX + bounds.maxX) / 2 + (locationData.initialPan || 0) * 10;
     // Initial Y: frame slightly towards the bottom so the floor and tables are naturally visible!
-    const initialY = bounds.minY * 0.45;
+    const initialY = bounds.maxY + (bounds.minY - bounds.maxY) * 0.45;
 
     setPanX(Math.max(bounds.minX, Math.min(bounds.maxX, initialCenterX)));
     setPanY(Math.max(bounds.minY, Math.min(bounds.maxY, initialY)));
@@ -261,6 +268,10 @@ function InteriorScene({
       } else {
         velocityXRef.current = 0;
         velocityYRef.current = 0;
+        // Yavaş bırakılınca da esneme payından sınırın içine geri otur
+        const bounds = getPanBounds();
+        setPanX((prev) => Math.max(bounds.minX, Math.min(bounds.maxX, prev)));
+        setPanY((prev) => Math.max(bounds.minY, Math.min(bounds.maxY, prev)));
       }
     };
     animationFrameRef.current = requestAnimationFrame(decay);
@@ -318,8 +329,8 @@ function InteriorScene({
     const targetY = startPanYRef.current + deltaY;
 
     // Apply with boundary clamping & subtle elastic resistance
-    setPanX(Math.max(bounds.minX - 40, Math.min(bounds.maxX + 40, targetX)));
-    setPanY(Math.max(bounds.minY - 30, Math.min(bounds.maxY + 30, targetY)));
+    setPanX(Math.max(bounds.minX - OVERSCROLL_X, Math.min(bounds.maxX + OVERSCROLL_X, targetX)));
+    setPanY(Math.max(bounds.minY - OVERSCROLL_Y, Math.min(bounds.maxY + OVERSCROLL_Y, targetY)));
   };
 
   const handleMouseUp = () => {
@@ -372,8 +383,8 @@ function InteriorScene({
     const targetX = startPanXRef.current + deltaX;
     const targetY = startPanYRef.current + deltaY;
 
-    setPanX(Math.max(bounds.minX - 40, Math.min(bounds.maxX + 40, targetX)));
-    setPanY(Math.max(bounds.minY - 30, Math.min(bounds.maxY + 30, targetY)));
+    setPanX(Math.max(bounds.minX - OVERSCROLL_X, Math.min(bounds.maxX + OVERSCROLL_X, targetX)));
+    setPanY(Math.max(bounds.minY - OVERSCROLL_Y, Math.min(bounds.maxY + OVERSCROLL_Y, targetY)));
   };
 
   const handleTouchEnd = () => {
@@ -559,8 +570,8 @@ function InteriorScene({
             className={styles.hudIconBtn}
             onClick={() => {
               const bounds = getPanBounds();
-              setPanX(bounds.minX / 2);
-              setPanY(bounds.minY * 0.45);
+              setPanX((bounds.minX + bounds.maxX) / 2);
+              setPanY(bounds.maxY + (bounds.minY - bounds.maxY) * 0.45);
             }}
             title="Açıyı Sıfırla"
           >
