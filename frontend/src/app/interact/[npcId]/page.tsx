@@ -7,6 +7,8 @@ import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
 import { HeartPulse, Hand, ScrollText, Search } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '../../../store/useGameStore';
+import { useMarketStore } from '@/store/useMarketStore';
+import { findOutfit, outfitPortrait, wearableOutfitId } from '@/config/outfits';
 import styles from './interact.module.scss';
 
 type FearBand = 'CALM' | 'UNEASY' | 'NERVOUS' | 'PANIC';
@@ -174,6 +176,10 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
     addEvidence,
     hasHydrated,
   } = useGameStore();
+
+  // Oyuncunun giyili karakteri: mesaj balonlarında ve kenar çubuğunda portresi görünür
+  const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
+  const playerOutfit = marketHydrated ? findOutfit(wearableOutfitId(equippedOutfitId, ownedItemIds)) : undefined;
 
   const profile = getNpcProfile(npcKey, scenarioType || 'medieval') ?? {
     name: 'Meçhul Köylü',
@@ -621,7 +627,13 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
           <div className={styles.messages}>
             {messages.map((msg, i) => (
               <div key={i} className={`${styles.bubble} ${msg.role === 'player' ? styles.player : styles.npc}`}>
-                <div className={styles.bubbleLabel}>{msg.role === 'player' ? 'Engizitör' : isInvestigating ? 'Anlatıcı' : profile.name}</div>
+                <div className={styles.bubbleLabel}>
+                  {msg.role === 'player' && playerOutfit && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={outfitPortrait(playerOutfit.id)} alt="" className={styles.bubblePortrait} />
+                  )}
+                  {msg.role === 'player' ? 'Engizitör' : isInvestigating ? 'Anlatıcı' : profile.name}
+                </div>
                 <div className={styles.bubbleText}>
                   {msg.text.split('\n').map((line, j) => (
                     <span key={j}>
@@ -741,6 +753,18 @@ export default function InteractPage({ params }: { params: Promise<{ npcId: stri
         </div>
 
         <aside className={styles.sidebar}>
+          {playerOutfit && (
+            <div className={`${styles.sideCard} ${styles.playerCard}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={outfitPortrait(playerOutfit.id)} alt={playerOutfit.name} className={styles.playerPortrait} />
+              <div className={styles.playerInfo}>
+                <span className={styles.playerEyebrow}>Sorgucu</span>
+                <span className={styles.playerName}>{playerOutfit.name}</span>
+                <span className={styles.playerTitle}>{playerOutfit.title}</span>
+              </div>
+            </div>
+          )}
+
           <div className={styles.sideCard}>
             <div className={styles.sideTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Engizitörün Notları

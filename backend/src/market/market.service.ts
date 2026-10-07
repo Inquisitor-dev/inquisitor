@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  canonicalItemId,
   findMarketItem,
+  itemIdAliases,
   MARKET_ITEMS_CATALOG,
   MarketItemDef,
 } from './market-catalog';
@@ -55,7 +57,10 @@ export class MarketService {
     const defaultOwnedIds = MARKET_ITEMS_CATALOG.filter((i) => i.ownedByDefault).map(
       (i) => i.id,
     );
-    const ownedSet = new Set([...defaultOwnedIds, ...purchases.map((p) => p.itemId)]);
+    const ownedSet = new Set([
+      ...defaultOwnedIds,
+      ...purchases.map((p) => canonicalItemId(p.itemId)),
+    ]);
 
     // Son 30 token hareketi (ledger)
     const ledger = await this.prisma.tokenTransaction.findMany({
@@ -110,8 +115,8 @@ export class MarketService {
         throw new UnauthorizedException('Kullanıcı bulunamadı.');
       }
 
-      const existing = await tx.userPurchase.findUnique({
-        where: { userId_itemId: { userId, itemId } },
+      const existing = await tx.userPurchase.findFirst({
+        where: { userId, itemId: { in: itemIdAliases(itemId) } },
       });
 
       if (existing) {
@@ -172,7 +177,10 @@ export class MarketService {
         tokenBalance: newBalance,
         purchasedItem: item,
         ownedItemIds: Array.from(
-          new Set([...defaultOwnedIds, ...allPurchases.map((p) => p.itemId)]),
+          new Set([
+            ...defaultOwnedIds,
+            ...allPurchases.map((p) => canonicalItemId(p.itemId)),
+          ]),
         ),
       };
     });
@@ -192,8 +200,8 @@ export class MarketService {
     });
     if (user?.isAdmin) return true;
 
-    const purchase = await this.prisma.userPurchase.findUnique({
-      where: { userId_itemId: { userId, itemId } },
+    const purchase = await this.prisma.userPurchase.findFirst({
+      where: { userId, itemId: { in: itemIdAliases(itemId) } },
     });
 
     return !!purchase;

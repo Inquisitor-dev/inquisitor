@@ -1,8 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
-import { useCharacterManifest } from './characterManifest';
+import dynamic from 'next/dynamic';
+import { useCharacterManifest, type CharacterManifest } from './characterManifest';
 import styles from './CharacterTurntable.module.scss';
+
+// three.js yalnızca 3D model gösterilecekse yüklensin
+const CharacterModelView = dynamic(() => import('./CharacterModelView'), { ssr: false });
 
 // Bir tam tur süresi (sn), kendi kendine dönerken
 const AUTO_TURN_SECONDS = 14;
@@ -17,10 +21,45 @@ type Props = {
   alt?: string;
 };
 
+let webglSupport: boolean | null = null;
+
+function supportsWebGL(): boolean {
+  if (webglSupport === null) {
+    try {
+      const gl = document.createElement('canvas').getContext('webgl2');
+      webglSupport = !!gl;
+      // Deneme bağlamı hemen bırakılsın; tarayıcının açık bağlam sınırından yemesin
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch {
+      webglSupport = false;
+    }
+  }
+  return webglSupport;
+}
+
 // Menüdeki 360° karakter: yavaşça kendi etrafında döner, fareyle/parmakla sürüklenince elle çevrilir.
+// Manifest'te 3D model varsa gerçek zamanlı gösterilir; yoksa (ya da WebGL yoksa) sprite dönüşüne düşer.
 // Boyut `className` ile verilir (yükseklik); genişlik karenin oranından gelir.
 export default function CharacterTurntable({ outfitId, className = '', alt = 'Karakter' }: Props) {
   const manifest = useCharacterManifest(outfitId, 'turntable');
+  const [failedModel, setFailedModel] = useState<string | null>(null);
+
+  if (manifest?.model && failedModel !== manifest.model && supportsWebGL()) {
+    const model = manifest.model;
+    return <CharacterModelView src={model} alt={alt} className={className} onError={() => setFailedModel(model)} />;
+  }
+  return <SpriteTurntable manifest={manifest} className={className} alt={alt} />;
+}
+
+function SpriteTurntable({
+  manifest,
+  className,
+  alt,
+}: {
+  manifest: CharacterManifest | null;
+  className: string;
+  alt: string;
+}) {
   const turntable = manifest?.turntable;
   const [frame, setFrame] = useState(0);
   const frameRef = useRef(0);

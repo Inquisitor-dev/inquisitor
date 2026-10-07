@@ -18,9 +18,21 @@ type Props = {
   // Kare pikseli başına ekran pikseli
   scale: number;
   ambient?: Ambient;
+  // Ayak altındaki ışık halkasının rengi; karakterin nadirliğine göre
+  rarity?: 'common' | 'rare' | 'legendary';
 };
 
-export default function MapCharacter({ manifest, x, y, facing, walking, walkPhase, scale, ambient = 'day' }: Props) {
+export default function MapCharacter({
+  manifest,
+  x,
+  y,
+  facing,
+  walking,
+  walkPhase,
+  scale,
+  ambient = 'day',
+  rarity = 'common',
+}: Props) {
   const { frameWidth, frameHeight, anchorX, anchorY } = manifest.map;
   const width = frameWidth * scale;
   const height = frameHeight * scale;
@@ -52,9 +64,11 @@ export default function MapCharacter({ manifest, x, y, facing, walking, walkPhas
   const frameClass = walking ? '' : styles.idle;
 
   return (
-    <div className={`${styles.player} ${styles[ambient]}`} style={{ left: `${x}%`, top: `${y}%` }}>
+    <div className={`${styles.player} ${styles[ambient]} ${styles[`ring_${rarity}`]}`} style={{ left: `${x}%`, top: `${y}%` }}>
       {/* Sol üstten gelen harita ışığına göre sağ alta düşen gölge: aynı karenin yere yatırılmış silueti */}
       <div className={`${styles.castShadow} ${frameClass}`} style={frameStyle} />
+      {/* Oyuncunun karakterini kalabalık haritada seçilir kılan ışık halkası */}
+      <div className={styles.ring} style={{ width: width * 0.78, height: width * 0.25 }} />
       <div className={styles.contactShadow} style={{ width: width * 0.32, height: width * 0.07 }} />
       <div className={`${styles.sprite} ${frameClass}`} style={frameStyle} />
     </div>

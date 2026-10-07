@@ -14,7 +14,8 @@ export type RoadNetwork = {
   spawn: string;
   // Verilirse koordinatlar harita görselinin pikselleridir (ekran oranından bağımsız)
   image?: { width: number; height: number };
-  // Karakterin bu haritadaki boy çarpanı (köy = 1). Haritadaki insan, kapı ve araç boyutlarına göre seçilir.
+  // Karakterin bu haritadaki boy çarpanı. Haritadaki insan, kapı, araç ve eşya boyutlarına göre seçilir:
+  // karakter etraftaki insanlar kadar, kapıdan biraz kısa olmalı.
   characterScale?: number;
 };
 
@@ -24,6 +25,8 @@ export type RoadNetwork = {
 // Yolları görmek ve yeni nokta almak için haritayı `?debugRoads` ile aç.
 const village: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  // Karakter kapılar kadar uzun, fıçılar bel hizasında
+  characterScale: 1.05,
   nodes: {
     square: { x: 1285, y: 945 },
     plaza: { x: 1440, y: 930 },
@@ -89,6 +92,8 @@ const village: RoadNetwork = {
 // Kapılar mekanların tıklama alanlarının içindedir. İnsan ve araç boyları karakterle uyumlu, ölçek köyle aynı.
 const town: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  // Bankta oturan insanlar ve benzin pompaları ölçü alındı
+  characterScale: 1.1,
   nodes: {
     crossing: { x: 1290, y: 800 },
     northRoad: { x: 1700, y: 620 },
@@ -132,39 +137,61 @@ const town: RoadNetwork = {
   spawn: 'crossing',
 };
 
-// Cyberpunk haritası (cyberpunk_map_*.png, 2752x1536): koordinatlar meydan karoları ve sokaklar üzerindedir;
-// ortadaki kalkan logolu blok, tezgâhlar ve korumalar dolanılır. Kapılar mekanların tıklama alanlarının içindedir.
-// İnsan boyları karakterle uyumlu, ölçek köyle aynı.
+// Cyberpunk haritası (cyberpunk_map_*.webp, 2752x1536): gökdelenlerle çevrili meydan.
+// Mekânlar meydanın arka iki kenarında, ortada dört bloklu gece pazarı var. Yollar pazar bloklarının ve
+// karakolun önündeki bariyerlerin çevresinden dolaşır. Kapı noktaları binaların hemen önündeki açık
+// zemindedir: karakter ayaklarından yukarı çizildiği için nokta kapının içinde olursa gövdesi duvara biner.
+// Tezgâhtaki satıcılar ~85 px boyunda; karakter onlarla aynı boya ölçeklenir.
 const cyberpunk: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  characterScale: 0.8,
   nodes: {
-    plaza: { x: 930, y: 960 },
-    north: { x: 1250, y: 700 },
-    east: { x: 1730, y: 900 },
-    south: { x: 1480, y: 1270 },
-    marketDoor: { x: 760, y: 840 },
-    ramenDoor: { x: 1150, y: 640 },
-    workshopDoor: { x: 1745, y: 710 },
-    clinicDoor: { x: 2050, y: 665 },
-    barDoor: { x: 2010, y: 1150 },
-    policeDoor: { x: 1395, y: 1215 },
-    homeDoor: { x: 800, y: 1110 },
+    plaza: { x: 1390, y: 1345 },
+    sw: { x: 965, y: 1210 },
+    south: { x: 1720, y: 1240 },
+    west: { x: 520, y: 950 },
+    north: { x: 1100, y: 715 },
+    top: { x: 1380, y: 640 },
+    ne: { x: 1790, y: 770 },
+    east: { x: 2170, y: 960 },
+    homeDoor: { x: 400, y: 1000 },
+    ramenDoor: { x: 930, y: 790 },
+    workshopDoor: { x: 1230, y: 660 },
+    clinicDoor: { x: 1700, y: 745 },
+    // Bariyerlerin arasındaki boşluğun önü
+    policeDoor: { x: 2000, y: 850 },
+    // Kadife ipin önünde, kapının tam karşısı
+    barDoor: { x: 2440, y: 1010 },
+    marketDoor: { x: 1120, y: 1110 },
   },
   edges: [
-    ['plaza', 'marketDoor', [{ x: 850, y: 890 }]],
-    ['plaza', 'homeDoor', [{ x: 900, y: 1050 }]],
-    ['plaza', 'north', [{ x: 960, y: 800 }, { x: 1100, y: 740 }]],
-    ['north', 'ramenDoor'],
-    // Lamba direğinin üstünden doğu sokağına
-    ['north', 'east', [{ x: 1350, y: 690 }, { x: 1450, y: 690 }, { x: 1600, y: 700 }, { x: 1720, y: 780 }]],
-    ['east', 'workshopDoor'],
-    // Klinik önündeki ağaçlı meydana
-    ['east', 'clinicDoor', [{ x: 1830, y: 800 }, { x: 1960, y: 720 }]],
-    // Kulübün önündeki kuyruğun solundan
-    ['east', 'barDoor', [{ x: 1760, y: 1100 }, { x: 1890, y: 1160 }]],
-    // Kalkan logolu bloğun altından karakolun kapısına
-    ['east', 'south', [{ x: 1730, y: 1120 }, { x: 1650, y: 1250 }]],
-    ['south', 'policeDoor'],
+    // Kapılar koridorun üzerindeki ara noktalardır: karakter kapının önünden geçerek ilerler,
+    // bir kapıya giderken onu geçip kavşaktan geri dönmez.
+    // Alt meydandan pazarın iki yanına; alttaki bloğun altından, sol alttaki kulübenin üstünden geçer
+    ['plaza', 'sw', [{ x: 1180, y: 1250 }]],
+    ['plaza', 'south'],
+    // Pazara sol ve alt bloklar arasındaki boşluktan girilir: alt meydandan ya da batıdan doğrudan
+    ['plaza', 'marketDoor', [{ x: 1180, y: 1250 }]],
+    ['sw', 'marketDoor'],
+    ['west', 'marketDoor', [{ x: 780, y: 1090 }]],
+    ['sw', 'west'],
+    ['west', 'homeDoor'],
+    // Batıdan sol bloğun tentelerinin solundan geçip lokantanın önünden kuzeye
+    ['west', 'ramenDoor', [{ x: 770, y: 800 }]],
+    ['ramenDoor', 'north'],
+    ['north', 'workshopDoor'],
+    ['north', 'top'],
+    ['top', 'workshopDoor'],
+    // Üst bloğun tentelerinin üstünden kliniğin önüne, oradan doğuya
+    ['top', 'clinicDoor', [{ x: 1514, y: 626 }]],
+    ['clinicDoor', 'ne'],
+    // Sağ bloğun tentesiyle karakolun bariyeri arasından
+    ['ne', 'policeDoor'],
+    ['policeDoor', 'east'],
+    // Kadife ipin önünden kapının karşısına
+    ['east', 'barDoor'],
+    // Sağ bloğun tabureleri dolanılır
+    ['east', 'south', [{ x: 2064, y: 1128 }]],
   ],
   doors: {
     home: 'homeDoor',
@@ -183,7 +210,8 @@ const cyberpunk: RoadNetwork = {
 // Kapı yükseklikleri köydekinden küçük, karakter biraz küçültülür.
 const chinaRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
-  characterScale: 0.85,
+  // Kapılar, masalar ve örse göre
+  characterScale: 0.95,
   nodes: {
     square: { x: 1320, y: 790 },
     north: { x: 1480, y: 665 },
@@ -235,7 +263,8 @@ const chinaRoads: RoadNetwork = {
 // Kaya, dikili taş ve ateşlerin etrafından dolanılır. Haritadaki insanlar ~90 px; karakter küçültülür.
 const winterRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
-  characterScale: 0.82,
+  // Atların ve kasabalıların yanında
+  characterScale: 0.85,
   nodes: {
     square: { x: 1460, y: 910 },
     northwest: { x: 1280, y: 740 },

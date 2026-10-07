@@ -49,6 +49,8 @@ export type CharacterManifest = {
     src: string;
   };
   thumb?: string;
+  // Menü/gardırop için idle animasyonlu 3D model (GLB). Varsa turntable yerine bu gösterilir.
+  model?: string;
 };
 
 export function directionFromDelta(dx: number, dy: number): Direction {
@@ -85,6 +87,7 @@ function loadManifest(outfitId: string): Promise<CharacterManifest> {
         idle: { ...m.idle, sheets: absolute(m.idle.sheets) },
         turntable: m.turntable && { ...m.turntable, src: `${base}/${m.turntable.src}` },
         thumb: m.thumb && `${base}/${m.thumb}`,
+        model: m.model && `${base}/${m.model}`,
       }));
     // Hata kalıcı önbelleğe girmesin, sonraki denemede yeniden istensin
     promise.catch(() => manifestCache.delete(outfitId));
@@ -108,11 +111,11 @@ function preloadImage(src: string): Promise<void> {
   return promise;
 }
 
-// Harita için tüm yön sheet'leri, menü için dönüş sheet'i
+// Harita için tüm yön sheet'leri, menü için dönüş sheet'i (3D model varsa onu görüntüleyici kendisi yükler)
 const imagesFor = (m: CharacterManifest, use: 'map' | 'turntable') =>
   use === 'map'
     ? [...Object.values(m.walk.sheets), ...Object.values(m.idle.sheets)]
-    : m.turntable
+    : m.turntable && !m.model
       ? [m.turntable.src]
       : [];
 

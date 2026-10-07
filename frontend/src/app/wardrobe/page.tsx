@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Clock, Coins, Lock, MoveHorizontal, Shirt, X } from '
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
+import CharacterShowcase from '@/components/character/CharacterShowcase';
 import {
   OUTFITS,
   findOutfit,
@@ -41,6 +42,8 @@ export default function WardrobePage() {
   const [pending, setPending] = useState<Outfit | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  // Satın alma sonrası tanıtım sahnesi
+  const [revealed, setRevealed] = useState<Outfit | null>(null);
 
   useEffect(() => {
     if (authToken) fetchMarketData(authToken);
@@ -69,10 +72,12 @@ export default function WardrobePage() {
       setIsProcessing(true);
       const res = await purchaseServer(outfitMarketId(pending.id), authToken);
       setIsProcessing(false);
-      setToast(res.success ? `${pending.name} gardırobuna eklendi.` : res.message || 'Satın alma başarısız oldu.');
+      if (res.success) setRevealed(pending);
+      else setToast(res.message || 'Satın alma başarısız oldu.');
     } else {
       const ok = purchase(outfitMarketId(pending.id), pending.price);
-      setToast(ok ? `${pending.name} gardırobuna eklendi.` : 'Yetersiz bakiye.');
+      if (ok) setRevealed(pending);
+      else setToast('Yetersiz bakiye.');
     }
     setPending(null);
   };
@@ -159,6 +164,8 @@ export default function WardrobePage() {
                 <span className={styles.detailsEyebrow}>{preview.title}</span>
                 <h2 className={styles.detailsName}>{preview.name}</h2>
                 <p className={styles.detailsDesc}>{preview.description}</p>
+                <p className={styles.detailsLore}>{preview.lore}</p>
+                <blockquote className={styles.detailsQuote}>“{preview.quote}”</blockquote>
                 <div className={styles.detailsActions}>
                   {renderAction(preview)}
                   {preview.ready && (
@@ -258,6 +265,32 @@ export default function WardrobePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {revealed && (
+        <CharacterShowcase
+          outfit={revealed}
+          mode="reveal"
+          onClose={() => setRevealed(null)}
+          actions={
+            <>
+              <button
+                className={styles.buyBtn}
+                onClick={() => {
+                  equipOutfit(revealed.id);
+                  setSelectedId(revealed.id);
+                  setRevealed(null);
+                  setToast(`${revealed.name} giyildi. Lobide ve haritada artık bu karakterle görüneceksin.`);
+                }}
+              >
+                <Shirt size={15} /> Hemen Giy
+              </button>
+              <button className={styles.ghostBtn} onClick={() => setRevealed(null)}>
+                Sonra
+              </button>
+            </>
+          }
+        />
       )}
 
       {toast && (
