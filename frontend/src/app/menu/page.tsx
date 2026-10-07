@@ -631,7 +631,16 @@ export default function HomePage() {
       <div className={styles.lobby}>
         {/* KARAKTER */}
         <section className={`${styles.panel} ${styles.characterPanel}`}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+          <div className={styles.characterStage}>
+            <span className={styles.characterHalo} />
+            <CharacterTurntable
+              outfitId={marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null}
+              alt="Engizitör karakteri"
+              className={styles.characterSprite}
+            />
+            <span className={styles.characterPedestal} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0 6px' }}>
             <img
               src={getAvatarSrc(effectiveAvatar)}
               alt="Avatar"
@@ -645,15 +654,6 @@ export default function HomePage() {
               }}
             />
             <span className={styles.panelEyebrow}>Engizitör</span>
-          </div>
-          <div className={styles.characterStage}>
-            <span className={styles.characterHalo} />
-            <CharacterTurntable
-              outfitId={marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null}
-              alt="Engizitör karakteri"
-              className={styles.characterSprite}
-            />
-            <span className={styles.characterPedestal} />
           </div>
           <h2 className={styles.characterName}>{inquisitorName}</h2>
           <span className={styles.characterRank}>{getAvatarInfo(effectiveAvatar).role}</span>
@@ -672,6 +672,7 @@ export default function HomePage() {
                 alignItems: 'center',
                 gap: '6px',
                 fontFamily: 'Inter, sans-serif',
+                whiteSpace: 'nowrap',
               }}
             >
               <Settings size={13} /> Avatar & İsim

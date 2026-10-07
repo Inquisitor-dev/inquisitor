@@ -508,7 +508,7 @@ $panel-border: rgba(138, 3, 3, 0.28);
   /* Navbar ile paneller arasında harita net görünsün */
   padding-top: clamp(140px, 30vh, 320px);
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 300px;
+  grid-template-columns: 340px minmax(0, 1fr) 300px;
   grid-template-areas: 'character case leaderboard';
   gap: 28px;
   align-items: end;
@@ -539,29 +539,34 @@ $panel-border: rgba(138, 3, 3, 0.28);
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 18px 22px 22px;
+  padding: 0 24px 22px;
   animation-delay: 0.15s;
+  // Karakter sahnesi panelin üst kenarından taşar
+  --stage-h: clamp(330px, 50vh, 480px);
+  --stage-rise: clamp(110px, 20vh, 200px);
 }
 
+// Karakter panelin üstünden dışarı taşar; ayakları paneldeki kaidede durur
 .characterStage {
   position: relative;
+  z-index: 1;
   width: 100%;
-  height: 250px;
+  height: var(--stage-h);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  margin: 6px 0 14px;
+  margin: calc(-1 * var(--stage-rise)) 0 10px;
 }
 
 .characterHalo {
   position: absolute;
   left: 50%;
-  bottom: 30px;
-  width: 200px;
-  height: 200px;
+  bottom: 40px;
+  width: 300px;
+  height: 300px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 150, 60, 0.18) 0%, rgba(138, 3, 3, 0.12) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 150, 60, 0.2) 0%, rgba(138, 3, 3, 0.14) 40%, transparent 70%);
   animation: candleFlicker 5s ease-in-out infinite;
 }
 
@@ -571,35 +576,28 @@ $panel-border: rgba(138, 3, 3, 0.28);
   60%      { opacity: 0.75; transform: translateX(-50%) scale(0.98); }
 }
 
-// CharacterTurntable'a uygulanır; karenin ~%88'i karakter, 260px kare ≈ 230px boy
+// CharacterTurntable'a uygulanır; 3D modelin kendi idle animasyonu var, ek süzülme ve CSS gölgesi yok
 .characterSprite {
   position: relative;
   z-index: 1;
-  height: 260px;
-  filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.85));
-  animation: idleFloat 4s ease-in-out infinite;
-}
-
-@keyframes idleFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  height: calc(var(--stage-h) + 6px);
 }
 
 .characterPedestal {
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: 150px;
-  height: 22px;
+  width: 210px;
+  height: 28px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.85) 0%, rgba(138, 3, 3, 0.25) 55%, transparent 72%);
-  border: 1px solid rgba(138, 3, 3, 0.25);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.85) 0%, rgba(138, 3, 3, 0.3) 55%, transparent 72%);
+  border: 1px solid rgba(138, 3, 3, 0.3);
 }
 
 .characterName {
   font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #E8DCC4;
   line-height: 1.2;
@@ -1033,12 +1031,9 @@ $panel-border: rgba(138, 3, 3, 0.28);
     padding: 36px 20px 24px;
   }
 
-  .characterStage {
-    height: 200px;
-  }
-
-  .characterSprite {
-    height: 215px;
+  .characterPanel {
+    --stage-h: 340px;
+    --stage-rise: 24px;
   }
 }
 
