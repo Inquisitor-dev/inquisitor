@@ -44,6 +44,16 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
   { id: 'outfit_fantastic_girl', category: 'outfit', title: 'Kızıl Yemin', price: 900 },
   { id: 'outfit_cyber_girl', category: 'outfit', title: 'Neon Kuzgun', price: 1200 },
   { id: 'outfit_cyber_man', category: 'outfit', title: 'Krom Şerif', price: 1200 },
+  // Yeni karakterler (frontend'de görselleri hazır olana kadar "Yakında")
+  { id: 'outfit_default_woman', category: 'outfit', title: 'Engizitör Hanım', price: 0, ownedByDefault: true },
+  { id: 'outfit_amerikan_dedektif', category: 'outfit', title: 'Şehir Dedektifi', price: 700 },
+  { id: 'outfit_modern_man', category: 'outfit', title: 'Sokak Kurdu', price: 500 },
+  { id: 'outfit_modern_woman', category: 'outfit', title: 'Gölge Ajan', price: 700 },
+  { id: 'outfit_got_man', category: 'outfit', title: 'Kara Yargıç', price: 900 },
+  { id: 'outfit_gotik_kadin', category: 'outfit', title: 'Kül Avcısı', price: 900 },
+  { id: 'outfit_yeni_china_girl', category: 'outfit', title: 'Kızıl Lotus', price: 1200 },
+  { id: 'outfit_cyber_girl_new', category: 'outfit', title: 'Kızıl Devre', price: 1200 },
+  { id: 'outfit_cyber_man_new', category: 'outfit', title: 'Mavi Rozet', price: 1200 },
 ];
 
 export const TOKEN_PACKS_CATALOG: TokenPackDef[] = [

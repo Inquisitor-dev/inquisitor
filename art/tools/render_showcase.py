@@ -1,5 +1,6 @@
 # Market, gardırop ve menü kartlarındaki karakter görselini (thumb.webp) vitrin kalitesinde render eder:
-#   - export_web_model.py'nin GLB'si (idle pozu, orijinal malzemeler)
+#   - export_web_model.py'nin GLB'si (idle pozu, orijinal malzemeler); o yoksa görselden-3D aracının
+#     iskeletsiz modeli (<id>_model.glb, A-poz) — Mixamo'dan önce "Yakında" kartı için
 #   - Cycles + denoise, perspektif (85 mm) kamera, hafif alttan bakış
 #   - sıcak anahtar ışık + iki renkli kenar ışığı (menüdeki 3D gösterimle aynı düzen)
 #   - 2 kat çözünürlükte render, küçültülerek keskinleştirilir
@@ -36,10 +37,14 @@ p = argparse.ArgumentParser()
 p.add_argument("--outfit", required=True)
 args = p.parse_args(argv)
 
-src = os.path.join(ROOT, "art", "characters", args.outfit, "web", f"{args.outfit}.glb")
-out = os.path.join(ROOT, "art", "characters", args.outfit, "render", "thumb.png")
+char_dir = os.path.join(ROOT, "art", "characters", args.outfit)
+src = os.path.join(char_dir, "web", f"{args.outfit}.glb")
 if not os.path.exists(src):
-    sys.exit(f"Önce export_web_model.py çalıştır: {src} yok")
+    src = os.path.join(char_dir, "source", f"{args.outfit}_model.glb")
+out = os.path.join(char_dir, "render", "thumb.png")
+if not os.path.exists(src):
+    sys.exit(f"Model bulunamadı: {src}")
+print("SOURCE", src)
 
 
 def setup_render(scene):
@@ -131,13 +136,17 @@ scene = bpy.context.scene
 setup_render(scene)
 
 bpy.ops.import_scene.gltf(filepath=src)
-arm = next(o for o in scene.objects if o.type == "ARMATURE")
-meshes = [o for o in scene.objects if o.type == "MESH" and o.parent == arm]
-# glTF içe aktarıcısının kemik gösterimi için eklediği küre vb. sahneden çıksın
-for o in list(scene.objects):
-    if o is not arm and o not in meshes:
-        bpy.data.objects.remove(o, do_unlink=True)
-roots = [arm]
+arm = next((o for o in scene.objects if o.type == "ARMATURE"), None)
+if arm:
+    meshes = [o for o in scene.objects if o.type == "MESH" and o.parent == arm]
+    # glTF içe aktarıcısının kemik gösterimi için eklediği küre vb. sahneden çıksın
+    for o in list(scene.objects):
+        if o is not arm and o not in meshes:
+            bpy.data.objects.remove(o, do_unlink=True)
+    roots = [arm]
+else:
+    meshes = [o for o in scene.objects if o.type == "MESH"]
+    roots = [o for o in scene.objects if o.parent is None]
 if bpy.data.actions:
     scene.frame_set(int(bpy.data.actions[0].frame_range[0]))
 
