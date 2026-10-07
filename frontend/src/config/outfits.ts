@@ -30,7 +30,7 @@ export const LEGACY_OUTFIT_IDS: Record<string, string> = {
   cyber_man: 'krom_serif',
 };
 
-// Yeni karakterler listenin başında. Görselleri (Mixamo + render) hazırlanana kadar ready: false.
+// Yeni karakterler listenin başında. Görselleri (Mixamo + render) hazırlanmayanlar ready: false.
 export const OUTFITS: Outfit[] = [
   {
     id: 'engizitor_hanim',
@@ -39,7 +39,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Dişli tokalı korse, kızıl işlemeli kısa palto ve bağcıklı çizmeler. Soruşturmaya o da hazır.',
     price: 0,
     rarity: 'common',
-    ready: false,
+    ready: true,
   },
   {
     id: 'sehir_dedektifi',
@@ -66,7 +66,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Siyah techwear, kargo pantolon ve parmaksız eldivenler. Sessiz girer, cevapla çıkar.',
     price: 700,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'kara_yargic',
@@ -75,7 +75,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Diz boyu siyah deri palto ve sıkı düğmeli yaka. Hükmünü karanlık çökmeden verir.',
     price: 900,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'kul_avcisi',
