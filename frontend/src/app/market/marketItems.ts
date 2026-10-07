@@ -95,7 +95,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     subtitle: 'Distopik Cyberpunk',
     description: 'Bölge 13, hurdalıklar ve robot pazarları. Yozlaşmış şirketlerin gölgesinde hafızalar bile satılık.',
     price: 800,
-    image: '/map/cyberpunk_map_night.png',
+    image: '/map/cyberpunk_map_night.webp',
     tags: ['6 mekân', 'Tech-noir'],
   },
   {

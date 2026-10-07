@@ -39,8 +39,10 @@ art/characters/*/preview/
 art/characters/*/preview_thumb.png
 art/tools/__pycache__/
 
-# graphify bilgi grafı çıktıları (yerel, repoya girmiyor)
+# graphify (yerel bilgi grafiği, repoya girmiyor)
 graphify-out/
+CLAUDE.local.md
+.claude/settings.local.json
 
 # export_web_model.py ara çıktısı (sıkıştırılmamış GLB)
 art/characters/*/web/

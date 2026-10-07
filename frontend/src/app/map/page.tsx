@@ -182,81 +182,81 @@ const modernLocations = [
 
 const cyberpunkLocations = [
   {
-    // Evim — Sol alt köşe, küçük kulübe / sığınak
+    // Evim — Sol kenarda, turuncu yatak neonlu alçak kapsül otel
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '58%',
-    left: '2%',
-    width: '28%',
-    height: '35%',
+    top: '40%',
+    left: '0%',
+    width: '16.5%',
+    height: '22.5%',
     available: true,
   },
   {
-    // Karakol — Sağ orta merkezdeki polis karakolu (chevron tabela)
+    // Lokanta — Sol arka kulenin altındaki kırmızı neon erişte kâseli tezgâh
+    id: 'church',
+    name: 'Lokanta',
+    icon: '🍜',
+    top: '28.7%',
+    left: '26%',
+    width: '12%',
+    height: '16%',
+    available: true,
+  },
+  {
+    // Tamirhane — Arka ortadaki mavi anahtar tabelalı, kepengi açık atölye
+    id: 'mill',
+    name: 'Tamirhane',
+    icon: '🛠️',
+    top: '20.6%',
+    left: '34.5%',
+    width: '14%',
+    height: '22.4%',
+    available: true,
+  },
+  {
+    // Klinik — Sağ arka kulenin altındaki yeşil neon haçlı cam önlü klinik
+    id: 'graveyard',
+    name: 'Klinik',
+    icon: '🏥',
+    top: '27%',
+    left: '55.5%',
+    width: '15%',
+    height: '17.5%',
+    available: true,
+  },
+  {
+    // Karakol — Sağdaki mavi kalkan tabelalı, önünde bariyerler olan bina
     id: 'tavern',
     name: 'Karakol',
     icon: '👮',
-    top: '48%',
-    left: '36%',
-    width: '24%',
-    height: '37%',
+    top: '32%',
+    left: '70.75%',
+    width: '12.25%',
+    height: '22.4%',
     available: true,
   },
   {
-    // Bar — Karakolun bir sağındaki pembe kedi neonlu mekan (Velvet Static)
+    // Bar — En sağdaki pembe kedi neonlu, kadife ipli kulüp (Velvet Static)
     id: 'clinic',
     name: 'Bar',
     icon: '🍸',
-    top: '50%',
-    left: '64%',
-    width: '28%',
-    height: '40%',
+    top: '42%',
+    left: '83%',
+    width: '11%',
+    height: '23.3%',
     available: true,
     minDifficulty: 'hard',
   },
   {
-    // Klinik — Sağ üst köşe, yeşil neon haçlı klinik
-    id: 'graveyard',
-    name: 'Klinik',
-    icon: '🏥',
-    top: '12%',
-    left: '74%',
-    width: '24%',
-    height: '43%',
-    available: true,
-  },
-  {
-    // Tamirhane — Kliniğin bir solundaki mavi anahtar tabelalı atölye
-    id: 'mill',
-    name: 'Tamirhane',
-    icon: '🛠️',
-    top: '10%',
-    left: '54%',
-    width: '20%',
-    height: '38%',
-    available: true,
-  },
-  {
-    // Lokanta — Tamirhanenin bir solundaki kırmızı neon ramen kasesi
-    id: 'church',
-    name: 'Lokanta',
-    icon: '🍜',
-    top: '4%',
-    left: '27%',
-    width: '26%',
-    height: '36%',
-    available: true,
-  },
-  {
-    // Sokak Pazarı — Lokantanın bir solundaki tenteli gece pazarı
+    // Sokak Pazarı — Meydanın ortasındaki dört bloklu tenteli gece pazarı
     id: 'farm',
     name: 'Sokak Pazarı',
     icon: '🏮',
-    top: '10%',
-    left: '2%',
-    width: '25%',
-    height: '45%',
+    top: '45%',
+    left: '33%',
+    width: '37%',
+    height: '38%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -952,9 +952,9 @@ export default function MapPage() {
       return '/map/town_map_night.png';
     }
     if (scenarioType === 'cyberpunk') {
-      if (timeOfDay <= 1) return '/map/cyberpunk_map_morning.png';
-      if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.png';
-      return '/map/cyberpunk_map_night.png';
+      if (timeOfDay <= 1) return '/map/cyberpunk_map_morning.webp';
+      if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.webp';
+      return '/map/cyberpunk_map_night.webp';
     }
     if (scenarioType === 'china') {
       if (timeOfDay <= 1) return '/map/china_morning.png';

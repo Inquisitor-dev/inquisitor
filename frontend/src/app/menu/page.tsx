@@ -564,7 +564,7 @@ export default function HomePage() {
   const getMapImage = (story: string) => {
     switch (story) {
       case 'modern': return '/map/town_map_night.png';
-      case 'cyberpunk': return '/map/cyberpunk_map_night.png';
+      case 'cyberpunk': return '/map/cyberpunk_map_night.webp';
       case 'china': return '/map/china_night.png';
       case 'winter': return '/map/winter_night.jpg';
       case 'medieval':
