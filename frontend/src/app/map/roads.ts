@@ -142,8 +142,8 @@ const town: RoadNetwork = {
 // İnsan boyları karakterle uyumlu, ölçek köyle aynı.
 const cyberpunk: RoadNetwork = {
   image: { width: 2752, height: 1536 },
-  // Kapılardaki muhafızlarla aynı boy, biraz öne çıkar
-  characterScale: 1.1,
+  // Kapılardaki muhafızlarla aynı boy ya da biraz kısa (1.1 oyunda büyük durdu)
+  characterScale: 0.95,
   nodes: {
     plaza: { x: 930, y: 960 },
     north: { x: 1250, y: 700 },
