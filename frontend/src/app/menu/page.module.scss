@@ -595,6 +595,119 @@ $panel-border: rgba(138, 3, 3, 0.28);
   border: 1px solid rgba(138, 3, 3, 0.3);
 }
 
+// Lobiden karakter değiştirme okları; sahnenin iki yanında, karakterin bel hizasında
+.outfitArrow {
+  position: absolute;
+  z-index: 2;
+  bottom: 38%;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #e8dcc4;
+  background: rgba(10, 8, 7, 0.65);
+  border: 1px solid rgba(224, 187, 94, 0.35);
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    border-color: #e0bb5e;
+    transform: scale(1.08);
+  }
+}
+
+.outfitArrowPrev {
+  left: -6px;
+}
+
+.outfitArrowNext {
+  right: -6px;
+}
+
+// Giyili karakterin adı ve kaçıncı olduğu (ör. Kızıl Lotus · 2/5)
+.outfitLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 8px;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rarity-color, #c9bda5);
+
+  em {
+    font-style: normal;
+    letter-spacing: 0.08em;
+    color: rgba(232, 220, 196, 0.45);
+  }
+}
+
+// Nadirliğe göre sahne: nadir kızıl, efsanevi altın ışık ve kıvılcım
+.stage_common {
+  --rarity-color: #c9bda5;
+}
+
+.stage_rare {
+  --rarity-color: #d6574a;
+
+  .characterPedestal {
+    box-shadow: 0 0 26px rgba(214, 64, 52, 0.45);
+    border-color: rgba(214, 64, 52, 0.5);
+  }
+}
+
+.stage_legendary {
+  --rarity-color: #e0bb5e;
+
+  .characterHalo {
+    background: radial-gradient(circle, rgba(240, 196, 92, 0.28) 0%, rgba(138, 3, 3, 0.12) 45%, transparent 70%);
+  }
+
+  .characterPedestal {
+    box-shadow: 0 0 34px rgba(240, 196, 92, 0.55);
+    border-color: rgba(240, 196, 92, 0.6);
+  }
+}
+
+.sparks {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 180px;
+  height: 60%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 2;
+
+  span {
+    position: absolute;
+    bottom: 0;
+    left: calc(8% + var(--i) * 9%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #ffd27a;
+    box-shadow: 0 0 6px 2px rgba(255, 190, 90, 0.7);
+    opacity: 0;
+    animation: sparkRise 3.6s ease-out infinite;
+    animation-delay: calc(var(--i) * -0.37s);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+}
+
+@keyframes sparkRise {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(calc((var(--i) - 4.5) * 4px), -260px) scale(0.4); opacity: 0; }
+}
+
 .characterName {
   font-family: 'Playfair Display', serif;
   font-size: 1.6rem;
