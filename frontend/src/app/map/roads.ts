@@ -132,39 +132,54 @@ const town: RoadNetwork = {
   spawn: 'crossing',
 };
 
-// Cyberpunk haritası (cyberpunk_map_*.png, 2752x1536): koordinatlar meydan karoları ve sokaklar üzerindedir;
-// ortadaki kalkan logolu blok, tezgâhlar ve korumalar dolanılır. Kapılar mekanların tıklama alanlarının içindedir.
-// İnsan boyları karakterle uyumlu, ölçek köyle aynı.
+// Cyberpunk haritası (cyberpunk_map_*.webp, 2752x1536): gökdelenlerle çevrili meydan.
+// Mekânlar meydanın arka iki kenarında, ortada dört bloklu gece pazarı var. Yollar pazar bloklarının ve
+// karakolun önündeki bariyerlerin çevresinden dolaşır; kapı noktaları dükkânların önündeki karolardadır.
+// Tezgâhtaki satıcılar ~85 px boyunda; karakter onlarla aynı boya ölçeklenir.
 const cyberpunk: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  characterScale: 0.8,
   nodes: {
-    plaza: { x: 930, y: 960 },
-    north: { x: 1250, y: 700 },
-    east: { x: 1730, y: 900 },
-    south: { x: 1480, y: 1270 },
-    marketDoor: { x: 760, y: 840 },
-    ramenDoor: { x: 1150, y: 640 },
-    workshopDoor: { x: 1745, y: 710 },
-    clinicDoor: { x: 2050, y: 665 },
-    barDoor: { x: 2010, y: 1150 },
-    policeDoor: { x: 1395, y: 1215 },
-    homeDoor: { x: 800, y: 1110 },
+    plaza: { x: 1390, y: 1345 },
+    sw: { x: 965, y: 1210 },
+    south: { x: 1720, y: 1240 },
+    west: { x: 520, y: 950 },
+    north: { x: 1100, y: 715 },
+    top: { x: 1380, y: 640 },
+    ne: { x: 1790, y: 770 },
+    east: { x: 2170, y: 960 },
+    homeDoor: { x: 360, y: 960 },
+    ramenDoor: { x: 930, y: 790 },
+    workshopDoor: { x: 1240, y: 600 },
+    clinicDoor: { x: 1690, y: 700 },
+    policeDoor: { x: 2010, y: 795 },
+    barDoor: { x: 2440, y: 880 },
+    marketDoor: { x: 1120, y: 1110 },
   },
   edges: [
-    ['plaza', 'marketDoor', [{ x: 850, y: 890 }]],
-    ['plaza', 'homeDoor', [{ x: 900, y: 1050 }]],
-    ['plaza', 'north', [{ x: 960, y: 800 }, { x: 1100, y: 740 }]],
+    // Alt meydandan pazarın iki yanına; alttaki bloğun altından, sol alttaki kulübenin üstünden geçer
+    ['plaza', 'sw', [{ x: 1180, y: 1250 }]],
+    ['plaza', 'south'],
+    // Pazara sol ve alt bloklar arasındaki boşluktan girilir
+    ['sw', 'marketDoor'],
+    ['sw', 'west'],
+    ['west', 'homeDoor'],
+    // Sol bloğun üst köşesindeki tentelerin solundan kuzey sokağına
+    ['west', 'north', [{ x: 770, y: 800 }, { x: 963, y: 743 }]],
     ['north', 'ramenDoor'],
-    // Lamba direğinin üstünden doğu sokağına
-    ['north', 'east', [{ x: 1350, y: 690 }, { x: 1450, y: 690 }, { x: 1600, y: 700 }, { x: 1720, y: 780 }]],
-    ['east', 'workshopDoor'],
-    // Klinik önündeki ağaçlı meydana
-    ['east', 'clinicDoor', [{ x: 1830, y: 800 }, { x: 1960, y: 720 }]],
-    // Kulübün önündeki kuyruğun solundan
-    ['east', 'barDoor', [{ x: 1760, y: 1100 }, { x: 1890, y: 1160 }]],
-    // Kalkan logolu bloğun altından karakolun kapısına
-    ['east', 'south', [{ x: 1730, y: 1120 }, { x: 1650, y: 1250 }]],
-    ['south', 'policeDoor'],
+    ['north', 'workshopDoor'],
+    ['north', 'top'],
+    // Üst bloğun tentelerinin üstünden, kliniğin saksılarının önünden
+    ['top', 'ne', [{ x: 1514, y: 626 }, { x: 1651, y: 688 }]],
+    ['ne', 'clinicDoor'],
+    // Sağ bloğun tentesiyle karakolun bariyeri arasından
+    ['ne', 'east', [{ x: 1995, y: 846 }]],
+    ['ne', 'policeDoor', [{ x: 1995, y: 846 }]],
+    ['east', 'policeDoor'],
+    // Kadife ipin sol ucundan dolanıp kuyruğun içinden kapıya
+    ['east', 'barDoor', [{ x: 2235, y: 885 }]],
+    // Sağ bloğun tabureleri dolanılır
+    ['east', 'south', [{ x: 2064, y: 1128 }]],
   ],
   doors: {
     home: 'homeDoor',
