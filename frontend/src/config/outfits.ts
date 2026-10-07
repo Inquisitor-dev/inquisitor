@@ -30,7 +30,7 @@ export const LEGACY_OUTFIT_IDS: Record<string, string> = {
   cyber_man: 'krom_serif',
 };
 
-// Yeni karakterler listenin başında. Görselleri (Mixamo + render) hazırlanmayanlar ready: false.
+// Yeni karakterler listenin başında.
 export const OUTFITS: Outfit[] = [
   {
     id: 'engizitor_hanim',
@@ -48,7 +48,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Kahverengi deri ceket, gevşek kravat ve belinde rozet. Yağmurlu sokaklarda ifade toplar.',
     price: 700,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'sokak_kurdu',
@@ -57,7 +57,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Fötr şapka, eskimiş ceket ve kot. Kimseye güvenmez, her ipucunu kendisi doğrular.',
     price: 500,
     rarity: 'common',
-    ready: false,
+    ready: true,
   },
   {
     id: 'golge_ajan',
@@ -84,7 +84,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Kızıl astarlı deri korse, kemerler ve tokalı çizmeler. İzini sürdüğü kaçamaz.',
     price: 900,
     rarity: 'rare',
-    ready: false,
+    ready: true,
   },
   {
     id: 'kizil_lotus',
@@ -93,7 +93,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Siyah ipek qipao üzerinde kızıl çiçekler, saçında altın tarak. Zarafeti en keskin silahıdır.',
     price: 1200,
     rarity: 'legendary',
-    ready: false,
+    ready: true,
   },
   {
     id: 'kizil_devre',
@@ -102,7 +102,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Kızıl devre desenli uzun ceket ve zırhlı çizmeler. Ağın en karanlık köşesinde iz sürer.',
     price: 1200,
     rarity: 'legendary',
-    ready: false,
+    ready: true,
   },
   {
     id: 'mavi_rozet',
@@ -111,7 +111,7 @@ export const OUTFITS: Outfit[] = [
     description: 'Mavi ışıklı taktik yelek, vizör ve kemerde tabanca. Şehrin kayıtları onun elinde.',
     price: 1200,
     rarity: 'legendary',
-    ready: false,
+    ready: true,
   },
   {
     id: DEFAULT_OUTFIT_ID,
