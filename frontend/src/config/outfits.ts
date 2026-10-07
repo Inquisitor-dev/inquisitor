@@ -15,6 +15,9 @@ export type Outfit = {
   // Görselleri (yürüme, durma, 360°) üretilip pakete konduysa true. Hazır olmayan karakter
   // satın alınamaz ve giyilemez; gardıropta "Yakında" olarak görünür.
   ready: boolean;
+  // Gardıropta ve tanıtım sahnesinde gösterilen kısa geçmiş ve karakterin ağzından bir söz
+  lore: string;
+  quote: string;
 };
 
 export const DEFAULT_OUTFIT_ID = 'engizitor';
@@ -40,6 +43,8 @@ export const OUTFITS: Outfit[] = [
     price: 0,
     rarity: 'common',
     ready: true,
+    lore: 'Manastırda yetişti, yeminini kilisenin bodrumundaki arşivde verdi. Mühürlü mektupları kimseden hızlı okur; bir yalanın mürekkebini bile tanır.',
+    quote: 'Gerçek tozlu raflarda bekler. Ben sadece üflerim.',
   },
   {
     id: 'sehir_dedektifi',
@@ -49,6 +54,8 @@ export const OUTFITS: Outfit[] = [
     price: 700,
     rarity: 'rare',
     ready: true,
+    lore: 'Yirmi yıl boyunca şehrin en kirli dosyalarına baktı, rozetini bir kez bile çekmeceye koymadı. Emekliliği reddetti; sokaklar onu bırakmadı.',
+    quote: 'Herkes bir şey saklar. Ben sadece kimin daha çok terlediğine bakarım.',
   },
   {
     id: 'sokak_kurdu',
@@ -58,6 +65,8 @@ export const OUTFITS: Outfit[] = [
     price: 500,
     rarity: 'common',
     ready: true,
+    lore: 'Kimse ona dedektif demedi; diploması yok, rozeti yok. Ama mahalleli kayıp bir şey ararsa önce onun kapısını çalar.',
+    quote: 'Kâğıtta yazmayanı ben sokakta okurum.',
   },
   {
     id: 'golge_ajan',
@@ -67,6 +76,8 @@ export const OUTFITS: Outfit[] = [
     price: 700,
     rarity: 'rare',
     ready: true,
+    lore: 'Hangi birime bağlı olduğunu kimse bilmiyor, dosyasında yalnızca bir kod numarası var. Sorguya girdiğinde odadaki kameralar nedense hep arızalanır.',
+    quote: 'Ben burada değilim. Sen de beni görmedin.',
   },
   {
     id: 'kara_yargic',
@@ -76,6 +87,8 @@ export const OUTFITS: Outfit[] = [
     price: 900,
     rarity: 'rare',
     ready: true,
+    lore: 'Bir zamanlar kendisi de idama mahkûm edildi; ilmik boynuna geçmeden asıl katili buldu. O günden beri yalnızca karanlıkta yargılar.',
+    quote: 'Hüküm gün ağarmadan verilir; güneş masumları kayırır.',
   },
   {
     id: 'kul_avcisi',
@@ -85,6 +98,8 @@ export const OUTFITS: Outfit[] = [
     price: 900,
     rarity: 'rare',
     ready: true,
+    lore: 'Köyü yakıldığında küllerin arasından tek başına çıktı. O geceden beri ateşi kimin yaktığını arıyor; peşine düştüğü hiçbir iz soğumadı.',
+    quote: 'Kül her şeyi örter. Ama ben eşelemeyi severim.',
   },
   {
     id: 'kizil_lotus',
@@ -94,6 +109,8 @@ export const OUTFITS: Outfit[] = [
     price: 1200,
     rarity: 'legendary',
     ready: true,
+    lore: 'Jinling sarayında çay döken bir hizmetkâr sanılırdı. Saray muhafızlarından üçü düştüğünde herkes onun kim olduğunu öğrendi.',
+    quote: 'Lotus çamurda açar; ben de en temiz yalanın içinde.',
   },
   {
     id: 'kizil_devre',
@@ -103,6 +120,8 @@ export const OUTFITS: Outfit[] = [
     price: 1200,
     rarity: 'legendary',
     ready: true,
+    lore: "Neon Prime'ın alt katlarında doğdu, devre kartlarıyla büyüdü. Bir şirketin bütün kayıtlarını tek gecede silip geriye yalnızca suçluların adını bıraktı.",
+    quote: 'Sistem unutmaz. Ben ona neyi hatırlayacağını söylerim.',
   },
   {
     id: 'mavi_rozet',
@@ -112,6 +131,8 @@ export const OUTFITS: Outfit[] = [
     price: 1200,
     rarity: 'legendary',
     ready: true,
+    lore: 'Neon Prime polisinde dürüst kalan son memur olduğu söyleniyor. Vizörü yalan söyleyenin nabzını ölçer; o da buna inanmayı seçmiş.',
+    quote: 'Rozetim mavi ışık saçıyor. Sen de bana karşı dürüst ol.',
   },
   {
     id: DEFAULT_OUTFIT_ID,
@@ -121,6 +142,8 @@ export const OUTFITS: Outfit[] = [
     price: 0,
     rarity: 'common',
     ready: true,
+    lore: "Engizisyonun en genç sorgucusu olarak Ashenmoor'a gönderildi. Haçı göğsünde, şüphesi kalbinde taşır; hiçbir itirafı ilk duyduğunda kabul etmez.",
+    quote: 'Tanrı affeder. Ben önce sorarım.',
   },
   {
     id: 'sis_dedektifi',
@@ -130,6 +153,8 @@ export const OUTFITS: Outfit[] = [
     price: 700,
     rarity: 'rare',
     ready: true,
+    lore: 'Londra sisinde on yedi davayı çözdü, birini hiç kapatmadı. Cebindeki saat o gece durdu ve o günden beri hiç kurmadı.',
+    quote: 'Sis her şeyi saklar; ama ayak izlerini asla.',
   },
   {
     id: 'jinling_golgesi',
@@ -139,6 +164,8 @@ export const OUTFITS: Outfit[] = [
     price: 900,
     rarity: 'rare',
     ready: true,
+    lore: 'İmparatorluk ailesinin gölge muhafızıydı. Saray yandığında hanedanın son sırrıyla birlikte ortadan kayboldu.',
+    quote: 'Rüzgâr nereden eserse essin, erik çiçeği yerini bilir.',
   },
   {
     id: 'kizil_yemin',
@@ -148,6 +175,8 @@ export const OUTFITS: Outfit[] = [
     price: 900,
     rarity: 'rare',
     ready: true,
+    lore: 'Diyarların sınırında bir yemin etti: kardeşinin katilini bulmadan kılıcını kınına sokmayacak. Kılıç hâlâ kınının dışında.',
+    quote: 'Yeminim kızıl; ya kanla ya gerçekle silinir.',
   },
   {
     id: 'neon_kuzgun',
@@ -157,6 +186,8 @@ export const OUTFITS: Outfit[] = [
     price: 1200,
     rarity: 'legendary',
     ready: true,
+    lore: "Bölge 13'ün çatılarında yaşar, şehre yukarıdan bakar. Kuzgunlar gibi parlayan her şeyi toplar; özellikle de sırları.",
+    quote: 'Bu şehirde ışık yalan söyler. Gölge söylemez.',
   },
   {
     id: 'krom_serif',
@@ -166,12 +197,17 @@ export const OUTFITS: Outfit[] = [
     price: 1200,
     rarity: 'legendary',
     ready: true,
+    lore: "Neon Prime'a çölden geldi, eski usul adaleti yanında getirdi. Krom eldivenleriyle sıktığı el bir daha yalan yazamaz.",
+    quote: 'Kasabada tek bir kanun var. O da benim.',
   },
 ];
 
 export const outfitBasePath = (id: string) => `/characters/${id}`;
 
 export const outfitThumb = (id: string) => `${outfitBasePath(id)}/thumb.webp`;
+
+// Baş-omuz portresi (diyalog ekranı, menü)
+export const outfitPortrait = (id: string) => `${outfitBasePath(id)}/portrait.webp`;
 
 // Backend market eşyası id'si
 export const outfitMarketId = (id: string) => `outfit_${id}`;

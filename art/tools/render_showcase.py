@@ -6,9 +6,10 @@
 #   - 2 kat çözünürlükte render, küçültülerek keskinleştirilir
 #
 # Kullanım:
-#   blender -b -P art/tools/render_showcase.py -- --outfit engizitor
+#   blender -b -P art/tools/render_showcase.py -- --outfit engizitor [--portrait]
 #
 # Çıktı: art/characters/<id>/render/thumb.png  (pack_sprites.py bunu thumb.webp yapar)
+#        --portrait ile baş-omuz çekimi: render/portrait.png (diyalog ekranı, menü)
 import argparse
 import math
 import os
@@ -35,13 +36,17 @@ EXPOSURE = 0.0
 argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 p = argparse.ArgumentParser()
 p.add_argument("--outfit", required=True)
+p.add_argument("--portrait", action="store_true", help="Baş-omuz portresi (kafa kemiğine göre kadrajlanır)")
 args = p.parse_args(argv)
 
 char_dir = os.path.join(ROOT, "art", "characters", args.outfit)
 src = os.path.join(char_dir, "web", f"{args.outfit}.glb")
 if not os.path.exists(src):
     src = os.path.join(char_dir, "source", f"{args.outfit}_model.glb")
-out = os.path.join(char_dir, "render", "thumb.png")
+out = os.path.join(char_dir, "render", "portrait.png" if args.portrait else "thumb.png")
+if args.portrait:
+    SIZE = 384
+    YAW = 18.0
 if not os.path.exists(src):
     sys.exit(f"Model bulunamadı: {src}")
 print("SOURCE", src)
@@ -173,10 +178,23 @@ scene.collection.objects.link(cam)
 scene.camera = cam
 # Kamera uzaklığı: boy + pay dikey görüş açısına sığsın
 fov = 2 * math.atan(cam_data.sensor_height / 2 / LENS_MM)
-span = height * (1 + 2 * MARGIN)
-distance = span / 2 / math.tan(fov / 2)
-cam.location = (0, -distance, height * CAMERA_HEIGHT)
-look = Vector((0, 0, height * LOOK_AT))
+if args.portrait:
+    # Kafa kemiği varsa ona göre, yoksa boyun üst kısmına göre kadrajla (şapka/saç payı üstte kalır)
+    head_bone = arm and next((b for b in arm.pose.bones if b.name.endswith("Head")), None)
+    head_z = (arm.matrix_world @ head_bone.head).z if head_bone else height * 0.88
+    span = height * 0.36
+    focus = head_z + span * 0.02
+    distance = span / 2 / math.tan(fov / 2)
+    # Hafif alttan bak; şapka siperinin altındaki yüz görünsün
+    cam.location = (0, -distance, focus - span * 0.12)
+    look = Vector((0, 0, focus))
+    # Yüze önden, alttan yumuşak dolgu (siper gölgesini açar)
+    add_area("Face", 18 * height * height, (1.0, 0.9, 0.8), (0, -distance * 0.6, focus - span * 0.4), span, (0, 0, focus))
+else:
+    span = height * (1 + 2 * MARGIN)
+    distance = span / 2 / math.tan(fov / 2)
+    cam.location = (0, -distance, height * CAMERA_HEIGHT)
+    look = Vector((0, 0, height * LOOK_AT))
 cam.rotation_euler = (look - cam.location).to_track_quat("-Z", "Y").to_euler()
 cam_data.clip_start = 0.01
 cam_data.clip_end = distance * 4

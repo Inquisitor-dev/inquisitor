@@ -55,5 +55,6 @@
     "src": "turntable.webp"
   },
   "thumb": "thumb.webp",
-  "model": "model.glb"
+  "model": "model.glb",
+  "portrait": "portrait.webp"
 }

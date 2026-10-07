@@ -115,6 +115,11 @@ def main():
         save_webp(Image.open(os.path.join(render, "thumb.png")).convert("RGBA"), os.path.join(out, "thumb.webp"))
         manifest["thumb"] = "thumb.webp"
 
+    # Diyalog ekranı ve menü için baş-omuz portresi (render_showcase.py --portrait)
+    if os.path.exists(os.path.join(render, "portrait.png")):
+        save_webp(Image.open(os.path.join(render, "portrait.png")).convert("RGBA"), os.path.join(out, "portrait.webp"))
+        manifest["portrait"] = "portrait.webp"
+
     # Menü/gardırop 3D gösterimi; export_web_model.py + gltf-transform ile üretilir
     if os.path.exists(os.path.join(out, "model.glb")):
         manifest["model"] = "model.glb"
