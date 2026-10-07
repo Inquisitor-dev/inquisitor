@@ -134,7 +134,8 @@ const town: RoadNetwork = {
 
 // Cyberpunk haritası (cyberpunk_map_*.webp, 2752x1536): gökdelenlerle çevrili meydan.
 // Mekânlar meydanın arka iki kenarında, ortada dört bloklu gece pazarı var. Yollar pazar bloklarının ve
-// karakolun önündeki bariyerlerin çevresinden dolaşır; kapı noktaları dükkânların önündeki karolardadır.
+// karakolun önündeki bariyerlerin çevresinden dolaşır. Kapı noktaları binaların hemen önündeki açık
+// zemindedir: karakter ayaklarından yukarı çizildiği için nokta kapının içinde olursa gövdesi duvara biner.
 // Tezgâhtaki satıcılar ~85 px boyunda; karakter onlarla aynı boya ölçeklenir.
 const cyberpunk: RoadNetwork = {
   image: { width: 2752, height: 1536 },
@@ -148,12 +149,14 @@ const cyberpunk: RoadNetwork = {
     top: { x: 1380, y: 640 },
     ne: { x: 1790, y: 770 },
     east: { x: 2170, y: 960 },
-    homeDoor: { x: 360, y: 960 },
+    homeDoor: { x: 400, y: 1000 },
     ramenDoor: { x: 930, y: 790 },
-    workshopDoor: { x: 1240, y: 600 },
-    clinicDoor: { x: 1690, y: 700 },
-    policeDoor: { x: 2010, y: 795 },
-    barDoor: { x: 2440, y: 880 },
+    workshopDoor: { x: 1230, y: 660 },
+    clinicDoor: { x: 1700, y: 745 },
+    // Bariyerlerin arasındaki boşluğun önü
+    policeDoor: { x: 2000, y: 850 },
+    // Kadife ipin önünde, kapının tam karşısı
+    barDoor: { x: 2440, y: 1010 },
     marketDoor: { x: 1120, y: 1110 },
   },
   edges: [
@@ -178,11 +181,10 @@ const cyberpunk: RoadNetwork = {
     ['top', 'clinicDoor', [{ x: 1514, y: 626 }]],
     ['clinicDoor', 'ne'],
     // Sağ bloğun tentesiyle karakolun bariyeri arasından
-    ['ne', 'east', [{ x: 1995, y: 846 }]],
-    ['ne', 'policeDoor', [{ x: 1995, y: 846 }]],
-    ['east', 'policeDoor'],
-    // Kadife ipin sol ucundan dolanıp kuyruğun içinden kapıya
-    ['east', 'barDoor', [{ x: 2235, y: 885 }]],
+    ['ne', 'policeDoor'],
+    ['policeDoor', 'east'],
+    // Kadife ipin önünden kapının karşısına
+    ['east', 'barDoor'],
     // Sağ bloğun tabureleri dolanılır
     ['east', 'south', [{ x: 2064, y: 1128 }]],
   ],
