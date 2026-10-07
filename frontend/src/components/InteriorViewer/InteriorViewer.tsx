@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,11 +12,6 @@ import {
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
-
-// Sürüklerken kenarı bu kadar aşabilir (lastik efekti). Sınırlar bu pay kadar içeride tutulur;
-// böylece esneme görselin normalde ekran dışında kalan kenarından yapılır, siyah boşluk görünmez.
-const OVERSCROLL_X = 40;
-const OVERSCROLL_Y = 30;
 
 interface InteriorViewerProps {
   locationId: string;
@@ -62,6 +57,13 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
   );
 }
 
+// Bilinen başlangıç en-boy oranı (ilk render anında layout shift'i engeller)
+function getKnownAspectRatio(url: string): number {
+  if (url.includes('cyberpunk')) return 3168 / 1344;
+  if (url.includes('graveyard')) return 2816 / 1536;
+  return 1376 / 768;
+}
+
 function InteriorScene({
   locationId,
   locationData,
@@ -73,72 +75,29 @@ function InteriorScene({
 }) {
   const router = useRouter();
   const { sessionId, authToken, notes, setNotes, inventory } = useGameStore();
+
   // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
   const isSearchSpot = (hotspot: InteriorHotspot) => hotspot.category === 'clue' && !hotspot.clueSnippet;
   const hasWarrant = inventory?.activeWarrants?.includes(locationData.id) ?? false;
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 2D Pan State. Yakınlaştırma yok: görsel kenarlarında siyah boşluk açıyordu
-  const [panX, setPanX] = useState<number>(0);
-  const [panY, setPanY] = useState<number>(0);
+  // Sabit ve tam görüntü: hiçbir şekilde zoom yapılmaz, en-boy oranı korunarak ekrana sığdırılır
+  const [aspectRatio, setAspectRatio] = useState<number>(() =>
+    getKnownAspectRatio(locationData.backgroundImage)
+  );
   const [activeHotspot, setActiveHotspot] = useState<InteriorHotspot | null>(null);
-  const [hasInteracted, setHasInteracted] = useState<boolean>(false);
   const [noteAddedFeedback, setNoteAddedFeedback] = useState<boolean>(false);
-  const [compassHeading, setCompassHeading] = useState<number>(180);
 
-  // Drag physics tracking refs
-  const isDraggingRef = useRef<boolean>(false);
-  const startMouseXRef = useRef<number>(0);
-  const startMouseYRef = useRef<number>(0);
-  const startPanXRef = useRef<number>(0);
-  const startPanYRef = useRef<number>(0);
-  const lastMouseXRef = useRef<number>(0);
-  const lastMouseYRef = useRef<number>(0);
-  const lastTimeRef = useRef<number>(0);
-  const velocityXRef = useRef<number>(0);
-  const velocityYRef = useRef<number>(0);
-  const animationFrameRef = useRef<number | null>(null);
-  const totalDragDistanceRef = useRef<number>(0);
-
-  // Compute 2D Bounds for panning
-  const getPanBounds = useCallback(() => {
-    if (!containerRef.current || !stageRef.current) {
-      return { minX: -1000, maxX: 0, minY: -300, maxY: 0 };
+  // Görsel yüklendiğinde gerçek en-boy oranını güncelle (tüm harita ve gelecekteki mekanlar için evrensel uyum)
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalWidth && naturalHeight) {
+      setAspectRatio(naturalWidth / naturalHeight);
     }
-    const containerW = containerRef.current.clientWidth;
-    const containerH = containerRef.current.clientHeight;
-    const stageW = stageRef.current.clientWidth;
-    const stageH = stageRef.current.clientHeight;
+  };
 
-    const maxDeltaX = Math.max(0, stageW - containerW);
-    const maxDeltaY = Math.max(0, stageH - containerH);
-    const edgeX = Math.min(OVERSCROLL_X, maxDeltaX / 2);
-    const edgeY = Math.min(OVERSCROLL_Y, maxDeltaY / 2);
-
-    return {
-      minX: -maxDeltaX + edgeX,
-      maxX: -edgeX,
-      minY: -maxDeltaY + edgeY,
-      maxY: -edgeY,
-    };
-  }, []);
-
-  // Center & frame view comfortably on mount
-  useEffect(() => {
-    if (!containerRef.current || !stageRef.current) return;
-    const bounds = getPanBounds();
-    const initialCenterX = (bounds.minX + bounds.maxX) / 2 + (locationData.initialPan || 0) * 10;
-    // Initial Y: frame slightly towards the bottom so the floor and tables are naturally visible!
-    const initialY = bounds.maxY + (bounds.minY - bounds.maxY) * 0.45;
-
-    setPanX(Math.max(bounds.minX, Math.min(bounds.maxX, initialCenterX)));
-    setPanY(Math.max(bounds.minY, Math.min(bounds.maxY, initialY)));
-  }, [locationData, getPanBounds]);
-
-  // ─── AMBIENT PARTICLE ENGINE (Floating Embers & Dust) ───────────────────
+  // ─── AMBİYANS PARÇACIK MOTORU (Uçuşan Közler, Yağmur ve Toz) ───────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -150,7 +109,6 @@ function InteriorScene({
     const height = (canvas.height = window.innerHeight);
 
     const isEmbers = locationData.particleType === 'embers';
-    // Yağmur: neon ışığında parlayan ince, eğik damlalar
     const isRain = locationData.particleType === 'rain';
     const count = isRain ? 90 : isEmbers ? 45 : 35;
 
@@ -233,202 +191,24 @@ function InteriorScene({
     };
   }, [locationData]);
 
-  // ─── 2D INERTIA DECAY LOOP ─────────────────────────────────────────────
-  const startInertia = useCallback(() => {
-    const decay = () => {
-      const vx = velocityXRef.current;
-      const vy = velocityYRef.current;
-      const speed = Math.sqrt(vx * vx + vy * vy);
-
-      if (speed > 0.15) {
-        velocityXRef.current *= 0.91;
-        velocityYRef.current *= 0.91;
-
-        const bounds = getPanBounds();
-
-        setPanX((prev) => {
-          const next = prev + velocityXRef.current;
-          if (next > bounds.maxX || next < bounds.minX) {
-            velocityXRef.current *= 0.4;
-            return Math.max(bounds.minX, Math.min(bounds.maxX, next));
-          }
-          return next;
-        });
-
-        setPanY((prev) => {
-          const next = prev + velocityYRef.current;
-          if (next > bounds.maxY || next < bounds.minY) {
-            velocityYRef.current *= 0.4;
-            return Math.max(bounds.minY, Math.min(bounds.maxY, next));
-          }
-          return next;
-        });
-
-        animationFrameRef.current = requestAnimationFrame(decay);
-      } else {
-        velocityXRef.current = 0;
-        velocityYRef.current = 0;
-        // Yavaş bırakılınca da esneme payından sınırın içine geri otur
-        const bounds = getPanBounds();
-        setPanX((prev) => Math.max(bounds.minX, Math.min(bounds.maxX, prev)));
-        setPanY((prev) => Math.max(bounds.minY, Math.min(bounds.maxY, prev)));
-      }
-    };
-    animationFrameRef.current = requestAnimationFrame(decay);
-  }, [getPanBounds]);
-
-  // Update Compass Heading based on panX
-  useEffect(() => {
-    const bounds = getPanBounds();
-    const range = Math.abs(bounds.minX - bounds.maxX) || 1;
-    const progress = Math.abs(panX - bounds.maxX) / range;
-    const deg = Math.round(90 + progress * 180);
-    setCompassHeading(deg);
-  }, [panX, getPanBounds]);
-
-  // ─── MOUSE DRAG LISTENERS (2D LOOK AROUND) ──────────────────────────────
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (activeHotspot) return;
-    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-
-    isDraggingRef.current = true;
-    startMouseXRef.current = e.clientX;
-    startMouseYRef.current = e.clientY;
-    startPanXRef.current = panX;
-    startPanYRef.current = panY;
-    lastMouseXRef.current = e.clientX;
-    lastMouseYRef.current = e.clientY;
-    lastTimeRef.current = performance.now();
-    velocityXRef.current = 0;
-    velocityYRef.current = 0;
-    totalDragDistanceRef.current = 0;
-    setHasInteracted(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current) return;
-
-    const deltaX = e.clientX - startMouseXRef.current;
-    const deltaY = e.clientY - startMouseYRef.current;
-    totalDragDistanceRef.current += Math.hypot(
-      e.clientX - lastMouseXRef.current,
-      e.clientY - lastMouseYRef.current
-    );
-
-    const now = performance.now();
-    const dt = Math.max(1, now - lastTimeRef.current);
-    velocityXRef.current = ((e.clientX - lastMouseXRef.current) / dt) * 16;
-    velocityYRef.current = ((e.clientY - lastMouseYRef.current) / dt) * 16;
-
-    lastMouseXRef.current = e.clientX;
-    lastMouseYRef.current = e.clientY;
-    lastTimeRef.current = now;
-
-    const bounds = getPanBounds();
-    const targetX = startPanXRef.current + deltaX;
-    const targetY = startPanYRef.current + deltaY;
-
-    // Apply with boundary clamping & subtle elastic resistance
-    setPanX(Math.max(bounds.minX - OVERSCROLL_X, Math.min(bounds.maxX + OVERSCROLL_X, targetX)));
-    setPanY(Math.max(bounds.minY - OVERSCROLL_Y, Math.min(bounds.maxY + OVERSCROLL_Y, targetY)));
-  };
-
-  const handleMouseUp = () => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-    startInertia();
-  };
-
-  // ─── TOUCH CONTROLS (2D MOBILE & TABLET) ────────────────────────────────
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (activeHotspot || e.touches.length === 0) return;
-    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-
-    const touch = e.touches[0];
-    isDraggingRef.current = true;
-    startMouseXRef.current = touch.clientX;
-    startMouseYRef.current = touch.clientY;
-    startPanXRef.current = panX;
-    startPanYRef.current = panY;
-    lastMouseXRef.current = touch.clientX;
-    lastMouseYRef.current = touch.clientY;
-    lastTimeRef.current = performance.now();
-    velocityXRef.current = 0;
-    velocityYRef.current = 0;
-    totalDragDistanceRef.current = 0;
-    setHasInteracted(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingRef.current || e.touches.length === 0) return;
-    const touch = e.touches[0];
-
-    const deltaX = touch.clientX - startMouseXRef.current;
-    const deltaY = touch.clientY - startMouseYRef.current;
-    totalDragDistanceRef.current += Math.hypot(
-      touch.clientX - lastMouseXRef.current,
-      touch.clientY - lastMouseYRef.current
-    );
-
-    const now = performance.now();
-    const dt = Math.max(1, now - lastTimeRef.current);
-    velocityXRef.current = ((touch.clientX - lastMouseXRef.current) / dt) * 16;
-    velocityYRef.current = ((touch.clientY - lastMouseYRef.current) / dt) * 16;
-
-    lastMouseXRef.current = touch.clientX;
-    lastMouseYRef.current = touch.clientY;
-    lastTimeRef.current = now;
-
-    const bounds = getPanBounds();
-    const targetX = startPanXRef.current + deltaX;
-    const targetY = startPanYRef.current + deltaY;
-
-    setPanX(Math.max(bounds.minX - OVERSCROLL_X, Math.min(bounds.maxX + OVERSCROLL_X, targetX)));
-    setPanY(Math.max(bounds.minY - OVERSCROLL_Y, Math.min(bounds.maxY + OVERSCROLL_Y, targetY)));
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-    startInertia();
-  };
-
-  // ─── KEYBOARD NAVIGATION (WASD & Arrows) ────────────────────────────────
+  // ESC tuşu ile açık inceleme modalini kapatma
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (activeHotspot) return;
-      const step = 70;
-      const bounds = getPanBounds();
-
-      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        setPanX((prev) => Math.min(bounds.maxX, prev + step));
-        setHasInteracted(true);
-      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        setPanX((prev) => Math.max(bounds.minX, prev - step));
-        setHasInteracted(true);
-      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        setPanY((prev) => Math.min(bounds.maxY, prev + step));
-        setHasInteracted(true);
-      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-        setPanY((prev) => Math.max(bounds.minY, prev - step));
-        setHasInteracted(true);
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         setActiveHotspot(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeHotspot, getPanBounds]);
+  }, []);
 
-  // ─── HOTSPOT CLICK ─────────────────────────────────────────────────────
-  const handleHotspotClick = (e: React.MouseEvent, hotspot: InteriorHotspot) => {
-    e.stopPropagation();
-    if (totalDragDistanceRef.current > 8) return;
+  // İnceleme noktasına tıklama
+  const handleHotspotClick = (hotspot: InteriorHotspot) => {
     setActiveHotspot(hotspot);
     setNoteAddedFeedback(false);
   };
 
-  // Add finding to Notebook
+  // İnceleme notunu deftere ekleme
   const handleAddClueToNotebook = async (snippet: string) => {
     const updatedNotes = notes ? `${notes}\n[${locationData.name} İpucu] ${snippet}` : `[${locationData.name} İpucu] ${snippet}`;
     setNotes(updatedNotes);
@@ -450,67 +230,60 @@ function InteriorScene({
     }
   };
 
-  const getCompassDirection = (deg: number) => {
-    if (deg >= 70 && deg <= 110) return 'Doğu (E)';
-    if (deg > 110 && deg < 160) return 'Güneydoğu (SE)';
-    if (deg >= 160 && deg <= 200) return 'Güney (S)';
-    if (deg > 200 && deg < 250) return 'Güneybatı (SW)';
-    if (deg >= 250 && deg <= 290) return 'Batı (W)';
-    return `${deg}°`;
-  };
-
   return (
-    <div
-      ref={containerRef}
-      className={styles.viewportContainer}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* ─── PANORAMIC STAGE (2D TRANSLATE + SCALE) ─── */}
+    <div className={styles.viewportContainer}>
+      {/* ─── ARKA PLAN AMBİYANS IŞIĞI (SİYAH BOŞLUKLARI DOĞAL DOLDURUR) ─── */}
       <div
-        ref={stageRef}
-        className={styles.panoramaStage}
-        style={{
-          transform: `translate3d(${panX}px, ${panY}px, 0)`,
-        }}
-      >
-        <img
-          src={locationData.backgroundImage}
-          alt={locationData.name}
-          className={styles.panoramaImage}
-          draggable={false}
-        />
+        className={styles.ambientBackdrop}
+        style={{ backgroundImage: `url(${locationData.backgroundImage})` }}
+      />
 
-        {/* ─── HOTSPOT PINS LAYER ─── */}
-        <div className={styles.hotspotsLayer}>
-          {locationData.hotspots.map((hotspot) => (
-            <div
-              key={hotspot.id}
-              className={styles.hotspotPin}
-              style={{
-                left: `${hotspot.x}%`,
-                top: `${hotspot.y}%`,
-              }}
-              onClick={(e) => handleHotspotClick(e, hotspot)}
-              title={hotspot.title}
-            >
-              <div className={styles.pinBeacon}>
-                <span>{hotspot.icon}</span>
-              </div>
-              <div className={styles.pinLabel}>
-                <span>{hotspot.title}</span>
-              </div>
-            </div>
-          ))}
+      {/* ─── EVRENSEL SABİT MEKÂN SAHNESİ (ZOOMSUZ, KAYMASIZ, TAM GÖRÜNTÜ) ─── */}
+      <div className={styles.sceneWrapper}>
+        <div
+          className={styles.sceneFrame}
+          style={
+            {
+              '--scene-aspect-ratio': aspectRatio,
+              aspectRatio: `${aspectRatio}`,
+            } as React.CSSProperties
+          }
+        >
+          <img
+            src={locationData.backgroundImage}
+            alt={locationData.name}
+            className={styles.sceneImage}
+            onLoad={handleImageLoad}
+            draggable={false}
+          />
+
+          {/* ─── ETKİLEŞİMLİ NOKTALAR KATMANI (GÖRSELE TAM HİZALANIR) ─── */}
+          <div className={styles.hotspotsLayer}>
+            {locationData.hotspots.map((hotspot) => (
+              <button
+                key={hotspot.id}
+                type="button"
+                className={styles.hotspotPin}
+                style={{
+                  left: `${hotspot.x}%`,
+                  top: `${hotspot.y}%`,
+                }}
+                onClick={() => handleHotspotClick(hotspot)}
+                title={hotspot.title}
+              >
+                <div className={styles.pinBeacon}>
+                  <span>{hotspot.icon}</span>
+                </div>
+                <div className={styles.pinLabel}>
+                  <span>{hotspot.title}</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* ─── ATMOSPHERIC OVERLAYS ─── */}
+      {/* ─── ATMOSFERİK IŞIK VE PARÇACIKLAR ─── */}
       <div className={styles.vignetteOverlay} />
       <div
         className={
@@ -519,7 +292,7 @@ function InteriorScene({
       />
       <canvas ref={canvasRef} className={styles.dustCanvas} />
 
-      {/* ─── TOP HUD ─── */}
+      {/* ─── ÜST BAŞLIK & NAVİGASYON ─── */}
       <header className={styles.topHud}>
         <div className={styles.hudGroup}>
           <Link href="/map" className={styles.backBtn}>
@@ -542,15 +315,10 @@ function InteriorScene({
           </select>
         </div>
 
-        {/* Compass Ribbon & Title */}
-        <div className={styles.compassRibbon}>
-          <div className={styles.locationTitle}>{locationData.name}</div>
-          <div className={styles.locationSubtitle}>{locationData.subtitle}</div>
-          <div className={styles.compassGauge}>
-            <span>🧭</span>
-            <span>Açı: <strong className={styles.activeDegree}>{compassHeading}°</strong></span>
-            <span>({getCompassDirection(compassHeading)})</span>
-          </div>
+        {/* Mekân Başlık ve Açıklaması */}
+        <div className={styles.locationHeader}>
+          <h1 className={styles.locationTitle}>{locationData.name}</h1>
+          <p className={styles.locationSubtitle}>{locationData.subtitle}</p>
         </div>
 
         <div className={styles.hudGroup}>
@@ -563,33 +331,19 @@ function InteriorScene({
         </div>
       </header>
 
-      {/* ─── BOTTOM CONTROLS & HINT ─── */}
+      {/* ─── ALT BİLGİ VE İPUCU ÇUBUĞU ─── */}
       <footer className={styles.bottomHud}>
-        <div className={styles.zoomControls}>
-          <button
-            className={styles.hudIconBtn}
-            onClick={() => {
-              const bounds = getPanBounds();
-              setPanX((bounds.minX + bounds.maxX) / 2);
-              setPanY(bounds.maxY + (bounds.minY - bounds.maxY) * 0.45);
-            }}
-            title="Açıyı Sıfırla"
-          >
-            ↺
-          </button>
+        <div className={styles.sceneBadge}>
+          <span className={styles.badgeDot} />
+          <span>Mekân Keşfi • İncelemek istediğin noktaya tıkla</span>
         </div>
 
-        {!hasInteracted && (
-          <div className={styles.dragHint}>
-            <span className={styles.handIcon}>👈👉👆👇</span>
-            <span>Etrafa bakmak için basılı tutup sürükle</span>
-          </div>
-        )}
-
-        <div style={{ width: '80px' }} />
+        <div className={styles.hotspotsCount}>
+          <span>📍 {locationData.hotspots.length} İnceleme Noktası</span>
+        </div>
       </footer>
 
-      {/* ─── INSPECTION DOSSIER (MODAL) ─── */}
+      {/* ─── İNCELEME DOSYASI (MODAL) ─── */}
       {activeHotspot && (
         <div
           className={styles.inspectionModalOverlay}

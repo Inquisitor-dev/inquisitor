@@ -25,7 +25,7 @@ export interface LocationInteriorData {
   particleType: 'embers' | 'dust' | 'fog' | 'rain';
   // neon: meşale yerine pembe-camgöbeği titreyen neon ışığı (cyberpunk)
   lightingTone: 'warm-fire' | 'cold-moon' | 'dim-amber' | 'eerie-green' | 'neon';
-  initialPan: number; // Başlangıç kamera açısı (yüzde veya piksel)
+  initialPan?: number; // Başlangıç kamera açısı (geriye dönük uyumluluk için tutuluyor)
   hotspots: InteriorHotspot[];
 }
 
