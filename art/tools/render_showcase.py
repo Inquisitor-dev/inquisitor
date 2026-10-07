@@ -6,7 +6,7 @@
 #   - 2 kat çözünürlükte render, küçültülerek keskinleştirilir
 #
 # Kullanım:
-#   blender -b -P art/tools/render_showcase.py -- --outfit default
+#   blender -b -P art/tools/render_showcase.py -- --outfit engizitor
 #
 # Çıktı: art/characters/<id>/render/thumb.png  (pack_sprites.py bunu thumb.webp yapar)
 import argparse

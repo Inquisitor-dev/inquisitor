@@ -1,5 +1,5 @@
 {
-  "id": "cyber_girl",
+  "id": "engizitor",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -11,16 +11,16 @@
   "walk": {
     "frames": 16,
     "cycleSeconds": 1.0333,
-    "strideMeters": 1.897,
+    "strideMeters": 1.8115,
     "stridePx": {
-      "east": 227.64,
-      "south-east": 160.17,
-      "south": 130.57,
-      "south-west": 160.17,
-      "west": 227.64,
-      "north-west": 160.17,
-      "north": 130.57,
-      "north-east": 160.17
+      "east": 217.38,
+      "south-east": 152.96,
+      "south": 124.68,
+      "south-west": 152.96,
+      "west": 217.38,
+      "north-west": 152.96,
+      "north": 124.68,
+      "north-east": 152.96
     },
     "sheets": {
       "east": "walk/east.webp",
@@ -34,7 +34,7 @@
     }
   },
   "idle": {
-    "frames": 22,
+    "frames": 37,
     "fps": 10,
     "sheets": {
       "east": "idle/east.webp",

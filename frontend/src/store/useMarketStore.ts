@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_OUTFIT_ID } from '@/config/outfits';
+import { DEFAULT_OUTFIT_ID, LEGACY_OUTFIT_IDS } from '@/config/outfits';
 import { apiUrl } from '@/config/api';
 
 const STARTING_BALANCE = 1000;
@@ -182,6 +182,21 @@ export const useMarketStore = create<MarketState>()(
     }),
     {
       name: 'inquisitor-market',
+      // v1: karakter id'leri yeniden adlandırıldı (LEGACY_OUTFIT_IDS)
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<MarketState>;
+        if (version < 1) {
+          if (state.equippedOutfitId) {
+            state.equippedOutfitId = LEGACY_OUTFIT_IDS[state.equippedOutfitId] ?? state.equippedOutfitId;
+          }
+          state.ownedItemIds = state.ownedItemIds?.map((id) => {
+            const outfit = id.startsWith('outfit_') ? LEGACY_OUTFIT_IDS[id.slice('outfit_'.length)] : undefined;
+            return outfit ? `outfit_${outfit}` : id;
+          });
+        }
+        return state as MarketState;
+      },
       partialize: (state) => ({
         tokenBalance: state.tokenBalance,
         score: state.score,

@@ -1,5 +1,5 @@
 {
-  "id": "cyber_man",
+  "id": "jinling_golgesi",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -11,16 +11,16 @@
   "walk": {
     "frames": 16,
     "cycleSeconds": 1.0333,
-    "strideMeters": 1.9252,
+    "strideMeters": 2.1141,
     "stridePx": {
-      "east": 231.02,
-      "south-east": 162.56,
-      "south": 132.51,
-      "south-west": 162.56,
-      "west": 231.02,
-      "north-west": 162.56,
-      "north": 132.51,
-      "north-east": 162.56
+      "east": 253.69,
+      "south-east": 178.51,
+      "south": 145.51,
+      "south-west": 178.51,
+      "west": 253.69,
+      "north-west": 178.51,
+      "north": 145.51,
+      "north-east": 178.51
     },
     "sheets": {
       "east": "walk/east.webp",

@@ -2,7 +2,7 @@
 # frontend/public/characters/<id>/manifest.json yazar.
 #
 # Kullanım (Blender değil, normal Python + Pillow):
-#   python art/tools/pack_sprites.py --outfit default
+#   python art/tools/pack_sprites.py --outfit engizitor
 import argparse
 import json
 import math

@@ -1,5 +1,5 @@
 {
-  "id": "default",
+  "id": "sis_dedektifi",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -11,16 +11,16 @@
   "walk": {
     "frames": 16,
     "cycleSeconds": 1.0333,
-    "strideMeters": 1.8115,
+    "strideMeters": 1.8446,
     "stridePx": {
-      "east": 217.38,
-      "south-east": 152.96,
-      "south": 124.68,
-      "south-west": 152.96,
-      "west": 217.38,
-      "north-west": 152.96,
-      "north": 124.68,
-      "north-east": 152.96
+      "east": 221.35,
+      "south-east": 155.75,
+      "south": 126.96,
+      "south-west": 155.75,
+      "west": 221.35,
+      "north-west": 155.75,
+      "north": 126.96,
+      "north-east": 155.75
     },
     "sheets": {
       "east": "walk/east.webp",

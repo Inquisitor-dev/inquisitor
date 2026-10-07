@@ -1,5 +1,5 @@
 {
-  "id": "dedektif",
+  "id": "kizil_yemin",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -10,17 +10,17 @@
   },
   "walk": {
     "frames": 16,
-    "cycleSeconds": 1.0333,
-    "strideMeters": 1.8446,
+    "cycleSeconds": 0.9667,
+    "strideMeters": 1.7696,
     "stridePx": {
-      "east": 221.35,
-      "south-east": 155.75,
-      "south": 126.96,
-      "south-west": 155.75,
-      "west": 221.35,
-      "north-west": 155.75,
-      "north": 126.96,
-      "north-east": 155.75
+      "east": 212.35,
+      "south-east": 149.42,
+      "south": 121.8,
+      "south-west": 149.42,
+      "west": 212.35,
+      "north-west": 149.42,
+      "north": 121.8,
+      "north-east": 149.42
     },
     "sheets": {
       "east": "walk/east.webp",
@@ -34,7 +34,7 @@
     }
   },
   "idle": {
-    "frames": 37,
+    "frames": 22,
     "fps": 10,
     "sheets": {
       "east": "idle/east.webp",

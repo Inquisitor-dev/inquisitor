@@ -1,5 +1,5 @@
 {
-  "id": "fantastic_girl",
+  "id": "krom_serif",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -10,17 +10,17 @@
   },
   "walk": {
     "frames": 16,
-    "cycleSeconds": 0.9667,
-    "strideMeters": 1.7696,
+    "cycleSeconds": 1.0333,
+    "strideMeters": 1.9252,
     "stridePx": {
-      "east": 212.35,
-      "south-east": 149.42,
-      "south": 121.8,
-      "south-west": 149.42,
-      "west": 212.35,
-      "north-west": 149.42,
-      "north": 121.8,
-      "north-east": 149.42
+      "east": 231.02,
+      "south-east": 162.56,
+      "south": 132.51,
+      "south-west": 162.56,
+      "west": 231.02,
+      "north-west": 162.56,
+      "north": 132.51,
+      "north-east": 162.56
     },
     "sheets": {
       "east": "walk/east.webp",
@@ -34,7 +34,7 @@
     }
   },
   "idle": {
-    "frames": 22,
+    "frames": 37,
     "fps": 10,
     "sheets": {
       "east": "idle/east.webp",

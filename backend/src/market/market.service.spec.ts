@@ -15,7 +15,7 @@ describe('MarketService', () => {
         findMany: jest.fn(),
       },
       userPurchase: {
-        findUnique: jest.fn(),
+        findFirst: jest.fn(),
         findMany: jest.fn(),
         create: jest.fn(),
       },
@@ -80,7 +80,7 @@ describe('MarketService', () => {
         tokenBalance: 1000,
         isAdmin: false,
       });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.findFirst.mockResolvedValue(null);
       mockPrisma.userPurchase.create.mockResolvedValue({
         id: 'p-1',
         userId: 'user-1',
@@ -117,7 +117,7 @@ describe('MarketService', () => {
         tokenBalance: 1000,
         isAdmin: false,
       });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.findFirst.mockResolvedValue(null);
       mockPrisma.userPurchase.create.mockResolvedValue({
         id: 'p-china',
         userId: 'user-1',
@@ -160,18 +160,18 @@ describe('MarketService', () => {
         tokenBalance: 1000,
         isAdmin: false,
       });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
-      mockPrisma.userPurchase.findMany.mockResolvedValue([{ itemId: 'outfit_dedektif' }]);
+      mockPrisma.userPurchase.findFirst.mockResolvedValue(null);
+      mockPrisma.userPurchase.findMany.mockResolvedValue([{ itemId: 'outfit_sis_dedektifi' }]);
 
-      const result = await service.purchaseItem('user-1', 'outfit_dedektif');
+      const result = await service.purchaseItem('user-1', 'outfit_sis_dedektifi');
 
       expect(result.success).toBe(true);
       expect(result.tokenBalance).toBe(300);
       expect(result.ownedItemIds).toEqual(
-        expect.arrayContaining(['outfit_default', 'outfit_dedektif']),
+        expect.arrayContaining(['outfit_engizitor', 'outfit_sis_dedektifi']),
       );
       expect(mockPrisma.userPurchase.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({ itemId: 'outfit_dedektif', category: 'outfit', pricePaid: 700 }),
+        data: expect.objectContaining({ itemId: 'outfit_sis_dedektifi', category: 'outfit', pricePaid: 700 }),
       });
     });
 
@@ -181,7 +181,7 @@ describe('MarketService', () => {
         tokenBalance: 200,
         isAdmin: false,
       });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.findFirst.mockResolvedValue(null);
 
       await expect(
         service.purchaseItem('user-1', 'universe_modern'),
@@ -194,7 +194,7 @@ describe('MarketService', () => {
         tokenBalance: 1000,
         isAdmin: false,
       });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue({ id: 'p-existing' });
+      mockPrisma.userPurchase.findFirst.mockResolvedValue({ id: 'p-existing' });
 
       await expect(
         service.purchaseItem('user-1', 'universe_modern'),
@@ -206,7 +206,7 @@ describe('MarketService', () => {
     it('varsayılan eşyalar (easy, medieval) için true döner', async () => {
       expect(await service.hasPurchased('user-1', 'universe_medieval')).toBe(true);
       expect(await service.hasPurchased('user-1', 'difficulty_easy')).toBe(true);
-      expect(await service.hasPurchased('user-1', 'outfit_default')).toBe(true);
+      expect(await service.hasPurchased('user-1', 'outfit_engizitor')).toBe(true);
     });
 
     it('admin kullanıcılar için her şeye true döner', async () => {
@@ -216,8 +216,38 @@ describe('MarketService', () => {
 
     it('satın almamış normal kullanıcı için false döner', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({ isAdmin: false });
-      mockPrisma.userPurchase.findUnique.mockResolvedValue(null);
+      mockPrisma.userPurchase.findFirst.mockResolvedValue(null);
       expect(await service.hasPurchased('user-1', 'universe_cyberpunk')).toBe(false);
+    });
+
+    it('karakteri eski id ile de arar', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ isAdmin: false });
+      mockPrisma.userPurchase.findFirst.mockResolvedValue({ id: 'p-legacy' });
+      expect(await service.hasPurchased('user-1', 'outfit_sis_dedektifi')).toBe(true);
+      expect(mockPrisma.userPurchase.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'user-1', itemId: { in: ['outfit_sis_dedektifi', 'outfit_dedektif'] } },
+      });
+    });
+  });
+
+  describe('eski karakter id uyumluluğu', () => {
+    it('eski id ile kayıtlı satın almayı envanterde yeni id olarak döner', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'a@test.com',
+        tokenBalance: 0,
+        score: 0,
+        isAdmin: false,
+      });
+      mockPrisma.userPurchase.findMany.mockResolvedValue([
+        { itemId: 'outfit_dedektif', category: 'outfit', createdAt: new Date() },
+      ]);
+      mockPrisma.tokenTransaction.findMany.mockResolvedValue([]);
+
+      const result = await service.getBalanceAndInventory('user-1');
+
+      expect(result.ownedItemIds).toContain('outfit_sis_dedektifi');
+      expect(result.ownedItemIds).not.toContain('outfit_dedektif');
     });
   });
 

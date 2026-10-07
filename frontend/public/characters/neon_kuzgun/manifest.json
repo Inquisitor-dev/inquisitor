@@ -1,5 +1,5 @@
 {
-  "id": "china_girl",
+  "id": "neon_kuzgun",
   "map": {
     "frameWidth": 192,
     "frameHeight": 256,
@@ -11,16 +11,16 @@
   "walk": {
     "frames": 16,
     "cycleSeconds": 1.0333,
-    "strideMeters": 2.1141,
+    "strideMeters": 1.897,
     "stridePx": {
-      "east": 253.69,
-      "south-east": 178.51,
-      "south": 145.51,
-      "south-west": 178.51,
-      "west": 253.69,
-      "north-west": 178.51,
-      "north": 145.51,
-      "north-east": 178.51
+      "east": 227.64,
+      "south-east": 160.17,
+      "south": 130.57,
+      "south-west": 160.17,
+      "west": 227.64,
+      "north-west": 160.17,
+      "north": 130.57,
+      "north-east": 160.17
     },
     "sheets": {
       "east": "walk/east.webp",
@@ -34,7 +34,7 @@
     }
   },
   "idle": {
-    "frames": 37,
+    "frames": 22,
     "fps": 10,
     "sheets": {
       "east": "idle/east.webp",

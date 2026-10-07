@@ -6,7 +6,7 @@
 # frontend/public/characters/<id>/ altına sprite sheet + manifest.json olarak paketler.
 #
 # Kullanım:
-#   blender -b -P art/tools/render_character.py -- --outfit default [--only walk,idle,turntable,thumb] [--outline]
+#   blender -b -P art/tools/render_character.py -- --outfit engizitor [--only walk,idle,turntable,thumb] [--outline]
 #
 # Beklenen dosyalar (art/characters/<id>/source/):
 #   <id>_walk.fbx   Mixamo yürüme, "In Place", With Skin

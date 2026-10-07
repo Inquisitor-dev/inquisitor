@@ -4,7 +4,7 @@
 #   - yalnızca dikişsiz döngü aralığı (best_idle_loop) dışa aktarılır
 #
 # Kullanım:
-#   blender -b -P art/tools/export_web_model.py -- --outfit default
+#   blender -b -P art/tools/export_web_model.py -- --outfit engizitor
 #   npx @gltf-transform/cli optimize art/characters/<id>/web/<id>.glb \
 #       frontend/public/characters/<id>/model.glb --compress meshopt --texture-compress webp --texture-size 2048
 #
