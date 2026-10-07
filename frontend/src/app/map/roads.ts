@@ -157,21 +157,26 @@ const cyberpunk: RoadNetwork = {
     marketDoor: { x: 1120, y: 1110 },
   },
   edges: [
+    // Kapılar koridorun üzerindeki ara noktalardır: karakter kapının önünden geçerek ilerler,
+    // bir kapıya giderken onu geçip kavşaktan geri dönmez.
     // Alt meydandan pazarın iki yanına; alttaki bloğun altından, sol alttaki kulübenin üstünden geçer
     ['plaza', 'sw', [{ x: 1180, y: 1250 }]],
     ['plaza', 'south'],
-    // Pazara sol ve alt bloklar arasındaki boşluktan girilir
+    // Pazara sol ve alt bloklar arasındaki boşluktan girilir: alt meydandan ya da batıdan doğrudan
+    ['plaza', 'marketDoor', [{ x: 1180, y: 1250 }]],
     ['sw', 'marketDoor'],
+    ['west', 'marketDoor', [{ x: 780, y: 1090 }]],
     ['sw', 'west'],
     ['west', 'homeDoor'],
-    // Sol bloğun üst köşesindeki tentelerin solundan kuzey sokağına
-    ['west', 'north', [{ x: 770, y: 800 }, { x: 963, y: 743 }]],
-    ['north', 'ramenDoor'],
+    // Batıdan sol bloğun tentelerinin solundan geçip lokantanın önünden kuzeye
+    ['west', 'ramenDoor', [{ x: 770, y: 800 }]],
+    ['ramenDoor', 'north'],
     ['north', 'workshopDoor'],
     ['north', 'top'],
-    // Üst bloğun tentelerinin üstünden, kliniğin saksılarının önünden
-    ['top', 'ne', [{ x: 1514, y: 626 }, { x: 1651, y: 688 }]],
-    ['ne', 'clinicDoor'],
+    ['top', 'workshopDoor'],
+    // Üst bloğun tentelerinin üstünden kliniğin önüne, oradan doğuya
+    ['top', 'clinicDoor', [{ x: 1514, y: 626 }]],
+    ['clinicDoor', 'ne'],
     // Sağ bloğun tentesiyle karakolun bariyeri arasından
     ['ne', 'east', [{ x: 1995, y: 846 }]],
     ['ne', 'policeDoor', [{ x: 1995, y: 846 }]],
