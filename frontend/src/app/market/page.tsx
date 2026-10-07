@@ -25,7 +25,8 @@ import {
 } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
-import { wearableOutfitId } from '@/config/outfits';
+import { findOutfit, wearableOutfitId } from '@/config/outfits';
+import CharacterShowcase from '@/components/character/CharacterShowcase';
 import styles from './page.module.scss';
 import {
   CATEGORY_LABELS,
@@ -93,6 +94,9 @@ export default function MarketPage() {
   const [pendingItem, setPendingItem] = useState<MarketItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  // Karakter kartına tıklayınca açılan 3D önizleme ve satın alma sonrası tanıtım sahnesi
+  const [previewItem, setPreviewItem] = useState<MarketItem | null>(null);
+  const [revealOutfitId, setRevealOutfitId] = useState<string | null>(null);
   const tabsRef = useRef<HTMLElement | null>(null);
 
   // Sayfa açıldığında backend'den güncel bakiye ve sahip olunanları çek
@@ -203,13 +207,15 @@ export default function MarketPage() {
       const res = await purchaseServer(pendingItem.id, authToken);
       setIsProcessing(false);
       if (res.success) {
-        setToast(`${pendingItem.title} başarıyla mühürlendi ve satın alındı.`);
+        if (pendingItem.outfitId) setRevealOutfitId(pendingItem.outfitId);
+        else setToast(`${pendingItem.title} başarıyla mühürlendi ve satın alındı.`);
       } else {
         setToast(res.message || 'Satın alma başarısız oldu.');
       }
     } else {
       const ok = purchase(pendingItem.id, pendingItem.price);
-      if (ok) setToast(`${pendingItem.title} artık senin.`);
+      if (ok && pendingItem.outfitId) setRevealOutfitId(pendingItem.outfitId);
+      else if (ok) setToast(`${pendingItem.title} artık senin.`);
       else setToast('Yetersiz bakiye.');
     }
     setPendingItem(null);
@@ -368,9 +374,23 @@ export default function MarketPage() {
       className={`${styles.card} ${styles.outfitCard} ${styles[`rarity_${item.rarity}`]} ${isOwned(item) ? styles.isOwned : ''} ${item.comingSoon ? styles.isSoon : ''}`}
     >
       <span className={styles.rarityTag}>{RARITY_LABELS[item.rarity ?? 'common']}</span>
-      <div className={styles.outfitPortrait}>
-        <OutfitPortrait src={item.image} alt={item.title} />
-      </div>
+      {item.comingSoon ? (
+        <div className={styles.outfitPortrait}>
+          <OutfitPortrait src={item.image} alt={item.title} />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={`${styles.outfitPortrait} ${styles.outfitPortraitButton}`}
+          onClick={() => setPreviewItem(item)}
+          aria-label={`${item.title} karakterini 3D incele`}
+        >
+          <OutfitPortrait src={item.image} alt={item.title} />
+          <span className={styles.inspectTag}>
+            <Eye size={13} /> 3D İncele
+          </span>
+        </button>
+      )}
       <span className={styles.cardEyebrow}>{item.subtitle}</span>
       <h3 className={styles.cardTitle}>{item.title}</h3>
       <p className={styles.cardDesc}>{item.description}</p>
@@ -617,6 +637,57 @@ export default function MarketPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {previewItem?.outfitId && findOutfit(previewItem.outfitId) && (
+        <CharacterShowcase
+          outfit={findOutfit(previewItem.outfitId)!}
+          mode="preview"
+          onClose={() => setPreviewItem(null)}
+          actions={
+            isOwned(previewItem) ? (
+              renderAction(previewItem)
+            ) : (
+              <>
+                {renderPrice(previewItem)}
+                <button
+                  className={styles.buyBtn}
+                  onClick={() => {
+                    setPendingItem(previewItem);
+                    setPreviewItem(null);
+                  }}
+                >
+                  Satın Al
+                </button>
+              </>
+            )
+          }
+        />
+      )}
+
+      {revealOutfitId && findOutfit(revealOutfitId) && (
+        <CharacterShowcase
+          outfit={findOutfit(revealOutfitId)!}
+          mode="reveal"
+          onClose={() => setRevealOutfitId(null)}
+          actions={
+            <>
+              <button
+                className={styles.buyBtn}
+                onClick={() => {
+                  equipOutfit(revealOutfitId);
+                  setRevealOutfitId(null);
+                  setToast(`${findOutfit(revealOutfitId)!.name} giyildi.`);
+                }}
+              >
+                Hemen Giy
+              </button>
+              <button className={styles.ghostBtn} onClick={() => setRevealOutfitId(null)}>
+                Sonra
+              </button>
+            </>
+          }
+        />
       )}
 
       {toast && (
