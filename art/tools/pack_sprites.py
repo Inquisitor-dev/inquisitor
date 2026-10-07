@@ -115,6 +115,10 @@ def main():
         save_webp(Image.open(os.path.join(render, "thumb.png")).convert("RGBA"), os.path.join(out, "thumb.webp"))
         manifest["thumb"] = "thumb.webp"
 
+    # Menü/gardırop 3D gösterimi; export_web_model.py + gltf-transform ile üretilir
+    if os.path.exists(os.path.join(out, "model.glb")):
+        manifest["model"] = "model.glb"
+
     with open(os.path.join(out, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
 

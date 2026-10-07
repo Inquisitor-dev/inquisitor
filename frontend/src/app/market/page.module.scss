@@ -781,38 +781,82 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   text-align: center;
   padding: 34px 20px 20px;
   --rarity: #8a7f72;
-  --rarity-glow: rgba(138, 127, 114, 0.15);
+  --rarity-glow: rgba(232, 200, 150, 0.22);
+  --rarity-beam: rgba(255, 228, 190, 0.1);
 
   .cardFooter {
     width: 100%;
   }
 }
 
+// Karakter vitrini: tepeden düşen sahne ışığı, arkada nadirlik renginde hâle, ayak altında ışıklı zemin
 .outfitPortrait {
   position: relative;
+  isolation: isolate;
   width: 100%;
   aspect-ratio: 1;
   margin-bottom: 18px;
   display: grid;
   place-items: center;
   color: var(--rarity);
-  border: 1px solid rgba(232, 220, 196, 0.06);
+  border: 1px solid rgba(232, 220, 196, 0.08);
   background:
-    radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, 0.75) 0%, transparent 38%),
-    radial-gradient(circle at 50% 45%, var(--rarity-glow), transparent 68%),
-    rgba(0, 0, 0, 0.35);
+    radial-gradient(ellipse 46% 9% at 50% 93%, var(--rarity-glow), transparent 100%),
+    radial-gradient(circle at 50% 42%, var(--rarity-glow), transparent 62%),
+    radial-gradient(ellipse at 50% 50%, rgba(40, 24, 18, 0.6), rgba(0, 0, 0, 0.55) 80%);
   overflow: hidden;
+
+  // Tepeden düşen ışık huzmesi
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -10% 18% 0;
+    z-index: -1;
+    background: linear-gradient(180deg, var(--rarity-beam), transparent 75%);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    opacity: 0.8;
+    transition: opacity $transition-slow;
+  }
+
+  // Üzerine gelince kartın üzerinden geçen parıltı
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 240, 210, 0.14) 50%, transparent 65%);
+    transform: translateX(-120%);
+    pointer-events: none;
+  }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.8));
-    transition: transform $transition-slow;
+    transition: transform $transition-slow, filter $transition-slow;
   }
 
-  .outfitCard:hover & img {
-    transform: scale(1.04);
+  .outfitCard:hover & {
+    &::before {
+      opacity: 1;
+    }
+
+    &::after {
+      transform: translateX(120%);
+      transition: transform 0.9s ease;
+    }
+
+    img {
+      transform: scale(1.05);
+      filter: brightness(1.1) drop-shadow(0 10px 14px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 18px var(--rarity-glow));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .outfitCard:hover &::after {
+      transition: none;
+    }
   }
 }
 
@@ -862,12 +906,14 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
 .rarity_rare {
   --rarity: #{$rare};
-  --rarity-glow: rgba(178, 58, 58, 0.25);
+  --rarity-glow: rgba(214, 64, 52, 0.38);
+  --rarity-beam: rgba(255, 150, 120, 0.12);
 }
 
 .rarity_legendary {
   --rarity: #{$legendary};
-  --rarity-glow: rgba(224, 187, 94, 0.25);
+  --rarity-glow: rgba(240, 196, 92, 0.4);
+  --rarity-beam: rgba(255, 220, 140, 0.16);
   background:
     radial-gradient(circle at 50% 20%, rgba(224, 187, 94, 0.08), transparent 60%),
     $card-bg;

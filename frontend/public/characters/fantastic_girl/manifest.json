@@ -54,5 +54,6 @@
     "columns": 12,
     "src": "turntable.webp"
   },
-  "thumb": "thumb.webp"
+  "thumb": "thumb.webp",
+  "model": "model.glb"
 }
