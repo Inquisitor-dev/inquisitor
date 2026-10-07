@@ -43,3 +43,6 @@ art/tools/__pycache__/
 graphify-out/
 CLAUDE.local.md
 .claude/settings.local.json
+
+# export_web_model.py ara çıktısı (sıkıştırılmamış GLB)
+art/characters/*/web/

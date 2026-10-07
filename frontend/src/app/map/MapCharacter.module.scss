@@ -50,6 +50,57 @@
   opacity: var(--cast-opacity);
 }
 
+/* Ayak altındaki ışık halkası: yere yatık elips, yavaşça nefes alır. Rengi nadirliğe göre,
+   gece daha belirgin (harita karardıkça oyuncunun karakteri kaybolmasın) */
+.ring_common {
+  --ring-color: 255, 226, 170;
+}
+
+.ring_rare {
+  --ring-color: 235, 70, 55;
+}
+
+.ring_legendary {
+  --ring-color: 255, 200, 90;
+}
+
+.day {
+  --ring-opacity: 0.9;
+}
+
+.dusk {
+  --ring-opacity: 0.95;
+}
+
+.night {
+  --ring-opacity: 1;
+}
+
+.ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  // İnce parlak çember + içte yumuşak ışık; açık zeminde de seçilsin diye koyu bir dış hat
+  border: 1.5px solid rgba(var(--ring-color), 0.95);
+  background: radial-gradient(ellipse at center, rgba(var(--ring-color), 0.35) 0%, rgba(var(--ring-color), 0.12) 60%, transparent 75%);
+  box-shadow:
+    0 0 8px 1px rgba(var(--ring-color), 0.7),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+  opacity: var(--ring-opacity);
+  animation: ringPulse 2.8s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.08); }
+}
+
 /* Ayakların hemen altında küçük, yumuşak temas gölgesi */
 .contactShadow {
   position: absolute;

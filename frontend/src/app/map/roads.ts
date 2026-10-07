@@ -14,7 +14,8 @@ export type RoadNetwork = {
   spawn: string;
   // Verilirse koordinatlar harita görselinin pikselleridir (ekran oranından bağımsız)
   image?: { width: number; height: number };
-  // Karakterin bu haritadaki boy çarpanı (köy = 1). Haritadaki insan, kapı ve araç boyutlarına göre seçilir.
+  // Karakterin bu haritadaki boy çarpanı. Haritadaki insan, kapı, araç ve eşya boyutlarına göre seçilir:
+  // karakter etraftaki insanlar kadar, kapıdan biraz kısa olmalı.
   characterScale?: number;
 };
 
@@ -24,6 +25,8 @@ export type RoadNetwork = {
 // Yolları görmek ve yeni nokta almak için haritayı `?debugRoads` ile aç.
 const village: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  // Karakter kapılar kadar uzun, fıçılar bel hizasında
+  characterScale: 1.05,
   nodes: {
     square: { x: 1285, y: 945 },
     plaza: { x: 1440, y: 930 },
@@ -89,6 +92,8 @@ const village: RoadNetwork = {
 // Kapılar mekanların tıklama alanlarının içindedir. İnsan ve araç boyları karakterle uyumlu, ölçek köyle aynı.
 const town: RoadNetwork = {
   image: { width: 2752, height: 1536 },
+  // Bankta oturan insanlar ve benzin pompaları ölçü alındı
+  characterScale: 1.1,
   nodes: {
     crossing: { x: 1290, y: 800 },
     northRoad: { x: 1700, y: 620 },
@@ -198,7 +203,8 @@ const cyberpunk: RoadNetwork = {
 // Kapı yükseklikleri köydekinden küçük, karakter biraz küçültülür.
 const chinaRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
-  characterScale: 0.85,
+  // Kapılar, masalar ve örse göre
+  characterScale: 0.95,
   nodes: {
     square: { x: 1320, y: 790 },
     north: { x: 1480, y: 665 },
@@ -250,7 +256,8 @@ const chinaRoads: RoadNetwork = {
 // Kaya, dikili taş ve ateşlerin etrafından dolanılır. Haritadaki insanlar ~90 px; karakter küçültülür.
 const winterRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },
-  characterScale: 0.82,
+  // Atların ve kasabalıların yanında
+  characterScale: 0.85,
   nodes: {
     square: { x: 1460, y: 910 },
     northwest: { x: 1280, y: 740 },

@@ -7,7 +7,7 @@ import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
-import { wearableOutfitId } from '@/config/outfits';
+import { findOutfit, wearableOutfitId } from '@/config/outfits';
 import {
   directionFromDelta,
   screenStride,
@@ -597,10 +597,9 @@ export default function MapPage() {
 
   // Giyili kıyafetin karakteri tüm haritalarda kullanılır; tüm yön görselleri yüklenince görünür
   const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
-  const character = useCharacterManifest(
-    marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null,
-    'map'
-  );
+  const wornOutfitId = marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
+  const character = useCharacterManifest(wornOutfitId, 'map');
+  const characterRarity = wornOutfitId ? findOutfit(wornOutfitId)?.rarity : undefined;
   
   // Modal states
   const [isHomeModalOpen, setIsHomeModalOpen] = useState(false);
@@ -983,6 +982,7 @@ export default function MapPage() {
         walkPhase={walkPhase}
         scale={CHARACTER_SPRITE_SCALE * characterScale * depthScale}
         ambient={timeOfDay <= 1 ? 'day' : timeOfDay <= 3 ? 'dusk' : 'night'}
+        rarity={characterRarity}
       />
     );
 

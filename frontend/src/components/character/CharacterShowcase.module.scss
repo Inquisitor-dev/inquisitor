@@ -1,0 +1,290 @@
+@use '../../styles/variables' as *;
+
+$gold: #e0bb5e;
+
+// Tam ekran karakter sahnesi: solda büyük 3D karakter, sağda ad, hikâye ve eylemler
+.overlay {
+  --rarity: #c9bda5;
+  --rarity-glow: rgba(232, 200, 150, 0.22);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 60% 70% at 35% 55%, rgba(60, 20, 12, 0.55), transparent 70%),
+    rgba(4, 3, 3, 0.9);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.35s ease both;
+}
+
+.rarity_rare {
+  --rarity: #d6574a;
+  --rarity-glow: rgba(214, 64, 52, 0.38);
+}
+
+.rarity_legendary {
+  --rarity: #{$gold};
+  --rarity-glow: rgba(240, 196, 92, 0.4);
+}
+
+.sheet {
+  position: relative;
+  width: min(1040px, 100%);
+  max-height: calc(100vh - 48px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+  padding: 32px 40px;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 100%, rgba(138, 3, 3, 0.18), transparent 70%),
+    #0c0908;
+  border: 1px solid rgba(138, 3, 3, 0.45);
+  border-radius: $radius-sm;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), 0 0 60px rgba(138, 3, 3, 0.12);
+  overflow: hidden;
+}
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: $text-muted;
+  background: transparent;
+  border: 1px solid rgba(232, 220, 196, 0.12);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    color: $text-parchment;
+    border-color: rgba(232, 220, 196, 0.4);
+  }
+}
+
+// ─── Sahne ──────────────────────────────────────────────
+.stage {
+  position: relative;
+  height: min(620px, calc(100vh - 140px));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.beam {
+  position: absolute;
+  inset: -40px 12% 0;
+  background: linear-gradient(180deg, var(--rarity-glow), transparent 80%);
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  opacity: 0.7;
+}
+
+.halo {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  width: 380px;
+  height: 380px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--rarity-glow), transparent 68%);
+}
+
+.model {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
+.floor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 260px;
+  height: 34px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.9) 0%, var(--rarity-glow) 55%, transparent 72%);
+  border: 1px solid var(--rarity-glow);
+}
+
+// ─── Bilgi ──────────────────────────────────────────────
+.info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-y: auto;
+  max-height: calc(100vh - 112px);
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+  font-size: 1.6rem;
+  color: #f3e3c0;
+  background: radial-gradient(circle at 35% 30%, #b51212, #6e0303 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(138, 3, 3, 0.3), 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+.name {
+  margin: 8px 0 14px;
+  font-family: $font-title;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
+  color: $text-parchment;
+}
+
+.desc {
+  margin: 0 0 12px;
+  color: $text-muted;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.lore {
+  margin: 0 0 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(232, 220, 196, 0.08);
+  color: rgba(232, 220, 196, 0.75);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.quote {
+  margin: 0 0 24px;
+  padding-left: 14px;
+  border-left: 2px solid var(--rarity);
+  font-family: $font-title;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: $text-parchment;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hint {
+  margin-top: 16px;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 196, 0.35);
+}
+
+// ─── Tanıtım sahnesi: kamera yaklaşır, mühür basılır, yazılar sırayla belirir ───
+.reveal {
+  .model {
+    animation: dollyIn 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .beam,
+  .halo {
+    animation: lightUp 1.4s ease 0.2s both;
+  }
+
+  .seal {
+    animation: sealStamp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s both;
+  }
+
+  .eyebrow,
+  .name,
+  .desc,
+  .lore,
+  .quote,
+  .actions {
+    animation: riseIn 0.7s ease both;
+  }
+
+  .eyebrow { animation-delay: 1.2s; }
+  .name    { animation-delay: 1.35s; }
+  .desc    { animation-delay: 1.55s; }
+  .lore    { animation-delay: 1.7s; }
+  .quote   { animation-delay: 1.85s; }
+  .actions { animation-delay: 2s; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dollyIn {
+  from { transform: scale(0.72) translateY(40px); opacity: 0; filter: brightness(0.3); }
+  to   { transform: none; opacity: 1; filter: none; }
+}
+
+@keyframes lightUp {
+  from { opacity: 0; }
+  to   { opacity: 0.7; }
+}
+
+@keyframes sealStamp {
+  0%   { transform: scale(2.4) rotate(-25deg); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes riseIn {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .reveal * {
+    animation: none !important;
+  }
+}
+
+// ─── Mobil: karakter üstte, bilgi altta ─────────────────
+@media (max-width: 760px) {
+  .overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .sheet {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    max-height: 100vh;
+    height: 100%;
+    padding: 20px 16px;
+    overflow-y: auto;
+    border-radius: 0;
+  }
+
+  .stage {
+    height: 52vh;
+  }
+
+  .info {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .name {
+    font-size: 2rem;
+  }
+}

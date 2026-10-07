@@ -158,6 +158,69 @@
   padding: 0 4px;
 }
 
+/* Oyuncu balonunda giyili karakterin küçük portresi */
+.bubblePortrait {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  border: 1px solid rgba(224, 187, 94, 0.55);
+  background: #1a1210;
+}
+
+/* Kenar çubuğunun üstünde oyuncunun karakteri */
+.sideCard.playerCard {
+  position: relative;
+  flex-shrink: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 90% at 20% 60%, rgba(138, 3, 3, 0.28), transparent 70%),
+    #111111;
+}
+
+.playerPortrait {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-right: 1px solid rgba(138, 3, 3, 0.35);
+}
+
+.playerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding-right: 12px;
+}
+
+.playerEyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8A0303;
+}
+
+.playerName {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: #E8DCC4;
+}
+
+.playerTitle {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #c9a24a;
+}
+
 .bubbleText {
   padding: 16px 24px;
   font-size: 0.93rem;

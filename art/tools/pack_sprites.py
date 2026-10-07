@@ -2,7 +2,7 @@
 # frontend/public/characters/<id>/manifest.json yazar.
 #
 # Kullanım (Blender değil, normal Python + Pillow):
-#   python art/tools/pack_sprites.py --outfit default
+#   python art/tools/pack_sprites.py --outfit engizitor
 import argparse
 import json
 import math
@@ -114,6 +114,15 @@ def main():
     if os.path.exists(os.path.join(render, "thumb.png")):
         save_webp(Image.open(os.path.join(render, "thumb.png")).convert("RGBA"), os.path.join(out, "thumb.webp"))
         manifest["thumb"] = "thumb.webp"
+
+    # Diyalog ekranı ve menü için baş-omuz portresi (render_showcase.py --portrait)
+    if os.path.exists(os.path.join(render, "portrait.png")):
+        save_webp(Image.open(os.path.join(render, "portrait.png")).convert("RGBA"), os.path.join(out, "portrait.webp"))
+        manifest["portrait"] = "portrait.webp"
+
+    # Menü/gardırop 3D gösterimi; export_web_model.py + gltf-transform ile üretilir
+    if os.path.exists(os.path.join(out, "model.glb")):
+        manifest["model"] = "model.glb"
 
     with open(os.path.join(out, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)

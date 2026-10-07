@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   BookOpen,
   Check,
+  ChevronLeft,
   ChevronRight,
   Coins,
   Crown,
@@ -34,7 +35,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
-import { wearableOutfitId } from '@/config/outfits';
+import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outfits';
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import styles from './page.module.scss';
 
@@ -72,7 +73,19 @@ export default function HomePage() {
     equippedOutfitId,
     hasHydrated: marketHydrated,
     fetchMarketData,
+    equipOutfit,
   } = useMarketStore();
+
+  // Lobideki karakter: giyili olan, oklarla sahip olunan karakterler arasında değiştirilir
+  const wornOutfitId = marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
+  const wornOutfit = wornOutfitId ? findOutfit(wornOutfitId) : undefined;
+  const wardrobeOutfits = marketHydrated ? OUTFITS.filter((o) => o.ready && ownsOutfit(o, ownedItemIds)) : [];
+  const cycleOutfit = (step: number) => {
+    if (!wornOutfitId || wardrobeOutfits.length < 2) return;
+    const index = wardrobeOutfits.findIndex((o) => o.id === wornOutfitId);
+    const next = wardrobeOutfits[(index + step + wardrobeOutfits.length) % wardrobeOutfits.length];
+    equipOutfit(next.id);
+  };
 
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
@@ -631,7 +644,52 @@ export default function HomePage() {
       <div className={styles.lobby}>
         {/* KARAKTER */}
         <section className={`${styles.panel} ${styles.characterPanel}`}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+          <div className={`${styles.characterStage} ${wornOutfit ? styles[`stage_${wornOutfit.rarity}`] : ''}`}>
+            <span className={styles.characterHalo} />
+            <CharacterTurntable
+              outfitId={wornOutfitId}
+              alt={wornOutfit?.name ?? 'Engizitör karakteri'}
+              className={styles.characterSprite}
+            />
+            <span className={styles.characterPedestal} />
+            {wornOutfit?.rarity === 'legendary' && (
+              // Efsanevi karakterin ayaklarından yükselen kıvılcımlar
+              <span className={styles.sparks} aria-hidden>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <span key={i} style={{ '--i': i } as React.CSSProperties} />
+                ))}
+              </span>
+            )}
+            {wardrobeOutfits.length > 1 && (
+              <>
+                <button
+                  className={`${styles.outfitArrow} ${styles.outfitArrowPrev}`}
+                  onClick={() => cycleOutfit(-1)}
+                  aria-label="Önceki karakter"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  className={`${styles.outfitArrow} ${styles.outfitArrowNext}`}
+                  onClick={() => cycleOutfit(1)}
+                  aria-label="Sonraki karakter"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+          </div>
+          {wornOutfit && (
+            <span className={styles.outfitLabel}>
+              {wornOutfit.name}
+              {wardrobeOutfits.length > 1 && (
+                <em>
+                  {wardrobeOutfits.findIndex((o) => o.id === wornOutfit.id) + 1}/{wardrobeOutfits.length}
+                </em>
+              )}
+            </span>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0 6px' }}>
             <img
               src={getAvatarSrc(effectiveAvatar)}
               alt="Avatar"
@@ -645,15 +703,6 @@ export default function HomePage() {
               }}
             />
             <span className={styles.panelEyebrow}>Engizitör</span>
-          </div>
-          <div className={styles.characterStage}>
-            <span className={styles.characterHalo} />
-            <CharacterTurntable
-              outfitId={marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null}
-              alt="Engizitör karakteri"
-              className={styles.characterSprite}
-            />
-            <span className={styles.characterPedestal} />
           </div>
           <h2 className={styles.characterName}>{inquisitorName}</h2>
           <span className={styles.characterRank}>{getAvatarInfo(effectiveAvatar).role}</span>
@@ -672,6 +721,7 @@ export default function HomePage() {
                 alignItems: 'center',
                 gap: '6px',
                 fontFamily: 'Inter, sans-serif',
+                whiteSpace: 'nowrap',
               }}
             >
               <Settings size={13} /> Avatar & İsim
