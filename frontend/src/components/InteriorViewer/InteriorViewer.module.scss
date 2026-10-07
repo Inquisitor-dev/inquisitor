@@ -7,41 +7,64 @@
   overflow: hidden;
   background-color: #030303;
   user-select: none;
-  cursor: grab;
-
-  &:active {
-    cursor: grabbing;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
 }
 
-// ─── PANORAMA CANVAS WRAPPER ───────────────────────────────────────────────
-.panoramaStage {
+// ─── AMBİYANS IŞIĞI (SİYAH BOŞLUKLARI DOĞAL DOLDURUR) ──────────────────────
+.ambientBackdrop {
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 115vh;
-  min-height: 100%;
-  width: max(145vw, 2200px);
-  will-change: transform;
-  transform-origin: center center;
-  transition: transform 0.04s linear;
+  inset: -30px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(48px) brightness(0.22) saturate(1.3);
+  opacity: 0.75;
+  pointer-events: none;
+  transform: scale(1.06);
+  z-index: 1;
 }
 
-.panoramaImage {
+// ─── SABİT MEKÂN SAHNESİ (ZOOMSUZ, KAYMASIZ, TAM ÇÖZÜNÜRLÜK) ─────────────
+.sceneWrapper {
+  position: relative;
+  z-index: 2;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.sceneFrame {
+  position: relative;
+  // Görselin tam halini hiçbir kenarını kesmeden ekrana sığdırır:
+  max-width: 100vw;
+  max-height: 100vh;
+  width: min(100vw, calc(100vh * var(--scene-aspect-ratio, 1.7778)));
+  height: min(100vh, calc(100vw / var(--scene-aspect-ratio, 1.7778)));
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.sceneImage {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center 85%; // Alt zemin, fıçılar ve masaları net gösterir
-  pointer-events: none;
   display: block;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
 }
 
-// ─── ATMOSPHERIC LIGHTING & VIGNETTE OVERLAYS ─────────────────────────────
+// ─── ATMOSFERİK IŞIK VE VİNYET KATMANLARI ──────────────────────────────────
 .vignetteOverlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at center, transparent 40%, rgba(3, 3, 3, 0.75) 85%, #050505 100%);
+  background: radial-gradient(circle at center, transparent 40%, rgba(3, 3, 3, 0.7) 85%, #050505 100%);
   z-index: 5;
 }
 
@@ -94,7 +117,7 @@
   z-index: 7;
 }
 
-// ─── HOTSPOTS (INTERACTIVE PINS) ──────────────────────────────────────────
+// ─── ETKİLEŞİMLİ NOKTALAR (HOTSPOTS) ──────────────────────────────────────
 .hotspotsLayer {
   position: absolute;
   inset: 0;
@@ -112,9 +135,13 @@
   gap: 6px;
   transition: transform $transition-fast;
   z-index: 12;
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
 
   &:hover {
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translate(-50%, -50%) scale(1.14);
     z-index: 15;
 
     .pinBeacon {
@@ -185,7 +212,7 @@
   letter-spacing: 0.5px;
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
-  opacity: 0.85;
+  opacity: 0.88;
   transform: translateY(-2px);
   transition: all $transition-fast;
   pointer-events: none;
@@ -194,7 +221,7 @@
   gap: 6px;
 }
 
-// ─── TOP HUD (NAV, COMPASS, LOCATION SELECTOR) ────────────────────────────
+// ─── ÜST HUD (NAVİGASYON, MEKÂN BAŞLIĞI, SORGU BUTONU) ───────────────────
 .topHud {
   position: absolute;
   top: 0;
@@ -261,53 +288,35 @@
   }
 }
 
-// ─── COMPASS RIBBON ───────────────────────────────────────────────────────
-.compassRibbon {
+.locationHeader {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   pointer-events: none;
 }
 
 .locationTitle {
+  margin: 0;
   font-family: $font-title;
-  font-size: 18px;
+  font-size: 20px;
   color: $text-parchment;
   letter-spacing: 1px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
-  margin-bottom: 2px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
 }
 
 .locationSubtitle {
+  margin: 3px 0 0;
   font-family: $font-body;
-  font-size: 11px;
+  font-size: 12px;
   color: $text-muted;
   letter-spacing: 0.5px;
 }
 
-.compassGauge {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 3px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(232, 220, 196, 0.15);
-  font-size: 11px;
-  font-family: $font-title;
-  color: $text-muted;
-
-  .activeDegree {
-    color: $text-parchment;
-    font-weight: 600;
-  }
-}
-
-// ─── BOTTOM CONTROLS & DRAG HINT ──────────────────────────────────────────
+// ─── ALT HUD (DURUM ROZETİ VE BİLGİ) ──────────────────────────────────────
 .bottomHud {
   position: absolute;
-  bottom: 20px;
+  bottom: 16px;
   left: 0;
   right: 0;
   display: flex;
@@ -318,67 +327,44 @@
   pointer-events: none;
 }
 
-.dragHint {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(10, 10, 10, 0.85);
+.sceneBadge {
+  background: rgba(12, 12, 12, 0.88);
   border: 1px solid rgba(232, 220, 196, 0.2);
-  padding: 8px 18px;
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: $text-parchment;
+  padding: 7px 16px;
+  border-radius: 20px;
   font-size: 12px;
   font-family: $font-body;
-  letter-spacing: 0.5px;
+  color: $text-parchment;
   backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-
-  .handIcon {
-    animation: handSwipe 2.5s ease-in-out infinite;
-    display: inline-block;
-  }
-}
-
-@keyframes handSwipe {
-  0% { transform: translateX(-8px); }
-  50% { transform: translateX(8px); }
-  100% { transform: translateX(-8px); }
-}
-
-.zoomControls {
   display: flex;
   align-items: center;
   gap: 8px;
   pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
 }
 
-.hudIconBtn {
-  width: 36px;
-  height: 36px;
-  background: rgba(18, 18, 18, 0.85);
-  border: 1px solid rgba(232, 220, 196, 0.2);
-  color: $text-parchment;
+.badgeDot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all $transition-fast;
-  backdrop-filter: blur(8px);
-
-  &:hover {
-    background: rgba(138, 3, 3, 0.4);
-    border-color: $text-parchment;
-    transform: scale(1.05);
-  }
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
 }
 
-// ─── INSPECTION DOSSIER (SLIDE-OVER CARD) ──────────────────────────────────
+.hotspotsCount {
+  background: rgba(12, 12, 12, 0.88);
+  border: 1px solid rgba(232, 220, 196, 0.2);
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: $font-title;
+  color: $text-muted;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+// ─── İNCELEME DOSYASI (SLIDE-OVER CARD) ───────────────────────────────────
 .inspectionModalOverlay {
   position: fixed;
   inset: 0;
@@ -617,16 +603,15 @@
   }
 }
 
-// ─── TELEFON ──────────────────────────────────────────────────────────────
-// Üst çubuk tek satıra sığmaz: mekân adı en üste, butonlar altına iki yana dizilir
+// ─── TELEFON UYUMLULUĞU ───────────────────────────────────────────────────
 @media (max-width: 640px) {
   .topHud {
     flex-wrap: wrap;
     gap: 8px;
-    padding: 12px 16px 24px;
+    padding: 12px 16px 20px;
   }
 
-  .compassRibbon {
+  .locationHeader {
     order: -1;
     width: 100%;
     text-align: center;
@@ -636,8 +621,7 @@
     font-size: 16px;
   }
 
-  .locationSubtitle,
-  .compassGauge {
+  .locationSubtitle {
     display: none;
   }
 
@@ -652,24 +636,34 @@
   }
 
   .locationDropdown {
-    max-width: 150px;
+    max-width: 140px;
     padding: 8px 10px;
     font-size: 12px;
   }
 
   .bottomHud {
     padding: 0 16px;
+    justify-content: center;
+    bottom: 12px;
   }
 
-  // İpucu yazısı yakınlaştırma butonlarının üstüne çıkar
-  .dragHint {
-    bottom: 52px;
-    white-space: nowrap;
-    font-size: 11px;
-    padding: 6px 14px;
-  }
-
-  .dragHint .handIcon {
+  .hotspotsCount {
     display: none;
+  }
+
+  .sceneBadge {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+
+  .pinBeacon {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+  }
+
+  .pinLabel {
+    font-size: 11px;
+    padding: 3px 8px;
   }
 }
