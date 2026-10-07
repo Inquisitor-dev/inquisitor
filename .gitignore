@@ -38,3 +38,6 @@ art/characters/*/render/
 art/characters/*/preview/
 art/characters/*/preview_thumb.png
 art/tools/__pycache__/
+
+# graphify bilgi grafı çıktıları (yerel, repoya girmiyor)
+graphify-out/
