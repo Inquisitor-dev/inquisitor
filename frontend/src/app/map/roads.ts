@@ -139,7 +139,8 @@ const town: RoadNetwork = {
 
 // Cyberpunk haritası (cyberpunk_map_*.webp, 2752x1536): gökdelenlerle çevrili meydan.
 // Mekânlar meydanın arka iki kenarında, ortada dört bloklu gece pazarı var. Yollar pazar bloklarının ve
-// karakolun önündeki bariyerlerin çevresinden dolaşır; kapı noktaları dükkânların önündeki karolardadır.
+// karakolun önündeki bariyerlerin çevresinden dolaşır. Kapı noktaları binaların hemen önündeki açık
+// zemindedir: karakter ayaklarından yukarı çizildiği için nokta kapının içinde olursa gövdesi duvara biner.
 // Tezgâhtaki satıcılar ~85 px boyunda; karakter onlarla aynı boya ölçeklenir.
 const cyberpunk: RoadNetwork = {
   image: { width: 2752, height: 1536 },
@@ -153,36 +154,42 @@ const cyberpunk: RoadNetwork = {
     top: { x: 1380, y: 640 },
     ne: { x: 1790, y: 770 },
     east: { x: 2170, y: 960 },
-    homeDoor: { x: 360, y: 960 },
+    homeDoor: { x: 400, y: 1000 },
     ramenDoor: { x: 930, y: 790 },
-    workshopDoor: { x: 1240, y: 600 },
-    clinicDoor: { x: 1690, y: 700 },
-    policeDoor: { x: 2010, y: 795 },
-    barDoor: { x: 2440, y: 880 },
+    workshopDoor: { x: 1230, y: 660 },
+    clinicDoor: { x: 1700, y: 745 },
+    // Bariyerlerin arasındaki boşluğun önü
+    policeDoor: { x: 2000, y: 850 },
+    // Kadife ipin önünde, kapının tam karşısı
+    barDoor: { x: 2440, y: 1010 },
     marketDoor: { x: 1120, y: 1110 },
   },
   edges: [
+    // Kapılar koridorun üzerindeki ara noktalardır: karakter kapının önünden geçerek ilerler,
+    // bir kapıya giderken onu geçip kavşaktan geri dönmez.
     // Alt meydandan pazarın iki yanına; alttaki bloğun altından, sol alttaki kulübenin üstünden geçer
     ['plaza', 'sw', [{ x: 1180, y: 1250 }]],
     ['plaza', 'south'],
-    // Pazara sol ve alt bloklar arasındaki boşluktan girilir
+    // Pazara sol ve alt bloklar arasındaki boşluktan girilir: alt meydandan ya da batıdan doğrudan
+    ['plaza', 'marketDoor', [{ x: 1180, y: 1250 }]],
     ['sw', 'marketDoor'],
+    ['west', 'marketDoor', [{ x: 780, y: 1090 }]],
     ['sw', 'west'],
     ['west', 'homeDoor'],
-    // Sol bloğun üst köşesindeki tentelerin solundan kuzey sokağına
-    ['west', 'north', [{ x: 770, y: 800 }, { x: 963, y: 743 }]],
-    ['north', 'ramenDoor'],
+    // Batıdan sol bloğun tentelerinin solundan geçip lokantanın önünden kuzeye
+    ['west', 'ramenDoor', [{ x: 770, y: 800 }]],
+    ['ramenDoor', 'north'],
     ['north', 'workshopDoor'],
     ['north', 'top'],
-    // Üst bloğun tentelerinin üstünden, kliniğin saksılarının önünden
-    ['top', 'ne', [{ x: 1514, y: 626 }, { x: 1651, y: 688 }]],
-    ['ne', 'clinicDoor'],
+    ['top', 'workshopDoor'],
+    // Üst bloğun tentelerinin üstünden kliniğin önüne, oradan doğuya
+    ['top', 'clinicDoor', [{ x: 1514, y: 626 }]],
+    ['clinicDoor', 'ne'],
     // Sağ bloğun tentesiyle karakolun bariyeri arasından
-    ['ne', 'east', [{ x: 1995, y: 846 }]],
-    ['ne', 'policeDoor', [{ x: 1995, y: 846 }]],
-    ['east', 'policeDoor'],
-    // Kadife ipin sol ucundan dolanıp kuyruğun içinden kapıya
-    ['east', 'barDoor', [{ x: 2235, y: 885 }]],
+    ['ne', 'policeDoor'],
+    ['policeDoor', 'east'],
+    // Kadife ipin önünden kapının karşısına
+    ['east', 'barDoor'],
     // Sağ bloğun tabureleri dolanılır
     ['east', 'south', [{ x: 2064, y: 1128 }]],
   ],
