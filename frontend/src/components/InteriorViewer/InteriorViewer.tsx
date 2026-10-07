@@ -76,10 +76,9 @@ function InteriorScene({
   const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 2D Pan & Zoom State
+  // 2D Pan State. Yakınlaştırma yok: görsel kenarlarında siyah boşluk açıyordu
   const [panX, setPanX] = useState<number>(0);
   const [panY, setPanY] = useState<number>(0);
-  const [zoom, setZoom] = useState<number>(1.0);
   const [activeHotspot, setActiveHotspot] = useState<InteriorHotspot | null>(null);
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
   const [noteAddedFeedback, setNoteAddedFeedback] = useState<boolean>(false);
@@ -106,8 +105,8 @@ function InteriorScene({
     }
     const containerW = containerRef.current.clientWidth;
     const containerH = containerRef.current.clientHeight;
-    const stageW = stageRef.current.clientWidth * zoom;
-    const stageH = stageRef.current.clientHeight * zoom;
+    const stageW = stageRef.current.clientWidth;
+    const stageH = stageRef.current.clientHeight;
 
     const maxDeltaX = Math.max(0, stageW - containerW);
     const maxDeltaY = Math.max(0, stageH - containerH);
@@ -118,7 +117,7 @@ function InteriorScene({
       minY: -maxDeltaY,
       maxY: 0,
     };
-  }, [zoom]);
+  }, []);
 
   // Center & frame view comfortably on mount
   useEffect(() => {
@@ -383,14 +382,6 @@ function InteriorScene({
     startInertia();
   };
 
-  // ─── MOUSE WHEEL ZOOM ──────────────────────────────────────────────────
-  const handleWheel = (e: React.WheelEvent) => {
-    if (activeHotspot) return;
-    e.preventDefault();
-    const zoomDelta = e.deltaY < 0 ? 0.05 : -0.05;
-    setZoom((prev) => Math.max(0.85, Math.min(1.35, Number((prev + zoomDelta).toFixed(2)))));
-  };
-
   // ─── KEYBOARD NAVIGATION (WASD & Arrows) ────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -468,14 +459,13 @@ function InteriorScene({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onWheel={handleWheel}
     >
       {/* ─── PANORAMIC STAGE (2D TRANSLATE + SCALE) ─── */}
       <div
         ref={stageRef}
         className={styles.panoramaStage}
         style={{
-          transform: `translate3d(${panX}px, ${panY}px, 0) scale(${zoom})`,
+          transform: `translate3d(${panX}px, ${panY}px, 0)`,
         }}
       >
         <img
@@ -567,22 +557,7 @@ function InteriorScene({
         <div className={styles.zoomControls}>
           <button
             className={styles.hudIconBtn}
-            onClick={() => setZoom((z) => Math.min(1.35, z + 0.1))}
-            title="Yakınlaştır"
-          >
-            🔍+
-          </button>
-          <button
-            className={styles.hudIconBtn}
-            onClick={() => setZoom((z) => Math.max(0.85, z - 0.1))}
-            title="Uzaklaştır"
-          >
-            🔍-
-          </button>
-          <button
-            className={styles.hudIconBtn}
             onClick={() => {
-              setZoom(1.0);
               const bounds = getPanBounds();
               setPanX(bounds.minX / 2);
               setPanY(bounds.minY * 0.45);
