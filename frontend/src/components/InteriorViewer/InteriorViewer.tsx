@@ -110,18 +110,26 @@ function InteriorScene({
 
     const isEmbers = locationData.particleType === 'embers';
     const isRain = locationData.particleType === 'rain';
-    const count = isRain ? 90 : isEmbers ? 45 : 35;
+    // Kar: yavaş düşen, sağa sola salınan yumuşak taneler (açık hava sahneleri)
+    const isSnow = locationData.particleType === 'snow';
+    const count = isRain ? 90 : isSnow ? 80 : isEmbers ? 45 : 35;
 
     const particles = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: isRain ? Math.random() * 12 + 10 : Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
+      size: isRain
+        ? Math.random() * 12 + 10
+        : isSnow
+        ? Math.random() * 2 + 1.2
+        : Math.random() * (isEmbers ? 2.8 : 2) + 0.8,
       speedY: isRain
         ? Math.random() * 6 + 9
+        : isSnow
+        ? Math.random() + 0.6
         : isEmbers
         ? -(Math.random() * 0.9 + 0.3)
         : Math.random() * 0.4 - 0.2,
-      speedX: isRain ? -1.2 : (Math.random() - 0.5) * 0.6,
+      speedX: isRain ? -1.2 : isSnow ? (Math.random() - 0.5) * 0.4 : (Math.random() - 0.5) * 0.6,
       opacity: Math.random() * 0.6 + 0.2,
       pulse: Math.random() * Math.PI * 2,
     }));
@@ -131,7 +139,7 @@ function InteriorScene({
 
       particles.forEach((p) => {
         p.y += p.speedY;
-        p.x += p.speedX;
+        p.x += p.speedX + (isSnow ? Math.sin(p.pulse) * 0.3 : 0);
         p.pulse += 0.03;
 
         if (isEmbers && p.y < -10) {
@@ -162,7 +170,10 @@ function InteriorScene({
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        if (isEmbers) {
+        if (isSnow) {
+          ctx.fillStyle = `rgba(245, 250, 255, ${currentOpacity * 0.8})`;
+          ctx.shadowBlur = 0;
+        } else if (isEmbers) {
           ctx.fillStyle = `rgba(255, ${Math.floor(140 + Math.sin(p.pulse) * 40)}, 40, ${currentOpacity})`;
           ctx.shadowBlur = 8;
           ctx.shadowColor = 'rgba(255, 120, 20, 0.6)';
