@@ -15,6 +15,8 @@ import styles from './InteriorViewer.module.scss';
 
 // Sürüklerken görselin kenarı en fazla bu kadar aşılabilir (lastik efekti)
 const OVERSCROLL = 40;
+// Görsel yüksekliğinin ekran yüksekliğine oranı: dikeyde de biraz gezinme payı bırakır
+const FRAME_HEIGHT_RATIO = 1.15;
 
 interface InteriorViewerProps {
   locationId: string;
@@ -93,8 +95,14 @@ function InteriorScene({
     w: typeof window === 'undefined' ? 1920 : window.innerWidth,
     h: typeof window === 'undefined' ? 1080 : window.innerHeight,
   }));
-  const frameW = Math.max(viewport.w, viewport.h * aspectRatio);
-  const frameH = Math.max(viewport.h, viewport.w / aspectRatio);
+  // Görsel her iki eksende de ekrandan taşar (yükseklik ekranın %115'i, en az esneme payı kadar):
+  // böylece yukarı-aşağı da biraz gezilir ve kenara çekince siyah yerine görselin kenarı görünür
+  const frameH = Math.max(
+    viewport.h * FRAME_HEIGHT_RATIO,
+    viewport.h + 2 * OVERSCROLL,
+    (viewport.w + 2 * OVERSCROLL) / aspectRatio
+  );
+  const frameW = frameH * aspectRatio;
   // Sürüklerken kenarı bu kadar aşabilir (lastik efekti). Sınırlar bu pay kadar içeride tutulur;
   // esneme görselin ekran dışında kalan kenarından yapılır, siyah boşluk görünmez.
   const edgeX = Math.min(OVERSCROLL, (frameW - viewport.w) / 2);
@@ -120,7 +128,11 @@ function InteriorScene({
     [bounds.minX, bounds.maxX, bounds.minY, bounds.maxY, edgeX, edgeY]
   );
   // İlk açılışta ve ekran boyutu değişince sahne ortalanır
-  const centered = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+  // Açılışta yatayda ortalı, dikeyde biraz aşağı bakar: zemin ve masalar görünür
+  const centered = {
+    x: (bounds.minX + bounds.maxX) / 2,
+    y: bounds.maxY + (bounds.minY - bounds.maxY) * 0.45,
+  };
   const currentPan = pan ?? centered;
   const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number; moved: number; lastX: number; lastY: number; lastT: number; vx: number; vy: number } | null>(null);
   const inertiaRef = useRef<number | null>(null);
@@ -254,16 +266,28 @@ function InteriorScene({
     if (inertiaRef.current) cancelAnimationFrame(inertiaRef.current);
   }, []);
 
-  // Bırakınca hız azalarak kayar, sonra sınırın içine oturur
+  // Bırakınca hız azalarak kayar; sınırın dışına taşmışsa yaylanarak yumuşakça geri döner
   const startInertia = (from: { x: number; y: number }, vx: number, vy: number) => {
     let p = { ...from };
     let v = { x: vx, y: vy };
     const step = () => {
       v = { x: v.x * 0.92, y: v.y * 0.92 };
-      p = clampPan({ x: p.x + v.x, y: p.y + v.y });
+      p = clampPan({ x: p.x + v.x, y: p.y + v.y }, true);
+      const target = clampPan(p);
+      const outX = target.x - p.x;
+      const outY = target.y - p.y;
+      // Sınır dışındaki eksende hız sönümlenir ve görüntü her karede kalan mesafenin bir kısmı kadar içeri çekilir
+      if (outX !== 0) v.x *= 0.5;
+      if (outY !== 0) v.y *= 0.5;
+      p = { x: p.x + outX * 0.18, y: p.y + outY * 0.18 };
+      const settled = Math.hypot(v.x, v.y) < 0.3 && Math.hypot(outX, outY) < 0.5;
+      if (settled) {
+        setPan(target);
+        inertiaRef.current = null;
+        return;
+      }
       setPan(p);
-      if (Math.hypot(v.x, v.y) > 0.3) inertiaRef.current = requestAnimationFrame(step);
-      else inertiaRef.current = null;
+      inertiaRef.current = requestAnimationFrame(step);
     };
     inertiaRef.current = requestAnimationFrame(step);
   };
