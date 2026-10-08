@@ -1,0 +1,716 @@
+/* NpcDialogueScreen.module.scss */
+
+.screen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #050507;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Ambient blurred background layer for depth and atmosphere */
+.ambientBackdrop {
+  position: absolute;
+  inset: -60px;
+  background-size: cover;
+  background-position: center 20%;
+  filter: blur(65px) brightness(0.22) saturate(1.2);
+  opacity: 0.65;
+  pointer-events: none;
+  z-index: 0;
+  transform: scale(1.1);
+}
+
+.ambientOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(10, 10, 14, 0.3) 0%, rgba(5, 5, 8, 0.95) 85%),
+    linear-gradient(to bottom, rgba(5, 5, 8, 0.8) 0%, transparent 15%, transparent 85%, rgba(5, 5, 8, 0.95) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Minimal Header HUD ─── */
+.headerHud {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  flex-shrink: 0;
+}
+
+.navGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  background: rgba(16, 17, 24, 0.75);
+  border: 1px solid rgba(232, 220, 196, 0.18);
+  border-radius: 999px;
+  color: #cfc5b4;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    background: rgba(28, 30, 40, 0.9);
+    border-color: rgba(212, 175, 55, 0.5);
+    transform: translateX(-2px);
+  }
+}
+
+.interiorBackBtn {
+  background: rgba(138, 3, 3, 0.38);
+  border-color: rgba(138, 3, 3, 0.65);
+  color: #fce2e2;
+
+  &:hover {
+    background: rgba(138, 3, 3, 0.65);
+    border-color: rgba(255, 80, 80, 0.85);
+    color: #fff;
+  }
+}
+
+.hudRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quotaPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(15, 16, 22, 0.75);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: #c9bfaf;
+  backdrop-filter: blur(12px);
+}
+
+.quotaValue {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.fearPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fearCALM {
+  background: rgba(30, 70, 45, 0.65);
+  color: #92d8a6;
+  border-color: rgba(90, 180, 120, 0.35);
+}
+
+.fearUNEASY {
+  background: rgba(90, 75, 25, 0.65);
+  color: #f1cf88;
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+.fearNERVOUS {
+  background: rgba(100, 40, 20, 0.65);
+  color: #f3a37b;
+  border-color: rgba(230, 100, 50, 0.35);
+}
+
+.fearPANIC {
+  background: rgba(120, 20, 20, 0.75);
+  color: #ff9999;
+  border-color: rgba(255, 60, 60, 0.55);
+  animation: pulseFear 1.8s infinite;
+}
+
+@keyframes pulseFear {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.hudActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(16, 17, 24, 0.75);
+  border: 1px solid rgba(232, 220, 196, 0.16);
+  border-radius: 999px;
+  color: #cfc5b4;
+  font-size: 0.78rem;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    background: rgba(28, 30, 40, 0.9);
+    border-color: rgba(212, 175, 55, 0.5);
+  }
+}
+
+/* ─── EXPANSIVE CINEMATIC STAGE (COVERS MOST OF THE SCREEN) ─── */
+.stageContainer {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px 14px 16px;
+  overflow: hidden;
+}
+
+/* Framed Window filling the vast majority of the display */
+.portraitWindow {
+  position: relative;
+  width: 100%;
+  max-width: 1680px;
+  height: 100%;
+  max-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.92),
+    0 4px 20px rgba(0, 0, 0, 0.7),
+    0 0 50px rgba(212, 175, 55, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: #090a0f;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Character Portrait Frame with Proper Proportions */
+.portraitCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.characterImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  display: block;
+  transform: scale(1.01);
+  transition: transform 0.4s ease;
+}
+
+/* Subtle Vignette that leaves the upper 80% character crystal clear */
+.portraitVignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 25%, transparent 55%, rgba(6, 7, 10, 0.35) 85%, rgba(4, 5, 8, 0.75) 100%),
+    linear-gradient(to top, rgba(7, 8, 12, 0.95) 0%, rgba(7, 8, 12, 0.6) 22%, rgba(7, 8, 12, 0.04) 42%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ─── STREAMLINED, UNCLUTTERED DIALOGUE CARD ─── */
+/* Docks gracefully at the bottom, leaving the character completely unblocked */
+.dialogueCard {
+  position: relative;
+  z-index: 10;
+  width: min(840px, 92%);
+  margin-bottom: 12px;
+  background: rgba(11, 12, 17, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 14px;
+  padding: 16px 20px 12px;
+  box-shadow:
+    0 16px 45px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Pinned Name Badge (Father Matthias Style) */
+.nameBadge {
+  position: absolute;
+  top: -13px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d0e14;
+  border: 1px solid rgba(212, 175, 55, 0.48);
+  border-radius: 8px;
+  padding: 3px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+}
+
+.nameBadgeText {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #f7eedd;
+  letter-spacing: 0.03em;
+}
+
+.nameBadgeTitle {
+  font-size: 0.68rem;
+  color: #9c9182;
+  font-style: italic;
+}
+
+/* ─── ANLIK SORU VE CEVAP ALANI (SPACIOUS & UNCLUTTERED) ─── */
+.dialogueContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-top: 2px;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.35);
+    border-radius: 3px;
+  }
+}
+
+/* Oyuncunun Anlık Sorusu */
+.playerTurn {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 2px solid #d4af37;
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+
+.turnSpeaker {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #e8dcc4;
+  flex-shrink: 0;
+}
+
+.playerQueryText {
+  color: #f7eedd;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* NPC'nin Anlık Yanıtı */
+.npcTurn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.speechText {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.04rem;
+  line-height: 1.52;
+  color: #f2ede0;
+  white-space: pre-wrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+
+  em, i {
+    color: #c9b99f;
+    font-style: italic;
+  }
+}
+
+.investigatingNotice {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  background: rgba(138, 3, 3, 0.4);
+  border: 1px solid rgba(138, 3, 3, 0.8);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #ffc4c4;
+  margin-bottom: 3px;
+  align-self: flex-start;
+}
+
+.typingIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #a89f91;
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.typingDots {
+  display: inline-flex;
+  gap: 4px;
+
+  span {
+    width: 5px;
+    height: 5px;
+    background: #d4af37;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite;
+
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* ─── DOĞRUDAN SORU GİRİŞ ÇUBUĞU (SLIM & INTUITIVE) ─── */
+.inputBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(16, 17, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 10px;
+  padding: 4px 6px 4px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-within {
+    border-color: rgba(212, 175, 55, 0.8);
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.18);
+  }
+}
+
+.textInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f5eedd;
+  font-size: 0.92rem;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #7a7165;
+  }
+}
+
+.charCount {
+  font-size: 0.7rem;
+  color: #70685c;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.sendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: linear-gradient(135deg, #a48226 0%, #d4af37 50%, #8c6c19 100%);
+  border: none;
+  border-radius: 8px;
+  color: #0b0c10;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.45);
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #333;
+    color: #777;
+    box-shadow: none;
+  }
+}
+
+/* ─── KART ALTI ARAÇLAR VE EYLEMLER ─── */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.utilityBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 7px;
+  color: #beb4a5;
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  &:hover:not(:disabled) {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.activeUtilityBtn {
+  background: rgba(138, 3, 3, 0.35);
+  border-color: rgba(138, 3, 3, 0.7);
+  color: #ffc8c8;
+
+  &:hover:not(:disabled) {
+    background: rgba(138, 3, 3, 0.55);
+    color: #fff;
+  }
+}
+
+.condemnUtilityBtn {
+  background: rgba(138, 3, 3, 0.6);
+  border-color: rgba(220, 30, 30, 0.7);
+  color: #ffffff;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: #8A0303;
+    border-color: #ff4d4d;
+    box-shadow: 0 0 14px rgba(220, 30, 30, 0.4);
+  }
+}
+
+/* ─── MODALS & DRAWERS ─── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modalCard {
+  position: relative;
+  width: min(540px, 94vw);
+  max-height: 85vh;
+  background: #0f1016;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.22rem;
+  color: #f7eedd;
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  color: #8c8376;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* History Transcript Drawer */
+.historyDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(480px, 92vw);
+  height: 100vh;
+  background: rgba(12, 13, 18, 0.96);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(212, 175, 55, 0.28);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.85);
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.historyList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.historyBubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  max-width: 90%;
+}
+
+.historyPlayer {
+  align-self: flex-end;
+  background: rgba(138, 3, 3, 0.35);
+  border: 1px solid rgba(138, 3, 3, 0.6);
+  color: #fde8e8;
+}
+
+.historyNpc {
+  align-self: flex-start;
+  background: rgba(22, 23, 30, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: #e5ded2;
+}
+
+.historySpeaker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #111218;
+  border: 1px solid #d4af37;
+  color: #f7eedd;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  z-index: 200;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .headerHud {
+    padding: 8px 12px;
+  }
+
+  .stageContainer {
+    padding: 0 4px 8px 4px;
+  }
+
+  .portraitWindow {
+    max-height: calc(100vh - 60px);
+    border-radius: 12px;
+  }
+
+  .dialogueCard {
+    width: 96%;
+    margin-bottom: 8px;
+    padding: 14px 12px 10px;
+  }
+
+  .nameBadge {
+    left: 12px;
+    padding: 2px 10px;
+    font-size: 0.84rem;
+  }
+
+  .speechText {
+    font-size: 0.94rem;
+  }
+}
