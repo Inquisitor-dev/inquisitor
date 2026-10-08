@@ -106,12 +106,18 @@ function InteriorScene({
     maxY: -edgeY,
   };
   const [pan, setPan] = useState<{ x: number; y: number } | null>(null);
+  // `stretch`: sürüklerken esnemeye izin verir. Esneme her eksende o eksende gizli kalan pay kadardır;
+  // görsel bir eksende ekrana tam sığıyorsa (gizli pay 0) o eksende hiç esnemez, siyah boşluk açılmaz.
   const clampPan = useCallback(
-    (p: { x: number; y: number }, slack = 0) => ({
-      x: Math.max(bounds.minX - slack, Math.min(bounds.maxX + slack, p.x)),
-      y: Math.max(bounds.minY - slack, Math.min(bounds.maxY + slack, p.y)),
-    }),
-    [bounds.minX, bounds.maxX, bounds.minY, bounds.maxY]
+    (p: { x: number; y: number }, stretch = false) => {
+      const slackX = stretch ? edgeX : 0;
+      const slackY = stretch ? edgeY : 0;
+      return {
+        x: Math.max(bounds.minX - slackX, Math.min(bounds.maxX + slackX, p.x)),
+        y: Math.max(bounds.minY - slackY, Math.min(bounds.maxY + slackY, p.y)),
+      };
+    },
+    [bounds.minX, bounds.maxX, bounds.minY, bounds.maxY, edgeX, edgeY]
   );
   // İlk açılışta ve ekran boyutu değişince sahne ortalanır
   const centered = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
@@ -288,14 +294,14 @@ function InteriorScene({
       d.lastX = e.clientX;
       d.lastY = e.clientY;
       d.lastT = now;
-      setPan(clampPan({ x: d.panX + e.clientX - d.startX, y: d.panY + e.clientY - d.startY }, OVERSCROLL));
+      setPan(clampPan({ x: d.panX + e.clientX - d.startX, y: d.panY + e.clientY - d.startY }, true));
     };
     const handleUp = () => {
       const d = dragRef.current;
       setIsDragging(false);
       if (!d) return;
       const from = { x: d.panX + d.lastX - d.startX, y: d.panY + d.lastY - d.startY };
-      startInertia(clampPan(from, OVERSCROLL), d.vx, d.vy);
+      startInertia(clampPan(from, true), d.vx, d.vy);
       // Tıklama olayı bu kareden sonra geldiği için sürükleme bilgisi bir an korunur
       setTimeout(() => {
         dragRef.current = null;
