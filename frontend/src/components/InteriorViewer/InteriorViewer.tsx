@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,6 +12,9 @@ import {
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
+
+// Sürüklerken görselin kenarı en fazla bu kadar aşılabilir (lastik efekti)
+const OVERSCROLL = 40;
 
 interface InteriorViewerProps {
   locationId: string;
@@ -59,7 +62,7 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
 
 // Bilinen başlangıç en-boy oranı (ilk render anında layout shift'i engeller)
 function getKnownAspectRatio(url: string): number {
-  if (url.includes('cyberpunk')) return 3168 / 1344;
+  if (url.includes('cyberpunk') || url.includes('china') || url.includes('winter')) return 3168 / 1344;
   if (url.includes('graveyard')) return 2816 / 1536;
   return 1376 / 768;
 }
@@ -82,10 +85,40 @@ function InteriorScene({
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Sabit ve tam görüntü: hiçbir şekilde zoom yapılmaz, en-boy oranı korunarak ekrana sığdırılır
+  // Görsel ekranı boşluksuz doldurur (zoom yok); ekrandan taşan kısım sürüklenerek gezilir
   const [aspectRatio, setAspectRatio] = useState<number>(() =>
     getKnownAspectRatio(locationData.backgroundImage)
   );
+  const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
+    w: typeof window === 'undefined' ? 1920 : window.innerWidth,
+    h: typeof window === 'undefined' ? 1080 : window.innerHeight,
+  }));
+  const frameW = Math.max(viewport.w, viewport.h * aspectRatio);
+  const frameH = Math.max(viewport.h, viewport.w / aspectRatio);
+  // Sürüklerken kenarı bu kadar aşabilir (lastik efekti). Sınırlar bu pay kadar içeride tutulur;
+  // esneme görselin ekran dışında kalan kenarından yapılır, siyah boşluk görünmez.
+  const edgeX = Math.min(OVERSCROLL, (frameW - viewport.w) / 2);
+  const edgeY = Math.min(OVERSCROLL, (frameH - viewport.h) / 2);
+  const bounds = {
+    minX: -(frameW - viewport.w) + edgeX,
+    maxX: -edgeX,
+    minY: -(frameH - viewport.h) + edgeY,
+    maxY: -edgeY,
+  };
+  const [pan, setPan] = useState<{ x: number; y: number } | null>(null);
+  const clampPan = useCallback(
+    (p: { x: number; y: number }, slack = 0) => ({
+      x: Math.max(bounds.minX - slack, Math.min(bounds.maxX + slack, p.x)),
+      y: Math.max(bounds.minY - slack, Math.min(bounds.maxY + slack, p.y)),
+    }),
+    [bounds.minX, bounds.maxX, bounds.minY, bounds.maxY]
+  );
+  // İlk açılışta ve ekran boyutu değişince sahne ortalanır
+  const centered = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+  const currentPan = pan ?? centered;
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number; moved: number; lastX: number; lastY: number; lastT: number; vx: number; vy: number } | null>(null);
+  const inertiaRef = useRef<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [activeHotspot, setActiveHotspot] = useState<InteriorHotspot | null>(null);
   const [noteAddedFeedback, setNoteAddedFeedback] = useState<boolean>(false);
 
@@ -202,6 +235,112 @@ function InteriorScene({
     };
   }, [locationData]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setViewport({ w: window.innerWidth, h: window.innerHeight });
+      setPan(null);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => () => {
+    if (inertiaRef.current) cancelAnimationFrame(inertiaRef.current);
+  }, []);
+
+  // Bırakınca hız azalarak kayar, sonra sınırın içine oturur
+  const startInertia = (from: { x: number; y: number }, vx: number, vy: number) => {
+    let p = { ...from };
+    let v = { x: vx, y: vy };
+    const step = () => {
+      v = { x: v.x * 0.92, y: v.y * 0.92 };
+      p = clampPan({ x: p.x + v.x, y: p.y + v.y });
+      setPan(p);
+      if (Math.hypot(v.x, v.y) > 0.3) inertiaRef.current = requestAnimationFrame(step);
+      else inertiaRef.current = null;
+    };
+    inertiaRef.current = requestAnimationFrame(step);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (activeHotspot || e.button !== 0) return;
+    // Üst ve alt çubuktaki buton, menü ve bağlantılar sürükleme başlatmaz
+    if ((e.target as HTMLElement).closest('header, footer')) return;
+    if (inertiaRef.current) cancelAnimationFrame(inertiaRef.current);
+    const now = performance.now();
+    dragRef.current = {
+      startX: e.clientX, startY: e.clientY, panX: currentPan.x, panY: currentPan.y,
+      moved: 0, lastX: e.clientX, lastY: e.clientY, lastT: now, vx: 0, vy: 0,
+    };
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMove = (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const now = performance.now();
+      const dt = Math.max(1, now - d.lastT);
+      d.vx = ((e.clientX - d.lastX) / dt) * 16;
+      d.vy = ((e.clientY - d.lastY) / dt) * 16;
+      d.moved += Math.hypot(e.clientX - d.lastX, e.clientY - d.lastY);
+      d.lastX = e.clientX;
+      d.lastY = e.clientY;
+      d.lastT = now;
+      setPan(clampPan({ x: d.panX + e.clientX - d.startX, y: d.panY + e.clientY - d.startY }, OVERSCROLL));
+    };
+    const handleUp = () => {
+      const d = dragRef.current;
+      setIsDragging(false);
+      if (!d) return;
+      const from = { x: d.panX + d.lastX - d.startX, y: d.panY + d.lastY - d.startY };
+      startInertia(clampPan(from, OVERSCROLL), d.vx, d.vy);
+      // Tıklama olayı bu kareden sonra geldiği için sürükleme bilgisi bir an korunur
+      setTimeout(() => {
+        dragRef.current = null;
+      }, 0);
+    };
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    window.addEventListener('pointercancel', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+    // startInertia her render'da yeniden oluşur; sürükleme boyunca son hâli yeterli
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging, clampPan]);
+
+  // Sürüklemenin sonunda bir noktanın üstünde bırakılırsa inceleme penceresi açılmaz
+  const handleHotspotsClickCapture = (e: React.MouseEvent) => {
+    if ((dragRef.current?.moved ?? 0) > 6) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  };
+
+  // Ok tuşlarıyla etrafa bakma
+  useEffect(() => {
+    const handleArrows = (e: KeyboardEvent) => {
+      if (activeHotspot) return;
+      const step = 80;
+      const delta: Record<string, [number, number]> = {
+        ArrowLeft: [step, 0],
+        ArrowRight: [-step, 0],
+        ArrowUp: [0, step],
+        ArrowDown: [0, -step],
+      };
+      const d = delta[e.key];
+      if (!d) return;
+      e.preventDefault();
+      setPan((prev) => clampPan({ x: (prev ?? centered).x + d[0], y: (prev ?? centered).y + d[1] }));
+    };
+    window.addEventListener('keydown', handleArrows);
+    return () => window.removeEventListener('keydown', handleArrows);
+  });
+
   // ESC tuşu ile açık inceleme modalini kapatma
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -242,23 +381,25 @@ function InteriorScene({
   };
 
   return (
-    <div className={styles.viewportContainer}>
+    <div
+      className={`${styles.viewportContainer} ${isDragging ? styles.dragging : ''}`}
+      onPointerDown={handlePointerDown}
+    >
       {/* ─── ARKA PLAN AMBİYANS IŞIĞI (SİYAH BOŞLUKLARI DOĞAL DOLDURUR) ─── */}
       <div
         className={styles.ambientBackdrop}
         style={{ backgroundImage: `url(${locationData.backgroundImage})` }}
       />
 
-      {/* ─── EVRENSEL SABİT MEKÂN SAHNESİ (ZOOMSUZ, KAYMASIZ, TAM GÖRÜNTÜ) ─── */}
+      {/* ─── MEKÂN SAHNESİ: EKRANI DOLDURUR, TAŞAN KISIM SÜRÜKLENEREK GEZİLİR ─── */}
       <div className={styles.sceneWrapper}>
         <div
           className={styles.sceneFrame}
-          style={
-            {
-              '--scene-aspect-ratio': aspectRatio,
-              aspectRatio: `${aspectRatio}`,
-            } as React.CSSProperties
-          }
+          style={{
+            width: `${frameW}px`,
+            height: `${frameH}px`,
+            transform: `translate3d(${currentPan.x}px, ${currentPan.y}px, 0)`,
+          }}
         >
           <img
             src={locationData.backgroundImage}
@@ -269,7 +410,7 @@ function InteriorScene({
           />
 
           {/* ─── ETKİLEŞİMLİ NOKTALAR KATMANI (GÖRSELE TAM HİZALANIR) ─── */}
-          <div className={styles.hotspotsLayer}>
+          <div className={styles.hotspotsLayer} onClickCapture={handleHotspotsClickCapture}>
             {locationData.hotspots.map((hotspot) => (
               <button
                 key={hotspot.id}
@@ -346,7 +487,7 @@ function InteriorScene({
       <footer className={styles.bottomHud}>
         <div className={styles.sceneBadge}>
           <span className={styles.badgeDot} />
-          <span>Mekân Keşfi • İncelemek istediğin noktaya tıkla</span>
+          <span>Mekân Keşfi • Sürükleyerek etrafa bak, incelemek istediğin noktaya tıkla</span>
         </div>
 
         <div className={styles.hotspotsCount}>
