@@ -85,7 +85,7 @@ Run each in its own directory.
 - **Frontend** calls the API through `apiUrl()` (`src/config/api.ts`), which defaults to `/api`; `next.config.ts` rewrites `/api/*` → `http://127.0.0.1:3001/*`.
   - Game/auth state is a persisted Zustand store (`src/store/useGameStore.ts`), including the session's `evidence` list.
   - The dialogue screen (`interact/[npcId]`) has the "Kanıt Göster" picker (calls `/npcs/confront`) and a fear indicator under the NPC name.
-  - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiorConfig.ts`) are defined per universe; only `medieval`, `cyberpunk` and `china` have them so far, and other universes show a "henüz hazır değil" screen.
+  - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiorConfig.ts`) are defined per universe; `medieval`, `cyberpunk`, `china` and `winter` have them; `modern` does not yet, and other universes show a "henüz hazır değil" screen.
     - Entering a location from the map opens its interior first when one exists, otherwise the dialogue screen.
     - Hotspot positions are percentages of the image.
     - A `clue` hotspot without `clueSnippet` is a search spot: it checks the warrant and links to `/interact/<id>?ara=1`, which opens investigation mode.
