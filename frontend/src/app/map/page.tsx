@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
+import { getLocationLabel } from '@/config/locationLabels';
+import { getPlayerHome } from '@/config/homeConfig';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
@@ -447,76 +449,6 @@ const WALK_LOOKAHEAD = 24; // px, bakış yönü bu kadar ilerideki noktaya gör
 // Perspektif: görselin üst kenarında 0.82, alt kenarında 1.02 ölçek
 const depthScaleAt = (y: number, imageHeight: number) => 0.82 + 0.2 * (y / imageHeight);
 
-const getLocationLabel = (locationId: string, scenarioType: string) => {
-  if (scenarioType === 'modern') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      farm: 'Petrol İstasyonu',
-      clinic: 'Bar',
-      home: 'Evim',
-      church: 'Hotel',
-      graveyard: 'Video Oyuncusu',
-      mill: 'Lokanta',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'cyberpunk') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      church: 'Lokanta',
-      graveyard: 'Klinik',
-      mill: 'Tamirhane',
-      farm: 'Sokak Pazarı',
-      clinic: 'Bar',
-      home: 'Evim',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'china') {
-    const labels: Record<string, string> = {
-      tavern: 'Çay Evi & Han',
-      church: 'Muhafız Karargahı',
-      graveyard: 'Kadim Tapınak',
-      mill: 'Demirci Ocağı',
-      farm: 'Balıkçı İskelesi',
-      clinic: 'Şifacı & Baharatçı',
-      home: 'Evim',
-      crime_scene: 'Pazar Meydanı',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'winter') {
-    const labels: Record<string, string> = {
-      tavern: 'Kış Hanı',
-      church: 'Kutsal Yürek Ağacı',
-      graveyard: 'Gözcü Kalesi',
-      mill: 'Terk Edilmiş Maden',
-      farm: 'Sur',
-      clinic: 'İnfaz Meydanı',
-      home: 'Evim',
-      crime_scene: 'Buzlu Geçit',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  const labels: Record<string, string> = {
-    tavern: 'Taverna',
-    church: 'Kilise',
-    graveyard: 'Mezarlik',
-    mill: 'Degirmen',
-    farm: 'Ciftlik',
-    clinic: 'Revir',
-    home: 'Evim',
-    crime_scene: 'Cinayet Mahalli',
-  };
-  return labels[locationId] ?? locationId.toUpperCase();
-};
-
 export default function MapPage() {
   const router = useRouter();
   const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
@@ -649,6 +581,11 @@ export default function MapPage() {
             const evidenceData = await evidenceRes.json();
             setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
           }
+          // Evdeki yataktan son gün "Hükmünü Ver" ile gelinince seçim penceresi açılır
+          if (new URLSearchParams(window.location.search).get('hukum') === '1') {
+            setIsCondemnModalOpen(true);
+            router.replace('/map');
+          }
         } catch(e) {}
       }
     };
@@ -684,6 +621,12 @@ export default function MapPage() {
       }
     }
     router.push('/menu');
+  };
+
+  // Evi hazırlanmış evrende oyuncu evin içine girer; diğerlerinde "Evim" penceresi açılır
+  const openHome = () => {
+    if (getPlayerHome(scenarioType || 'medieval')) router.push('/home');
+    else setIsHomeModalOpen(true);
   };
 
   const handleEndDay = async () => {
@@ -732,7 +675,7 @@ export default function MapPage() {
     const doorId = roads.doors[locId];
     if (!doorId) {
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         handleLocationClick(locId);
       }
@@ -752,7 +695,7 @@ export default function MapPage() {
       walkFrame.current = null;
       setLastLocationId(locId);
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         await handleLocationClick(locId);
       }
@@ -807,7 +750,7 @@ export default function MapPage() {
       walkFrame.current = null;
       setLastLocationId(locId);
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         await handleLocationClick(locId);
       }

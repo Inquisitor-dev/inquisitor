@@ -89,6 +89,10 @@ Run each in its own directory.
     - Entering a location from the map opens its interior first when one exists, otherwise the dialogue screen.
     - Hotspot positions are percentages of the image.
     - A `clue` hotspot without `clueSnippet` is a search spot: it checks the warrant and links to `/interact/<id>?ara=1`, which opens investigation mode.
+  - **Player home** (`/home`, `components/PlayerHome`, `config/homeConfig.ts`) replaces the map's "Evim" popup in universes that have a home image (all five so far; a universe without one keeps the popup).
+    - Objects in the room open the old popup's actions: bed (end day; on the last day it opens the verdict picker via `/map?hukum=1`), desk (notes), chest (inventory), board (investigation board, "coming soon") and door (back to the map).
+    - The equipped wardrobe character stands in the room, drawn from one frame of its 360° turntable sheet.
+    - It shares the drag/pan and particle hooks with interiors (`InteriorViewer/useScenePan.ts`, `useAmbientParticles.ts`).
   - Pages are under `src/app/` (`menu`, `map`, `interior/[locationId]`, `interact/[npcId]`, `crime-scene`, `result`, `market`, `community`, …).
   - Shared SCSS variables are in `src/styles/_variables.scss`; import them with `@use '../../styles/variables' as *;`.
   - The **market** is client-only for now. Its catalog is in `market/marketItems.ts`, and the token balance and owned items are in `useMarketStore` (localStorage). The EUR token packs are visual only.
