@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
+import { useMarketStore } from '@/store/useMarketStore';
+import { outfitThumb, wearableOutfitId } from '@/config/outfits';
+import { getPlayerHome } from '@/config/homeConfig';
+import { showScene } from '@/components/SceneTransition/sceneStore';
+import { homeScene } from '@/components/SceneTransition/scenes';
 import {
   allowedStringTypes,
   evidencePhoto,
@@ -48,6 +53,16 @@ export default function InvestigationBoard() {
   // Türü seçilecek ya da düzenlenecek ip
   const [editingString, setEditingString] = useState<string | null>(null);
   const [boardSize, setBoardSize] = useState({ w: 1, h: 1 });
+  // Düşün: günde bir kez; son iç ses metni panelde gösterilir
+  const [canThink, setCanThink] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [thought, setThought] = useState<string | null>(null);
+  const [thoughtOpen, setThoughtOpen] = useState(false);
+  const [thinkError, setThinkError] = useState<string | null>(null);
+
+  // İç ses panelinde oyuncunun giydiği karakterin yüzü görünür
+  const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
+  const thinkerThumb = marketHydrated ? outfitThumb(wearableOutfitId(equippedOutfitId, ownedItemIds)) : null;
 
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
@@ -77,6 +92,8 @@ export default function InvestigationBoard() {
           const data = await boardRes.json();
           setBoard(data.board ?? { cards: [], strings: [] });
           setSuspectIds(Array.isArray(data.suspects) ? data.suspects : []);
+          setCanThink(Boolean(data.canThink));
+          setThought(typeof data.thought === 'string' ? data.thought : null);
         }
       } catch (err) {
         console.error('Failed to load board', err);
@@ -374,6 +391,40 @@ export default function InvestigationBoard() {
     );
   };
 
+  // İpler sunucuda değerlendirilir; dönen pano kararları (doğru/yanlış) taşır
+  const handleThink = async () => {
+    if (!sessionId || !authToken || thinking || !canThink) return;
+    setThinking(true);
+    setThinkError(null);
+    setEditingString(null);
+    setPendingFrom(null);
+    try {
+      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/board/think`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ board }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setThinkError(data?.message ?? 'Şu an düşünemiyorsun. Birazdan tekrar dene.');
+        return;
+      }
+      setBoard(data.board);
+      setThought(data.thought);
+      setCanThink(Boolean(data.canThink));
+      setThoughtOpen(true);
+    } catch {
+      setThinkError('Şu an düşünemiyorsun. Birazdan tekrar dene.');
+    } finally {
+      setThinking(false);
+    }
+  };
+
+  const goHome = () => {
+    const home = getPlayerHome(scenario);
+    if (home) showScene(homeScene(home));
+  };
+
   if (!hasHydrated || !loaded) {
     return <div className={styles.loading}>Pano hazırlanıyor…</div>;
   }
@@ -383,7 +434,7 @@ export default function InvestigationBoard() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/home" className={styles.backBtn}>
+        <Link href="/home" className={styles.backBtn} onClick={goHome}>
           ← Eve Dön
         </Link>
         <div className={styles.titleBlock}>
@@ -392,10 +443,48 @@ export default function InvestigationBoard() {
             Kartları panoya as, raptiyeden raptiyeye sürükleyerek aralarına ip çek.
           </p>
         </div>
-        <span className={`${styles.saveStatus} ${saveStatus === 'error' ? styles.saveError : ''}`}>
-          {saveStatus === 'saving' ? 'Kaydediliyor…' : saveStatus === 'saved' ? 'Kaydedildi' : saveStatus === 'error' ? 'Kaydedilemedi' : ''}
-        </span>
+        <div className={styles.headerActions}>
+          <span className={`${styles.saveStatus} ${saveStatus === 'error' ? styles.saveError : ''}`}>
+            {saveStatus === 'saving' ? 'Kaydediliyor…' : saveStatus === 'saved' ? 'Kaydedildi' : saveStatus === 'error' ? 'Kaydedilemedi' : ''}
+          </span>
+          {thought && !thoughtOpen && (
+            <button type="button" className={styles.lastThoughtBtn} onClick={() => setThoughtOpen(true)}>
+              Son Düşünce
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.thinkBtn}
+            onClick={handleThink}
+            disabled={!canThink || thinking}
+            title={canThink ? 'Panodaki ipleri gözden geçir (günde bir kez)' : 'Bugün düşündün. Yarın yeniden düşünebilirsin.'}
+          >
+            {thinking ? 'Düşünüyorsun…' : canThink ? 'Düşün' : 'Yarın Düşün'}
+          </button>
+        </div>
       </header>
+
+      {thinkError && (
+        <div className={styles.thinkError} role="alert">
+          {thinkError}
+          <button type="button" className={styles.linkBtn} onClick={() => setThinkError(null)}>
+            Kapat
+          </button>
+        </div>
+      )}
+
+      {thought && thoughtOpen && (
+        <aside className={styles.thoughtPanel} aria-live="polite">
+          {thinkerThumb && <span className={styles.thoughtFace} style={{ backgroundImage: `url(${thinkerThumb})` }} />}
+          <div className={styles.thoughtBody}>
+            <span className={styles.thoughtKicker}>İç Ses</span>
+            <p className={styles.thoughtText}>{thought}</p>
+          </div>
+          <button type="button" className={styles.thoughtClose} onClick={() => setThoughtOpen(false)} aria-label="Kapat">
+            ×
+          </button>
+        </aside>
+      )}
 
       <div className={styles.boardWrap}>
         <div className={styles.board} ref={boardRef} onClick={(e) => e.target === e.currentTarget && setPendingFrom(null)}>

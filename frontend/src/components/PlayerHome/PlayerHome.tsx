@@ -33,7 +33,7 @@ const ACTION_HALF_WIDTH = 160;
 const ACTION_TOP_MARGIN = 110;
 const ACTION_BOTTOM_MARGIN = 90;
 
-type OpenPanel = 'notes' | 'inventory' | 'board' | null;
+type OpenPanel = 'notes' | 'inventory' | null;
 
 export default function PlayerHome() {
   const router = useRouter();
@@ -139,10 +139,8 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      setActiveSpot(null);
       // Not defteri ve envanter kendi Escape'ini dinler (not defteri kapanırken kaydeder)
-      setOpenPanel((cur) => (cur === 'board' ? null : cur));
+      if (e.key === 'Escape') setActiveSpot(null);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -206,7 +204,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
       icon: '📌',
       label: 'Soruşturma Panosu',
       desc: 'Kanıtları ve ifadeleri panoya iğnele, aralarına ip ger.',
-      run: () => setOpenPanel('board'),
+      run: () => router.push('/board'),
     },
     door: {
       icon: '🚪',
@@ -366,21 +364,6 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
 
       {openPanel === 'notes' && <NotebookModal onClose={() => setOpenPanel(null)} />}
       {openPanel === 'inventory' && <InventoryModal onClose={() => setOpenPanel(null)} />}
-      {openPanel === 'board' && (
-        <div className={styles.boardOverlay} onClick={() => setOpenPanel(null)}>
-          <div className={styles.boardCard} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.boardClose} onClick={() => setOpenPanel(null)} aria-label="Kapat">
-              &times;
-            </button>
-            <span className={styles.boardIcon}>📌</span>
-            <h2 className={styles.boardTitle}>Soruşturma Panosu</h2>
-            <p className={styles.boardText}>
-              Yakında topladığın kanıtların görsellerini ve tanık ifadelerini bu panoya iğneleyip aralarına kırmızı
-              ip gerebileceksin. Şimdilik notlarını yazı masasından, kanıtlarını sandıktan inceleyebilirsin.
-            </p>
-          </div>
-        </div>
-      )}
 
       {dawnDay !== null && (
         <div className={styles.dawn} aria-live="polite">
