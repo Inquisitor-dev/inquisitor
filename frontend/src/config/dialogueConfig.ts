@@ -350,7 +350,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     farm: {
       name: 'Earl Hutchins',
       title: 'Pompacı — Petrol İstasyonunun Bekçisi',
-      portraitImage: '/dialogue/modern/farm.png',
+      portraitImage: '/dialogue/modern/farm.png?v=2',
       greeting:
         '*Yağlı iş tulumuna ellerini silip benzin pompasının yanından ağır adımlarla sana doğru geliyor.*\n\n"Kasabaya giren de çıkan da bu yoldan geçer yabancı. Kim kaç galon yakıt aldı, hangi arabanın tamponunda çamur vardı hepsini aklıma yazarım. Neyi bilmek istiyorsun?"',
       suggestedQuestions: [
@@ -400,9 +400,9 @@ export function getNpcDialoguePortrait(scenarioType: string = 'medieval', npcKey
       church: '/dialogue/modern/church.png',
       graveyard: '/dialogue/modern/graveyard.png',
       mill: '/dialogue/modern/mill.png',
-      farm: '/dialogue/modern/farm.png',
+      farm: '/dialogue/modern/farm.png?v=2',
       clinic: '/dialogue/modern/clinic.png',
-      crime_scene: '/backgrounds/bg_crime_scene.png',
+      crime_scene: '/backgrounds/bg_crime_scene.webp',
     };
     return modernFallbacks[npcKey] || `/dialogue/modern/${npcKey}.png`;
   }
