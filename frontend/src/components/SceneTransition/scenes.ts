@@ -1,5 +1,6 @@
 import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
 import type { LocationInteriorData } from '@/config/interiorConfig';
+import type { PlayerHomeData } from '@/config/homeConfig';
 import type { Scene } from './sceneStore';
 
 // Sık kullanılan geçiş sahneleri
@@ -15,6 +16,15 @@ export function mapScene(
     title: getMapName(scenarioType),
     subtitle: `${TIME_LABELS[timeOfDay] ?? ''} · Gün ${day}`,
     image: getMapBackground(scenarioType, timeOfDay),
+  };
+}
+
+export function homeScene(home: PlayerHomeData): Scene {
+  return {
+    kicker: 'Evine dönüyorsun',
+    title: home.name,
+    subtitle: home.subtitle,
+    image: home.backgroundImage,
   };
 }
 
