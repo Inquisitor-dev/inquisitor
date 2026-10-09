@@ -324,19 +324,21 @@ describe('applyVerdicts ve templateThought', () => {
 
     const text = templateThought([
       {
-        a: 'Rahip',
-        b: 'Olay yeri izi',
+        a: 'Olay yeri izi',
+        b: 'Rahip',
+        type: 'CLEARS',
         relation: 'aklıyor',
         verdict: 'CORRECT',
       },
       {
-        a: 'Değirmenci',
-        b: 'İtiraf: Hancı',
+        a: 'İtiraf: Hancı',
+        b: 'Değirmenci',
+        type: 'CLEARS',
         relation: 'aklıyor',
         verdict: 'WRONG',
       },
     ]);
-    expect(text).toContain('tutuyor');
-    expect(text).toContain('hata');
+    expect(text).toContain('Rahip temiz görünüyor');
+    expect(text).toContain('Değirmenci için İtiraf: Hancı yetmiyor galiba');
   });
 });

@@ -459,19 +459,25 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
     const facts = lines
       .map(
         (l, i) =>
-          `${i + 1}. "${l.a}" ↔ "${l.b}" (oyuncunun iddiası: ${l.relation}) → ${l.verdict === 'CORRECT' ? 'DOĞRU' : 'YANLIŞ'}`,
+          `${i + 1}. "${l.a}" → "${l.b}": ${l.type === 'CLEARS' || l.type === 'IMPLICATES' ? `bu kanıt bu kişiyi ${l.relation}` : `bu iki kanıt birbiriyle ${l.relation}`}. ${l.verdict === 'CORRECT' ? 'Tutuyor.' : 'Tutmuyor.'}`,
       )
       .join('\n');
-    const prompt = `You are the inner voice of the detective investigating a murder in this setting: ${setting}.
-The detective just looked at their investigation board. Each red string is a claim the detective made, and the game engine has already judged it:
+    const prompt = `You write the private thoughts of a detective who is investigating a murder (setting: ${setting}).
+The detective is alone at night, staring at their own notes and thinking quietly. These are the hunches they are weighing; for each one you already know whether it holds up or not:
 ${facts}
 
-Write the detective's inner monologue in Turkish (first person, informal, 2 to 5 sentences, no lists, no headings).
-- Mention every judged claim above: say plainly that the correct ones hold up and that the wrong ones were a mistake, using the names and evidence as given.
-- Example tone: "Hancının ifadesi olay yeriyle örtüşüyor ancak sanırım bulduğum kolyeyi onunla bağdaştırmam hatalıydı."
-- Do NOT invent new facts, do NOT name or hint at a culprit, do NOT say what the correct link would be.
+Write what goes through the detective's head, in Turkish.
+- First person, the detective talking to themselves. Short, everyday sentences. 2 to 5 sentences in total. No lists, no headings, no quotation marks.
+- Sound unsure and human: use hedges such as "sanırım", "galiba", "belki de", "bence", "gibi görünüyor", "-mış gibi".
+- Never use words of certainty or verdict: "kesin", "kesinlikle", "tamamen", "tamamıyla", "mutlaka", "doğru çıktı", "doğruydu", "yanlıştı", "hata yaptım", "büyük bir hata", "hamle", "iddia".
+- Do not talk about a board, strings, links, claims, a game or an engine. Refer to people by name and to evidence by what it is (her itirafı, olay yerindeki iz, değirmende bulduğum şey).
+- Cover every hunch above: for the ones that hold up, say it seems to fit; for the ones that do not, show doubt. You may add a vague musing about a PERSON, such as "belki başka bir şey saklıyor", but never invent a concrete new fact, never name or hint at who the murderer is, and never say what the right connection would be.
+- Never question whether a piece of evidence is genuine, fake, planted or from another time. Doubt only the connection, not the evidence itself.
 - Use correct Turkish spelling with all special characters.
-Return only the monologue text.`;
+
+Example of the tone (different case): Kardeş Aldric haklı gibi görünüyor, anlattıkları vergi memurları meselesiyle örtüşüyor. Ama Peder Malachar'ı aynı şeyle aklayamam sanırım. Bence onun da başka bir sırrı var.
+
+Return only the thoughts.`;
 
     try {
       const response = await this.createCompletion(

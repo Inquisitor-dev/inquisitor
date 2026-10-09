@@ -501,7 +501,8 @@ export default function InvestigationBoard() {
                 <strong>İp çek.</strong>{' '}Bir kartın kırmızı raptiyesini başka bir karta sürükle (telefonda önce
                 raptiyeye, sonra karta dokun). Sonra ipin anlamını seç: bir kanıt bir şüpheliyi{' '}
                 <em>aklıyor</em> ya da <em>suçluyor</em>, iki kanıt birbirini <em>doğruluyor</em> ya da{' '}
-                <em>çelişiyor</em>.
+                <em>çelişiyor</em>. Fikrini değiştirirsen ipin ortasındaki düğüme tıklayıp anlamını (rengini)
+                değiştirebilir ya da ipi koparabilirsin.
               </li>
               <li>
                 <strong>Düşün.</strong>{' '}Günde bir kez panona bakıp düşünebilirsin. İç sesin hangi iplerin
@@ -552,23 +553,32 @@ export default function InvestigationBoard() {
               const { d, mid } = stringPath(pinPoint(a), pinPoint(b));
               const info = STRING_TYPE_INFO[s.type];
               return (
-                <g key={s.id} className={styles.stringGroup} onClick={() => setEditingString(s.id)}>
+                <g
+                  key={s.id}
+                  className={`${styles.stringGroup} ${editingString === s.id ? styles.stringEditing : ''}`}
+                  onClick={() => setEditingString(s.id)}
+                >
+                  <title>{`${info.label}: anlamını değiştirmek ya da ipi koparmak için tıkla`}</title>
                   <path d={d} className={styles.stringHit} />
                   <path
                     d={d}
                     className={`${styles.string} ${s.verdict === 'WRONG' ? styles.stringWrong : ''} ${s.verdict === 'CORRECT' ? styles.stringCorrect : ''}`}
                     stroke={info.color}
                   />
-                  {s.type !== 'LINK' && (
-                    <g transform={`translate(${mid.x} ${mid.y})`}>
-                      <circle r={s.verdict ? 11 : 7} className={styles.stringKnot} fill={info.color} />
-                      {s.verdict && (
-                        <text className={styles.stringMark} textAnchor="middle" dy="4">
-                          {s.verdict === 'CORRECT' ? '✓' : '✗'}
-                        </text>
-                      )}
-                    </g>
-                  )}
+                  {/* İpin ortasındaki düğüm: tıklanınca ipin anlamı seçilir */}
+                  <g transform={`translate(${mid.x} ${mid.y})`} className={styles.knotGroup}>
+                    <circle r={14} className={styles.knotHit} />
+                    <circle r={s.verdict ? 11 : 8} className={styles.stringKnot} fill={info.color} />
+                    {s.verdict ? (
+                      <text className={styles.stringMark} textAnchor="middle" dy="4">
+                        {s.verdict === 'CORRECT' ? '✓' : '✗'}
+                      </text>
+                    ) : (
+                      <text className={styles.stringEdit} textAnchor="middle" dy="3.5">
+                        ✎
+                      </text>
+                    )}
+                  </g>
                 </g>
               );
             })}

@@ -401,6 +401,30 @@ $card-width: 150px;
 .stringGroup {
   pointer-events: auto;
   cursor: pointer;
+
+  // Üzerine gelinen ip parlar: tıklanabilir olduğu belli olsun
+  &:hover .string,
+  &.stringEditing .string {
+    stroke-width: 4.4;
+    filter: drop-shadow(0 0 6px rgba(255, 230, 160, 0.85)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+  }
+
+  &:hover .stringKnot,
+  &.stringEditing .stringKnot {
+    stroke: #f4e7c8;
+    stroke-width: 2;
+  }
+}
+
+// Düğümün etrafındaki görünmez, daha geniş tıklama alanı (telefonda kolay dokunulsun)
+.knotHit {
+  fill: transparent;
+}
+
+.stringEdit {
+  fill: rgba(255, 255, 255, 0.9);
+  font-size: 10px;
+  pointer-events: none;
 }
 
 // Tıklamayı kolaylaştıran görünmez kalın çizgi
