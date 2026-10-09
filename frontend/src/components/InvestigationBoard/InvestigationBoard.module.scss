@@ -87,6 +87,74 @@ $card-width: 150px;
   color: #e57373;
 }
 
+// ─── KULLANIM İPUCU ────────────────────────────────────────────────────────
+.helpBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 220, 196, 0.3);
+  background: rgba(18, 18, 18, 0.85);
+  color: #e0bb5e;
+  font-family: $font-title;
+  font-size: 15px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #e0bb5e;
+  }
+}
+
+.helpOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.helpCard {
+  width: min(520px, 100%);
+  padding: 26px 26px 22px;
+  border-radius: 10px;
+  background: #1a1512;
+  border: 1px solid rgba(224, 187, 94, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+.helpTitle {
+  margin: 0 0 14px;
+  font-family: $font-title;
+  font-size: 22px;
+}
+
+.helpSteps {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  text-align: left;
+  font-family: $font-body;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c9bfaf;
+
+  li + li {
+    margin-top: 10px;
+  }
+
+  strong {
+    color: $text-parchment;
+  }
+
+  em {
+    color: #e0bb5e;
+    font-style: normal;
+  }
+}
+
 // ─── DÜŞÜN VE İÇ SES ───────────────────────────────────────────────────────
 .thinkBtn {
   padding: 8px 18px;
@@ -243,6 +311,67 @@ $card-width: 150px;
   background-position: 0 0, 3px 4px, 0 0, 0 0;
   overflow: hidden;
   touch-action: none;
+}
+
+// ─── EVRENE GÖRE PANO ──────────────────────────────────────────────────────
+// Varsayılan (Millfield): mantar. Diğer evrenler kendi malzemesini kullanır.
+
+// Ashenmoor: koyu meşe tahtalar
+.board[data-theme='medieval'] {
+  border-color: #24160d;
+  background-color: #5b3a22;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 120px),
+    repeating-linear-gradient(90deg, rgba(255, 220, 170, 0.05) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 23px),
+    radial-gradient(ellipse at 30% 20%, rgba(255, 190, 120, 0.12), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.3), transparent 65%);
+  background-size: auto;
+  background-position: 0 0;
+}
+
+// Neon Prime: delikli metal panel, kenarda neon
+.board[data-theme='cyberpunk'] {
+  border-color: #23272f;
+  background-color: #1a1e25;
+  background-image:
+    radial-gradient(circle, rgba(0, 0, 0, 0.75) 2px, transparent 2.6px),
+    radial-gradient(circle, rgba(120, 200, 255, 0.08) 2.6px, transparent 3.2px),
+    radial-gradient(ellipse at 20% 15%, rgba(255, 40, 170, 0.14), transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(0, 220, 255, 0.12), transparent 55%);
+  background-size: 14px 14px, 14px 14px, 100% 100%, 100% 100%;
+  background-position: 0 0, 1px 1px, 0 0, 0 0;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.7), 0 0 18px rgba(0, 220, 255, 0.25), 0 10px 40px rgba(0, 0, 0, 0.8);
+
+  .emptyHint {
+    color: rgba(180, 220, 255, 0.55);
+  }
+}
+
+// Jinling: pirinç kâğıdı üstünde koyu ahşap kafes, kırmızı lake çerçeve
+.board[data-theme='china'] {
+  border-color: #5a1a10;
+  background-color: #e9dcbc;
+  background-image:
+    linear-gradient(rgba(70, 35, 20, 0.55) 3px, transparent 3px),
+    linear-gradient(90deg, rgba(70, 35, 20, 0.55) 3px, transparent 3px),
+    radial-gradient(ellipse at 50% 40%, rgba(255, 220, 160, 0.35), transparent 70%),
+    radial-gradient(ellipse at 80% 90%, rgba(60, 30, 15, 0.25), transparent 60%);
+  background-size: 56px 56px, 56px 56px, 100% 100%, 100% 100%;
+  background-position: -2px -2px, -2px -2px, 0 0, 0 0;
+}
+
+// Frosthold: kalın, eskimiş tahtalar ve kenarlarda kırağı
+.board[data-theme='winter'] {
+  border-color: #2e2620;
+  background-color: #6a5847;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0 3px, transparent 3px 96px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 11px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(220, 235, 255, 0.28) 100%),
+    radial-gradient(ellipse at 30% 25%, rgba(255, 180, 110, 0.12), transparent 60%);
+  background-size: auto;
+  background-position: 0 0;
 }
 
 .emptyHint {

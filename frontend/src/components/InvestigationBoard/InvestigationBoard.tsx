@@ -29,6 +29,16 @@ import styles from './InvestigationBoard.module.scss';
 const SAVE_DELAY_MS = 700;
 // Bu kadar pikselden az kayan bir dokunuş sürükleme değil, tıklamadır
 const TAP_SLOP = 6;
+// Kullanım ipucu bir kez gösterilir (sadece bu tarayıcıda hatırlanır)
+const HELP_SEEN_KEY = 'inquisitor-board-help-seen';
+
+const readHelpSeen = () => {
+  try {
+    return localStorage.getItem(HELP_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -59,6 +69,7 @@ export default function InvestigationBoard() {
   const [thought, setThought] = useState<string | null>(null);
   const [thoughtOpen, setThoughtOpen] = useState(false);
   const [thinkError, setThinkError] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // İç ses panelinde oyuncunun giydiği karakterin yüzü görünür
   const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
@@ -94,6 +105,7 @@ export default function InvestigationBoard() {
           setSuspectIds(Array.isArray(data.suspects) ? data.suspects : []);
           setCanThink(Boolean(data.canThink));
           setThought(typeof data.thought === 'string' ? data.thought : null);
+          if (!readHelpSeen()) setHelpOpen(true);
         }
       } catch (err) {
         console.error('Failed to load board', err);
@@ -420,6 +432,15 @@ export default function InvestigationBoard() {
     }
   };
 
+  const closeHelp = () => {
+    setHelpOpen(false);
+    try {
+      localStorage.setItem(HELP_SEEN_KEY, '1');
+    } catch {
+      // Depolama kapalıysa ipucu bir sonraki açılışta yine görünür
+    }
+  };
+
   const goHome = () => {
     const home = getPlayerHome(scenario);
     if (home) showScene(homeScene(home));
@@ -447,6 +468,9 @@ export default function InvestigationBoard() {
           <span className={`${styles.saveStatus} ${saveStatus === 'error' ? styles.saveError : ''}`}>
             {saveStatus === 'saving' ? 'Kaydediliyor…' : saveStatus === 'saved' ? 'Kaydedildi' : saveStatus === 'error' ? 'Kaydedilemedi' : ''}
           </span>
+          <button type="button" className={styles.helpBtn} onClick={() => setHelpOpen(true)} aria-label="Pano nasıl kullanılır">
+            ?
+          </button>
           {thought && !thoughtOpen && (
             <button type="button" className={styles.lastThoughtBtn} onClick={() => setThoughtOpen(true)}>
               Son Düşünce
@@ -463,6 +487,33 @@ export default function InvestigationBoard() {
           </button>
         </div>
       </header>
+
+      {helpOpen && (
+        <div className={styles.helpOverlay} onClick={closeHelp}>
+          <div className={styles.helpCard} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.helpTitle}>Soruşturma Panosu</h2>
+            <ol className={styles.helpSteps}>
+              <li>
+                <strong>Kartları as.</strong>{' '}Alttaki dosyadan bir şüpheliye, kanıta ya da &ldquo;Not Ekle&rdquo;ye
+                tıkla; kart panoya asılır. Kartı sürükleyerek yerini değiştir.
+              </li>
+              <li>
+                <strong>İp çek.</strong>{' '}Bir kartın kırmızı raptiyesini başka bir karta sürükle (telefonda önce
+                raptiyeye, sonra karta dokun). Sonra ipin anlamını seç: bir kanıt bir şüpheliyi{' '}
+                <em>aklıyor</em> ya da <em>suçluyor</em>, iki kanıt birbirini <em>doğruluyor</em> ya da{' '}
+                <em>çelişiyor</em>.
+              </li>
+              <li>
+                <strong>Düşün.</strong>{' '}Günde bir kez panona bakıp düşünebilirsin. İç sesin hangi iplerin
+                tuttuğunu söyler: doğru ipler mühürlenir, aklanan şüpheliye damga basılır.
+              </li>
+            </ol>
+            <button type="button" className={styles.thinkBtn} onClick={closeHelp}>
+              Anladım
+            </button>
+          </div>
+        </div>
+      )}
 
       {thinkError && (
         <div className={styles.thinkError} role="alert">
@@ -487,7 +538,12 @@ export default function InvestigationBoard() {
       )}
 
       <div className={styles.boardWrap}>
-        <div className={styles.board} ref={boardRef} onClick={(e) => e.target === e.currentTarget && setPendingFrom(null)}>
+        <div
+          className={styles.board}
+          data-theme={scenario}
+          ref={boardRef}
+          onClick={(e) => e.target === e.currentTarget && setPendingFrom(null)}
+        >
           <svg className={styles.strings} width={boardSize.w} height={boardSize.h}>
             {board.strings.map((s) => {
               const a = cardById.get(s.from);
