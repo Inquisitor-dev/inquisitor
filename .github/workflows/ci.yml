@@ -1,0 +1,90 @@
+name: CI
+
+# PR'larda ve main'e push'ta backend, frontend ve mobil kontrol edilir.
+# Deploy'u Render ve Vercel kendileri yapar; burada yalnızca kontrol var.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Aynı branch'e yeni push gelince eski çalışma iptal edilir
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (build + test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Testler Prisma'yı ve LLM'i taklit nesnelerle kullanır; gerçek bağlantı açılmaz
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run build
+      - run: npm test -- --runInBand
+
+  frontend-lint:
+    name: Frontend (lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  frontend-build:
+    name: Frontend (build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  mobile:
+    name: Mobil (typecheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck

@@ -1,0 +1,131 @@
+// Haritadaki pencerelerle aynı görünüm (map.module.scss)
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.content {
+  background: #1a1512;
+  border: 1px solid #3d342d;
+  width: 100%;
+  max-width: 600px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 32px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #e8dcc4;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #3d342d;
+  padding-bottom: 12px;
+}
+
+.message {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #8a7f72;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #8a7f72;
+  cursor: pointer;
+  font-size: 1.5rem;
+  &:hover { color: #fff; }
+}
+
+.notesArea {
+  width: 100%;
+  height: 300px;
+  background: transparent;
+  border: none;
+  color: #e8dcc4;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+
+.inventoryList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 16px;
+}
+
+.inventoryItem {
+  background: #251f1b;
+  border: 1px solid #3d342d;
+  padding: 16px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #8a7f72;
+
+  .itemIcon { font-size: 2rem; }
+  .itemName { color: #e8dcc4; font-weight: 500; }
+}
+
+.usedItem {
+  opacity: 0.6;
+}
+
+// Kanıtlar uzun cümleler olduğu için satırın tamamını kaplar
+.evidenceItem {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  text-align: left;
+  border-left: 3px solid #8a0303;
+  line-height: 1.45;
+}
+
+.evidenceSource,
+.warrantPlace {
+  color: #8a0303;
+  font-size: 0.75rem;
+}
+
+.usedItem .warrantPlace {
+  color: #8a7f72;
+}
+
+.empty {
+  color: #8a7f72;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    padding: 16px;
+  }
+
+  .content {
+    padding: 24px 20px;
+  }
+
+  .title {
+    font-size: 1.4rem;
+    padding-right: 28px;
+  }
+}

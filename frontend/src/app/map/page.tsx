@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
+import { getLocationLabel } from '@/config/locationLabels';
+import { getPlayerHome } from '@/config/homeConfig';
 import { getNpcDialoguePortrait, DIALOGUE_CONFIG } from '@/config/dialogueConfig';
+import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
+import { hideScene, revealScene, showScene } from '@/components/SceneTransition/sceneStore';
+import { homeScene, interiorScene } from '@/components/SceneTransition/scenes';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
@@ -20,7 +25,6 @@ import MapCharacter from './MapCharacter';
 import { getRoadNetwork, findPath, distance, expandPath, type Point, type RoadNetwork } from './roads';
 import { smoothPath, createRoute, directionWithHysteresis } from './walkPath';
 
-const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
 // Medieval köy konumları
 const locations = [
@@ -448,79 +452,9 @@ const WALK_LOOKAHEAD = 24; // px, bakış yönü bu kadar ilerideki noktaya gör
 // Perspektif: görselin üst kenarında 0.82, alt kenarında 1.02 ölçek
 const depthScaleAt = (y: number, imageHeight: number) => 0.82 + 0.2 * (y / imageHeight);
 
-const getLocationLabel = (locationId: string, scenarioType: string) => {
-  if (scenarioType === 'modern') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      farm: 'Petrol İstasyonu',
-      clinic: 'Bar',
-      home: 'Evim',
-      church: 'Hotel',
-      graveyard: 'Video Oyuncusu',
-      mill: 'Lokanta',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'cyberpunk') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      church: 'Lokanta',
-      graveyard: 'Klinik',
-      mill: 'Tamirhane',
-      farm: 'Sokak Pazarı',
-      clinic: 'Bar',
-      home: 'Evim',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'china') {
-    const labels: Record<string, string> = {
-      tavern: 'Çay Evi & Han',
-      church: 'Muhafız Karargahı',
-      graveyard: 'Kadim Tapınak',
-      mill: 'Demirci Ocağı',
-      farm: 'Balıkçı İskelesi',
-      clinic: 'Şifacı & Baharatçı',
-      home: 'Evim',
-      crime_scene: 'Pazar Meydanı',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  if (scenarioType === 'winter') {
-    const labels: Record<string, string> = {
-      tavern: 'Kış Hanı',
-      church: 'Kutsal Yürek Ağacı',
-      graveyard: 'Gözcü Kalesi',
-      mill: 'Terk Edilmiş Maden',
-      farm: 'Sur',
-      clinic: 'İnfaz Meydanı',
-      home: 'Evim',
-      crime_scene: 'Buzlu Geçit',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-
-  const labels: Record<string, string> = {
-    tavern: 'Taverna',
-    church: 'Kilise',
-    graveyard: 'Mezarlik',
-    mill: 'Degirmen',
-    farm: 'Ciftlik',
-    clinic: 'Revir',
-    home: 'Evim',
-    crime_scene: 'Cinayet Mahalli',
-  };
-  return labels[locationId] ?? locationId.toUpperCase();
-};
-
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
   // Envanter'de sadece fiziksel kanıtlar görünür; karakter ifadeleri Not defterindedir
   const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
 
@@ -537,7 +471,7 @@ export default function MapPage() {
           : scenarioType === 'winter'
             ? winterLocations
             : locations;
-  const visibleLocations = baseLocations.filter((loc: any) => {
+  const visibleLocations = baseLocations.filter((loc: { minDifficulty?: string }) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
   });
@@ -620,12 +554,25 @@ export default function MapPage() {
     message: '',
     onConfirm: () => {},
   });
-  const [localNotes, setLocalNotes] = useState('');
+  const [localNotes, setLocalNotes] = useState(notes);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  useEffect(() => {
+  // Sunucudan gelen notlar (ör. yeni ifade) yerel taslağın üzerine yazılır
+  const [syncedNotes, setSyncedNotes] = useState(notes);
+  if (notes !== syncedNotes) {
+    setSyncedNotes(notes);
     setLocalNotes(notes);
-  }, [notes]);
+  }
+
+  // Harita görseli yüklenene kadar geçiş ekranı kalır (görsel önbellekteyse hiç açılmaz)
+  useLayoutEffect(() => {
+    if (!hasHydrated) return;
+    void revealScene([getMapBackground(scenarioType, timeOfDay)], {
+      kicker: `${TIME_LABELS[timeOfDay] ?? ''} · Gün ${currentDay}`,
+      title: getMapName(scenarioType),
+      image: getMapBackground(scenarioType, timeOfDay),
+    });
+  }, [hasHydrated, scenarioType, timeOfDay, currentDay]);
 
   useEffect(() => {
     if (hasHydrated && !authToken) {
@@ -652,7 +599,12 @@ export default function MapPage() {
             const evidenceData = await evidenceRes.json();
             setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
           }
-        } catch(e) {}
+          // Evdeki yataktan son gün "Hükmünü Ver" ile gelinince seçim penceresi açılır
+          if (new URLSearchParams(window.location.search).get('hukum') === '1') {
+            setIsCondemnModalOpen(true);
+            router.replace('/map');
+          }
+        } catch {}
       }
     };
     if (hasHydrated) fetchSession();
@@ -689,6 +641,17 @@ export default function MapPage() {
     router.push('/menu');
   };
 
+  // Evi hazırlanmış evrende oyuncu evin içine girer; diğerlerinde "Evim" penceresi açılır
+  const openHome = () => {
+    const home = getPlayerHome(scenarioType || 'medieval');
+    if (!home) {
+      setIsHomeModalOpen(true);
+      return;
+    }
+    showScene(homeScene(home));
+    router.push('/home');
+  };
+
   const handleEndDay = async () => {
     if (!sessionId) return;
     
@@ -714,6 +677,17 @@ export default function MapPage() {
   const handleLocationClick = async (locId: string) => {
     if (!sessionId || timeOfDay >= 4) return;
     setLoadingLoc(locId);
+    // Geçiş ekranı hemen açılır; sunucu cevabı ve mekân görseli beklenirken oyuncu nereye girdiğini görür
+    const interior = getInterior(scenarioType, locId);
+    showScene(
+      interior
+        ? interiorScene(interior)
+        : {
+            kicker: 'Giriyorsun',
+            title: getLocationLabel(locId, scenarioType),
+            image: getNpcDialoguePortrait(scenarioType, locId),
+          },
+    );
     try {
       await fetch(apiUrl(`/game-sessions/${sessionId}/advance-time`), {
         method: 'POST',
@@ -721,9 +695,10 @@ export default function MapPage() {
       });
       advanceTime();
       // İç görünümü hazırlanmış mekânlarda oyuncuyu önce mekânın içi karşılar
-      router.push(getInterior(scenarioType, locId) ? `/interior/${locId}` : `/interact/${locId}`);
+      router.push(interior ? `/interior/${locId}` : `/interact/${locId}`);
     } catch (err) {
       console.error('Failed to advance time', err);
+      hideScene();
       setLoadingLoc(null);
     }
   };
@@ -735,7 +710,7 @@ export default function MapPage() {
     const doorId = roads.doors[locId];
     if (!doorId) {
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         handleLocationClick(locId);
       }
@@ -755,7 +730,7 @@ export default function MapPage() {
       walkFrame.current = null;
       setLastLocationId(locId);
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         await handleLocationClick(locId);
       }
@@ -810,7 +785,7 @@ export default function MapPage() {
       walkFrame.current = null;
       setLastLocationId(locId);
       if (locId === 'home') {
-        setIsHomeModalOpen(true);
+        openHome();
       } else {
         await handleLocationClick(locId);
       }
@@ -948,31 +923,7 @@ export default function MapPage() {
 
   const isNight = timeOfDay >= 4;
   
-  const getMapBg = () => {
-    if (scenarioType === 'modern') {
-      if (timeOfDay <= 1) return '/map/town_map_morning.png';
-      if (timeOfDay <= 3) return '/map/town_map_sunset.png';
-      return '/map/town_map_night.png';
-    }
-    if (scenarioType === 'cyberpunk') {
-      if (timeOfDay <= 1) return '/map/cyberpunk_map_morning.webp';
-      if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.webp';
-      return '/map/cyberpunk_map_night.webp';
-    }
-    if (scenarioType === 'china') {
-      if (timeOfDay <= 1) return '/map/china_morning.png';
-      if (timeOfDay <= 3) return '/map/china_sunset.png';
-      return '/map/china_night.png';
-    }
-    if (scenarioType === 'winter') {
-      if (timeOfDay <= 1) return '/map/winter_morning.jpg';
-      if (timeOfDay <= 3) return '/map/winter_sunset.jpg';
-      return '/map/winter_night.jpg';
-    }
-    if (timeOfDay <= 1) return '/map/village_map_morning.png';
-    if (timeOfDay <= 3) return '/map/village_map_sunset.png';
-    return '/map/village_map.png';
-  };
+  const getMapBg = () => getMapBackground(scenarioType, timeOfDay);
 
   const renderPlayer = (x: number, y: number, depthScale = 1) =>
     character && (

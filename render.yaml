@@ -27,3 +27,12 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: GEMINI_MODELS
+        sync: false
+      # Vercel adresi (ör. https://the-inquisitor.vercel.app); Stripe dönüş adresi için
+      - key: FRONTEND_URL
+        sync: false
+      # Test ortamı: Render ücretsiz planı SMTP'yi engellerse doğrulama kodu mesajda gösterilir.
+      # Gerçek yayında kapalı olmalı.
+      - key: ALLOW_TEST_MODE
+        value: "true"
