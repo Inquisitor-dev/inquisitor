@@ -10,7 +10,7 @@ export interface TokenTransactionItem {
   amount: number;
   balanceAfter: number;
   reason: string;
-  metadata?: any;
+  metadata?: unknown;
   createdAt: string;
 }
 
@@ -103,8 +103,8 @@ export const useMarketStore = create<MarketState>()(
           });
 
           return { success: true };
-        } catch (err: any) {
-          return { success: false, message: err.message || 'Bağlantı hatası.' };
+        } catch (err) {
+          return { success: false, message: (err instanceof Error && err.message) || 'Bağlantı hatası.' };
         }
       },
 
@@ -150,8 +150,8 @@ export const useMarketStore = create<MarketState>()(
             checkoutUrl: data.checkoutUrl,
             isSimulated: data.isSimulated,
           };
-        } catch (e: any) {
-          return { error: e.message || 'Sunucuya bağlanılamadı.' };
+        } catch (e) {
+          return { error: (e instanceof Error && e.message) || 'Sunucuya bağlanılamadı.' };
         }
       },
 
@@ -175,8 +175,8 @@ export const useMarketStore = create<MarketState>()(
           // Güncel verileri çek
           get().fetchMarketData(authToken);
           return { success: true };
-        } catch (e: any) {
-          return { success: false, error: e.message || 'Bağlantı hatası.' };
+        } catch (e) {
+          return { success: false, error: (e instanceof Error && e.message) || 'Bağlantı hatası.' };
         }
       },
     }),

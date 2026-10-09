@@ -96,7 +96,7 @@ export default function LandingPage() {
           <div className={styles.sectionHeader}>
             <h2>Sıradan Bir Oyun Değil.</h2>
             <p>
-              NPC'ler önceden yazılmış satırları okumaz. Düşünürler. Hatırlarlar.
+              NPC&apos;ler önceden yazılmış satırları okumaz. Düşünürler. Hatırlarlar.
               Ve en önemlisi... Yalan söylerler.
             </p>
           </div>
