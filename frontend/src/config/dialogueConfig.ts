@@ -11,7 +11,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     tavern: {
       name: 'Lin Feng',
       title: 'Çay Ustası — Altın Lotus Çay Evi',
-      portraitImage: '/dialogue/china/lin_feng.png',
+      portraitImage: '/dialogue/china/lin_feng.webp',
       greeting:
         '*Lin Feng önündeki porselen fincana demlikten kehribar rengi çay dolduruyor. Başını kaldırıp hafifçe tebessüm ediyor.*\n\n"Altın Lotus\'a hoş geldiniz, saygıdeğer Engizitör. Çayın demi sabır ister, tıpkı hakikat gibi... Ne öğrenmek arzusundasınız?"',
       suggestedQuestions: [
@@ -23,7 +23,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     church: {
       name: 'Komutan Zhao',
       title: 'Garnizon Komutanı — İmparatorluk Karargahı',
-      portraitImage: '/dialogue/china/zhao.png',
+      portraitImage: '/dialogue/china/zhao.webp',
       greeting:
         '*Komutan Zhao ellerini harita masasına dayayarak keskin ve otoriter bakışlarını sana çeviriyor.*\n\n"Garnizonuma hoş geldin, Engizitör. İmparatorluk topraklarında düzen ve nizam esastır. Soruşturmanın ordunun onurunu lekelemesine müsaade etmem. Ne öğrenmek istiyorsun?"',
       suggestedQuestions: [
@@ -35,7 +35,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     graveyard: {
       name: 'Keşiş Huikang',
       title: 'Kadim Tapınak Bilgesi — Atalar Dağ Tapınağı',
-      portraitImage: '/dialogue/china/huikang.png',
+      portraitImage: '/dialogue/china/huikang.webp',
       greeting:
         '*Tütsü kazanından yükselen mavi dumanların arasından tespih taneleri tıkırdıyor. Keşiş Huikang gözlerini ağır ağır açıyor.*\n\n"Huzur arayan da, kan arayan da bu eşikten geçer... Rüzgâr ölümün kokusunu dağın zirvesine dek taşıdı. Söyle bakalım yabancı, kalbindeki hangi ağırlık seni ataların huzuruna getirdi?"',
       suggestedQuestions: [
@@ -47,7 +47,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     mill: {
       name: 'Usta Guan',
       title: 'Demirci Ustası — Ejder Ocağı Atölyesi',
-      portraitImage: '/dialogue/china/guan.png',
+      portraitImage: '/dialogue/china/guan.webp',
       greeting:
         '*Usta Guan elindeki ağır çekici örsün üzerine bırakıp alnındaki teri siliyor. Kor ateşin ışığı çatık kaşlarını aydınlatıyor.*\n\n"Ocağımda iş var, laf kalabalığına vaktim yok! Buradaki her çeliği ben büktüm, her bıçağın fısıltısını bilirim. Eğer bir cinayet hançeri arıyorsan, doğru konuş da sabrımı taşırma."',
       suggestedQuestions: [
@@ -69,7 +69,7 @@ export const DIALOGUE_CONFIG: Record<string, Record<string, NpcDialogueConfig>> 
     clinic: {
       name: 'Bilgin Song',
       title: 'Saray Eczacısı ve Hekim — Song Eczanesi Köşkü',
-      portraitImage: '/dialogue/china/song.png',
+      portraitImage: '/dialogue/china/song.webp',
       greeting:
         '*Bilgin Song havanındaki şifalı otları ezmeyi bırakıp parşömenlerin arasından sana bakıyor. İnce bir tebessümle başını eğiyor.*\n\n"Zehir ile panzehir arasındaki tek fark ölçüdür, tıpkı şüphe ile hakikat arasındaki fark gibi. Bedenlerin dili asla yalan söylemez. Hangi gizemin teşhisini arıyorsunuz?"',
       suggestedQuestions: [
@@ -202,7 +202,7 @@ export function getNpcDialoguePortrait(scenarioType: string = 'medieval', npcKey
 
   // Özel olarak Lin Feng tanımlı
   if (normScenario === 'china' && npcKey === 'tavern') {
-    return '/dialogue/china/lin_feng.png';
+    return '/dialogue/china/lin_feng.webp';
   }
 
   if (cfg?.portraitImage) {
@@ -212,15 +212,15 @@ export function getNpcDialoguePortrait(scenarioType: string = 'medieval', npcKey
   // Varsayılan iç mekan veya arka plan fallback'leri
   if (normScenario === 'china') {
     const chinaFallbacks: Record<string, string> = {
-      tavern: '/dialogue/china/lin_feng.png',
-      church: '/dialogue/china/zhao.png',
-      graveyard: '/dialogue/china/huikang.png',
-      mill: '/dialogue/china/guan.png',
-      clinic: '/dialogue/china/song.png',
+      tavern: '/dialogue/china/lin_feng.webp',
+      church: '/dialogue/china/zhao.webp',
+      graveyard: '/dialogue/china/huikang.webp',
+      mill: '/dialogue/china/guan.webp',
+      clinic: '/dialogue/china/song.webp',
       farm: '/backgrounds/interior_china_farm.webp',
-      crime_scene: '/backgrounds/bg_crime_scene.png',
+      crime_scene: '/backgrounds/bg_crime_scene.webp',
     };
-    return chinaFallbacks[npcKey] || `/dialogue/china/${npcKey}.png`;
+    return chinaFallbacks[npcKey] || `/dialogue/china/${npcKey}.webp`;
   }
 
   if (normScenario === 'cyberpunk') {
@@ -237,15 +237,15 @@ export function getNpcDialoguePortrait(scenarioType: string = 'medieval', npcKey
 
   // Medieval / fallback
   const medFallbacks: Record<string, string> = {
-    tavern: '/backgrounds/bg_tavern.png',
-    church: '/backgrounds/bg_church.png',
-    graveyard: '/backgrounds/bg_graveyard.png',
-    mill: '/backgrounds/bg_mill.png',
-    farm: '/backgrounds/interior_mill_panorama.jpg',
-    clinic: '/backgrounds/bg_church.png',
-    crime_scene: '/backgrounds/bg_crime_scene.png',
+    tavern: '/backgrounds/bg_tavern.webp',
+    church: '/backgrounds/bg_church.webp',
+    graveyard: '/backgrounds/bg_graveyard.webp',
+    mill: '/backgrounds/bg_mill.webp',
+    farm: '/backgrounds/interior_mill_panorama.webp',
+    clinic: '/backgrounds/bg_church.webp',
+    crime_scene: '/backgrounds/bg_crime_scene.webp',
   };
-  return medFallbacks[npcKey] || `/backgrounds/bg_${npcKey}.png`;
+  return medFallbacks[npcKey] || `/backgrounds/bg_${npcKey}.webp`;
 }
 
 export function getNpcDialogueSuggestedQuestions(scenarioType: string = 'medieval', npcKey: string): string[] {
