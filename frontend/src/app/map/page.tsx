@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
+import { getNpcDialoguePortrait, DIALOGUE_CONFIG } from '@/config/dialogueConfig';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
@@ -608,11 +609,13 @@ export default function MapPage() {
   const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ 
     isOpen: boolean; 
+    villagerId?: string;
     title: string; 
     message: string; 
     onConfirm: () => void;
   }>({
     isOpen: false,
+    villagerId: undefined,
     title: '',
     message: '',
     onConfirm: () => {},
@@ -1071,6 +1074,8 @@ export default function MapPage() {
       >
         {visibleLocations.map((loc) => {
           const isAvailable = (loc.available && !isNight && !walkingTo) || (loc.id === 'home' && !walkingTo);
+          const npcPortrait = loc.id !== 'home' ? getNpcDialoguePortrait(scenarioType, loc.id) : null;
+          const npcConfig = DIALOGUE_CONFIG[scenarioType]?.[loc.id];
 
           return (
             <div 
@@ -1087,8 +1092,28 @@ export default function MapPage() {
               <div
                 className={`${styles.label} ${scenarioType === 'cyberpunk' && loc.id === 'mill' ? styles.multiLineLabel : ''}`}
               >
-                <span className={styles.icon}>{loc.icon}</span>
-                <span>{walkingTo === loc.id || loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}</span>
+                {npcPortrait ? (
+                  <div className={styles.labelAvatarWrap}>
+                    <img
+                      src={npcPortrait}
+                      alt={loc.name}
+                      className={styles.labelAvatar}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    />
+                  </div>
+                ) : (
+                  <span className={styles.icon}>{loc.icon}</span>
+                )}
+                <div className={styles.labelTextCol}>
+                  <span className={styles.labelTextAction}>
+                    {walkingTo === loc.id || loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}
+                  </span>
+                  {npcConfig?.name && !walkingTo && !loadingLoc && (
+                    <span className={styles.labelNpcName}>
+                      {npcConfig.name}
+                    </span>
+                  )}
+                </div>
                 {!isAvailable && (
                   <span className={styles.lockedText}>
                     ({isNight ? 'Gece' : 'Kapalı'})
@@ -1351,11 +1376,11 @@ export default function MapPage() {
                   villagers = [
                     { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Polis Amiri' },
                     { id: 'church', name: 'Gerald', icon: '🏨', role: 'Otel İşletmecisi' },
-                    { id: 'mill', name: 'Donna', icon: '🍽️', role: 'Lokantacı' },
-                    { id: 'graveyard', name: 'Randy', icon: '🎮', role: 'Video Oyuncusu' },
+                    { id: 'mill', name: 'Donna Perkins', icon: '🍽️', role: 'Lokantacı' },
+                    { id: 'graveyard', name: 'Randy Kowalski', icon: '🎮', role: 'Video Oyuncusu' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Earl', icon: '⛽', role: 'Pompacı' });
+                    villagers.push({ id: 'farm', name: 'Earl Hutchins', icon: '⛽', role: 'Pompacı' });
                   }
                   if (difficulty === 'hard') {
                     villagers.push({ id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' });
@@ -1414,27 +1439,42 @@ export default function MapPage() {
                   }
                 }
                 return villagers;
-              })().map(villager => (
-                <button 
-                  key={villager.id} 
-                  className={styles.villagerItem}
-                  onClick={() => {
-                    setIsCondemnModalOpen(false);
-                    setConfirmModal({
-                      isOpen: true,
-                      title: 'Engizisyon Hükmü',
-                      message: `${villager.name} isimli köylüyü ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
-                      onConfirm: () => handleCondemn(villager.id),
-                    });
-                  }}
-                >
-                  <span className={styles.villagerIcon}>{villager.icon}</span>
-                  <div className={styles.villagerInfo}>
-                    <span className={styles.villagerName}>{villager.name}</span>
-                    <span className={styles.villagerRole}>{villager.role}</span>
-                  </div>
-                </button>
-              ))}
+              })().map(villager => {
+                const portrait = getNpcDialoguePortrait(scenarioType, villager.id);
+                return (
+                  <button 
+                    key={villager.id} 
+                    className={styles.villagerItem}
+                    onClick={() => {
+                      setIsCondemnModalOpen(false);
+                      setConfirmModal({
+                        isOpen: true,
+                        villagerId: villager.id,
+                        title: 'Engizisyon Hükmü',
+                        message: `${villager.name} isimli şüpheliyi ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
+                        onConfirm: () => handleCondemn(villager.id),
+                      });
+                    }}
+                  >
+                    <div className={styles.villagerAvatarWrap}>
+                      {portrait ? (
+                        <img 
+                          src={portrait} 
+                          alt={villager.name} 
+                          className={styles.villagerAvatar}
+                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <span className={styles.villagerIcon}>{villager.icon}</span>
+                      )}
+                    </div>
+                    <div className={styles.villagerInfo}>
+                      <span className={styles.villagerName}>{villager.name}</span>
+                      <span className={styles.villagerRole}>{villager.role}</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1444,6 +1484,15 @@ export default function MapPage() {
       {confirmModal.isOpen && (
         <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            {confirmModal.villagerId && (
+              <div className={styles.confirmAvatarWrap}>
+                <img
+                  src={getNpcDialoguePortrait(scenarioType, confirmModal.villagerId)}
+                  alt="Şüpheli"
+                  className={styles.confirmAvatar}
+                />
+              </div>
+            )}
             <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
             <p className={styles.modalMessage}>{confirmModal.message}</p>
             <div className={styles.modalActions}>

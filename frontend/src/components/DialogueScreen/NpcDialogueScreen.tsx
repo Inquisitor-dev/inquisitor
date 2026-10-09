@@ -79,9 +79,9 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
     const profiles: Record<string, { name: string; title: string; icon: string }> = {
       tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
       church: { name: 'Gerald', title: 'Otel İşletmecisi — Millfield Oteli', icon: '🏨' },
-      graveyard: { name: 'Randy', title: 'Video Oyuncusu — Pixel Arcade Salonu', icon: '🎮' },
-      mill: { name: 'Donna', title: 'Lokantacı — The Maple Cafe & Diner', icon: '🍽️' },
-      farm: { name: 'Earl', title: 'Pompacı — Petrol İstasyonunun Bekçisi', icon: '⛽' },
+      graveyard: { name: 'Randy Kowalski', title: 'Video Oyuncusu — Pixel Arcade Salonu', icon: '🎮' },
+      mill: { name: 'Donna Perkins', title: 'Lokantacı — The Maple Cafe & Diner', icon: '🍽️' },
+      farm: { name: 'Earl Hutchins', title: 'Pompacı — Petrol İstasyonunun Bekçisi', icon: '⛽' },
       clinic: { name: 'David', title: "Barmen — David's Bar", icon: '🍺' },
       crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
     };
@@ -101,6 +101,18 @@ const getNpcProfile = (npcKey: string, scenarioType: string) => {
 };
 
 const getLocationLabel = (locationId: string, scenarioType: string) => {
+  if (scenarioType === 'modern') {
+    const labels: Record<string, string> = {
+      tavern: 'Karakol',
+      church: 'Hotel',
+      graveyard: 'Video Oyuncusu',
+      mill: 'Lokanta',
+      farm: 'Petrol İstasyonu',
+      clinic: 'Bar',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
   if (scenarioType === 'china') {
     const labels: Record<string, string> = {
       tavern: 'Çay Evi & Han',
@@ -110,6 +122,30 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
       farm: 'Balıkçı İskelesi',
       clinic: 'Şifacı & Baharatçı',
       crime_scene: 'Pazar Meydanı',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+  if (scenarioType === 'cyberpunk') {
+    const labels: Record<string, string> = {
+      tavern: 'Karakol',
+      church: 'Lokanta',
+      graveyard: 'Klinik',
+      mill: 'Tamirhane',
+      farm: 'Sokak Pazarı',
+      clinic: 'Bar',
+      crime_scene: 'Olay Yeri',
+    };
+    return labels[locationId] ?? locationId.toUpperCase();
+  }
+  if (scenarioType === 'winter') {
+    const labels: Record<string, string> = {
+      tavern: 'Kış Hanı',
+      church: 'Kutsal Yürek Ağacı',
+      graveyard: 'Gözcü Kalesi',
+      mill: 'Terk Edilmiş Maden',
+      farm: 'Sur',
+      clinic: 'İnfaz Meydanı',
+      crime_scene: 'Buzlu Geçit',
     };
     return labels[locationId] ?? locationId.toUpperCase();
   }
@@ -168,8 +204,48 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
     mei_teyze: 'farm',
   };
 
+  const CYBERPUNK_NPC_ALIASES: Record<string, string> = {
+    kael: 'tavern',
+    kael_voss: 'tavern',
+    voss: 'tavern',
+    mirel: 'church',
+    mirel_sato: 'church',
+    sato: 'church',
+    brakk: 'graveyard',
+    brakk_coil: 'graveyard',
+    coil: 'graveyard',
+    aura: 'mill',
+    'aura-9': 'mill',
+    aura9: 'mill',
+    ash: 'farm',
+    vera: 'clinic',
+    vera_nyx: 'clinic',
+    nyx: 'clinic',
+  };
+
+  const WINTER_NPC_ALIASES: Record<string, string> = {
+    torstein: 'tavern',
+    valda: 'church',
+    kahin_valda: 'church',
+    kâhin_valda: 'church',
+    bjorn: 'graveyard',
+    komutan_bjorn: 'graveyard',
+    durn: 'mill',
+    madenci_durn: 'mill',
+    einar: 'farm',
+    kenneth: 'clinic',
+    muhafiz_kenneth: 'clinic',
+    muhafız_kenneth: 'clinic',
+  };
+
   const isExplicitChinaNpc = Boolean(CHINA_NPC_ALIASES[npcKey]);
-  const actualNpcKey = CHINA_NPC_ALIASES[npcKey] || npcKey;
+  const isExplicitCyberpunkNpc = Boolean(CYBERPUNK_NPC_ALIASES[npcKey]);
+  const isExplicitWinterNpc = Boolean(WINTER_NPC_ALIASES[npcKey]);
+  const actualNpcKey =
+    CHINA_NPC_ALIASES[npcKey] ||
+    CYBERPUNK_NPC_ALIASES[npcKey] ||
+    WINTER_NPC_ALIASES[npcKey] ||
+    npcKey;
   const [urlScenario, setUrlScenario] = useState<string | null>(null);
 
   useEffect(() => {
@@ -179,7 +255,13 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
     }
   }, []);
 
-  const scenario = isExplicitChinaNpc ? 'china' : (urlScenario || scenarioType || 'medieval');
+  const scenario = isExplicitChinaNpc
+    ? 'china'
+    : isExplicitCyberpunkNpc
+    ? 'cyberpunk'
+    : isExplicitWinterNpc
+    ? 'winter'
+    : (urlScenario || scenarioType || 'medieval');
   const profile = getNpcProfile(actualNpcKey, scenario) ?? {
     name: 'Meçhul Köylü',
     title: 'Gölgelerin arasından bir yabancı',

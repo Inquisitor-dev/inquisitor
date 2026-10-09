@@ -9,6 +9,7 @@ import {
   InteriorHotspot,
   LocationInteriorData,
 } from '@/config/interiorConfig';
+import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
 import styles from './InteriorViewer.module.scss';
@@ -506,7 +507,12 @@ function InteriorScene({
         <div className={styles.hudGroup}>
           {locationData.npcId && (
             <Link href={`/interact/${locationData.npcId}`} className={styles.actionBtn}>
-              <span>🗣️</span>
+              <img
+                src={getNpcDialoguePortrait(locationData.scenarioType, locationData.npcId)}
+                alt={locationData.npcName}
+                className={styles.hudNpcAvatar}
+                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+              />
               {locationData.npcName} ile Sorgu
             </Link>
           )}
@@ -537,7 +543,18 @@ function InteriorScene({
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardTitleWrapper}>
-                <div className={styles.cardIcon}>{activeHotspot.icon}</div>
+                <div className={styles.cardIcon}>
+                  {activeHotspot.category === 'npc' && locationData.npcId ? (
+                    <img
+                      src={getNpcDialoguePortrait(locationData.scenarioType, locationData.npcId)}
+                      alt={activeHotspot.title}
+                      className={styles.modalNpcAvatar}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    />
+                  ) : (
+                    activeHotspot.icon
+                  )}
+                </div>
                 <div>
                   <div className={styles.cardCategory}>
                     {activeHotspot.category === 'npc'
