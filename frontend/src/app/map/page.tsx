@@ -7,7 +7,7 @@ import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
 import { getLocationLabel } from '@/config/locationLabels';
 import { getPlayerHome } from '@/config/homeConfig';
-import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
+import { getNpcDialoguePortrait, DIALOGUE_CONFIG } from '@/config/dialogueConfig';
 import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
 import { hideScene, revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { homeScene, interiorScene } from '@/components/SceneTransition/scenes';
@@ -32,60 +32,60 @@ const locations = [
     id: 'church',
     name: 'Kilise',
     icon: '⛪',
-    top: '15%',
-    left: '8%',
-    width: '28%',
-    height: '45%',
+    top: '10%',
+    left: '2%',
+    width: '34%',
+    height: '48%',
     available: true,
   },
   {
     id: 'mill',
     name: 'Değirmen',
     icon: '⚙️',
-    top: '35%',
-    left: '68%',
-    width: '18%',
-    height: '35%',
+    top: '32%',
+    left: '66%',
+    width: '28%',
+    height: '38%',
     available: true,
   },
   {
     id: 'tavern',
     name: 'Taverna',
     icon: '🍺',
-    top: '36%',
-    left: '42%',
-    width: '16%',
-    height: '25%',
+    top: '35%',
+    left: '40%',
+    width: '18%',
+    height: '27%',
     available: true,
   },
   {
     id: 'graveyard',
     name: 'Mezarlık',
     icon: '🪦',
-    top: '10%',
-    left: '70%',
-    width: '25%',
-    height: '30%',
+    top: '4%',
+    left: '68%',
+    width: '31%',
+    height: '34%',
     available: true,
   },
   {
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '56%',
-    left: '6%',
-    width: '17%',
-    height: '25%',
+    top: '55%',
+    left: '1%',
+    width: '22%',
+    height: '28%',
     available: true,
   },
   {
     id: 'clinic',
     name: 'Revir',
     icon: '🏥',
-    top: '44%',
-    left: '27%',
-    width: '16%',
-    height: '24%',
+    top: '42%',
+    left: '25%',
+    width: '17%',
+    height: '26%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -93,10 +93,10 @@ const locations = [
     id: 'farm',
     name: 'Çiftlik',
     icon: '🌾',
-    top: '66%',
-    left: '39%',
-    width: '26%',
-    height: '24%',
+    top: '64%',
+    left: '37%',
+    width: '28%',
+    height: '34%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -109,10 +109,10 @@ const modernLocations = [
     id: 'farm',
     name: 'Petrol İstasyonu',
     icon: '⛽',
-    top: '42%',
-    left: '1%',
-    width: '17%',
-    height: '28%',
+    top: '38%',
+    left: '0%',
+    width: '18%',
+    height: '32%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -121,10 +121,10 @@ const modernLocations = [
     id: 'tavern',
     name: 'Karakol',
     icon: '🚔',
-    top: '25%',
-    left: '17.5%',
-    width: '15%',
-    height: '36%',
+    top: '24%',
+    left: '17%',
+    width: '16%',
+    height: '37%',
     available: true,
   },
   {
@@ -132,10 +132,10 @@ const modernLocations = [
     id: 'clinic',
     name: 'Bar',
     icon: '🍺',
-    top: '1%',
-    left: '34%',
-    width: '22%',
-    height: '36%',
+    top: '0%',
+    left: '33%',
+    width: '24%',
+    height: '38%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -144,10 +144,10 @@ const modernLocations = [
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '1%',
-    left: '58%',
+    top: '0%',
+    left: '57%',
     width: '16%',
-    height: '21%',
+    height: '24%',
     available: true,
   },
   {
@@ -155,10 +155,10 @@ const modernLocations = [
     id: 'church',
     name: 'Hotel',
     icon: '🏨',
-    top: '7.5%',
-    left: '72%',
-    width: '24%',
-    height: '44%',
+    top: '2%',
+    left: '70%',
+    width: '30%',
+    height: '48%',
     available: true,
   },
   {
@@ -167,9 +167,9 @@ const modernLocations = [
     name: 'Video Oyuncusu',
     icon: '🎮',
     top: '44%',
-    left: '62%',
-    width: '20%',
-    height: '29%',
+    left: '60%',
+    width: '22%',
+    height: '30%',
     available: true,
   },
   {
@@ -177,10 +177,10 @@ const modernLocations = [
     id: 'mill',
     name: 'Lokanta',
     icon: '🍽️',
-    top: '63%',
-    left: '31%',
-    width: '26%',
-    height: '31%',
+    top: '60%',
+    left: '30%',
+    width: '28%',
+    height: '38%',
     available: true,
   },
 ];
@@ -191,10 +191,10 @@ const cyberpunkLocations = [
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '40%',
+    top: '38%',
     left: '0%',
-    width: '16.5%',
-    height: '22.5%',
+    width: '18%',
+    height: '26%',
     available: true,
   },
   {
@@ -202,10 +202,10 @@ const cyberpunkLocations = [
     id: 'church',
     name: 'Lokanta',
     icon: '🍜',
-    top: '28.7%',
-    left: '26%',
-    width: '12%',
-    height: '16%',
+    top: '26%',
+    left: '25%',
+    width: '13%',
+    height: '19%',
     available: true,
   },
   {
@@ -213,10 +213,10 @@ const cyberpunkLocations = [
     id: 'mill',
     name: 'Tamirhane',
     icon: '🛠️',
-    top: '20.6%',
-    left: '34.5%',
-    width: '14%',
-    height: '22.4%',
+    top: '19%',
+    left: '34%',
+    width: '15%',
+    height: '24%',
     available: true,
   },
   {
@@ -224,10 +224,10 @@ const cyberpunkLocations = [
     id: 'graveyard',
     name: 'Klinik',
     icon: '🏥',
-    top: '27%',
-    left: '55.5%',
-    width: '15%',
-    height: '17.5%',
+    top: '25%',
+    left: '54%',
+    width: '16%',
+    height: '20%',
     available: true,
   },
   {
@@ -235,10 +235,10 @@ const cyberpunkLocations = [
     id: 'tavern',
     name: 'Karakol',
     icon: '👮',
-    top: '32%',
-    left: '70.75%',
-    width: '12.25%',
-    height: '22.4%',
+    top: '30%',
+    left: '70%',
+    width: '14%',
+    height: '25%',
     available: true,
   },
   {
@@ -246,10 +246,10 @@ const cyberpunkLocations = [
     id: 'clinic',
     name: 'Bar',
     icon: '🍸',
-    top: '42%',
-    left: '83%',
-    width: '11%',
-    height: '23.3%',
+    top: '38%',
+    left: '82%',
+    width: '18%',
+    height: '34%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -258,10 +258,10 @@ const cyberpunkLocations = [
     id: 'farm',
     name: 'Sokak Pazarı',
     icon: '🏮',
-    top: '45%',
-    left: '33%',
-    width: '37%',
-    height: '38%',
+    top: '44%',
+    left: '31%',
+    width: '39%',
+    height: '42%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -273,10 +273,10 @@ const chinaLocations = [
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '64%',
-    left: '54%',
-    width: '24%',
-    height: '30%',
+    top: '62%',
+    left: '53%',
+    width: '26%',
+    height: '34%',
     available: true,
   },
   {
@@ -284,10 +284,10 @@ const chinaLocations = [
     id: 'church',
     name: 'Muhafız Karargahı',
     icon: '🏯',
-    top: '8%',
-    left: '12%',
-    width: '24%',
-    height: '28%',
+    top: '3%',
+    left: '6%',
+    width: '29%',
+    height: '33%',
     available: true,
   },
   {
@@ -295,10 +295,10 @@ const chinaLocations = [
     id: 'tavern',
     name: 'Çay Evi & Han',
     icon: '🍵',
-    top: '12%',
-    left: '46%',
-    width: '22%',
-    height: '30%',
+    top: '8%',
+    left: '44%',
+    width: '24%',
+    height: '34%',
     available: true,
   },
   {
@@ -306,10 +306,10 @@ const chinaLocations = [
     id: 'graveyard',
     name: 'Kadim Tapınak',
     icon: '⛩️',
-    top: '10%',
-    left: '74%',
-    width: '20%',
-    height: '28%',
+    top: '3%',
+    left: '71%',
+    width: '28%',
+    height: '35%',
     available: true,
   },
   {
@@ -317,10 +317,10 @@ const chinaLocations = [
     id: 'clinic',
     name: 'Şifacı & Baharatçı',
     icon: '🌿',
-    top: '38%',
-    left: '8%',
-    width: '20%',
-    height: '28%',
+    top: '36%',
+    left: '3%',
+    width: '23%',
+    height: '30%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -329,10 +329,10 @@ const chinaLocations = [
     id: 'mill',
     name: 'Demirci Ocağı',
     icon: '⚒️',
-    top: '38%',
-    left: '70%',
-    width: '22%',
-    height: '30%',
+    top: '36%',
+    left: '69%',
+    width: '24%',
+    height: '32%',
     available: true,
   },
   {
@@ -340,10 +340,10 @@ const chinaLocations = [
     id: 'farm',
     name: 'Balıkçı İskelesi',
     icon: '🎣',
-    top: '72%',
-    left: '3%',
-    width: '25%',
-    height: '25%',
+    top: '68%',
+    left: '0%',
+    width: '28%',
+    height: '31%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -355,10 +355,10 @@ const winterLocations = [
     id: 'home',
     name: 'Evim',
     icon: '🏡',
-    top: '46%',
-    left: '28%',
-    width: '20%',
-    height: '26%',
+    top: '45%',
+    left: '26%',
+    width: '22%',
+    height: '28%',
     available: true,
   },
   {
@@ -366,10 +366,10 @@ const winterLocations = [
     id: 'church',
     name: 'Kutsal Yürek Ağacı',
     icon: '🍁',
-    top: '5%',
-    left: '6%',
-    width: '24%',
-    height: '32%',
+    top: '1%',
+    left: '1%',
+    width: '28%',
+    height: '36%',
     available: true,
   },
   {
@@ -377,10 +377,10 @@ const winterLocations = [
     id: 'graveyard',
     name: 'Gözcü Kalesi',
     icon: '🏰',
-    top: '8%',
-    left: '38%',
-    width: '24%',
-    height: '32%',
+    top: '4%',
+    left: '36%',
+    width: '26%',
+    height: '36%',
     available: true,
   },
   {
@@ -388,10 +388,10 @@ const winterLocations = [
     id: 'farm',
     name: 'Sur',
     icon: '🛡️',
-    top: '1%',
-    left: '74%',
-    width: '25%',
-    height: '33%',
+    top: '0%',
+    left: '70%',
+    width: '29%',
+    height: '37%',
     available: true,
     minDifficulty: 'medium',
   },
@@ -400,10 +400,10 @@ const winterLocations = [
     id: 'tavern',
     name: 'Kış Hanı',
     icon: '🔥',
-    top: '38%',
-    left: '64%',
-    width: '24%',
-    height: '32%',
+    top: '36%',
+    left: '63%',
+    width: '25%',
+    height: '34%',
     available: true,
   },
   {
@@ -411,10 +411,10 @@ const winterLocations = [
     id: 'mill',
     name: 'Terk Edilmiş Maden',
     icon: '⛏️',
-    top: '68%',
-    left: '5%',
-    width: '24%',
-    height: '26%',
+    top: '65%',
+    left: '0%',
+    width: '29%',
+    height: '34%',
     available: true,
   },
   {
@@ -422,10 +422,10 @@ const winterLocations = [
     id: 'clinic',
     name: 'İnfaz Meydanı',
     icon: '⚔️',
-    top: '68%',
-    left: '60%',
-    width: '26%',
-    height: '28%',
+    top: '65%',
+    left: '58%',
+    width: '32%',
+    height: '34%',
     available: true,
     minDifficulty: 'hard',
   },
@@ -543,11 +543,13 @@ export default function MapPage() {
   const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ 
     isOpen: boolean; 
+    villagerId?: string;
     title: string; 
     message: string; 
     onConfirm: () => void;
   }>({
     isOpen: false,
+    villagerId: undefined,
     title: '',
     message: '',
     onConfirm: () => {},
@@ -1023,6 +1025,8 @@ export default function MapPage() {
       >
         {visibleLocations.map((loc) => {
           const isAvailable = (loc.available && !isNight && !walkingTo) || (loc.id === 'home' && !walkingTo);
+          const npcPortrait = loc.id !== 'home' ? getNpcDialoguePortrait(scenarioType, loc.id) : null;
+          const npcConfig = DIALOGUE_CONFIG[scenarioType]?.[loc.id];
 
           return (
             <div 
@@ -1039,8 +1043,28 @@ export default function MapPage() {
               <div
                 className={`${styles.label} ${scenarioType === 'cyberpunk' && loc.id === 'mill' ? styles.multiLineLabel : ''}`}
               >
-                <span className={styles.icon}>{loc.icon}</span>
-                <span>{walkingTo === loc.id || loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}</span>
+                {npcPortrait ? (
+                  <div className={styles.labelAvatarWrap}>
+                    <img
+                      src={npcPortrait}
+                      alt={loc.name}
+                      className={styles.labelAvatar}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    />
+                  </div>
+                ) : (
+                  <span className={styles.icon}>{loc.icon}</span>
+                )}
+                <div className={styles.labelTextCol}>
+                  <span className={styles.labelTextAction}>
+                    {walkingTo === loc.id || loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}
+                  </span>
+                  {npcConfig?.name && !walkingTo && !loadingLoc && (
+                    <span className={styles.labelNpcName}>
+                      {npcConfig.name}
+                    </span>
+                  )}
+                </div>
                 {!isAvailable && (
                   <span className={styles.lockedText}>
                     ({isNight ? 'Gece' : 'Kapalı'})
@@ -1303,11 +1327,11 @@ export default function MapPage() {
                   villagers = [
                     { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Polis Amiri' },
                     { id: 'church', name: 'Gerald', icon: '🏨', role: 'Otel İşletmecisi' },
-                    { id: 'mill', name: 'Donna', icon: '🍽️', role: 'Lokantacı' },
-                    { id: 'graveyard', name: 'Randy', icon: '🎮', role: 'Video Oyuncusu' },
+                    { id: 'mill', name: 'Donna Perkins', icon: '🍽️', role: 'Lokantacı' },
+                    { id: 'graveyard', name: 'Randy Kowalski', icon: '🎮', role: 'Video Oyuncusu' },
                   ];
                   if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Earl', icon: '⛽', role: 'Pompacı' });
+                    villagers.push({ id: 'farm', name: 'Earl Hutchins', icon: '⛽', role: 'Pompacı' });
                   }
                   if (difficulty === 'hard') {
                     villagers.push({ id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' });
@@ -1366,27 +1390,42 @@ export default function MapPage() {
                   }
                 }
                 return villagers;
-              })().map(villager => (
-                <button 
-                  key={villager.id} 
-                  className={styles.villagerItem}
-                  onClick={() => {
-                    setIsCondemnModalOpen(false);
-                    setConfirmModal({
-                      isOpen: true,
-                      title: 'Engizisyon Hükmü',
-                      message: `${villager.name} isimli köylüyü ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
-                      onConfirm: () => handleCondemn(villager.id),
-                    });
-                  }}
-                >
-                  <span className={styles.villagerIcon}>{villager.icon}</span>
-                  <div className={styles.villagerInfo}>
-                    <span className={styles.villagerName}>{villager.name}</span>
-                    <span className={styles.villagerRole}>{villager.role}</span>
-                  </div>
-                </button>
-              ))}
+              })().map(villager => {
+                const portrait = getNpcDialoguePortrait(scenarioType, villager.id);
+                return (
+                  <button 
+                    key={villager.id} 
+                    className={styles.villagerItem}
+                    onClick={() => {
+                      setIsCondemnModalOpen(false);
+                      setConfirmModal({
+                        isOpen: true,
+                        villagerId: villager.id,
+                        title: 'Engizisyon Hükmü',
+                        message: `${villager.name} isimli şüpheliyi ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
+                        onConfirm: () => handleCondemn(villager.id),
+                      });
+                    }}
+                  >
+                    <div className={styles.villagerAvatarWrap}>
+                      {portrait ? (
+                        <img 
+                          src={portrait} 
+                          alt={villager.name} 
+                          className={styles.villagerAvatar}
+                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <span className={styles.villagerIcon}>{villager.icon}</span>
+                      )}
+                    </div>
+                    <div className={styles.villagerInfo}>
+                      <span className={styles.villagerName}>{villager.name}</span>
+                      <span className={styles.villagerRole}>{villager.role}</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1396,6 +1435,15 @@ export default function MapPage() {
       {confirmModal.isOpen && (
         <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            {confirmModal.villagerId && (
+              <div className={styles.confirmAvatarWrap}>
+                <img
+                  src={getNpcDialoguePortrait(scenarioType, confirmModal.villagerId)}
+                  alt="Şüpheli"
+                  className={styles.confirmAvatar}
+                />
+              </div>
+            )}
             <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
             <p className={styles.modalMessage}>{confirmModal.message}</p>
             <div className={styles.modalActions}>
