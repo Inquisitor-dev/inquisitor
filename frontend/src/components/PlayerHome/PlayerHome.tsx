@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
@@ -9,6 +9,8 @@ import { wearableOutfitId } from '@/config/outfits';
 import { useCharacterManifest } from '@/components/character/characterManifest';
 import { useScenePan } from '@/components/InteriorViewer/useScenePan';
 import { useAmbientParticles } from '@/components/InteriorViewer/useAmbientParticles';
+import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
+import { homeScene, mapScene } from '@/components/SceneTransition/scenes';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
 import { useGameStore } from '@/store/useGameStore';
@@ -78,6 +80,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     setWarrants,
     setEvidence,
     setScenarioType,
+    scenarioType,
   } = useGameStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
@@ -93,6 +96,13 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     home.character.x / 100
   );
   useAmbientParticles(canvasRef, home.particleType);
+
+  // Ev görseli yüklenene kadar geçiş ekranı kalır
+  useLayoutEffect(() => {
+    void revealScene([home.backgroundImage], homeScene(home));
+  }, [home]);
+
+  const goToMap = (kicker?: string) => showScene(mapScene(scenarioType, timeOfDay, currentDay, kicker));
 
   // Gardıropta giyilen karakter evde de görünür
   const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
@@ -145,6 +155,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     if (!sessionId || endingDay) return;
     // Son günün sonunda uyunmaz: hüküm haritadaki seçim penceresinden verilir
     if (isLastDay) {
+      goToMap('Hüküm vakti');
       router.push('/map?hukum=1');
       return;
     }
@@ -201,7 +212,10 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
       icon: '🚪',
       label: 'Dışarı Çık',
       desc: 'Sokaklara geri dön.',
-      run: () => router.push('/map'),
+      run: () => {
+        goToMap();
+        router.push('/map');
+      },
     },
   };
 
@@ -292,7 +306,6 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
             transform: `translate3d(${currentPan.x}px, ${currentPan.y}px, 0)`,
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={home.backgroundImage} alt={home.name} className={sceneStyles.sceneImage} draggable={false} />
 
           {characterStyle && (
@@ -322,7 +335,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
 
       <header className={sceneStyles.topHud}>
         <div className={sceneStyles.hudGroup}>
-          <Link href="/map" className={sceneStyles.backBtn}>
+          <Link href="/map" className={sceneStyles.backBtn} onClick={() => goToMap()}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

@@ -9,7 +9,7 @@ import styles from './crime-scene.module.scss';
 
 export default function CrimeScenePage() {
   const router = useRouter();
-  const { isAdmin, currentDay, timeOfDay, maxDailyDialogues, dialoguesUsedToday, scenario, notes, setNotes, sessionId, authToken } = useGameStore();
+  const { isAdmin, currentDay, dialoguesUsedToday, scenario, notes, setNotes, sessionId, authToken } = useGameStore();
   
   const [inspected, setInspected] = useState(false);
   const [displayedText, setDisplayedText] = useState('');

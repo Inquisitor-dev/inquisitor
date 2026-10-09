@@ -69,7 +69,6 @@ const COSMETIC_ICONS = {
 function OutfitPortrait({ src, alt }: { src?: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) return <Shirt size={44} strokeWidth={1.3} />;
-  // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt={alt} onError={() => setFailed(true)} />;
 }
 
@@ -122,6 +121,7 @@ export default function MarketPage() {
           }
         });
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Stripe dönüş parametreleri yalnızca tarayıcıda okunabilir
         setToast('Ödeme başarıyla alındı! Tokenler hazineye aktarıldı.');
         if (authToken) fetchMarketData(authToken);
       }
@@ -194,7 +194,7 @@ export default function MarketPage() {
         }
       } else {
         // Gerçek Stripe Checkout sayfasına yönlendir
-        window.location.href = res.checkoutUrl;
+        window.location.assign(res.checkoutUrl);
       }
     }
   };

@@ -40,6 +40,8 @@ Run each in its own directory.
 
 **Mobile** (`mobile/`): `npm start` (or `start:lan` / `start:tunnel`), `npm run typecheck`, `npm run build:android:preview` (EAS). The GitHub workflow `.github/workflows/build-apk.yml` builds the APK locally via EAS on manual dispatch.
 
+**CI** (`.github/workflows/ci.yml`) runs on PRs to `main` and pushes to `main`: backend build + unit tests, frontend lint, frontend build, and mobile typecheck. Frontend lint must stay at zero problems. Deploys are done by Render and Vercel, not by CI.
+
 ## Architecture
 
 ### Backend modules (`backend/src`)

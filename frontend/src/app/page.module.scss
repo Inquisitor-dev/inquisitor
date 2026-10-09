@@ -157,7 +157,7 @@
         align-items: center;
         justify-content: center;
         position: relative;
-        background: url('/landing-page-image.jpg') center/cover no-repeat fixed;
+        background: url('/landing-page-image.webp') center/cover no-repeat fixed;
     }
 
     .hero::after {
@@ -310,7 +310,7 @@
     /* MECHANICS SECTION (Parallax) */
     .mechanics {
         padding: 120px 0;
-        background: url('/stories/story2.jpg') center/cover fixed;
+        background: url('/stories/story2.webp') center/cover fixed;
         position: relative;
     }
 

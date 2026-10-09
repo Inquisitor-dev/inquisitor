@@ -19,7 +19,7 @@ export type RoadNetwork = {
   characterScale?: number;
 };
 
-// Köy haritası: koordinatlar village_map_*.png'nin 2752x1536 ölçeğindeki toprak yolların ortasından alınmıştır.
+// Köy haritası: koordinatlar village_map_*.webp'nin 2752x1536 ölçeğindeki toprak yolların ortasından alınmıştır.
 // Meydanın doğusundaki geniş toprak alanda kuzeydoğu (mezarlık) ve güneydoğu (değirmen) yolları
 // birbirine doğrudan bağlıdır; böylece bu ikisi arasında giderken meydana inip geri dönülmez.
 // Yolları görmek ve yeni nokta almak için haritayı `?debugRoads` ile aç.
@@ -88,7 +88,7 @@ const village: RoadNetwork = {
   spawn: 'square',
 };
 
-// Kasaba haritası (town_map_*.png, 2752x1536): koordinatlar asfalt yol, kaldırım ve kapı önlerindedir.
+// Kasaba haritası (town_map_*.webp, 2752x1536): koordinatlar asfalt yol, kaldırım ve kapı önlerindedir.
 // Kapılar mekanların tıklama alanlarının içindedir. İnsan ve araç boyları karakterle uyumlu, ölçek köyle aynı.
 const town: RoadNetwork = {
   image: { width: 2752, height: 1536 },
@@ -205,7 +205,7 @@ const cyberpunk: RoadNetwork = {
   spawn: 'plaza',
 };
 
-// Çin haritası (china_*.png, 2730x1536): koordinatlar taş döşeli meydanın açık karoları üzerindedir.
+// Çin haritası (china_*.webp, 2730x1536): koordinatlar taş döşeli meydanın açık karoları üzerindedir.
 // Ortadaki pazar tezgâhları ve çadırlar dolanılır: merkez, tezgâhların arasındaki desenli taş levhadır.
 // Kapı yükseklikleri köydekinden küçük, karakter biraz küçültülür.
 const chinaRoads: RoadNetwork = {
@@ -259,7 +259,7 @@ const chinaRoads: RoadNetwork = {
   spawn: 'square',
 };
 
-// Kış haritası (winter_*.jpg, 2730x1536): koordinatlar karla kaplı toprak yolların üzerindedir.
+// Kış haritası (winter_*.webp, 2730x1536): koordinatlar karla kaplı toprak yolların üzerindedir.
 // Kaya, dikili taş ve ateşlerin etrafından dolanılır. Haritadaki insanlar ~90 px; karakter küçültülür.
 const winterRoads: RoadNetwork = {
   image: { width: 2730, height: 1536 },

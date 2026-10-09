@@ -2,10 +2,14 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Render gibi bir proxy arkasında istek IP'si X-Forwarded-For'dan okunsun;
+  // yoksa hız sınırı (20 istek/dk) tüm oyuncular için tek IP'ye uygulanır
+  app.set('trust proxy', 1);
   const port = Number(process.env.PORT ?? 3001);
   const host = process.env.HOST ?? '0.0.0.0';
 

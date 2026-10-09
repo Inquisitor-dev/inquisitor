@@ -96,7 +96,7 @@ export default function LandingPage() {
           <div className={styles.sectionHeader}>
             <h2>Sıradan Bir Oyun Değil.</h2>
             <p>
-              NPC'ler önceden yazılmış satırları okumaz. Düşünürler. Hatırlarlar.
+              NPC&apos;ler önceden yazılmış satırları okumaz. Düşünürler. Hatırlarlar.
               Ve en önemlisi... Yalan söylerler.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story4.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story4.webp')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -120,7 +120,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story5.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story5.webp')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -135,7 +135,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story6.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story6.webp')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -150,7 +150,7 @@ export default function LandingPage() {
             <div className={styles.featureCard}>
               <div
                 className={styles.featureBg}
-                style={{ backgroundImage: "url('/stories/story8.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story8.webp')" }}
               ></div>
               <div className={styles.featureOverlay}></div>
               <div className={styles.featureContent}>
@@ -186,11 +186,11 @@ export default function LandingPage() {
             <div className={styles.mechImages}>
               <div
                 className={styles.mechImg}
-                style={{ backgroundImage: "url('/stories/story7.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story7.webp')" }}
               ></div>
               <div
                 className={styles.mechImg}
-                style={{ backgroundImage: "url('/stories/story3.jpg')" }}
+                style={{ backgroundImage: "url('/stories/story3.webp')" }}
               ></div>
             </div>
           </div>

@@ -13,7 +13,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "render:build": "npm run prisma:generate && npm run prisma:push && npm run build",
+    "render:build": "npm run prisma:generate && npm run prisma:push && npm run seed && npm run build",
     "render:start": "node dist/src/main",
     "start": "nest start",
     "start:dev": "nest start --watch",
