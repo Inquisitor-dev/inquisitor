@@ -566,15 +566,20 @@ export default function InvestigationBoard() {
                     stroke={info.color}
                   />
                   {/* İpin ortasındaki düğüm: tıklanınca ipin anlamı seçilir */}
-                  <g transform={`translate(${mid.x} ${mid.y})`} className={styles.knotGroup}>
+                  <g transform={`translate(${mid.x} ${mid.y})`}>
                     <circle r={14} className={styles.knotHit} />
-                    <circle r={s.verdict ? 11 : 8} className={styles.stringKnot} fill={info.color} />
+                    {/* Kararsız ipte düğüm (kalem) sadece üzerine gelince görünür; ✓ / ✗ hep görünür */}
+                    <circle
+                      r={s.verdict ? 11 : 8}
+                      className={`${styles.stringKnot} ${s.verdict ? '' : styles.knotIdle}`}
+                      fill={info.color}
+                    />
                     {s.verdict ? (
                       <text className={styles.stringMark} textAnchor="middle" dy="4">
                         {s.verdict === 'CORRECT' ? '✓' : '✗'}
                       </text>
                     ) : (
-                      <text className={styles.stringEdit} textAnchor="middle" dy="3.5">
+                      <text className={`${styles.stringEdit} ${styles.knotIdle}`} textAnchor="middle" dy="3.5">
                         ✎
                       </text>
                     )}
@@ -643,6 +648,12 @@ export default function InvestigationBoard() {
                   </button>
                 ))}
               </div>
+              {editingTypes.length === 1 && (
+                <p className={styles.stringMenuNote}>
+                  Bu ip Düşün&apos;de değerlendirilmez. Renkli ip için bir şüpheliyi bir kanıta ya da iki kanıtı
+                  birbirine bağla.
+                </p>
+              )}
               <div className={styles.stringMenuFooter}>
                 <button type="button" className={styles.linkBtn} onClick={() => removeString(editing.id)}>
                   İpi kopar

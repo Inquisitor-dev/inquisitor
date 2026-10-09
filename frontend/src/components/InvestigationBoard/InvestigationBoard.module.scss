@@ -416,6 +416,30 @@ $card-width: 150px;
   }
 }
 
+// Kararsız ipin düğümü ve kalemi: fare ipin üzerine gelince belirir (dokunmatik ekranda hep görünür)
+.knotIdle {
+  opacity: 0;
+  transition: opacity $transition-fast;
+
+  .stringGroup:hover &,
+  .stringEditing & {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+.stringMenuNote {
+  margin: 8px 0 0;
+  max-width: 240px;
+  font-family: $font-body;
+  font-size: 12px;
+  line-height: 1.45;
+  color: $text-muted;
+}
+
 // Düğümün etrafındaki görünmez, daha geniş tıklama alanı (telefonda kolay dokunulsun)
 .knotHit {
   fill: transparent;
