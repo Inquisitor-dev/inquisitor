@@ -241,8 +241,8 @@ export function getNpcDialoguePortrait(scenarioType: string = 'medieval', npcKey
     church: '/backgrounds/bg_church.png',
     graveyard: '/backgrounds/bg_graveyard.png',
     mill: '/backgrounds/bg_mill.png',
-    farm: '/backgrounds/interior_mill_panorama.jpg',
-    clinic: '/backgrounds/bg_church.png',
+    farm: '/backgrounds/interior_medieval_farm.webp',
+    clinic: '/backgrounds/interior_medieval_clinic.webp',
     crime_scene: '/backgrounds/bg_crime_scene.png',
   };
   return medFallbacks[npcKey] || `/backgrounds/bg_${npcKey}.png`;
