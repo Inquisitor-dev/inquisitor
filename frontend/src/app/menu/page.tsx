@@ -37,6 +37,8 @@ import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
 import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outfits';
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
+import { showScene } from '@/components/SceneTransition/sceneStore';
+import { mapScene } from '@/components/SceneTransition/scenes';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -432,6 +434,9 @@ export default function HomePage() {
       setTruthReveal(null);
       setLocationClues(null);
       setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
+      showScene(
+        mapScene(activeSession.scenarioType, activeSession.timeOfDay ?? 0, activeSession.currentDay ?? 1, 'Soruşturmaya dönüyorsun'),
+      );
       router.push('/map');
     } catch (err) {
       console.error('Failed to resume session', err);
@@ -481,6 +486,7 @@ export default function HomePage() {
         }
         setTruthReveal(null);
         setLocationClues(null);
+        showScene(mapScene(scenarioType, 0, 1, 'Soruşturma başlıyor'));
         router.push('/map');
         setLoading(false);
       } else {
@@ -581,12 +587,12 @@ export default function HomePage() {
 
   const getMapImage = (story: string) => {
     switch (story) {
-      case 'modern': return '/map/town_map_night.png';
+      case 'modern': return '/map/town_map_night.webp';
       case 'cyberpunk': return '/map/cyberpunk_map_night.webp';
-      case 'china': return '/map/china_night.png';
-      case 'winter': return '/map/winter_night.jpg';
+      case 'china': return '/map/china_night.webp';
+      case 'winter': return '/map/winter_night.webp';
       case 'medieval':
-      default: return '/map/village_map.png';
+      default: return '/map/village_map.webp';
     }
   };
 

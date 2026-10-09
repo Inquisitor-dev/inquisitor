@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
+import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
+import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import {
   getNpcDialoguePortrait,
   getNpcDialogueGreeting,
@@ -138,6 +140,8 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     setDialoguesUsed,
     sessionId,
     setCurrentDay,
+    currentDay,
+    timeOfDay,
     notes,
     setNotes,
     authToken,
@@ -186,7 +190,23 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   };
 
   const portraitUrl = getNpcDialoguePortrait(scenario, actualNpcKey);
-  const hasInterior = Boolean(getInterior(scenario, actualNpcKey));
+  const interior = getInterior(scenario, actualNpcKey);
+  const hasInterior = Boolean(interior);
+
+  // Portre yüklenene kadar geçiş ekranı kalır (önbellekteyse hiç açılmaz)
+  useLayoutEffect(() => {
+    void revealScene([portraitUrl], {
+      kicker: 'Sorgu başlıyor',
+      title: profile.name,
+      subtitle: profile.title,
+      image: portraitUrl,
+    });
+  }, [portraitUrl, profile.name, profile.title]);
+
+  const goToMap = () => showScene(mapScene(scenarioType, timeOfDay, currentDay));
+  const goToInterior = () => {
+    if (interior) showScene(interiorScene(interior));
+  };
 
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -573,20 +593,21 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
             <Link
               href={`/interior/${actualNpcKey}`}
               className={`${styles.backBtn} ${styles.interiorBackBtn}`}
+              onClick={goToInterior}
               title="Mekânın içini 360° incele"
             >
               <Compass size={15} />
               <span>Mekâna Dön (360°)</span>
             </Link>
           ) : (
-            <Link href="/map" className={styles.backBtn}>
+            <Link href="/map" className={styles.backBtn} onClick={goToMap}>
               <ArrowLeft size={15} />
               <span>Haritaya Dön</span>
             </Link>
           )}
 
           {hasInterior && (
-            <Link href="/map" className={styles.backBtn} style={{ opacity: 0.8 }}>
+            <Link href="/map" className={styles.backBtn} style={{ opacity: 0.8 }} onClick={goToMap}>
               <span>Harita</span>
             </Link>
           )}

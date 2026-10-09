@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,6 +11,9 @@ import {
 } from '@/config/interiorConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
+import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
+import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
+import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import styles from './InteriorViewer.module.scss';
 
 // Sürüklerken görselin kenarı en fazla bu kadar aşılabilir (lastik efekti)
@@ -87,7 +90,23 @@ function InteriorScene({
   scenarioInteriors: LocationInteriorData[];
 }) {
   const router = useRouter();
-  const { sessionId, authToken, notes, setNotes, inventory } = useGameStore();
+  const { sessionId, authToken, notes, setNotes, inventory, scenarioType, timeOfDay, currentDay } = useGameStore();
+
+  // Mekân görseli yüklenene kadar geçiş ekranı kalır
+  useLayoutEffect(() => {
+    void revealScene([locationData.backgroundImage], interiorScene(locationData));
+  }, [locationData]);
+
+  const goToMap = () => showScene(mapScene(scenarioType, timeOfDay, currentDay));
+  const goToInterrogation = () => {
+    if (!locationData.npcId) return;
+    showScene({
+      kicker: 'Sorgu başlıyor',
+      title: locationData.npcName ?? locationData.name,
+      subtitle: locationData.name,
+      image: getNpcDialoguePortrait(locationData.scenarioType, locationData.npcId),
+    });
+  };
 
   // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
   const isSearchSpot = (hotspot: InteriorHotspot) => hotspot.category === 'clue' && !hotspot.clueSnippet;
@@ -485,7 +504,7 @@ function InteriorScene({
       {/* ─── ÜST BAŞLIK & NAVİGASYON ─── */}
       <header className={styles.topHud}>
         <div className={styles.hudGroup}>
-          <Link href="/map" className={styles.backBtn}>
+          <Link href="/map" className={styles.backBtn} onClick={goToMap}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -495,7 +514,11 @@ function InteriorScene({
           <select
             className={styles.locationDropdown}
             value={locationId}
-            onChange={(e) => router.push(`/interior/${e.target.value}`)}
+            onChange={(e) => {
+              const target = scenarioInteriors.find((interior) => interior.id === e.target.value);
+              if (target) showScene(interiorScene(target));
+              router.push(`/interior/${e.target.value}`);
+            }}
           >
             {scenarioInteriors.map((interior) => (
               <option key={interior.id} value={interior.id}>
@@ -513,7 +536,7 @@ function InteriorScene({
 
         <div className={styles.hudGroup}>
           {locationData.npcId && (
-            <Link href={`/interact/${locationData.npcId}`} className={styles.actionBtn}>
+            <Link href={`/interact/${locationData.npcId}`} className={styles.actionBtn} onClick={goToInterrogation}>
               <span>🗣️</span>
               {locationData.npcName} ile Sorgu
             </Link>

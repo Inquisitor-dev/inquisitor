@@ -18,7 +18,15 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // public/ altındaki oyun görselleri: bir gün önbellekte kalır, sonra arka planda tazelenir.
+    // Dosya adları sabit olduğu için daha uzun (immutable) önbellek güncellemeleri geciktirirdi.
+    const assetCache = {
+      key: "Cache-Control",
+      value: "public, max-age=86400, stale-while-revalidate=604800",
+    };
+    const assetDirs = ["map", "backgrounds", "dialogue", "characters", "stories", "avatars"];
     return [
+      ...assetDirs.map((dir) => ({ source: `/${dir}/:file+`, headers: [assetCache] })),
       {
         source: "/map",
         headers: [
