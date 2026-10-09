@@ -519,7 +519,7 @@ const getLocationLabel = (locationId: string, scenarioType: string) => {
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, reset, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
+  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
   // Envanter'de sadece fiziksel kanıtlar görünür; karakter ifadeleri Not defterindedir
   const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
 
@@ -536,7 +536,7 @@ export default function MapPage() {
           : scenarioType === 'winter'
             ? winterLocations
             : locations;
-  const visibleLocations = baseLocations.filter((loc: any) => {
+  const visibleLocations = baseLocations.filter((loc: { minDifficulty?: string }) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
   });
@@ -617,12 +617,15 @@ export default function MapPage() {
     message: '',
     onConfirm: () => {},
   });
-  const [localNotes, setLocalNotes] = useState('');
+  const [localNotes, setLocalNotes] = useState(notes);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  useEffect(() => {
+  // Sunucudan gelen notlar (ör. yeni ifade) yerel taslağın üzerine yazılır
+  const [syncedNotes, setSyncedNotes] = useState(notes);
+  if (notes !== syncedNotes) {
+    setSyncedNotes(notes);
     setLocalNotes(notes);
-  }, [notes]);
+  }
 
   useEffect(() => {
     if (hasHydrated && !authToken) {
@@ -649,7 +652,7 @@ export default function MapPage() {
             const evidenceData = await evidenceRes.json();
             setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
           }
-        } catch(e) {}
+        } catch {}
       }
     };
     if (hasHydrated) fetchSession();

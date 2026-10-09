@@ -152,13 +152,13 @@ export default function CommunityPage() {
   const [includeSystemSpecs, setIncludeSystemSpecs] = useState(true);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  // Giriş yapılmışsa yazar adını kullanıcı adından / e-postadan doldur
-  useEffect(() => {
-    const preferredName = username || (userEmail ? userEmail.split('@')[0] : '');
-    if (preferredName && !form.authorName) {
-      setForm((prev) => ({ ...prev, authorName: preferredName }));
-    }
-  }, [username, userEmail]);
+  // Giriş yapılmışsa yazar adını kullanıcı adından / e-postadan doldur (ad değişince bir kez)
+  const preferredName = username || (userEmail ? userEmail.split('@')[0] : '');
+  const [prefilledName, setPrefilledName] = useState('');
+  if (preferredName && preferredName !== prefilledName) {
+    setPrefilledName(preferredName);
+    if (!form.authorName) setForm((prev) => ({ ...prev, authorName: preferredName }));
+  }
 
   // Açılışta tarayıcıdaki taslağı yükle
   useEffect(() => {
@@ -167,6 +167,7 @@ export default function CommunityPage() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.title || parsed.prologueHook) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- taslak localStorage'da; sunucu render'ıyla uyuşsun diye mount sonrası okunur
           setForm(parsed);
         }
       }

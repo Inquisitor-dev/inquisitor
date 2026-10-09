@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -43,6 +43,19 @@ const subscribeFullscreen = (onChange: () => void) => {
   document.addEventListener('fullscreenchange', onChange);
   return () => document.removeEventListener('fullscreenchange', onChange);
 };
+
+// GET /game-sessions/active yanıtındaki oturum (yalnızca devam etmek için gereken alanlar)
+interface ActiveSession {
+  id: string;
+  scenarioType?: string;
+  scenario?: string;
+  currentDay?: number;
+  timeOfDay?: number;
+  notes?: string;
+  difficulty?: string;
+  activeWarrants?: string[];
+  usedWarrants?: string[];
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -93,7 +106,7 @@ export default function HomePage() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeSession, setActiveSession] = useState<any>(null);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   
   // Seçili aktif oyun parametreleri
@@ -313,11 +326,12 @@ export default function HomePage() {
     if (hasHydrated && authToken) {
       void checkActiveSession();
     } else if (hasHydrated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- oturum bilgisi persist edilen store'dan hidrasyon sonrası gelir
       setCheckingSession(false);
     }
   }, [authToken, hasHydrated]);
 
-  const fetchAccountSummary = async () => {
+  const fetchAccountSummary = useCallback(async () => {
     if (!authToken) return;
 
     try {
@@ -334,18 +348,21 @@ export default function HomePage() {
     } catch (err) {
       console.error('Failed to load account summary', err);
     }
-  };
+  }, [authToken, setProfile]);
 
   useEffect(() => {
     if (hasHydrated && authToken) {
+      // Ayarlar açılınca da güncel hesap bilgisi çekilir
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- istek sonucu geldiğinde state güncellenir
       void fetchAccountSummary();
     }
-  }, [authToken, hasHydrated, isSettingsOpen]);
+  }, [authToken, hasHydrated, isSettingsOpen, fetchAccountSummary]);
 
   useEffect(() => {
     if (isSettingsOpen) {
       const effUser = accountSummary?.username ?? username ?? '';
       const effAv = accountSummary?.avatar ?? avatar ?? 'avatar_1';
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- ayarlar her açılışta ve hesap bilgisi gelince forma doldurulur
       setEditUsername(effUser);
       setEditAvatar(effAv);
       setProfileMsg(null);

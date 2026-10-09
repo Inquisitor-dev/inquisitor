@@ -152,7 +152,6 @@ export default function WardrobePage() {
                   className={styles.turntable}
                 />
               ) : preview ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={outfitThumb(preview.id)} alt={preview.name} className={styles.stillPreview} />
               ) : null}
               <span className={styles.pedestal} />
@@ -198,7 +197,6 @@ export default function WardrobePage() {
                     aria-pressed={previewId === outfit.id}
                   >
                     <span className={styles.tileImage}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={outfitThumb(outfit.id)} alt="" loading="lazy" />
                     </span>
                     <span className={styles.tileName}>{outfit.name}</span>

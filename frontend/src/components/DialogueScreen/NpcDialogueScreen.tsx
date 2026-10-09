@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
 import {
   getNpcDialoguePortrait,
-  getNpcDialogueSuggestedQuestions,
   getNpcDialogueGreeting,
 } from '@/config/dialogueConfig';
 import {
   HeartPulse,
   Hand,
-  ScrollText,
   Search,
   MessageSquare,
   Compass,
@@ -130,7 +128,7 @@ export interface NpcDialogueScreenProps {
   onClose?: () => void;
 }
 
-export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreenProps) {
+export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const router = useRouter();
   const {
     scenarioType,
@@ -175,6 +173,7 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const q = new URLSearchParams(window.location.search).get('scenario');
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- URL yalnızca tarayıcıda okunabilir; sunucu render'ıyla uyuşsun diye mount sonrası
       if (q) setUrlScenario(q);
     }
   }, []);
@@ -194,7 +193,7 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
   const [input, setInput] = useState('');
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [localNotes, setLocalNotes] = useState('');
+  const [localNotes, setLocalNotes] = useState(notes);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
   const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
@@ -219,7 +218,6 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(actualNpcKey);
 
   const items = evidence.filter((e) => e.category === 'ITEM');
-  const statements = evidence.filter((e) => e.category === 'STATEMENT');
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
 
   const evidenceSource = (item: EvidenceItem) =>
@@ -233,6 +231,7 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
     const params = new URLSearchParams(window.location.search);
     if (params.get('ara') !== '1') return;
     window.history.replaceState(null, '', window.location.pathname);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ?ara=1 parametresi yalnızca tarayıcıda okunabilir
     if (canInvestigate) setIsInvestigating(true);
     else setToast('Bu mekânı araştırmak için önce arama izni almalısın.');
   }, [hasHydrated, canInvestigate]);
@@ -243,9 +242,12 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
     return () => clearTimeout(timer);
   }, [toast]);
 
-  useEffect(() => {
+  // Sunucudan gelen notlar (ör. yeni ifade) yerel taslağın üzerine yazılır
+  const [syncedNotes, setSyncedNotes] = useState(notes);
+  if (notes !== syncedNotes) {
+    setSyncedNotes(notes);
     setLocalNotes(notes);
-  }, [notes]);
+  }
 
   useEffect(() => {
     if (hasHydrated && !authToken && process.env.NODE_ENV === 'production') {
@@ -291,7 +293,7 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
         const data = await res.json();
 
         if (data.history && data.history.length > 0) {
-          const formatted = data.history.map((h: any) => ({
+          const formatted = data.history.map((h: { role: Message['role']; text: string; timestamp: string }) => ({
             role: h.role,
             text: h.text,
             timestamp: new Date(h.timestamp),
@@ -360,7 +362,7 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
     };
 
     fetchHistory();
-  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, setEvidence, authToken, isInvestigating, scenario, npcKey]);
+  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, setEvidence, authToken, isInvestigating, scenario, npcKey, actualNpcKey]);
 
   const applyTurnResult = (data: {
     newEvidence?: EvidenceItem[];
@@ -628,7 +630,6 @@ export default function NpcDialogueScreen({ npcKey, onClose }: NpcDialogueScreen
         <div className={styles.portraitWindow}>
           {/* Çerçeveli Karakter Portresi */}
           <div className={styles.portraitCanvas}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={portraitUrl}
               alt={profile.name}
