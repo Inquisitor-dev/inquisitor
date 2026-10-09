@@ -52,6 +52,9 @@ model GameSession {
   activeWarrants String[]         @default([]) // Aktif arama izinleri
   usedWarrants   String[]         @default([]) // Kullanılmış arama izinleri
   warrantsIssued Int               @default(0)  // Toplam alınan izin sayısı
+  boardState     Json?                          // Soruşturma Panosu: kartlar, konumlar ve ipler (src/board/board.ts)
+  boardThought   String?           @db.Text     // Panoda son "Düşün"ün iç ses metni
+  boardThoughtDay Int              @default(0)  // Son "Düşün"ün günü; günde bir kez düşünülür
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]

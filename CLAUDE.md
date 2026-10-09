@@ -61,6 +61,12 @@ Run each in its own directory.
   - `fear.ts`: **fear is driven by code**. Showing evidence raises `SessionNpcState.currentFear` (own location clue +7, so it always breaks an innocent; implicating evidence +3, irrelevant or repeated 0, max 10, −1 each night). At the threshold (7) an innocent is forced to confess and the confession is recorded by code; the culprit only panics and never confesses. Starting fear is `startingFear(baseFear)` (0–4).
   - `prompt-guard.ts` answers prompt-injection attempts in character without calling the LLM, and replaces replies that leak prompt section headers.
   - Its `foldTurkish` makes text matching diacritic-insensitive (used for warrant requests).
+- `board/` — the **investigation board** (`GET`/`PUT /game-sessions/:id/board`, `POST /game-sessions/:id/board/think`).
+  - The board (cards, positions, strings) is stored on `GameSession.boardState`. `sanitizeBoard` drops cards for evidence the player has not found or suspects not in the case, and clients can never write a string's verdict.
+  - String types depend on the two ends: suspect–evidence `CLEARS`/`IMPLICATES`, evidence–evidence `SUPPORTS`/`CONTRADICTS`, anything else `LINK` (not judged).
+  - "Düşün" (think) judges strings in code against `caseFacts` (`judgeBoard`). A string only confirms what its two cards themselves say; for example, a planted crime-scene clue is exposed only when it is linked to the verifying evidence. The judgments never name the culprit.
+  - The verdicts are then turned into the detective's inner monologue: Gemini writes it (`generateBoardThought`, which receives only the verdicts), test mode returns a `[Test Düşüncesi]` template.
+  - Thinking is allowed once per in-game day (`boardThoughtDay`); if there is nothing to judge, the day's use is not spent.
 - `llm/` — single `LlmService` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`).
   - `createCompletion` walks a model fallback chain (`GEMINI_MODELS` env, comma-separated), with retries on 404/429/5xx/connection errors.
   - Generates both NPC replies and the per-session scenario (story, truth reveal, per-NPC secret prompts, per-location clues), then runs a consistency-reconciliation pass.
@@ -92,9 +98,13 @@ Run each in its own directory.
     - Hotspot positions are percentages of the image.
     - A `clue` hotspot without `clueSnippet` is a search spot: it checks the warrant and links to `/interact/<id>?ara=1`, which opens investigation mode.
   - **Player home** (`/home`, `components/PlayerHome`, `config/homeConfig.ts`) replaces the map's "Evim" popup in universes that have a home image (all five so far; a universe without one keeps the popup).
-    - Objects in the room open the old popup's actions: bed (end day; on the last day it opens the verdict picker via `/map?hukum=1`), desk (notes), chest (inventory), board (investigation board, "coming soon") and door (back to the map).
+    - Objects in the room open the old popup's actions: bed (end day; on the last day it opens the verdict picker via `/map?hukum=1`), desk (notes), chest (inventory), board (opens the investigation board) and door (back to the map).
     - The equipped wardrobe character stands in the room, drawn from one frame of its 360° turntable sheet.
     - It shares the drag/pan and particle hooks with interiors (`InteriorViewer/useScenePan.ts`, `useAmbientParticles.ts`).
+  - **Investigation board** (`/board`, `components/InvestigationBoard`) opens from the home's board.
+    - The player pins suspects, found evidence and their own notes from the drawer, then drags from a pin to another card to stretch a string and chooses its meaning.
+    - The board autosaves. "Düşün" shows the inner monologue, seals correct strings and stamps AKLANDI on a suspect cleared by a correct `CLEARS` string.
+    - The board's material follows the universe (`data-theme`). On phones it is wider than the screen and scrolls sideways.
   - Pages are under `src/app/` (`menu`, `map`, `interior/[locationId]`, `interact/[npcId]`, `crime-scene`, `result`, `market`, `community`, …).
   - Shared SCSS variables are in `src/styles/_variables.scss`; import them with `@use '../../styles/variables' as *;`.
   - The **market** is client-only for now. Its catalog is in `market/marketItems.ts`, and the token balance and owned items are in `useMarketStore` (localStorage). The EUR token packs are visual only.

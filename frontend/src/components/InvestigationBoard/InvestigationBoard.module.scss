@@ -1,0 +1,982 @@
+@use '../../styles/variables' as *;
+
+$card-width: 150px;
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0806;
+  color: $text-muted;
+  font-family: $font-body;
+}
+
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0a0806;
+  color: $text-parchment;
+  overflow: hidden;
+  user-select: none;
+}
+
+// ─── ÜST ÇUBUK ─────────────────────────────────────────────────────────────
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(to bottom, rgba(5, 5, 5, 0.95), rgba(5, 5, 5, 0.75));
+  border-bottom: 1px solid rgba(232, 220, 196, 0.12);
+  z-index: 5;
+}
+
+.backBtn {
+  justify-self: start;
+  padding: 8px 16px;
+  border-radius: $radius-sm;
+  background: rgba(18, 18, 18, 0.85);
+  border: 1px solid rgba(232, 220, 196, 0.2);
+  color: $text-parchment;
+  font-family: $font-body;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba(138, 3, 3, 0.35);
+    border-color: $text-parchment;
+  }
+}
+
+.titleBlock {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: $font-title;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-family: $font-body;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.headerActions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saveStatus {
+  font-family: $font-body;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.saveError {
+  color: #e57373;
+}
+
+// ─── KULLANIM İPUCU ────────────────────────────────────────────────────────
+.helpBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 220, 196, 0.3);
+  background: rgba(18, 18, 18, 0.85);
+  color: #e0bb5e;
+  font-family: $font-title;
+  font-size: 15px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #e0bb5e;
+  }
+}
+
+.helpOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.helpCard {
+  width: min(520px, 100%);
+  padding: 26px 26px 22px;
+  border-radius: 10px;
+  background: #1a1512;
+  border: 1px solid rgba(224, 187, 94, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+.helpTitle {
+  margin: 0 0 14px;
+  font-family: $font-title;
+  font-size: 22px;
+}
+
+.helpSteps {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  text-align: left;
+  font-family: $font-body;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c9bfaf;
+
+  li + li {
+    margin-top: 10px;
+  }
+
+  strong {
+    color: $text-parchment;
+  }
+
+  em {
+    color: #e0bb5e;
+    font-style: normal;
+  }
+}
+
+// ─── DÜŞÜN VE İÇ SES ───────────────────────────────────────────────────────
+.thinkBtn {
+  padding: 8px 18px;
+  border-radius: $radius-sm;
+  border: 1px solid #e0bb5e;
+  background: linear-gradient(to bottom, #8a0303, #5e0202);
+  color: #f4e7c8;
+  font-family: $font-title;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(138, 3, 3, 0.45);
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 0 24px rgba(224, 187, 94, 0.45);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+    box-shadow: none;
+    background: rgba(40, 30, 24, 0.9);
+    border-color: rgba(232, 220, 196, 0.25);
+  }
+}
+
+.lastThoughtBtn {
+  padding: 7px 12px;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(232, 220, 196, 0.25);
+  background: rgba(18, 18, 18, 0.85);
+  color: $text-parchment;
+  font-family: $font-body;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #e0bb5e;
+  }
+}
+
+.thinkError {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-radius: $radius-sm;
+  background: rgba(60, 10, 8, 0.95);
+  border: 1px solid #8a0303;
+  font-family: $font-body;
+  font-size: 13px;
+}
+
+.thoughtPanel {
+  position: fixed;
+  left: 28px;
+  bottom: 150px;
+  z-index: 30;
+  display: flex;
+  gap: 14px;
+  width: min(560px, calc(100vw - 56px));
+  padding: 16px 40px 16px 16px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, rgba(24, 18, 14, 0.97), rgba(14, 10, 8, 0.97));
+  border: 1px solid rgba(224, 187, 94, 0.45);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(138, 3, 3, 0.25);
+  animation: thoughtIn 0.45s ease-out;
+}
+
+@keyframes thoughtIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.thoughtFace {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: #2a1f18;
+  background-size: cover;
+  background-position: center 20%;
+  border: 2px solid rgba(224, 187, 94, 0.55);
+}
+
+.thoughtBody {
+  min-width: 0;
+}
+
+.thoughtKicker {
+  display: block;
+  margin-bottom: 4px;
+  font-family: $font-title;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #e0bb5e;
+}
+
+.thoughtText {
+  margin: 0;
+  font-family: $font-title;
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.55;
+  color: $text-parchment;
+  user-select: text;
+}
+
+.thoughtClose {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: $text-muted;
+  font-size: 18px;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+// ─── PANO ──────────────────────────────────────────────────────────────────
+.boardWrap {
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
+  // Panonun ahşap çerçevesi
+  background: radial-gradient(ellipse at center, #1a120c 0%, #070504 100%);
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  border: 10px solid #3b2617;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), 0 10px 40px rgba(0, 0, 0, 0.8);
+  // Mantar doku
+  background-color: #9b6b3f;
+  background-image:
+    radial-gradient(rgba(60, 35, 15, 0.35) 1px, transparent 1.5px),
+    radial-gradient(rgba(240, 200, 150, 0.18) 1px, transparent 1.5px),
+    radial-gradient(ellipse at 30% 20%, rgba(255, 220, 170, 0.12), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.25), transparent 65%);
+  background-size: 7px 7px, 11px 11px, 100% 100%, 100% 100%;
+  background-position: 0 0, 3px 4px, 0 0, 0 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+// ─── EVRENE GÖRE PANO ──────────────────────────────────────────────────────
+// Varsayılan (Millfield): mantar. Diğer evrenler kendi malzemesini kullanır.
+
+// Ashenmoor: koyu meşe tahtalar
+.board[data-theme='medieval'] {
+  border-color: #24160d;
+  background-color: #5b3a22;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 120px),
+    repeating-linear-gradient(90deg, rgba(255, 220, 170, 0.05) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 23px),
+    radial-gradient(ellipse at 30% 20%, rgba(255, 190, 120, 0.12), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.3), transparent 65%);
+  background-size: auto;
+  background-position: 0 0;
+}
+
+// Neon Prime: delikli metal panel, kenarda neon
+.board[data-theme='cyberpunk'] {
+  border-color: #23272f;
+  background-color: #1a1e25;
+  background-image:
+    radial-gradient(circle, rgba(0, 0, 0, 0.75) 2px, transparent 2.6px),
+    radial-gradient(circle, rgba(120, 200, 255, 0.08) 2.6px, transparent 3.2px),
+    radial-gradient(ellipse at 20% 15%, rgba(255, 40, 170, 0.14), transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(0, 220, 255, 0.12), transparent 55%);
+  background-size: 14px 14px, 14px 14px, 100% 100%, 100% 100%;
+  background-position: 0 0, 1px 1px, 0 0, 0 0;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.7), 0 0 18px rgba(0, 220, 255, 0.25), 0 10px 40px rgba(0, 0, 0, 0.8);
+
+  .emptyHint {
+    color: rgba(180, 220, 255, 0.55);
+  }
+}
+
+// Jinling: pirinç kâğıdı üstünde koyu ahşap kafes, kırmızı lake çerçeve
+.board[data-theme='china'] {
+  border-color: #5a1a10;
+  background-color: #e9dcbc;
+  background-image:
+    linear-gradient(rgba(70, 35, 20, 0.55) 3px, transparent 3px),
+    linear-gradient(90deg, rgba(70, 35, 20, 0.55) 3px, transparent 3px),
+    radial-gradient(ellipse at 50% 40%, rgba(255, 220, 160, 0.35), transparent 70%),
+    radial-gradient(ellipse at 80% 90%, rgba(60, 30, 15, 0.25), transparent 60%);
+  background-size: 56px 56px, 56px 56px, 100% 100%, 100% 100%;
+  background-position: -2px -2px, -2px -2px, 0 0, 0 0;
+}
+
+// Frosthold: kalın, eskimiş tahtalar ve kenarlarda kırağı
+.board[data-theme='winter'] {
+  border-color: #2e2620;
+  background-color: #6a5847;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0 3px, transparent 3px 96px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 11px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(220, 235, 255, 0.28) 100%),
+    radial-gradient(ellipse at 30% 25%, rgba(255, 180, 110, 0.12), transparent 60%);
+  background-size: auto;
+  background-position: 0 0;
+}
+
+.emptyHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  font-family: $font-title;
+  font-size: 18px;
+  color: rgba(40, 22, 10, 0.75);
+  pointer-events: none;
+}
+
+// ─── İPLER ─────────────────────────────────────────────────────────────────
+// İpler kartların üstünden, raptiyeden raptiyeye geçer
+.strings {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.stringGroup {
+  pointer-events: auto;
+  cursor: pointer;
+
+  // Üzerine gelinen ip parlar: tıklanabilir olduğu belli olsun
+  &:hover .string,
+  &.stringEditing .string {
+    stroke-width: 4.4;
+    filter: drop-shadow(0 0 6px rgba(255, 230, 160, 0.85)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+  }
+
+  &:hover .stringKnot,
+  &.stringEditing .stringKnot {
+    stroke: #f4e7c8;
+    stroke-width: 2;
+  }
+}
+
+// Kararsız ipin düğümü ve kalemi: fare ipin üzerine gelince belirir (dokunmatik ekranda hep görünür)
+.knotIdle {
+  opacity: 0;
+  transition: opacity $transition-fast;
+
+  .stringGroup:hover &,
+  .stringEditing & {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+.stringMenuNote {
+  margin: 8px 0 0;
+  max-width: 240px;
+  font-family: $font-body;
+  font-size: 12px;
+  line-height: 1.45;
+  color: $text-muted;
+}
+
+// Düğümün etrafındaki görünmez, daha geniş tıklama alanı (telefonda kolay dokunulsun)
+.knotHit {
+  fill: transparent;
+}
+
+.stringEdit {
+  fill: rgba(255, 255, 255, 0.9);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+// Tıklamayı kolaylaştıran görünmez kalın çizgi
+.stringHit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+}
+
+.string {
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+}
+
+.stringCorrect {
+  stroke-width: 3.6;
+}
+
+.stringWrong {
+  stroke-dasharray: 6 5;
+  opacity: 0.7;
+}
+
+.stringDraft {
+  stroke: #8a0303;
+  stroke-dasharray: 4 4;
+}
+
+.stringKnot {
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1;
+}
+
+.stringMark {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.stringMenu {
+  position: absolute;
+  z-index: 20;
+  transform: translateX(-50%);
+  min-width: 220px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(14, 11, 9, 0.96);
+  border: 1px solid rgba(224, 187, 94, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+}
+
+.stringMenuTitle {
+  display: block;
+  margin-bottom: 8px;
+  font-family: $font-title;
+  font-size: 13px;
+  color: #e0bb5e;
+}
+
+.stringMenuTypes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: $radius-sm;
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.03);
+  color: $text-parchment;
+  font-family: $font-body;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.typeBtnActive {
+  background: rgba(224, 187, 94, 0.12);
+}
+
+.typeDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stringMenuFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: $text-muted;
+  font-family: $font-body;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+// ─── KARTLAR ───────────────────────────────────────────────────────────────
+// Kart, raptiyesinin olduğu noktadan aşağı sarkar
+.card {
+  position: absolute;
+  z-index: 4;
+  width: $card-width;
+  transform: translate(-50%, -12px);
+  cursor: grab;
+  touch-action: none;
+
+  &:hover .removeBtn {
+    opacity: 1;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.cardPending > :not(.removeBtn) {
+  outline: 2px solid #e0bb5e;
+  outline-offset: 3px;
+}
+
+.cardTarget {
+  cursor: crosshair;
+}
+
+// Raptiye, kartın asıldığı noktada durur (kartlardan ve iplerden ayrı, en üst katman)
+.pin {
+  position: absolute;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff6b5b 0%, #b3170b 45%, #5a0904 100%);
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.55);
+  cursor: crosshair;
+  padding: 0;
+
+  touch-action: none;
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+.pinActive {
+  box-shadow: 0 0 0 4px rgba(224, 187, 94, 0.55), 0 3px 4px rgba(0, 0, 0, 0.55);
+}
+
+.removeBtn {
+  position: absolute;
+  right: -8px;
+  top: 6px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: rgba(20, 15, 12, 0.9);
+  color: $text-parchment;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity $transition-fast;
+
+  @media (hover: none) {
+    opacity: 0.85;
+  }
+}
+
+.polaroid {
+  position: relative;
+  padding: 8px 8px 10px;
+  background: #f4efe4;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  color: #2b2118;
+  transform: rotate(-1.5deg);
+}
+
+.evidenceCard {
+  transform: rotate(1.2deg);
+}
+
+.photo {
+  height: 110px;
+  background-color: #3a2c22;
+  background-size: cover;
+  background-position: center 30%;
+  filter: sepia(0.25) contrast(1.05);
+}
+
+.photoEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  filter: none;
+}
+
+.caption {
+  display: block;
+  margin-top: 6px;
+  font-family: $font-title;
+  font-size: 14px;
+  text-align: center;
+}
+
+.subCaption {
+  display: block;
+  font-family: $font-body;
+  font-size: 11px;
+  text-align: center;
+  color: #6b5a4a;
+}
+
+.stamp {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  padding: 2px 10px;
+  border: 3px double #2f7a3a;
+  border-radius: 4px;
+  color: #2f7a3a;
+  font-family: $font-title;
+  font-size: 18px;
+  letter-spacing: 2px;
+  background: rgba(244, 239, 228, 0.6);
+}
+
+.evidenceKind {
+  display: block;
+  margin-top: 6px;
+  font-family: $font-title;
+  font-size: 12px;
+  color: #8a0303;
+}
+
+.evidenceText {
+  margin: 3px 0 0;
+  font-family: $font-body;
+  font-size: 11px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardFooter {
+  display: block;
+  margin-top: 4px;
+  font-family: $font-body;
+  font-size: 10px;
+  color: #7d6b59;
+  text-align: right;
+}
+
+// İfade ve itiraf: sararmış kâğıt
+.paperCard {
+  padding: 22px 12px 10px;
+  background: linear-gradient(to bottom, #efe2c2, #e2cfa4);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  color: #2b2118;
+  transform: rotate(-0.8deg);
+}
+
+.paperHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paperPortrait {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center 25%;
+  border: 2px solid rgba(43, 33, 24, 0.5);
+}
+
+.paperKind {
+  display: block;
+  font-family: $font-title;
+  font-size: 12px;
+  color: #8a0303;
+}
+
+.paperSpeaker {
+  display: block;
+  font-family: $font-body;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.paperText {
+  margin: 8px 0 0;
+  font-family: $font-body;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Oyuncunun notu: yapışkan not
+.stickyNote {
+  padding: 22px 10px 8px;
+  background: #f3d86a;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  transform: rotate(2deg);
+}
+
+.noteInput {
+  width: 100%;
+  min-height: 80px;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  color: #3a2a10;
+  font-family: $font-body;
+  font-size: 12px;
+  line-height: 1.4;
+  user-select: text;
+
+  &::placeholder {
+    color: rgba(58, 42, 16, 0.5);
+  }
+}
+
+// ─── DOSYA ÇEKMECESİ ───────────────────────────────────────────────────────
+.drawer {
+  position: relative;
+  z-index: 6;
+  background: linear-gradient(to bottom, #1d1510, #120d0a);
+  border-top: 1px solid rgba(224, 187, 94, 0.25);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.drawerToggle {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -100%);
+  padding: 5px 16px;
+  border: 1px solid rgba(224, 187, 94, 0.25);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #1d1510;
+  color: #e0bb5e;
+  font-family: $font-title;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.drawerItems {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  overflow-x: auto;
+}
+
+.drawerItem {
+  flex: 0 0 auto;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(232, 220, 196, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: $text-parchment;
+  cursor: pointer;
+  text-align: center;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: #e0bb5e;
+    background: rgba(224, 187, 94, 0.08);
+  }
+}
+
+.drawerNote {
+  border-style: dashed;
+}
+
+.drawerThumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: #3a2c22;
+  background-size: cover;
+  background-position: center 25%;
+  border: 2px solid rgba(232, 220, 196, 0.25);
+}
+
+.drawerIcon {
+  font-size: 26px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+}
+
+.drawerLabel {
+  font-family: $font-title;
+  font-size: 12px;
+}
+
+.drawerSub {
+  width: 100%;
+  font-family: $font-body;
+  font-size: 10px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawerEmpty {
+  padding: 18px 8px;
+  font-family: $font-body;
+  font-size: 13px;
+  color: $text-muted;
+}
+
+// ─── TELEFON ───────────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .header {
+    grid-template-columns: auto 1fr;
+    padding: 10px 12px;
+  }
+
+  .saveStatus,
+  .lastThoughtBtn {
+    display: none;
+  }
+
+  .thinkBtn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .header {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .thoughtPanel {
+    left: 12px;
+    right: 12px;
+    bottom: 130px;
+    width: auto;
+  }
+
+  .thoughtText {
+    font-size: 14px;
+  }
+
+  .title {
+    font-size: 17px;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  // Dar ekranda pano ekrandan geniştir ve yana kaydırılır: kartların yerleşimi her cihazda aynı kalır
+  .boardWrap {
+    padding: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .board {
+    min-width: 760px;
+    border-width: 6px;
+    // Boş yere dokunup kaydırınca pano kayar; kartlar ve raptiyeler kendi sürüklemesini yapar
+    touch-action: pan-x;
+  }
+
+  .card {
+    width: 128px;
+  }
+
+  .photo {
+    height: 88px;
+  }
+
+  .caption {
+    font-size: 12px;
+  }
+
+  .evidenceText,
+  .paperText {
+    font-size: 10px;
+    -webkit-line-clamp: 3;
+  }
+
+  .drawerItem {
+    width: 104px;
+  }
+}
