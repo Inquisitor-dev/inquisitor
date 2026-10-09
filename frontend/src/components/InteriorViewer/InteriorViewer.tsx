@@ -9,9 +9,9 @@ import {
   InteriorHotspot,
   LocationInteriorData,
 } from '@/config/interiorConfig';
+import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
-import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import styles from './InteriorViewer.module.scss';
@@ -269,8 +269,17 @@ function InteriorScene({
 
         <div className={styles.hudGroup}>
           {locationData.npcId && (
-            <Link href={`/interact/${locationData.npcId}`} className={styles.actionBtn} onClick={goToInterrogation}>
-              <span>🗣️</span>
+            <Link
+              href={`/interact/${locationData.npcId}`}
+              className={styles.actionBtn}
+              onClick={goToInterrogation}
+            >
+              <img
+                src={getNpcDialoguePortrait(locationData.scenarioType, locationData.npcId)}
+                alt={locationData.npcName}
+                className={styles.hudNpcAvatar}
+                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+              />
               {locationData.npcName} ile Sorgu
             </Link>
           )}
@@ -301,7 +310,18 @@ function InteriorScene({
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardTitleWrapper}>
-                <div className={styles.cardIcon}>{activeHotspot.icon}</div>
+                <div className={styles.cardIcon}>
+                  {activeHotspot.category === 'npc' && locationData.npcId ? (
+                    <img
+                      src={getNpcDialoguePortrait(locationData.scenarioType, locationData.npcId)}
+                      alt={activeHotspot.title}
+                      className={styles.modalNpcAvatar}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    />
+                  ) : (
+                    activeHotspot.icon
+                  )}
+                </div>
                 <div>
                   <div className={styles.cardCategory}>
                     {activeHotspot.category === 'npc'
