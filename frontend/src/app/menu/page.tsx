@@ -299,6 +299,8 @@ export default function HomePage() {
           headers: { Authorization: `Bearer ${authToken}` },
           cache: 'no-store',
         });
+        // Backend kapalıyken/yeniden başlarken proxy düz metin 500 döner; JSON okumaya çalışma
+        if (!res.ok) return;
         const data = await res.json();
         setActiveSession(data.session ?? null);
       } catch (err) {
@@ -323,12 +325,11 @@ export default function HomePage() {
         headers: { Authorization: `Bearer ${authToken}` },
         cache: 'no-store',
       });
+      if (!res.ok) return;
       const data = await res.json();
-      if (res.ok) {
-        setAccountSummary(data);
-        if (data.username || data.avatar) {
-          setProfile(data.username ?? null, data.avatar || 'avatar_1');
-        }
+      setAccountSummary(data);
+      if (data.username || data.avatar) {
+        setProfile(data.username ?? null, data.avatar || 'avatar_1');
       }
     } catch (err) {
       console.error('Failed to load account summary', err);
