@@ -12,7 +12,6 @@ import {
 import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { useGameStore } from '@/store/useGameStore';
 import { apiUrl } from '@/config/api';
-import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import styles from './InteriorViewer.module.scss';
