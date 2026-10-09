@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { CasePlan } from '../scenarios/case-setup';
+import type { ThoughtLine } from '../board/board';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -445,5 +446,46 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
       verificationText: reviewed.verificationText || draft.verificationText,
       alibis: { ...(draft.alibis ?? {}), ...(reviewed.alibis ?? {}) },
     };
+  }
+
+  // Soruşturma Panosu "Düşün": kodun verdiği kararları dedektifin iç sesiyle anlatır.
+  // Yapay zekâya sadece oyuncunun iplerine verilen kararlar gider; katil ya da başka vaka bilgisi gitmez.
+  // Hata olursa null döner, çağıran şablon metne düşer.
+  async generateBoardThought(
+    lines: ThoughtLine[],
+    scenarioType: string,
+  ): Promise<string | null> {
+    const setting = getScenarioConfig(scenarioType).settingLabel;
+    const facts = lines
+      .map(
+        (l, i) =>
+          `${i + 1}. "${l.a}" ↔ "${l.b}" (oyuncunun iddiası: ${l.relation}) → ${l.verdict === 'CORRECT' ? 'DOĞRU' : 'YANLIŞ'}`,
+      )
+      .join('\n');
+    const prompt = `You are the inner voice of the detective investigating a murder in this setting: ${setting}.
+The detective just looked at their investigation board. Each red string is a claim the detective made, and the game engine has already judged it:
+${facts}
+
+Write the detective's inner monologue in Turkish (first person, informal, 2 to 5 sentences, no lists, no headings).
+- Mention every judged claim above: say plainly that the correct ones hold up and that the wrong ones were a mistake, using the names and evidence as given.
+- Example tone: "Hancının ifadesi olay yeriyle örtüşüyor ancak sanırım bulduğum kolyeyi onunla bağdaştırmam hatalıydı."
+- Do NOT invent new facts, do NOT name or hint at a culprit, do NOT say what the correct link would be.
+- Use correct Turkish spelling with all special characters.
+Return only the monologue text.`;
+
+    try {
+      const response = await this.createCompletion(
+        { messages: [{ role: 'user', content: prompt }], temperature: 0.6 },
+        'Board thought',
+        30_000,
+      );
+      const text = (response?.choices?.[0]?.message?.content || '').trim();
+      return text || null;
+    } catch (error) {
+      this.logger.warn(
+        `Board thought failed, falling back to template. ${error}`,
+      );
+      return null;
+    }
   }
 }

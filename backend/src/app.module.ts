@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { GameSessionsModule } from './game-sessions/game-sessions.module';
+import { BoardModule } from './board/board.module';
 import { NpcsModule } from './npcs/npcs.module';
 import { LlmModule } from './llm/llm.module';
 import { MarketModule } from './market/market.module';
@@ -22,6 +23,7 @@ import { APP_GUARD } from '@nestjs/core';
     UsersModule, 
     AuthModule, 
     GameSessionsModule, 
+    BoardModule,
     NpcsModule, 
     LlmModule,
     MarketModule,
