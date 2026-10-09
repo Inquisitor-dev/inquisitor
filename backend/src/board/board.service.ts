@@ -68,6 +68,8 @@ export class BoardService {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
     return {
       board: parseStoredBoard(session.boardState) ?? EMPTY_BOARD,
+      // Vakadaki şüpheliler (zorluğa göre sayıları değişir); panonun çekmecesinde görünür
+      suspects: this.suspectIds(session),
       thought: session.boardThought,
       canThink: this.canThink(session),
     };
