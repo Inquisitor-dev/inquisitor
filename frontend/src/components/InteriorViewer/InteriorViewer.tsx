@@ -67,7 +67,15 @@ export default function InteriorViewer({ locationId }: InteriorViewerProps) {
 
 // Bilinen başlangıç en-boy oranı (ilk render anında layout shift'i engeller)
 function getKnownAspectRatio(url: string): number {
-  if (url.includes('cyberpunk') || url.includes('china') || url.includes('winter') || url.includes('modern')) return 3168 / 1344;
+  if (
+    url.includes('cyberpunk') ||
+    url.includes('china') ||
+    url.includes('winter') ||
+    url.includes('modern') ||
+    url.includes('medieval')
+  ) {
+    return 3168 / 1344;
+  }
   if (url.includes('graveyard')) return 2816 / 1536;
   return 1376 / 768;
 }
