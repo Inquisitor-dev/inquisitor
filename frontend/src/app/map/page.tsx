@@ -2,9 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
+import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
+import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
+import { hideScene, revealScene, showScene } from '@/components/SceneTransition/sceneStore';
+import { interiorScene } from '@/components/SceneTransition/scenes';
 import { useGameStore } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
@@ -19,7 +23,6 @@ import MapCharacter from './MapCharacter';
 import { getRoadNetwork, findPath, distance, expandPath, type Point, type RoadNetwork } from './roads';
 import { smoothPath, createRoute, directionWithHysteresis } from './walkPath';
 
-const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
 
 // Medieval köy konumları
 const locations = [
@@ -627,6 +630,16 @@ export default function MapPage() {
     setLocalNotes(notes);
   }
 
+  // Harita görseli yüklenene kadar geçiş ekranı kalır (görsel önbellekteyse hiç açılmaz)
+  useLayoutEffect(() => {
+    if (!hasHydrated) return;
+    void revealScene([getMapBackground(scenarioType, timeOfDay)], {
+      kicker: `${TIME_LABELS[timeOfDay] ?? ''} · Gün ${currentDay}`,
+      title: getMapName(scenarioType),
+      image: getMapBackground(scenarioType, timeOfDay),
+    });
+  }, [hasHydrated, scenarioType, timeOfDay, currentDay]);
+
   useEffect(() => {
     if (hasHydrated && !authToken) {
       router.push('/');
@@ -714,6 +727,17 @@ export default function MapPage() {
   const handleLocationClick = async (locId: string) => {
     if (!sessionId || timeOfDay >= 4) return;
     setLoadingLoc(locId);
+    // Geçiş ekranı hemen açılır; sunucu cevabı ve mekân görseli beklenirken oyuncu nereye girdiğini görür
+    const interior = getInterior(scenarioType, locId);
+    showScene(
+      interior
+        ? interiorScene(interior)
+        : {
+            kicker: 'Giriyorsun',
+            title: getLocationLabel(locId, scenarioType),
+            image: getNpcDialoguePortrait(scenarioType, locId),
+          },
+    );
     try {
       await fetch(apiUrl(`/game-sessions/${sessionId}/advance-time`), {
         method: 'POST',
@@ -721,9 +745,10 @@ export default function MapPage() {
       });
       advanceTime();
       // İç görünümü hazırlanmış mekânlarda oyuncuyu önce mekânın içi karşılar
-      router.push(getInterior(scenarioType, locId) ? `/interior/${locId}` : `/interact/${locId}`);
+      router.push(interior ? `/interior/${locId}` : `/interact/${locId}`);
     } catch (err) {
       console.error('Failed to advance time', err);
+      hideScene();
       setLoadingLoc(null);
     }
   };
@@ -948,31 +973,7 @@ export default function MapPage() {
 
   const isNight = timeOfDay >= 4;
   
-  const getMapBg = () => {
-    if (scenarioType === 'modern') {
-      if (timeOfDay <= 1) return '/map/town_map_morning.png';
-      if (timeOfDay <= 3) return '/map/town_map_sunset.png';
-      return '/map/town_map_night.png';
-    }
-    if (scenarioType === 'cyberpunk') {
-      if (timeOfDay <= 1) return '/map/cyberpunk_map_morning.webp';
-      if (timeOfDay <= 3) return '/map/cyberpunk_map_sunset.webp';
-      return '/map/cyberpunk_map_night.webp';
-    }
-    if (scenarioType === 'china') {
-      if (timeOfDay <= 1) return '/map/china_morning.png';
-      if (timeOfDay <= 3) return '/map/china_sunset.png';
-      return '/map/china_night.png';
-    }
-    if (scenarioType === 'winter') {
-      if (timeOfDay <= 1) return '/map/winter_morning.jpg';
-      if (timeOfDay <= 3) return '/map/winter_sunset.jpg';
-      return '/map/winter_night.jpg';
-    }
-    if (timeOfDay <= 1) return '/map/village_map_morning.png';
-    if (timeOfDay <= 3) return '/map/village_map_sunset.png';
-    return '/map/village_map.png';
-  };
+  const getMapBg = () => getMapBackground(scenarioType, timeOfDay);
 
   const renderPlayer = (x: number, y: number, depthScale = 1) =>
     character && (
