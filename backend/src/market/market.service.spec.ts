@@ -249,6 +249,33 @@ describe('MarketService', () => {
       expect(result.ownedItemIds).toContain('outfit_sis_dedektifi');
       expect(result.ownedItemIds).not.toContain('outfit_dedektif');
     });
+
+    it('katalogdan çıkarılmış karakterleri envanterde göstermez, satın alınmasına izin vermez', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'a@test.com',
+        tokenBalance: 5000,
+        score: 0,
+        isAdmin: false,
+      });
+      mockPrisma.userPurchase.findMany.mockResolvedValue([
+        { itemId: 'outfit_kizil_yemin', category: 'outfit', createdAt: new Date() },
+        { itemId: 'outfit_china_girl', category: 'outfit', createdAt: new Date() },
+        { itemId: 'outfit_sis_dedektifi', category: 'outfit', createdAt: new Date() },
+      ]);
+      mockPrisma.tokenTransaction.findMany.mockResolvedValue([]);
+
+      const result = await service.getBalanceAndInventory('user-1');
+
+      expect(result.ownedItemIds).toContain('outfit_sis_dedektifi');
+      expect(result.ownedItemIds).not.toContain('outfit_kizil_yemin');
+      expect(result.ownedItemIds).not.toContain('outfit_china_girl');
+      expect(result.ownedItemIds).not.toContain('outfit_jinling_golgesi');
+
+      await expect(service.purchaseItem('user-1', 'outfit_kizil_lotus')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('awardCaseReward', () => {

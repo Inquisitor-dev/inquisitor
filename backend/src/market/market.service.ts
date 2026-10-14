@@ -30,6 +30,17 @@ export class MarketService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Varsayılan + satın alınan eşya id'leri. Katalogdan çıkarılmış eşyalar elenir (DB satırı silinmez). */
+  private ownedIdsFrom(purchases: { itemId: string }[]): string[] {
+    const defaultOwnedIds = MARKET_ITEMS_CATALOG.filter((i) => i.ownedByDefault).map(
+      (i) => i.id,
+    );
+    const purchasedIds = purchases
+      .map((p) => canonicalItemId(p.itemId))
+      .filter((id) => findMarketItem(id));
+    return Array.from(new Set([...defaultOwnedIds, ...purchasedIds]));
+  }
+
   /**
    * Kullanıcının token bakiyesi, sahip olduğu eşyalar ve işlem geçmişini döner.
    */
@@ -54,14 +65,6 @@ export class MarketService {
       select: { itemId: true, category: true, createdAt: true },
     });
 
-    const defaultOwnedIds = MARKET_ITEMS_CATALOG.filter((i) => i.ownedByDefault).map(
-      (i) => i.id,
-    );
-    const ownedSet = new Set([
-      ...defaultOwnedIds,
-      ...purchases.map((p) => canonicalItemId(p.itemId)),
-    ]);
-
     // Son 30 token hareketi (ledger)
     const ledger = await this.prisma.tokenTransaction.findMany({
       where: { userId },
@@ -83,7 +86,7 @@ export class MarketService {
       tokenBalance: user.tokenBalance,
       score: user.score,
       isAdmin: user.isAdmin,
-      ownedItemIds: Array.from(ownedSet),
+      ownedItemIds: this.ownedIdsFrom(purchases),
       ledger,
     };
   }
@@ -166,9 +169,6 @@ export class MarketService {
         where: { userId },
         select: { itemId: true },
       });
-      const defaultOwnedIds = MARKET_ITEMS_CATALOG.filter((i) => i.ownedByDefault).map(
-        (i) => i.id,
-      );
 
       this.logger.log(`User ${userId} purchased ${itemId} for ${item.price} tokens. New balance: ${newBalance}`);
 
@@ -176,12 +176,7 @@ export class MarketService {
         success: true,
         tokenBalance: newBalance,
         purchasedItem: item,
-        ownedItemIds: Array.from(
-          new Set([
-            ...defaultOwnedIds,
-            ...allPurchases.map((p) => canonicalItemId(p.itemId)),
-          ]),
-        ),
+        ownedItemIds: this.ownedIdsFrom(allPurchases),
       };
     });
   }
