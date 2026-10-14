@@ -1,0 +1,94 @@
+import type { StateCreator } from 'zustand';
+
+// Kanıt Defteri kaydı. ITEM: mekânda bulunan fiziksel nesne (Envanter),
+// STATEMENT: bir karakterin ifadesi (Not defterine otomatik yazılır)
+export interface EvidenceItem {
+  id: string;
+  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION';
+  category: 'ITEM' | 'STATEMENT';
+  sourceId: string;
+  text: string;
+  dayNumber: number;
+}
+
+export interface AuthSlice {
+  userEmail: string | null;
+  userId: string | null;
+  authToken: string | null;
+  username: string | null;
+  avatar: string;
+  isAdmin: boolean;
+  isPremium: boolean;
+  hasHydrated: boolean;
+
+  setUser: (
+    email: string,
+    userId: string,
+    token: string,
+    isAdmin: boolean,
+    isPremium?: boolean,
+    username?: string | null,
+    avatar?: string,
+  ) => void;
+  setProfile: (username: string | null, avatar: string) => void;
+  setIsPremium: (val: boolean) => void;
+  setHasHydrated: (val: boolean) => void;
+  logout: () => void;
+}
+
+export interface SessionSlice {
+  sessionId: string | null;
+  difficulty: string;
+  scenarioType: string;
+  selectedNpcId: string | null;
+  npcStates: Record<string, { fear: number; lie: number }>;
+  dialoguesUsedToday: number;
+  maxDailyDialogues: number;
+  currentDay: number;
+  timeOfDay: number;
+  notes: string;
+  scenario: string | null;
+
+  setSessionId: (id: string) => void;
+  setDifficulty: (d: string) => void;
+  setScenarioType: (s: string) => void;
+  setSelectedNpc: (npcId: string) => void;
+  updateNpcState: (npcId: string, fear: number, lie: number) => void;
+  incrementDialogue: () => void;
+  setDialoguesUsed: (count: number) => void;
+  setCurrentDay: (day: number) => void;
+  setTimeOfDay: (time: number) => void;
+  setNotes: (notes: string) => void;
+  setScenario: (scenario: string) => void;
+  advanceTime: () => void;
+  endDay: () => void;
+  reset: () => void;
+}
+
+export interface InventorySlice {
+  inventory: {
+    activeWarrants: string[];
+    usedWarrants: string[];
+  };
+
+  setWarrants: (active: string[], used: string[]) => void;
+  addWarrant: (warrant: string) => void;
+  consumeWarrant: (location: string) => void;
+}
+
+export interface EvidenceSlice {
+  evidence: EvidenceItem[];
+  truthReveal: string | null;
+  locationClues: Record<string, string> | null;
+  lastLocationId: string | null;
+
+  setEvidence: (items: EvidenceItem[]) => void;
+  addEvidence: (items: EvidenceItem[]) => void;
+  setTruthReveal: (truth: string | null) => void;
+  setLocationClues: (clues: Record<string, string> | null) => void;
+  setLastLocationId: (id: string | null) => void;
+}
+
+export type GameState = AuthSlice & SessionSlice & InventorySlice & EvidenceSlice;
+
+export type GameSliceCreator<T> = StateCreator<GameState, [], [], T>;

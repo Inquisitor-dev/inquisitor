@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { outfitThumb, wearableOutfitId } from '@/config/outfits';
@@ -24,6 +25,11 @@ import {
   type BoardStringType,
 } from './boardModel';
 import styles from './InvestigationBoard.module.scss';
+import BoardHelpModal from './components/BoardHelpModal/BoardHelpModal';
+import BoardThoughtPanel from './components/BoardThoughtPanel/BoardThoughtPanel';
+import StringContextMenu from './components/StringContextMenu/StringContextMenu';
+import BoardDrawer from './components/BoardDrawer/BoardDrawer';
+
 
 // Kayıt, son değişiklikten bu kadar sonra yapılır (sürüklerken her karede istek atılmasın)
 const SAVE_DELAY_MS = 700;
@@ -87,33 +93,36 @@ export default function InvestigationBoard() {
 
   // Pano, şüpheliler ve kanıtlar sunucudan yüklenir
   useEffect(() => {
-    if (!sessionId || !authToken) return;
-    const headers = { Authorization: `Bearer ${authToken}` };
+    if (!sessionId) return;
     (async () => {
       try {
-        const [boardRes, evidenceRes] = await Promise.all([
-          fetch(apiUrl(`/game-sessions/${sessionId}/board`), { headers }),
-          fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), { headers }),
+        const [boardData, evidenceData] = await Promise.all([
+          api.get<{
+            board?: BoardState;
+            suspects?: string[];
+            canThink?: boolean;
+            thought?: string | null;
+          }>(`/game-sessions/${sessionId}/board`),
+          api.get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`),
         ]);
-        if (evidenceRes.ok) {
-          const data = await evidenceRes.json();
-          setEvidence(Array.isArray(data.evidence) ? data.evidence : []);
+
+        if (evidenceData?.evidence) {
+          setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
         }
-        if (boardRes.ok) {
-          const data = await boardRes.json();
-          setBoard(data.board ?? { cards: [], strings: [] });
-          setSuspectIds(Array.isArray(data.suspects) ? data.suspects : []);
-          setCanThink(Boolean(data.canThink));
-          setThought(typeof data.thought === 'string' ? data.thought : null);
+        if (boardData) {
+          setBoard(boardData.board ?? { cards: [], strings: [] });
+          setSuspectIds(Array.isArray(boardData.suspects) ? boardData.suspects : []);
+          setCanThink(Boolean(boardData.canThink));
+          setThought(typeof boardData.thought === 'string' ? boardData.thought : null);
           if (!readHelpSeen()) setHelpOpen(true);
         }
       } catch (err) {
-        console.error('Failed to load board', err);
+        logger.error('Failed to load board', err);
       } finally {
         setLoaded(true);
       }
     })();
-  }, [sessionId, authToken, setEvidence]);
+  }, [sessionId, setEvidence]);
 
   // Panonun ekrandaki boyutu: iplerin çizimi piksel cinsinden yapılır
   useEffect(() => {
@@ -128,23 +137,19 @@ export default function InvestigationBoard() {
 
   // Değişiklikler gecikmeli kaydedilir
   useEffect(() => {
-    if (!dirtyRef.current || !sessionId || !authToken) return;
+    if (!dirtyRef.current || !sessionId) return;
     const timer = setTimeout(async () => {
       dirtyRef.current = false;
       setSaveStatus('saving');
       try {
-        const res = await fetch(apiUrl(`/game-sessions/${sessionId}/board`), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ board }),
-        });
-        setSaveStatus(res.ok ? 'saved' : 'error');
+        await api.put(`/game-sessions/${sessionId}/board`, { board });
+        setSaveStatus('saved');
       } catch {
         setSaveStatus('error');
       }
     }, SAVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [board, sessionId, authToken]);
+  }, [board, sessionId]);
 
   const update = useCallback((fn: (prev: BoardState) => BoardState) => {
     dirtyRef.current = true;
@@ -316,7 +321,8 @@ export default function InvestigationBoard() {
     return { d: `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`, mid: { x: cx, y: (a.y + b.y) / 2 + Math.min(60, len * 0.12) / 2 } };
   };
 
-  const editing = editingString ? board.strings.find((s) => s.id === editingString) : null;
+  const editing = editingString ? (board.strings.find((s) => s.id === editingString) ?? null) : null;
+
   const editingTypes = editing
     ? allowedStringTypes(cardById.get(editing.from)?.kind ?? 'note', cardById.get(editing.to)?.kind ?? 'note')
     : [];
@@ -411,22 +417,19 @@ export default function InvestigationBoard() {
     setEditingString(null);
     setPendingFrom(null);
     try {
-      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/board/think`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ board }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setThinkError(data?.message ?? 'Şu an düşünemiyorsun. Birazdan tekrar dene.');
-        return;
-      }
+      const data = await api.post<{
+        board: BoardState;
+        thought: string;
+        canThink?: boolean;
+      }>(`/game-sessions/${sessionId}/board/think`, { board });
+
       setBoard(data.board);
       setThought(data.thought);
       setCanThink(Boolean(data.canThink));
       setThoughtOpen(true);
-    } catch {
-      setThinkError('Şu an düşünemiyorsun. Birazdan tekrar dene.');
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Şu an düşünemiyorsun. Birazdan tekrar dene.';
+      setThinkError(msg);
     } finally {
       setThinking(false);
     }
@@ -488,33 +491,7 @@ export default function InvestigationBoard() {
         </div>
       </header>
 
-      {helpOpen && (
-        <div className={styles.helpOverlay} onClick={closeHelp}>
-          <div className={styles.helpCard} onClick={(e) => e.stopPropagation()}>
-            <h2 className={styles.helpTitle}>Soruşturma Panosu</h2>
-            <ol className={styles.helpSteps}>
-              <li>
-                <strong>Kartları as.</strong>{' '}Alttaki dosyadan bir şüpheliye, kanıta ya da &ldquo;Not Ekle&rdquo;ye
-                tıkla; kart panoya asılır. Kartı sürükleyerek yerini değiştir.
-              </li>
-              <li>
-                <strong>İp çek.</strong>{' '}Bir kartın kırmızı raptiyesini başka bir karta sürükle (telefonda önce
-                raptiyeye, sonra karta dokun). Sonra ipin anlamını seç: bir kanıt bir şüpheliyi{' '}
-                <em>aklıyor</em> ya da <em>suçluyor</em>, iki kanıt birbirini <em>doğruluyor</em> ya da{' '}
-                <em>çelişiyor</em>. Fikrini değiştirirsen ipin ortasındaki düğüme tıklayıp anlamını (rengini)
-                değiştirebilir ya da ipi koparabilirsin.
-              </li>
-              <li>
-                <strong>Düşün.</strong>{' '}Günde bir kez panona bakıp düşünebilirsin. İç sesin hangi iplerin
-                tuttuğunu söyler: doğru ipler mühürlenir, aklanan şüpheliye damga basılır.
-              </li>
-            </ol>
-            <button type="button" className={styles.thinkBtn} onClick={closeHelp}>
-              Anladım
-            </button>
-          </div>
-        </div>
-      )}
+      <BoardHelpModal isOpen={helpOpen} onClose={closeHelp} />
 
       {thinkError && (
         <div className={styles.thinkError} role="alert">
@@ -525,18 +502,13 @@ export default function InvestigationBoard() {
         </div>
       )}
 
-      {thought && thoughtOpen && (
-        <aside className={styles.thoughtPanel} aria-live="polite">
-          {thinkerThumb && <span className={styles.thoughtFace} style={{ backgroundImage: `url(${thinkerThumb})` }} />}
-          <div className={styles.thoughtBody}>
-            <span className={styles.thoughtKicker}>İç Ses</span>
-            <p className={styles.thoughtText}>{thought}</p>
-          </div>
-          <button type="button" className={styles.thoughtClose} onClick={() => setThoughtOpen(false)} aria-label="Kapat">
-            ×
-          </button>
-        </aside>
-      )}
+      <BoardThoughtPanel
+        thought={thought}
+        isOpen={thoughtOpen}
+        onClose={() => setThoughtOpen(false)}
+        thinkerThumb={thinkerThumb}
+      />
+
 
       <div className={styles.boardWrap}>
         <div
@@ -627,79 +599,26 @@ export default function InvestigationBoard() {
             </div>
           )}
 
-          {editing && editingMid && (
-            <div
-              className={styles.stringMenu}
-              style={{ left: Math.min(Math.max(editingMid.x, 120), boardSize.w - 120), top: Math.min(editingMid.y + 14, boardSize.h - 60) }}
-            >
-              <span className={styles.stringMenuTitle}>İpin anlamı</span>
-              <div className={styles.stringMenuTypes}>
-                {editingTypes.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`${styles.typeBtn} ${editing.type === type ? styles.typeBtnActive : ''}`}
-                    style={{ borderColor: STRING_TYPE_INFO[type].color }}
-                    title={STRING_TYPE_INFO[type].hint}
-                    onClick={() => setStringType(editing.id, type)}
-                  >
-                    <span className={styles.typeDot} style={{ background: STRING_TYPE_INFO[type].color }} />
-                    {STRING_TYPE_INFO[type].label}
-                  </button>
-                ))}
-              </div>
-              {editingTypes.length === 1 && (
-                <p className={styles.stringMenuNote}>
-                  Bu ip Düşün&apos;de değerlendirilmez. Renkli ip için bir şüpheliyi bir kanıta ya da iki kanıtı
-                  birbirine bağla.
-                </p>
-              )}
-              <div className={styles.stringMenuFooter}>
-                <button type="button" className={styles.linkBtn} onClick={() => removeString(editing.id)}>
-                  İpi kopar
-                </button>
-                <button type="button" className={styles.linkBtn} onClick={() => setEditingString(null)}>
-                  Tamam
-                </button>
-              </div>
-            </div>
-          )}
+          <StringContextMenu
+            editing={editing}
+            editingMid={editingMid}
+            editingTypes={editingTypes}
+            boardSize={boardSize}
+            onSetType={setStringType}
+            onRemove={removeString}
+            onClose={() => setEditingString(null)}
+          />
         </div>
       </div>
 
-      <section className={`${styles.drawer} ${drawerOpen ? '' : styles.drawerClosed}`}>
-        <button type="button" className={styles.drawerToggle} onClick={() => setDrawerOpen((v) => !v)}>
-          {drawerOpen ? 'Dosyayı Kapat ▾' : `Dosyayı Aç ▴ (${drawerSuspects.length + drawerEvidence.length})`}
-        </button>
-        {drawerOpen && (
-          <div className={styles.drawerItems}>
-            <button type="button" className={`${styles.drawerItem} ${styles.drawerNote}`} onClick={() => pinCard({ kind: 'note', text: '' })}>
-              <span className={styles.drawerIcon}>📝</span>
-              <span className={styles.drawerLabel}>Not Ekle</span>
-            </button>
-            {drawerSuspects.map((id) => {
-              const info = suspectInfo(scenario, id);
-              return (
-                <button key={id} type="button" className={styles.drawerItem} onClick={() => pinCard({ kind: 'suspect', refId: id })}>
-                  <span className={styles.drawerThumb} style={{ backgroundImage: info.portrait || undefined }} />
-                  <span className={styles.drawerLabel}>{info.name}</span>
-                  <span className={styles.drawerSub}>Şüpheli</span>
-                </button>
-              );
-            })}
-            {drawerEvidence.map((item) => (
-              <button key={item.id} type="button" className={styles.drawerItem} onClick={() => pinCard({ kind: 'evidence', refId: item.id })}>
-                <span className={styles.drawerIcon}>{item.category === 'STATEMENT' ? '🗣️' : '🔎'}</span>
-                <span className={styles.drawerLabel}>{evidenceTitle(scenario, item)}</span>
-                <span className={styles.drawerSub}>{item.text}</span>
-              </button>
-            ))}
-            {drawerSuspects.length === 0 && drawerEvidence.length === 0 && (
-              <span className={styles.drawerEmpty}>Dosyadaki her şey panoda. Yeni kanıt buldukça burada görünecek.</span>
-            )}
-          </div>
-        )}
-      </section>
+      <BoardDrawer
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+        drawerSuspects={drawerSuspects}
+        drawerEvidence={drawerEvidence}
+        scenario={scenario}
+        onPinCard={pinCard}
+      />
     </div>
   );
 }

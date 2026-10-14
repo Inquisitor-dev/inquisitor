@@ -3,7 +3,6 @@
 import { useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
 import { getInterior } from '@/config/interiorConfig';
 import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
@@ -11,6 +10,12 @@ import {
   getNpcDialoguePortrait,
   getNpcDialogueGreeting,
 } from '@/config/dialogueConfig';
+import { getNpcProfile } from '@/config/npcProfiles';
+import { getLocationLabel } from '@/config/locationLabels';
+import NotebookModal from '@/components/CaseModals/NotebookModal';
+import InventoryModal from '@/components/CaseModals/InventoryModal';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import {
   HeartPulse,
   Hand,
@@ -24,6 +29,10 @@ import {
   Scale,
 } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
+import { resolveNpcAlias } from './npcAliases';
+import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
+import ConfrontModal from './components/ConfrontModal/ConfrontModal';
+import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
 import styles from './NpcDialogueScreen.module.scss';
 
 type FearBand = 'CALM' | 'UNEASY' | 'NERVOUS' | 'PANIC';
@@ -35,131 +44,7 @@ const FEAR_LABELS: Record<FearBand, string> = {
   PANIC: 'Paniğe kapıldı',
 };
 
-interface Message {
-  role: 'player' | 'npc';
-  text: string;
-  timestamp: Date;
-}
-
-const getNpcProfile = (npcKey: string, scenarioType: string) => {
-  if (scenarioType === 'china') {
-    const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Lin Feng', title: 'Çay Ustası — Altın Lotus Çay Evi', icon: '🍵' },
-      church: { name: 'Komutan Zhao', title: 'Muhafız Amiri — İmparatorluk Garnizonu', icon: '🏯' },
-      graveyard: { name: 'Keşiş Huikang', title: 'Kadim Tapınak Bilgesi', icon: '⛩️' },
-      mill: { name: 'Usta Guan', title: 'Silah Ustası — Demirci Ocağı', icon: '⚒️' },
-      farm: { name: 'Mei Teyze', title: 'Balıkçı ve İskele Gözcüsü', icon: '🎣' },
-      clinic: { name: 'Bilgin Song', title: 'Saray Eczacısı ve Hekim', icon: '🌿' },
-      crime_scene: { name: 'Pazar Meydanı', title: 'Sessiz Tanıklar...', icon: '🩸' },
-    };
-    return profiles[npcKey];
-  } else if (scenarioType === 'cyberpunk') {
-    const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Officer Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
-      church: { name: 'Mirel Sato', title: 'Lokanta Sahibi — Static Spoon', icon: '🍜' },
-      graveyard: { name: 'Brakk Coil', title: 'Siber Cerrah — Neon Prime Kliniği', icon: '🏥' },
-      mill: { name: 'AURA-9', title: 'Usta Android — AURA Tamirhanesi', icon: '🛠️' },
-      farm: { name: 'Ash', title: 'Sokak Muhbiri — Gece Pazarı', icon: '🏮' },
-      clinic: { name: 'Vera Nyx', title: 'Barmen — Velvet Static Bar', icon: '🍸' },
-      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
-    };
-    return profiles[npcKey];
-  } else if (scenarioType === 'winter') {
-    const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Torstein', title: 'Hancı — Ocak Ateşi Hanı', icon: '🔥' },
-      church: { name: 'Kahin Valda', title: 'Kutsal Yürek Ağacının Bekçisi', icon: '🍁' },
-      graveyard: { name: 'Komutan Bjorn', title: 'Kale Muhafızı — Gözcü Kalesi', icon: '🏰' },
-      mill: { name: 'Madenci Durn', title: 'Terk Edilmiş Madenin Ustabaşısı', icon: '⛏️' },
-      farm: { name: 'Einar', title: 'Sur Nöbetçisi ve Okçu', icon: '🛡️' },
-      clinic: { name: 'Muhafız Kenneth', title: 'İnfaz ve Yargı Meydanı Çavuşu', icon: '⚔️' },
-      crime_scene: { name: 'Buzlu Geçit', title: 'Sessiz Tanıklar...', icon: '🩸' },
-    };
-    return profiles[npcKey];
-  } else if (scenarioType === 'modern') {
-    const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
-      church: { name: 'Gerald', title: 'Otel İşletmecisi — Millfield Oteli', icon: '🏨' },
-      graveyard: { name: 'Randy Kowalski', title: 'Video Oyuncusu — Pixel Arcade Salonu', icon: '🎮' },
-      mill: { name: 'Donna Perkins', title: 'Lokantacı — The Maple Cafe & Diner', icon: '🍽️' },
-      farm: { name: 'Earl Hutchins', title: 'Pompacı — Petrol İstasyonunun Bekçisi', icon: '⛽' },
-      clinic: { name: 'David', title: "Barmen — David's Bar", icon: '🍺' },
-      crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
-    };
-    return profiles[npcKey];
-  } else {
-    const profiles: Record<string, { name: string; title: string; icon: string }> = {
-      tavern: { name: 'Kardeş Aldric', title: 'Hancı — Sırların Bekçisi', icon: '🍺' },
-      church: { name: 'Peder Malachar', title: 'Rahip — İki Efendinin Hizmetkârı', icon: '⛪' },
-      graveyard: { name: 'İhtiyar Silas', title: 'Mezarcı — Gerçeği Gömüp Saklayan', icon: '🪦' },
-      mill: { name: 'Değirmenci Giles', title: 'Değirmenci — Rüzgârın Sırdaşı', icon: '⚙️' },
-      farm: { name: 'Çiftçi Edmund', title: 'Çiftçi — Toprağın ve Karanlığın Tanığı', icon: '🌾' },
-      clinic: { name: 'Doktor Harland', title: 'Hekim — Soğuk Ellerin ve Gözlerin Sahibi', icon: '🏥' },
-      crime_scene: { name: 'Cinayet Mahalli', title: 'Sessiz Tanıklar...', icon: '🩸' },
-    };
-    return profiles[npcKey];
-  }
-};
-
-const getLocationLabel = (locationId: string, scenarioType: string) => {
-  if (scenarioType === 'modern') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      church: 'Hotel',
-      graveyard: 'Video Oyuncusu',
-      mill: 'Lokanta',
-      farm: 'Petrol İstasyonu',
-      clinic: 'Bar',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-  if (scenarioType === 'china') {
-    const labels: Record<string, string> = {
-      tavern: 'Çay Evi & Han',
-      church: 'Muhafız Karargahı',
-      graveyard: 'Kadim Tapınak',
-      mill: 'Demirci Ocağı',
-      farm: 'Balıkçı İskelesi',
-      clinic: 'Şifacı & Baharatçı',
-      crime_scene: 'Pazar Meydanı',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-  if (scenarioType === 'cyberpunk') {
-    const labels: Record<string, string> = {
-      tavern: 'Karakol',
-      church: 'Lokanta',
-      graveyard: 'Klinik',
-      mill: 'Tamirhane',
-      farm: 'Sokak Pazarı',
-      clinic: 'Bar',
-      crime_scene: 'Olay Yeri',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-  if (scenarioType === 'winter') {
-    const labels: Record<string, string> = {
-      tavern: 'Kış Hanı',
-      church: 'Kutsal Yürek Ağacı',
-      graveyard: 'Gözcü Kalesi',
-      mill: 'Terk Edilmiş Maden',
-      farm: 'Sur',
-      clinic: 'İnfaz Meydanı',
-      crime_scene: 'Buzlu Geçit',
-    };
-    return labels[locationId] ?? locationId.toUpperCase();
-  }
-  const labels: Record<string, string> = {
-    tavern: 'Taverna',
-    church: 'Kilise',
-    graveyard: 'Mezarlık',
-    mill: 'Değirmen',
-    farm: 'Çiftlik',
-    clinic: 'Revir',
-    crime_scene: 'Cinayet Mahalli',
-  };
-  return labels[locationId] ?? locationId.toUpperCase();
-};
+type Message = DialogueMessage;
 
 export interface NpcDialogueScreenProps {
   npcKey: string;
@@ -178,7 +63,6 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     setCurrentDay,
     currentDay,
     timeOfDay,
-    notes,
     setNotes,
     authToken,
     inventory,
@@ -190,64 +74,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     hasHydrated,
   } = useGameStore();
 
-  // Çin ve diğer evrenler için doğrudan isimle çağrılan NPC anahtar eşleştirmeleri
-  const CHINA_NPC_ALIASES: Record<string, string> = {
-    lin_feng: 'tavern',
-    zhao: 'church',
-    komutan_zhao: 'church',
-    huikang: 'graveyard',
-    kesis_huikang: 'graveyard',
-    keşiş_huikang: 'graveyard',
-    guan: 'mill',
-    usta_guan: 'mill',
-    song: 'clinic',
-    bilgin_song: 'clinic',
-    mei: 'farm',
-    mei_teyze: 'farm',
-  };
-
-  const CYBERPUNK_NPC_ALIASES: Record<string, string> = {
-    kael: 'tavern',
-    kael_voss: 'tavern',
-    voss: 'tavern',
-    mirel: 'church',
-    mirel_sato: 'church',
-    sato: 'church',
-    brakk: 'graveyard',
-    brakk_coil: 'graveyard',
-    coil: 'graveyard',
-    aura: 'mill',
-    'aura-9': 'mill',
-    aura9: 'mill',
-    ash: 'farm',
-    vera: 'clinic',
-    vera_nyx: 'clinic',
-    nyx: 'clinic',
-  };
-
-  const WINTER_NPC_ALIASES: Record<string, string> = {
-    torstein: 'tavern',
-    valda: 'church',
-    kahin_valda: 'church',
-    kâhin_valda: 'church',
-    bjorn: 'graveyard',
-    komutan_bjorn: 'graveyard',
-    durn: 'mill',
-    madenci_durn: 'mill',
-    einar: 'farm',
-    kenneth: 'clinic',
-    muhafiz_kenneth: 'clinic',
-    muhafız_kenneth: 'clinic',
-  };
-
-  const isExplicitChinaNpc = Boolean(CHINA_NPC_ALIASES[npcKey]);
-  const isExplicitCyberpunkNpc = Boolean(CYBERPUNK_NPC_ALIASES[npcKey]);
-  const isExplicitWinterNpc = Boolean(WINTER_NPC_ALIASES[npcKey]);
-  const actualNpcKey =
-    CHINA_NPC_ALIASES[npcKey] ||
-    CYBERPUNK_NPC_ALIASES[npcKey] ||
-    WINTER_NPC_ALIASES[npcKey] ||
-    npcKey;
+  const { actualNpcKey, inferredScenario } = resolveNpcAlias(npcKey);
   const [urlScenario, setUrlScenario] = useState<string | null>(null);
 
   useEffect(() => {
@@ -258,13 +85,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   }, []);
 
-  const scenario = isExplicitChinaNpc
-    ? 'china'
-    : isExplicitCyberpunkNpc
-    ? 'cyberpunk'
-    : isExplicitWinterNpc
-    ? 'winter'
-    : (urlScenario || scenarioType || 'medieval');
+  const scenario = inferredScenario || urlScenario || scenarioType || 'medieval';
   const profile = getNpcProfile(actualNpcKey, scenario) ?? {
     name: 'Meçhul Köylü',
     title: 'Gölgelerin arasından bir yabancı',
@@ -295,7 +116,6 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [input, setInput] = useState('');
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [localNotes, setLocalNotes] = useState(notes);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
   const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
@@ -319,7 +139,6 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const currentNpcKey = isInvestigating ? `narrator_${actualNpcKey}` : actualNpcKey;
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(actualNpcKey);
 
-  const items = evidence.filter((e) => e.category === 'ITEM');
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
 
   const evidenceSource = (item: EvidenceItem) =>
@@ -343,13 +162,6 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     const timer = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(timer);
   }, [toast]);
-
-  // Sunucudan gelen notlar (ör. yeni ifade) yerel taslağın üzerine yazılır
-  const [syncedNotes, setSyncedNotes] = useState(notes);
-  if (notes !== syncedNotes) {
-    setSyncedNotes(notes);
-    setLocalNotes(notes);
-  }
 
   useEffect(() => {
     if (hasHydrated && !authToken && process.env.NODE_ENV === 'production') {
@@ -380,22 +192,16 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
       setMessages([]);
 
       try {
-        const res = await fetch(apiUrl('/npcs/history'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            sessionId,
-            npcId: currentNpcKey,
-          }),
-        });
-
-        const data = await res.json();
+        const data = await api.post<{
+          history?: { role: Message['role']; text: string; timestamp: string }[];
+          fear?: { level: number; band: FearBand } | null;
+          shownEvidenceIds?: string[];
+          dialoguesUsed?: number;
+          currentDay?: number;
+        }>('/npcs/history', { sessionId, npcId: currentNpcKey });
 
         if (data.history && data.history.length > 0) {
-          const formatted = data.history.map((h: { role: Message['role']; text: string; timestamp: string }) => ({
+          const formatted = data.history.map((h) => ({
             role: h.role,
             text: h.text,
             timestamp: new Date(h.timestamp),
@@ -434,23 +240,17 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
           setCurrentDay(data.currentDay);
         }
 
-        const sessionRes = await fetch(apiUrl(`/game-sessions/${sessionId}`), {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (sessionRes.ok) {
-          const sessionData = await sessionRes.json();
-          setNotes(sessionData.notes || '');
+        const sessionData = await api.get<{ notes?: string }>(`/game-sessions/${sessionId}`);
+        if (sessionData?.notes) {
+          setNotes(sessionData.notes);
         }
 
-        const evidenceRes = await fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        if (evidenceRes.ok) {
-          const evidenceData = await evidenceRes.json();
-          setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
+        const evidenceData = await api.get<{ evidence: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`);
+        if (evidenceData && Array.isArray(evidenceData.evidence)) {
+          setEvidence(evidenceData.evidence);
         }
       } catch (err) {
-        console.error('History fetch error:', err);
+        logger.error('History fetch error:', err);
         setMessages([
           {
             role: 'npc',
@@ -464,7 +264,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     };
 
     fetchHistory();
-  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setNotes, setEvidence, authToken, isInvestigating, scenario, npcKey, actualNpcKey]);
+  }, [currentNpcKey, profile.name, sessionId, setDialoguesUsed, setCurrentDay, setEvidence, setNotes, isInvestigating, scenario, actualNpcKey, npcKey]);
 
   const applyTurnResult = (data: {
     newEvidence?: EvidenceItem[];
@@ -503,20 +303,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     setLoading(true);
 
     try {
-      const res = await fetch(apiUrl('/npcs/interact'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          sessionId,
-          npcId: currentNpcKey,
-          message: trimmed,
-        }),
+      const data = await api.post<{
+        reply?: string;
+        grantedWarrants?: string[];
+        newEvidence?: EvidenceItem[];
+        notes?: string;
+        fear?: { level: number; band: FearBand } | null;
+        message?: string;
+      }>('/npcs/interact', {
+        sessionId,
+        npcId: currentNpcKey,
+        message: trimmed,
       });
-
-      const data = await res.json();
 
       if (data.grantedWarrants && data.grantedWarrants.length > 0) {
         data.grantedWarrants.forEach((w: string) => addWarrant(w));
@@ -532,11 +330,11 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         });
       }
 
-      if (res.ok && data.reply) {
-        setMessages((prev) => [...prev, { role: 'npc', text: data.reply, timestamp: new Date() }]);
+      if (data.reply) {
+        setMessages((prev) => [...prev, { role: 'npc', text: data.reply!, timestamp: new Date() }]);
         incrementDialogue();
         applyTurnResult(data);
-      } else if (!res.ok && data.message) {
+      } else if (data.message) {
         setMessages((prev) => [...prev, { role: 'npc', text: `*[Sistem hatası: ${data.message}]*`, timestamp: new Date() }]);
       } else {
         setMessages((prev) => [...prev, { role: 'npc', text: '*Karşındaki sessiz kaldı.*', timestamp: new Date() }]);
@@ -567,19 +365,17 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     setLoading(true);
 
     try {
-      const res = await fetch(apiUrl('/npcs/confront'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ sessionId, npcId: npcKey, evidenceId: item.id }),
-      });
-      const data = await res.json();
+      const data = await api.post<{
+        reply?: string;
+        newEvidence?: EvidenceItem[];
+        notes?: string;
+        fear?: { level: number; band: FearBand } | null;
+        message?: string;
+      }>('/npcs/confront', { sessionId, npcId: npcKey, evidenceId: item.id });
 
-      if (res.ok && data.reply) {
+      if (data.reply) {
         setShownEvidenceIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
-        setMessages((prev) => [...prev, { role: 'npc', text: data.reply, timestamp: new Date() }]);
+        setMessages((prev) => [...prev, { role: 'npc', text: data.reply!, timestamp: new Date() }]);
         incrementDialogue();
         applyTurnResult(data);
       } else {
@@ -612,15 +408,13 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
-          const res = await fetch(apiUrl(`/game-sessions/${sessionId}/condemn`), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({ npcId: actualNpcKey }),
-          });
-          const data = await res.json();
+          const data = await api.post<{
+            session?: { truthReveal?: string; locationClues?: Record<string, string> };
+            reward?: { tokens?: number; score?: number };
+            won?: boolean;
+            message?: string;
+          }>(`/game-sessions/${sessionId}/condemn`, { npcId: actualNpcKey });
+
           if (data.session && data.session.truthReveal) {
             useGameStore.getState().setTruthReveal(data.session.truthReveal);
           }
@@ -629,30 +423,12 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
           }
           const rewardTokens = data.reward?.tokens ? `&rewardTokens=${data.reward.tokens}` : '';
           const scoreEarned = data.reward?.score ? `&scoreEarned=${data.reward.score}` : '';
-          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}${rewardTokens}${scoreEarned}`);
+          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message ?? '')}${rewardTokens}${scoreEarned}`);
         } catch (err) {
-          console.error('Failed to condemn', err);
+          logger.error('Failed to condemn', err);
         }
       },
     });
-  };
-
-  const handleNotesBlur = async () => {
-    if (localNotes !== notes && sessionId) {
-      setNotes(localNotes);
-      try {
-        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ notes: localNotes }),
-        });
-      } catch (err) {
-        console.error('Failed to save notes', err);
-      }
-    }
   };
 
   // Anlık soru ve cevap: son oyuncu sorusu ve son NPC cevabı
@@ -880,16 +656,11 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                             consumeWarrant(actualNpcKey);
                             setIsInvestigating(false);
                             try {
-                              await fetch(apiUrl(`/game-sessions/${sessionId}/consume-warrant`), {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  Authorization: `Bearer ${authToken}`,
-                                },
-                                body: JSON.stringify({ location: actualNpcKey }),
+                              await api.post(`/game-sessions/${sessionId}/consume-warrant`, {
+                                location: actualNpcKey,
                               });
                             } catch (e) {
-                              console.error(e);
+                              logger.error('Failed to consume warrant', e);
                             }
                           },
                         });
@@ -919,185 +690,39 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     </main>
 
       {/* ─── DİYALOG GEÇMİŞİ ÇEKMECESİ ─── */}
-      {isHistoryDrawerOpen && (
-        <div className={styles.historyDrawer}>
-          <div className={styles.modalHeader}>
-            <h3 className={styles.modalTitle}>Konuşma Geçmişi</h3>
-            <button
-              className={styles.modalCloseBtn}
-              onClick={() => setIsHistoryDrawerOpen(false)}
-            >
-              ✕
-            </button>
-          </div>
-          <div className={styles.historyList}>
-            {messages.map((m, idx) => (
-              <div
-                key={idx}
-                className={`${styles.historyBubble} ${
-                  m.role === 'player' ? styles.historyPlayer : styles.historyNpc
-                }`}
-              >
-                <div className={styles.historySpeaker}>
-                  {m.role === 'player' ? 'Engizitör' : profile.name}
-                </div>
-                <div>{m.text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <DialogueHistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        messages={messages}
+        npcName={profile.name}
+      />
 
       {/* ─── NOTLAR MODALI ─── */}
-      {isNotesOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsNotesOpen(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Engizitörün Notları</h3>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setIsNotesOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <textarea
-              className={styles.textarea}
-              style={{ minHeight: '180px', padding: '14px' }}
-              value={localNotes}
-              onChange={(e) => setLocalNotes(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder="Şüpheli davranışları, çelişkileri ve çıkarımlarını buraya not et..."
-              autoFocus
-            />
-          </div>
-        </div>
-      )}
+      {isNotesOpen && <NotebookModal onClose={() => setIsNotesOpen(false)} />}
 
       {/* ─── ENVANTER MODALI ─── */}
-      {isInventoryOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsInventoryOpen(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Envanter ve İzinler</h3>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setIsInventoryOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {inventory?.activeWarrants?.map((w, idx) => (
-                <div
-                  key={`act-${idx}`}
-                  style={{
-                    padding: '10px 14px',
-                    background: 'rgba(212, 175, 55, 0.1)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <span>📜 Arama İzni: {getLocationLabel(w, scenario)}</span>
-                  <span style={{ color: '#4ade80', fontSize: '0.8rem' }}>(Hazır)</span>
-                </div>
-              ))}
-              {items.map((it) => (
-                <div
-                  key={it.id}
-                  style={{
-                    padding: '10px 14px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <div style={{ color: '#f7eedd', fontWeight: 600 }}>🔍 {it.text}</div>
-                  <div style={{ color: '#8c8376', fontSize: '0.78rem', marginTop: 4 }}>
-                    {evidenceSource(it)} · {it.dayNumber}. Gün
-                  </div>
-                </div>
-              ))}
-              {(!inventory?.activeWarrants?.length && !items.length) && (
-                <p style={{ color: '#8c8376', textAlign: 'center', margin: '20px 0' }}>
-                  Envanterinde henüz bir eşya veya aktif izin yok.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {isInventoryOpen && <InventoryModal onClose={() => setIsInventoryOpen(false)} />}
 
       {/* ─── KANIT GÖSTERME (CONFRONT) MODALI ─── */}
-      {isEvidencePickerOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsEvidencePickerOpen(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Kanıt Göster</h3>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setIsEvidencePickerOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <p style={{ color: '#cfc5b4', fontSize: '0.88rem', marginBottom: '14px' }}>
-              {profile.name} karşısında hangi kanıtı ortaya koyacaksın?
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {evidence.map((item) => (
-                <button
-                  key={item.id}
-                  className={styles.choiceBtn}
-                  onClick={() => handleConfront(item)}
-                  disabled={loading}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#f7eedd' }}>
-                      {item.category === 'ITEM' ? '🔍' : '📜'} {item.text}
-                    </div>
-                    <div style={{ fontSize: '0.76rem', color: '#8c8376', marginTop: 2 }}>
-                      {evidenceSource(item)}
-                      {shownEvidenceIds.includes(item.id) ? ' (Zaten Gösterildi)' : ''}
-                    </div>
-                  </div>
-                  <span className={styles.choiceIcon}>→</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfrontModal
+        isOpen={isEvidencePickerOpen}
+        onClose={() => setIsEvidencePickerOpen(false)}
+        npcName={profile.name}
+        evidence={evidence}
+        shownEvidenceIds={shownEvidenceIds}
+        loading={loading}
+        onConfront={handleConfront}
+        evidenceSource={evidenceSource}
+      />
 
       {/* ─── ONAY MODALI ─── */}
-      {confirmModal.isOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard} style={{ maxWidth: 440 }}>
-            <h3 className={styles.modalTitle}>{confirmModal.title}</h3>
-            <p style={{ color: '#cfc5b4', margin: '14px 0 20px', lineHeight: 1.5 }}>
-              {confirmModal.message}
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                className={styles.choiceBtn}
-                style={{ width: 'auto', padding: '8px 16px' }}
-                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-              >
-                Vazgeç
-              </button>
-              <button
-                className={styles.sendBtn}
-                style={{ padding: '8px 18px' }}
-                onClick={confirmModal.onConfirm}
-              >
-                Onayla
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DialogueConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+      />
 
       {/* ─── BİLDİRİM TOAST ─── */}
       {toast && <div className={styles.toast}>{toast}</div>}

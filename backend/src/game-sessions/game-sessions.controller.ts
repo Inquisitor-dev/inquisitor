@@ -5,18 +5,21 @@ import {
   Param,
   Get,
   UseGuards,
-  Request,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { GameSessionsService } from './game-sessions.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
+import { CurrentUser } from '../auth/current-user.decorator';
 import { isTestModeEnabled } from '../test-mode';
-
-type AuthedRequest = { user: { userId: string } };
-
 import { MarketService } from '../market/market.service';
+import {
+  CreateSessionDto,
+  UpdateNotesDto,
+  CondemnNpcDto,
+  ConsumeWarrantDto,
+} from './dto/game-sessions.dto';
 
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
 const VALID_SCENARIOS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'];
@@ -31,8 +34,7 @@ export class GameSessionsController {
 
   @Get('active')
   @UseGuards(JwtAuthGuard)
-  async findActiveSession(@Request() req: any) {
-    const userId: string = req.user.userId;
+  async findActiveSession(@CurrentUser('userId') userId: string) {
     const session = await this.gameSessionsService.findActiveSession(userId);
     return { session };
   }
@@ -46,14 +48,11 @@ export class GameSessionsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async createSession(
-    @Request() req: any, 
-    @Body('difficulty') difficulty?: string,
-    @Body('scenarioType') scenarioType?: string,
-    @Body('testMode') testMode?: boolean,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: CreateSessionDto,
   ) {
-    const userId: string = req.user.userId;
-    const diff = difficulty || 'easy';
-    const sType = scenarioType || 'medieval';
+    const diff = dto.difficulty || 'easy';
+    const sType = dto.scenarioType || 'medieval';
 
     if (!VALID_DIFFICULTIES.includes(diff) || !VALID_SCENARIOS.includes(sType)) {
       throw new BadRequestException('Geçersiz evren ya da zorluk seçimi.');
@@ -75,7 +74,7 @@ export class GameSessionsController {
     }
 
     // Yapay zekasız test oturumu: kota kısıtları uygulanmaz, sayaç artmaz
-    if (testMode === true) {
+    if (dto.testMode === true) {
       if (!isTestModeEnabled()) {
         throw new ForbiddenException('Test modu bu sunucuda kapalı.');
       }
@@ -99,93 +98,84 @@ export class GameSessionsController {
 
   @Post(':id/end-day')
   @UseGuards(JwtAuthGuard)
-  async endDay(@Request() req: AuthedRequest, @Param('id') sessionId: string) {
-    return await this.gameSessionsService.endDay(sessionId, req.user.userId);
+  async endDay(@CurrentUser('userId') userId: string, @Param('id') sessionId: string) {
+    return await this.gameSessionsService.endDay(sessionId, userId);
   }
 
   @Post(':id/advance-time')
   @UseGuards(JwtAuthGuard)
   async advanceTime(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
   ) {
-    return await this.gameSessionsService.advanceTime(
-      sessionId,
-      req.user.userId,
-    );
+    return await this.gameSessionsService.advanceTime(sessionId, userId);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async getSession(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
   ) {
-    return await this.gameSessionsService.getSession(
-      sessionId,
-      req.user.userId,
-    );
+    return await this.gameSessionsService.getSession(sessionId, userId);
   }
 
   @Get(':id/evidence')
   @UseGuards(JwtAuthGuard)
-  async getEvidence(@Request() req: AuthedRequest, @Param('id') sessionId: string) {
+  async getEvidence(@CurrentUser('userId') userId: string, @Param('id') sessionId: string) {
     return {
-      evidence: await this.gameSessionsService.getEvidence(sessionId, req.user.userId),
+      evidence: await this.gameSessionsService.getEvidence(sessionId, userId),
     };
   }
 
   @Post(':id/notes')
   @UseGuards(JwtAuthGuard)
   async updateNotes(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
-    @Body('notes') notes: string,
+    @Body() dto: UpdateNotesDto,
   ) {
     return await this.gameSessionsService.updateNotes(
       sessionId,
-      req.user.userId,
-      notes,
+      userId,
+      dto.notes ?? '',
     );
   }
 
   @Post(':id/condemn')
   @UseGuards(JwtAuthGuard)
   async condemnNpc(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
-    @Body('npcId') npcId: string,
+    @Body() dto: CondemnNpcDto,
   ) {
     return await this.gameSessionsService.condemnNpc(
       sessionId,
-      req.user.userId,
-      npcId,
+      userId,
+      dto.npcId,
     );
   }
 
   @Post(':id/consume-warrant')
   @UseGuards(JwtAuthGuard)
   async consumeWarrant(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
-    @Body('location') location: string,
+    @Body() dto: ConsumeWarrantDto,
   ) {
     return await this.gameSessionsService.consumeWarrant(
       sessionId,
-      req.user.userId,
-      location,
+      userId,
+      dto.location,
     );
   }
 
   @Post(':id/timeout')
   @UseGuards(JwtAuthGuard)
   async timeoutSession(
-    @Request() req: AuthedRequest,
+    @CurrentUser('userId') userId: string,
     @Param('id') sessionId: string,
   ) {
-    return await this.gameSessionsService.timeoutSession(
-      sessionId,
-      req.user.userId,
-    );
+    return await this.gameSessionsService.timeoutSession(sessionId, userId);
   }
 }

@@ -1,53 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { getAudioSettings } from '@/utils/audioSettings';
+import { getAudioSettings } from '@/features/audio/audioSettings';
 
-// Haritaya göre zemin adım sesleri (footsteps klasöründeki ses setleri)
-const FOOTSTEP_SOUNDS: Record<string, string[]> = {
-  // Ashenmoor (Ortaçağ): Çamurlu/toprak zemin
-  medieval: [
-    '/sounds/footsteps/Mud_Mono_01.wav',
-    '/sounds/footsteps/Mud_Mono_02.wav',
-    '/sounds/footsteps/Mud_Mono_03.wav',
-    '/sounds/footsteps/Mud_Mono_04.wav',
-    '/sounds/footsteps/Mud_Mono_05.wav',
-  ],
-  // Millfield (90'lar Kasaba): Asfalt/kaldırım
-  modern: [
-    '/sounds/footsteps/asfalt1.wav',
-    '/sounds/footsteps/asfalt2.wav',
-    '/sounds/footsteps/asfalt3.wav',
-    '/sounds/footsteps/asfalt4.wav',
-    '/sounds/footsteps/asfalt5.wav',
-    '/sounds/footsteps/asfalt6.wav',
-  ],
-  // Neon Prime (Cyberpunk): Asfalt ve metalik/sert zemin
-  cyberpunk: [
-    '/sounds/footsteps/asfalt1.wav',
-    '/sounds/footsteps/asfalt2.wav',
-    '/sounds/footsteps/asfalt3.wav',
-    '/sounds/footsteps/asfalt4.wav',
-    '/sounds/footsteps/asfalt5.wav',
-    '/sounds/footsteps/asfalt6.wav',
-  ],
-  // Jinling (Kadim Doğu): Taş/karolu tapınak ve avlu zeminleri
-  china: [
-    '/sounds/footsteps/Tile_Mono_01.wav',
-    '/sounds/footsteps/Tile_Mono_02.wav',
-    '/sounds/footsteps/Tile_Mono_03.wav',
-    '/sounds/footsteps/Tile_Mono_04.wav',
-    '/sounds/footsteps/Tile_Mono_05.wav',
-  ],
-  // Frosthold (Kış): Karlı patika ve kale zeminleri
-  winter: [
-    '/sounds/footsteps/SnowSteps_01.wav',
-    '/sounds/footsteps/SnowSteps_02.wav',
-    '/sounds/footsteps/SnowSteps_03.wav',
-    '/sounds/footsteps/SnowSteps_04.wav',
-    '/sounds/footsteps/SnowSteps_05.wav',
-  ],
-};
-
-const DEFAULT_FOOTSTEPS = FOOTSTEP_SOUNDS.modern;
+import { getScenarioDefinition } from '@/config/scenarioRegistry';
 // Adımın düştüğü an döngünün başına denk gelmiyorsa buradan kaydırılır (0–1, döngü kesri)
 const FOOTSTEP_PHASE_OFFSET = 0;
 // İki adım sesi arasındaki asgari süre (ms). Karakter hızlı yürüse veya kare atlasa bile
@@ -72,7 +26,7 @@ function pickNextNoRepeat(total: number, prev: number | null): number {
 }
 
 export function useFootsteps(walking: boolean, walkPhase: number, scenarioType?: string | null) {
-  const sources = FOOTSTEP_SOUNDS[scenarioType ?? ''] ?? DEFAULT_FOOTSTEPS;
+  const sources = getScenarioDefinition(scenarioType).footsteps;
   const sourcesKey = sources.join('|');
 
   const ctxRef = useRef<AudioContext | null>(null);
