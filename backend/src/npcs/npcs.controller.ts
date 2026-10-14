@@ -3,14 +3,14 @@ import {
   Post,
   Body,
   UseGuards,
-  Request,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { NpcsService } from './npcs.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
-import { MAX_PLAYER_MESSAGE_LENGTH } from './prompt-guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { InteractDto, ConfrontDto, HistoryDto } from './dto/npc-requests.dto';
 
 @Controller('npcs')
 export class NpcsController {
@@ -22,43 +22,26 @@ export class NpcsController {
   @Post('interact')
   @UseGuards(JwtAuthGuard)
   async interact(
-    @Request() req: any,
-    @Body('sessionId') sessionId: string,
-    @Body('npcId') npcId: string,
-    @Body('message') message: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: InteractDto,
   ) {
-    if (!sessionId || !npcId || !message) {
-      return { error: 'Gerekli alanlar eksik (sessionId, npcId, message)' };
-    }
+    const isGreeting = dto.message === '__NEW_DAY_GREETING__';
 
-    const userId: string = req.user.userId;
-    const isGreeting = message === '__NEW_DAY_GREETING__';
-
-    if (message.length > MAX_PLAYER_MESSAGE_LENGTH) {
-      throw new BadRequestException(
-        `Mesaj en fazla ${MAX_PLAYER_MESSAGE_LENGTH} karakter olabilir.`,
-      );
-    }
     // Selamlama sinyali sorgu hakkı harcamaz
-    await this.checkSessionAndQuota(sessionId, userId, !isGreeting);
+    await this.checkSessionAndQuota(dto.sessionId, userId, !isGreeting);
 
-    return await this.npcsService.interact(sessionId, npcId, message);
+    return await this.npcsService.interact(dto.sessionId, dto.npcId, dto.message);
   }
 
   // Yüzleştirme: Kanıt Defteri'nden bir kanıtı karaktere göster. Bir sorgu hakkı harcar.
   @Post('confront')
   @UseGuards(JwtAuthGuard)
   async confront(
-    @Request() req: { user: { userId: string } },
-    @Body('sessionId') sessionId: string,
-    @Body('npcId') npcId: string,
-    @Body('evidenceId') evidenceId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: ConfrontDto,
   ) {
-    if (!sessionId || !npcId || !evidenceId) {
-      throw new BadRequestException('Gerekli alanlar eksik (sessionId, npcId, evidenceId)');
-    }
-    await this.checkSessionAndQuota(sessionId, req.user.userId, true);
-    return await this.npcsService.confront(sessionId, npcId, evidenceId);
+    await this.checkSessionAndQuota(dto.sessionId, userId, true);
+    return await this.npcsService.confront(dto.sessionId, dto.npcId, dto.evidenceId);
   }
 
   private async checkSessionAndQuota(sessionId: string, userId: string, usesQuota: boolean) {
@@ -81,15 +64,10 @@ export class NpcsController {
   @Post('history')
   @UseGuards(JwtAuthGuard)
   async getHistory(
-    @Request() req: { user: { userId: string } },
-    @Body('sessionId') sessionId: string,
-    @Body('npcId') npcId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: HistoryDto,
   ) {
-    if (!sessionId || !npcId) {
-      return { error: 'Gerekli alanlar eksik (sessionId, npcId)' };
-    }
-
-    await this.npcsService.getOwnedSession(sessionId, req.user.userId);
-    return await this.npcsService.getNpcHistory(sessionId, npcId);
+    await this.npcsService.getOwnedSession(dto.sessionId, userId);
+    return await this.npcsService.getNpcHistory(dto.sessionId, dto.npcId);
   }
 }

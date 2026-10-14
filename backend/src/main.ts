@@ -1,12 +1,20 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: false,
+    }),
+  );
   // Render gibi bir proxy arkasında istek IP'si X-Forwarded-For'dan okunsun;
   // yoksa hız sınırı (20 istek/dk) tüm oyuncular için tek IP'ye uygulanır
   app.set('trust proxy', 1);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
 import { useGameStore } from '../../store/useGameStore';
 import { DEFAULT_AVATARS, getAvatarInfo } from '@/config/avatars';
 
@@ -48,28 +48,32 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/login'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: email.trim(), password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setUser(
-          data.email,
-          data.userId,
-          data.token,
-          data.isAdmin,
-          data.isPremium || false,
-          data.username,
-          data.avatar,
-        );
-        router.push('/menu');
+      const data = await api.post<{
+        email: string;
+        userId: string;
+        token: string;
+        isAdmin: boolean;
+        isPremium?: boolean;
+        username?: string;
+        avatar?: string;
+      }>('/auth/login', { identifier: email.trim(), password }, { token: null });
+
+      setUser(
+        data.email,
+        data.userId,
+        data.token,
+        data.isAdmin,
+        data.isPremium || false,
+        data.username,
+        data.avatar,
+      );
+      router.push('/menu');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Giriş başarısız.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }
@@ -87,26 +91,21 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/send-code'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          username: username.trim(),
-          avatar: selectedAvatar,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        // Yerel test modunda backend kodu mesajda döndürür; canlıda sadece genel bir bilgi gelir
-        setInfo(data.message || 'Doğrulama kodu e-posta adresine gönderildi.');
-        setStep('code');
+      const data = await api.post<{ message?: string }>('/auth/send-code', {
+        email: email.trim(),
+        password,
+        username: username.trim(),
+        avatar: selectedAvatar,
+      }, { token: null });
+
+      setInfo(data.message || 'Doğrulama kodu e-posta adresine gönderildi.');
+      setStep('code');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Bir hata oluştu.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }
@@ -120,28 +119,32 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/verify'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), code }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setUser(
-          data.email,
-          data.userId,
-          data.token,
-          data.isAdmin,
-          data.isPremium || false,
-          data.username,
-          data.avatar,
-        );
-        router.push('/menu');
+      const data = await api.post<{
+        email: string;
+        userId: string;
+        token: string;
+        isAdmin: boolean;
+        isPremium?: boolean;
+        username?: string;
+        avatar?: string;
+      }>('/auth/verify', { email: email.trim(), code }, { token: null });
+
+      setUser(
+        data.email,
+        data.userId,
+        data.token,
+        data.isAdmin,
+        data.isPremium || false,
+        data.username,
+        data.avatar,
+      );
+      router.push('/menu');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Kod hatalı.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }

@@ -6,10 +6,12 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { getJwtSecret } from './jwt-secret';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     PassportModule,
+    UsersModule,
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: getJwtSecret(),

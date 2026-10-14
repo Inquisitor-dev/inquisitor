@@ -26,11 +26,10 @@ import {
   Store,
   Target,
   Users,
-  Volume2,
-  VolumeX,
   X,
 } from 'lucide-react';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
@@ -39,12 +38,8 @@ import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outf
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import { showScene } from '@/components/SceneTransition/sceneStore';
 import { mapScene } from '@/components/SceneTransition/scenes';
-import {
-  getAudioSettings,
-  updateAudioSettingsLocally,
-  saveAudioSettingsRemote,
-  fetchAndSyncAudioSettings,
-} from '@/utils/audioSettings';
+import AudioSettingsPanel from '@/features/audio/AudioSettingsPanel';
+import { useAudioSettings } from '@/features/audio/useAudioSettings';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -134,85 +129,38 @@ export default function HomePage() {
   // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
   const [testModeAvailable, setTestModeAvailable] = useState(false);
   const [isTestModeStart, setIsTestModeStart] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.4);
-  const [footstepMuted, setFootstepMuted] = useState(false);
-  const [footstepVolume, setFootstepVolume] = useState(0.45);
-  const [doorMuted, setDoorMuted] = useState(false);
-  const [doorVolume, setDoorVolume] = useState(0.55);
-  // Ses ayarları yüklenene kadar ana müzik çalınmaz
-  const [audioSettingsLoaded, setAudioSettingsLoaded] = useState(false);
-  const [accountSummary, setAccountSummary] = useState<null | {
+  const [audioSettings] = useAudioSettings();
+
+  interface AccountSummary {
     email: string;
     username?: string | null;
     avatar?: string;
-    isAdmin: boolean;
-    tokenBalance?: number;
-    score?: number;
-    dailySessionCount: number;
-    dailyMessageCount: number;
-    maxSessionsPerDay: number;
     maxMessagesPerDay: number;
-  }>(null);
+    maxSessionsPerDay?: number;
+    dailySessionCount?: number;
+    dailyMessageCount?: number;
+    isAdmin?: boolean;
+    score?: number;
+  }
 
   interface LeaderboardEntry {
     rank: number;
     userId: string;
     name: string;
-    score: number;
+    score?: number;
     avatar?: string;
-    username?: string | null;
     isSelf?: boolean;
   }
 
+  const [accountSummary, setAccountSummary] = useState<AccountSummary | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [selfRankEntry, setSelfRankEntry] = useState<LeaderboardEntry | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Yerel depodaki ayarları anında yükle
-  useEffect(() => {
-    const current = getAudioSettings();
-    setIsMuted(current.musicMuted);
-    setVolume(current.musicVolume);
-    setFootstepMuted(current.footstepMuted);
-    setFootstepVolume(current.footstepVolume);
-    setDoorMuted(current.doorMuted);
-    setDoorVolume(current.doorVolume);
-    setAudioSettingsLoaded(true);
-  }, []);
-
-  // Kullanıcı giriş yaptıysa sunucudaki güncel ses tercihlerini çekip eşitle
   useEffect(() => {
     if (!hasHydrated || !authToken) return;
     let cancelled = false;
-
-    fetchAndSyncAudioSettings(authToken)
-      .then((settings) => {
-        if (!cancelled) {
-          setIsMuted(settings.musicMuted);
-          setVolume(settings.musicVolume);
-          setFootstepMuted(settings.footstepMuted);
-          setFootstepVolume(settings.footstepVolume);
-          setDoorMuted(settings.doorMuted);
-          setDoorVolume(settings.doorVolume);
-          setAudioSettingsLoaded(true);
-        }
-      })
-      .catch((err) => console.error('Failed to load audio settings', err));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, hasHydrated]);
-
-  useEffect(() => {
-    if (!hasHydrated || !authToken) return;
-    let cancelled = false;
-    fetch(apiUrl('/game-sessions/test-mode'), {
-      headers: { Authorization: `Bearer ${authToken}` },
-      cache: 'no-store',
-    })
-      .then((res) => (res.ok ? res.json() : null))
+    api.get<{ enabled?: boolean }>('/game-sessions/test-mode', { cache: 'no-store' })
       .then((data) => {
         if (!cancelled && data?.enabled) setTestModeAvailable(true);
       })
@@ -220,8 +168,7 @@ export default function HomePage() {
 
     // Backend'den pazar bakiyesi ve gerçek sıralama verilerini çek
     fetchMarketData(authToken);
-    fetch(apiUrl('/market/leaderboard'))
-      .then((res) => (res.ok ? res.json() : null))
+    api.get<{ leaderboard?: LeaderboardEntry[]; self?: LeaderboardEntry }>('/market/leaderboard')
       .then((data) => {
         if (!cancelled && data?.leaderboard) {
           setLeaderboard(data.leaderboard);
@@ -258,60 +205,20 @@ export default function HomePage() {
     }
   };
 
-  const handleVolumeChange = (value: number) => {
-    setVolume(value);
-    updateAudioSettingsLocally({ musicVolume: value });
-    saveAudioSettingsRemote({ musicVolume: value }, authToken);
-  };
-
-  const handleMuteToggle = () => {
-    const next = !isMuted;
-    setIsMuted(next);
-    updateAudioSettingsLocally({ musicMuted: next });
-    saveAudioSettingsRemote({ musicMuted: next }, authToken);
-  };
-
-  const handleFootstepVolumeChange = (value: number) => {
-    setFootstepVolume(value);
-    updateAudioSettingsLocally({ footstepVolume: value });
-    saveAudioSettingsRemote({ footstepVolume: value }, authToken);
-  };
-
-  const handleFootstepMuteToggle = () => {
-    const next = !footstepMuted;
-    setFootstepMuted(next);
-    updateAudioSettingsLocally({ footstepMuted: next });
-    saveAudioSettingsRemote({ footstepMuted: next }, authToken);
-  };
-
-  const handleDoorVolumeChange = (value: number) => {
-    setDoorVolume(value);
-    updateAudioSettingsLocally({ doorVolume: value });
-    saveAudioSettingsRemote({ doorVolume: value }, authToken);
-  };
-
-  const handleDoorMuteToggle = () => {
-    const next = !doorMuted;
-    setDoorMuted(next);
-    updateAudioSettingsLocally({ doorMuted: next });
-    saveAudioSettingsRemote({ doorMuted: next }, authToken);
-  };
-
   useEffect(() => {
-    if (!audioSettingsLoaded) return;
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/Main_Soundtrack.mp3');
       audioRef.current.loop = true;
     }
 
-    audioRef.current.volume = volume;
+    audioRef.current.volume = audioSettings.musicVolume;
 
-    if (isMuted || volume === 0) {
+    if (audioSettings.musicMuted || audioSettings.musicVolume === 0) {
       audioRef.current.pause();
     } else {
       audioRef.current.play().catch((err) => console.log('Audio play failed:', err));
     }
-  }, [audioSettingsLoaded, isMuted, volume]);
+  }, [audioSettings.musicMuted, audioSettings.musicVolume]);
 
   useEffect(() => {
     return () => {
@@ -340,16 +247,12 @@ export default function HomePage() {
       if (!authToken) return;
 
       try {
-        const res = await fetch(apiUrl('/game-sessions/active'), {
-          headers: { Authorization: `Bearer ${authToken}` },
+        const data = await api.get<{ session?: ActiveSession | null }>('/game-sessions/active', {
           cache: 'no-store',
         });
-        // Backend kapalıyken/yeniden başlarken proxy düz metin 500 döner; JSON okumaya çalışma
-        if (!res.ok) return;
-        const data = await res.json();
         setActiveSession(data.session ?? null);
       } catch (err) {
-        console.error('Failed to check active session', err);
+        logger.error('Failed to check active session', err);
       } finally {
         setCheckingSession(false);
       }
@@ -367,18 +270,15 @@ export default function HomePage() {
     if (!authToken) return;
 
     try {
-      const res = await fetch(apiUrl('/auth/me'), {
-        headers: { Authorization: `Bearer ${authToken}` },
+      const data = await api.get<AccountSummary>('/auth/me', {
         cache: 'no-store',
       });
-      if (!res.ok) return;
-      const data = await res.json();
       setAccountSummary(data);
       if (data.username || data.avatar) {
         setProfile(data.username ?? null, data.avatar || 'avatar_1');
       }
     } catch (err) {
-      console.error('Failed to load account summary', err);
+      logger.error('Failed to load account summary', err);
     }
   }, [authToken, setProfile]);
 
@@ -410,39 +310,26 @@ export default function HomePage() {
     setProfileSaving(true);
     setProfileMsg(null);
     try {
-      const res = await fetch(apiUrl('/auth/profile'), {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          username: editUsername.trim(),
-          avatar: editAvatar,
-        }),
+      const data = await api.patch<{ success: boolean; username: string; avatar: string }>('/auth/profile', {
+        username: editUsername.trim(),
+        avatar: editAvatar,
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      if (data.success) {
         setProfile(data.username, data.avatar);
         setAccountSummary((prev) =>
           prev ? { ...prev, username: data.username, avatar: data.avatar } : null
         );
         setProfileMsg({ type: 'success', text: 'Profil başarıyla güncellendi.' });
-        fetch(apiUrl('/market/leaderboard'))
-          .then((r) => (r.ok ? r.json() : null))
+        api.get<{ leaderboard?: LeaderboardEntry[]; self?: LeaderboardEntry }>('/market/leaderboard')
           .then((lb) => {
             if (lb?.leaderboard) setLeaderboard(lb.leaderboard);
             if (lb?.self) setSelfRankEntry(lb.self);
           })
           .catch(() => {});
-      } else {
-        setProfileMsg({
-          type: 'error',
-          text: data.message || data.error || 'Profil güncellenemedi.',
-        });
       }
-    } catch {
-      setProfileMsg({ type: 'error', text: 'Sunucuya bağlanılamadı.' });
+    } catch (err: unknown) {
+      const text = err instanceof ApiError ? err.message : 'Profil güncellenemedi.';
+      setProfileMsg({ type: 'error', text });
     } finally {
       setProfileSaving(false);
     }
@@ -485,27 +372,11 @@ export default function HomePage() {
     setError(null);
 
     try {
-      const res = await fetch(apiUrl('/game-sessions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ difficulty, scenarioType, testMode }),
-      });
-      const data = await res.json();
-
-      if (res.status === 401) {
-        logout();
-        router.push('/');
-        return;
-      }
-
-      if (res.status === 403) {
-        setError(data.message || 'Bugünkü soruşturma hakkın doldu.');
-        setLoading(false);
-        return;
-      }
+      const data = await api.post<{
+        id: string;
+        scenario?: string;
+        message?: string;
+      }>('/game-sessions', { difficulty, scenarioType, testMode });
 
       if (data.id) {
         setSessionId(data.id);
@@ -518,17 +389,29 @@ export default function HomePage() {
         setLocationClues(null);
         showScene(mapScene(scenarioType, 0, 1, 'Soruşturma başlıyor'));
         router.push('/map');
-        setLoading(false);
       } else {
         setError(
           data.message ||
             'Yapay zekâ şu an meşgul ya da bir hata oluştu. Biraz bekleyip tekrar dene.',
         );
-        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to start session', err);
-      setError('Sunucuya bağlanılamadı. Bağlantını kontrol edip tekrar dene.');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          logout();
+          router.push('/');
+          return;
+        }
+        if (err.status === 403) {
+          setError(err.message || 'Bugünkü soruşturma hakkın doldu.');
+          return;
+        }
+        setError(err.message);
+      } else {
+        logger.error('Failed to start session', err);
+        setError('Sunucuya bağlanılamadı. Bağlantını kontrol edip tekrar dene.');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -1217,103 +1100,7 @@ export default function HomePage() {
 
             <section className={styles.settingsBlock}>
               <h3 className={styles.blockLabel}>Ses Ayarları</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '12px' }}>
-                {/* Ana Menü Müziği */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Ana Menü Müziği</span>
-                    <span className={styles.volumeValue}>
-                      {isMuted ? 'Kapalı' : `%${Math.round(volume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleMuteToggle}
-                      title={isMuted ? 'Müziği aç' : 'Müziği kapat'}
-                      aria-label={isMuted ? 'Müziği aç' : 'Müziği kapat'}
-                    >
-                      {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={volume}
-                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
-                      aria-label="Müzik sesi"
-                    />
-                  </div>
-                </div>
-
-                {/* Yürüme Sesi */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Yürüme / Adım Sesi</span>
-                    <span className={styles.volumeValue}>
-                      {footstepMuted ? 'Kapalı' : `%${Math.round(footstepVolume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleFootstepMuteToggle}
-                      title={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
-                      aria-label={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
-                    >
-                      {footstepMuted || footstepVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={footstepVolume}
-                      onChange={(e) => handleFootstepVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(footstepMuted ? 0 : footstepVolume) * 100}%` } as React.CSSProperties}
-                      aria-label="Yürüme sesi"
-                    />
-                  </div>
-                </div>
-
-                {/* Kapı Sesi */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Kapı Sesi (Giriş & Çıkış)</span>
-                    <span className={styles.volumeValue}>
-                      {doorMuted ? 'Kapalı' : `%${Math.round(doorVolume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleDoorMuteToggle}
-                      title={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                      aria-label={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                    >
-                      {doorMuted || doorVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={doorVolume}
-                      onChange={(e) => handleDoorVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(doorMuted ? 0 : doorVolume) * 100}%` } as React.CSSProperties}
-                      aria-label="Kapı sesi"
-                    />
-                  </div>
-                </div>
-              </div>
+              <AudioSettingsPanel />
             </section>
 
             <button

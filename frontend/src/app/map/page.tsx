@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
-import { apiUrl } from '@/config/api';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type CSSProperties } from 'react';
 import { getInterior } from '@/config/interiorConfig';
 import { getLocationLabel } from '@/config/locationLabels';
 import { getPlayerHome } from '@/config/homeConfig';
@@ -11,516 +10,160 @@ import { getNpcDialoguePortrait, DIALOGUE_CONFIG } from '@/config/dialogueConfig
 import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
 import { hideScene, revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { homeScene, interiorScene } from '@/components/SceneTransition/scenes';
-import { useGameStore } from '../../store/useGameStore';
+import { useGameStore, type EvidenceItem } from '../../store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
-import {
-  directionFromDelta,
-  screenStride,
-  useCharacterManifest,
-  type Direction,
-} from '@/components/character/characterManifest';
+import { useCharacterManifest } from '@/components/character/characterManifest';
 import styles from './map.module.scss';
 import MapCharacter from './MapCharacter';
-import { getRoadNetwork, findPath, distance, expandPath, type Point, type RoadNetwork } from './roads';
-import { smoothPath, createRoute, directionWithHysteresis } from './walkPath';
-import { Volume2, VolumeX } from 'lucide-react';
+import { getRoadNetwork, type Point, type RoadNetwork } from './roads';
+import { expandPath } from './roads';
+import { smoothPath } from './walkPath';
 import { useFootsteps } from './useFootsteps';
-import { playDoorSound } from '@/utils/doorSound';
+import { playDoorSound } from '@/features/audio/doorSound';
+import AudioSettingsPanel from '@/features/audio/AudioSettingsPanel';
+import NotebookModal from '@/components/CaseModals/NotebookModal';
+import InventoryModal from '@/components/CaseModals/InventoryModal';
+import CondemnModal from '@/components/CaseModals/CondemnModal';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
+import { getScenarioMapLocations } from '@/config/mapLocations';
+import { SCENARIO_REGISTRY } from '@/config/scenarioRegistry';
 import {
-  getAudioSettings,
-  updateAudioSettingsLocally,
-  saveAudioSettingsRemote,
-  fetchAndSyncAudioSettings,
-  subscribeAudioSettings,
-  type AudioSettings,
-} from '@/utils/audioSettings';
-
-
-// Medieval köy konumları
-const locations = [
-  {
-    id: 'church',
-    name: 'Kilise',
-    icon: '⛪',
-    top: '10%',
-    left: '2%',
-    width: '34%',
-    height: '48%',
-    available: true,
-  },
-  {
-    id: 'mill',
-    name: 'Değirmen',
-    icon: '⚙️',
-    top: '32%',
-    left: '66%',
-    width: '28%',
-    height: '38%',
-    available: true,
-  },
-  {
-    id: 'tavern',
-    name: 'Taverna',
-    icon: '🍺',
-    top: '35%',
-    left: '40%',
-    width: '18%',
-    height: '27%',
-    available: true,
-  },
-  {
-    id: 'graveyard',
-    name: 'Mezarlık',
-    icon: '🪦',
-    top: '4%',
-    left: '68%',
-    width: '31%',
-    height: '34%',
-    available: true,
-  },
-  {
-    id: 'home',
-    name: 'Evim',
-    icon: '🏡',
-    top: '55%',
-    left: '1%',
-    width: '22%',
-    height: '28%',
-    available: true,
-  },
-  {
-    id: 'clinic',
-    name: 'Revir',
-    icon: '🏥',
-    top: '42%',
-    left: '25%',
-    width: '17%',
-    height: '26%',
-    available: true,
-    minDifficulty: 'hard',
-  },
-  {
-    id: 'farm',
-    name: 'Çiftlik',
-    icon: '🌾',
-    top: '64%',
-    left: '37%',
-    width: '28%',
-    height: '34%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-];
-
-// Modern kasaba konumları (Oakhaven / Millfield, KY 1994 haritası)
-const modernLocations = [
-  {
-    // Petrol İstasyonu — Sol taraf, benzin pompaları ve sarı çatı
-    id: 'farm',
-    name: 'Petrol İstasyonu',
-    icon: '⛽',
-    top: '38%',
-    left: '0%',
-    width: '18%',
-    height: '32%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-  {
-    // Karakol — Petrolün sağında, tuğla bina ve bayrak
-    id: 'tavern',
-    name: 'Karakol',
-    icon: '🚔',
-    top: '24%',
-    left: '17%',
-    width: '16%',
-    height: '37%',
-    available: true,
-  },
-  {
-    // Bar — Yukarıda, iki katlı ahşap "David's Bar"
-    id: 'clinic',
-    name: 'Bar',
-    icon: '🍺',
-    top: '0%',
-    left: '33%',
-    width: '24%',
-    height: '38%',
-    available: true,
-    minDifficulty: 'hard',
-  },
-  {
-    // Evim — Barın sağ üstündeki ahşap müstakil ev
-    id: 'home',
-    name: 'Evim',
-    icon: '🏡',
-    top: '0%',
-    left: '57%',
-    width: '16%',
-    height: '24%',
-    available: true,
-  },
-  {
-    // Hotel — Sağ üst köşe, 3 katlı ahşap otel
-    id: 'church',
-    name: 'Hotel',
-    icon: '🏨',
-    top: '2%',
-    left: '70%',
-    width: '30%',
-    height: '48%',
-    available: true,
-  },
-  {
-    // Video Oyuncusu — Hotelin bir altındaki mor neon ışıklı salon (Pixel Arcade)
-    id: 'graveyard',
-    name: 'Video Oyuncusu',
-    icon: '🎮',
-    top: '44%',
-    left: '60%',
-    width: '22%',
-    height: '30%',
-    available: true,
-  },
-  {
-    // Lokanta — En alttaki Diner / The Maple Cafe
-    id: 'mill',
-    name: 'Lokanta',
-    icon: '🍽️',
-    top: '60%',
-    left: '30%',
-    width: '28%',
-    height: '38%',
-    available: true,
-  },
-];
-
-const cyberpunkLocations = [
-  {
-    // Evim — Sol kenarda, turuncu yatak neonlu alçak kapsül otel
-    id: 'home',
-    name: 'Evim',
-    icon: '🏡',
-    top: '38%',
-    left: '0%',
-    width: '18%',
-    height: '26%',
-    available: true,
-  },
-  {
-    // Lokanta — Sol arka kulenin altındaki kırmızı neon erişte kâseli tezgâh
-    id: 'church',
-    name: 'Lokanta',
-    icon: '🍜',
-    top: '26%',
-    left: '25%',
-    width: '13%',
-    height: '19%',
-    available: true,
-  },
-  {
-    // Tamirhane — Arka ortadaki mavi anahtar tabelalı, kepengi açık atölye
-    id: 'mill',
-    name: 'Tamirhane',
-    icon: '🛠️',
-    top: '19%',
-    left: '34%',
-    width: '15%',
-    height: '24%',
-    available: true,
-  },
-  {
-    // Klinik — Sağ arka kulenin altındaki yeşil neon haçlı cam önlü klinik
-    id: 'graveyard',
-    name: 'Klinik',
-    icon: '🏥',
-    top: '25%',
-    left: '54%',
-    width: '16%',
-    height: '20%',
-    available: true,
-  },
-  {
-    // Karakol — Sağdaki mavi kalkan tabelalı, önünde bariyerler olan bina
-    id: 'tavern',
-    name: 'Karakol',
-    icon: '👮',
-    top: '30%',
-    left: '70%',
-    width: '14%',
-    height: '25%',
-    available: true,
-  },
-  {
-    // Bar — En sağdaki pembe kedi neonlu, kadife ipli kulüp (Velvet Static)
-    id: 'clinic',
-    name: 'Bar',
-    icon: '🍸',
-    top: '38%',
-    left: '82%',
-    width: '18%',
-    height: '34%',
-    available: true,
-    minDifficulty: 'hard',
-  },
-  {
-    // Sokak Pazarı — Meydanın ortasındaki dört bloklu tenteli gece pazarı
-    id: 'farm',
-    name: 'Sokak Pazarı',
-    icon: '🏮',
-    top: '44%',
-    left: '31%',
-    width: '39%',
-    height: '42%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-];
-
-const chinaLocations = [
-  {
-    // Evim — Sağ alttaki konut ve avlu
-    id: 'home',
-    name: 'Evim',
-    icon: '🏡',
-    top: '62%',
-    left: '53%',
-    width: '26%',
-    height: '34%',
-    available: true,
-  },
-  {
-    // Muhafız Karargahı — Sol üst
-    id: 'church',
-    name: 'Muhafız Karargahı',
-    icon: '🏯',
-    top: '3%',
-    left: '6%',
-    width: '29%',
-    height: '33%',
-    available: true,
-  },
-  {
-    // Çay Evi & Han — Üst orta
-    id: 'tavern',
-    name: 'Çay Evi & Han',
-    icon: '🍵',
-    top: '8%',
-    left: '44%',
-    width: '24%',
-    height: '34%',
-    available: true,
-  },
-  {
-    // Kadim Tapınak — Sağ üst
-    id: 'graveyard',
-    name: 'Kadim Tapınak',
-    icon: '⛩️',
-    top: '3%',
-    left: '71%',
-    width: '28%',
-    height: '35%',
-    available: true,
-  },
-  {
-    // Şifacı & Baharatçı — Sol orta
-    id: 'clinic',
-    name: 'Şifacı & Baharatçı',
-    icon: '🌿',
-    top: '36%',
-    left: '3%',
-    width: '23%',
-    height: '30%',
-    available: true,
-    minDifficulty: 'hard',
-  },
-  {
-    // Demirci Ocağı — Sağ orta
-    id: 'mill',
-    name: 'Demirci Ocağı',
-    icon: '⚒️',
-    top: '36%',
-    left: '69%',
-    width: '24%',
-    height: '32%',
-    available: true,
-  },
-  {
-    // Balıkçı İskelesi — Sol alt nehir kenarındaki iskele ve kayık
-    id: 'farm',
-    name: 'Balıkçı İskelesi',
-    icon: '🎣',
-    top: '68%',
-    left: '0%',
-    width: '28%',
-    height: '31%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-];
-
-const winterLocations = [
-  {
-    // Evim — Ortadaki ahşap avcı kulübesi
-    id: 'home',
-    name: 'Evim',
-    icon: '🏡',
-    top: '45%',
-    left: '26%',
-    width: '22%',
-    height: '28%',
-    available: true,
-  },
-  {
-    // Kutsal Yürek Ağacı — Sol üst
-    id: 'church',
-    name: 'Kutsal Yürek Ağacı',
-    icon: '🍁',
-    top: '1%',
-    left: '1%',
-    width: '28%',
-    height: '36%',
-    available: true,
-  },
-  {
-    // Gözcü Kalesi — Orta üst
-    id: 'graveyard',
-    name: 'Gözcü Kalesi',
-    icon: '🏰',
-    top: '4%',
-    left: '36%',
-    width: '26%',
-    height: '36%',
-    available: true,
-  },
-  {
-    // Sur — En sağ üstteki sur kapısı ve nöbetçi mevkii
-    id: 'farm',
-    name: 'Sur',
-    icon: '🛡️',
-    top: '0%',
-    left: '70%',
-    width: '29%',
-    height: '37%',
-    available: true,
-    minDifficulty: 'medium',
-  },
-  {
-    // Kış Hanı — Sağ orta
-    id: 'tavern',
-    name: 'Kış Hanı',
-    icon: '🔥',
-    top: '36%',
-    left: '63%',
-    width: '25%',
-    height: '34%',
-    available: true,
-  },
-  {
-    // Terk Edilmiş Maden — Sol alt
-    id: 'mill',
-    name: 'Terk Edilmiş Maden',
-    icon: '⛏️',
-    top: '65%',
-    left: '0%',
-    width: '29%',
-    height: '34%',
-    available: true,
-  },
-  {
-    // İnfaz Meydanı — Sağ alt
-    id: 'clinic',
-    name: 'İnfaz Meydanı',
-    icon: '⚔️',
-    top: '65%',
-    left: '58%',
-    width: '32%',
-    height: '34%',
-    available: true,
-    minDifficulty: 'hard',
-  },
-];
-
-// Karakterin yürüme hızı: saniyede kat edilen harita genişliği yüzdesi
-const WALK_SPEED = 15;
-
-// Piksel koordinatlı haritalarda (köy) yürüyüş ayarları, ekran pikseli cinsinden
-// Karakter haritayla birlikte ölçeklenir: harita görseli bu ölçekte çizilirken sprite kendi boyundadır.
-// Böylece her ekranda karakter/bina oranı ve rota süreleri aynı kalır.
-const CHARACTER_REF_LAYER_SCALE = 0.6;
-// Referans ölçekte karakter karesinin ekrandaki ölçeği (kare pikseli başına ekran pikseli).
-// 1,9 m'lik karakter karede ~185 px; 0.36 ile ekranda ~67 px boyunda görünür.
-const CHARACTER_SPRITE_SCALE = 0.36;
-// Referans ölçekte, derinlik 1 iken yatay yürüyüşte px/sn (saniyede ~2 adım, kararlı bir tempo).
-// Dikey yürüyüşte kamera açısı yüzünden ekranda daha az yol alınır; adım temposu her yönde aynı kalır.
-const SCREEN_WALK_SPEED = 75;
-const WALK_MAX_SPEED = 90; // px/sn; uzun rotalarda karakterin anormal derecede hızlı koşmasını önleyen tavan hız
-const WALK_MAX_DURATION = 9; // sn, rotanın makul sürede tamamlanması için referans süre
-const WALK_ACCEL_TIME = 0.25; // sn, kalkışta tam hıza çıkma süresi
-const WALK_DECEL_DISTANCE = 30; // px (referans ölçekte), varmadan önce yavaşlamaya başlanan mesafe
-const WALK_LOOKAHEAD = 24; // px, bakış yönü bu kadar ilerideki noktaya göre hesaplanır
-
-// Perspektif: görselin üst kenarında 0.82, alt kenarında 1.02 ölçek
-const depthScaleAt = (y: number, imageHeight: number) => 0.82 + 0.2 * (y / imageHeight);
+  useMapWalking,
+  depthScaleAt,
+  CHARACTER_REF_LAYER_SCALE,
+  CHARACTER_SPRITE_SCALE,
+} from './useMapWalking';
 
 export default function MapPage() {
   const router = useRouter();
-  const { sessionId, currentDay, timeOfDay, difficulty, scenarioType, dialoguesUsedToday, authToken, isAdmin, endDay, advanceTime, setWarrants, setScenarioType, notes, setNotes, inventory, evidence, setEvidence, hasHydrated, lastLocationId, setLastLocationId } = useGameStore();
-  // Envanter'de sadece fiziksel kanıtlar görünür; karakter ifadeleri Not defterindedir
-  const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
+  const {
+    sessionId,
+    currentDay,
+    timeOfDay,
+    difficulty,
+    scenarioType,
+    dialoguesUsedToday,
+    authToken,
+    isAdmin,
+    endDay,
+    advanceTime,
+    setWarrants,
+    setScenarioType,
+    setEvidence,
+    hasHydrated,
+    lastLocationId,
+    setLastLocationId,
+  } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
   const difficultyOrder = ['easy', 'medium', 'hard'];
   const currentDiffIdx = difficultyOrder.indexOf(difficulty);
-  const baseLocations =
-    scenarioType === 'modern'
-      ? modernLocations
-      : scenarioType === 'cyberpunk'
-        ? cyberpunkLocations
-        : scenarioType === 'china'
-          ? chinaLocations
-          : scenarioType === 'winter'
-            ? winterLocations
-            : locations;
+  const baseLocations = getScenarioMapLocations(scenarioType);
   const visibleLocations = baseLocations.filter((loc: { minDifficulty?: string }) => {
     if (!loc.minDifficulty) return true;
     return difficultyOrder.indexOf(loc.minDifficulty) <= currentDiffIdx;
   });
+
   const [loadingLoc, setLoadingLoc] = useState<string | null>(null);
   const [endingDay, setEndingDay] = useState(false);
+  const imageLayerRef = useRef<HTMLDivElement>(null);
+
+  // Modals state
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [isHomeModalOpen, setIsHomeModalOpen] = useState(false);
+  const [isNotebookOpen, setIsNotebookOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Evi hazırlanmış evrende oyuncu evin içine girer; diğerlerinde "Evim" penceresi açılır
+  const openHome = useCallback(() => {
+    playDoorSound();
+    const home = getPlayerHome(scenarioType || 'medieval');
+    if (!home) {
+      setIsHomeModalOpen(true);
+      return;
+    }
+    showScene(homeScene(home));
+    router.push('/home');
+  }, [scenarioType, router, setIsHomeModalOpen]);
+
+  const handleLocationClick = useCallback(
+    async (locId: string) => {
+      if (!sessionId || timeOfDay >= 4) return;
+      setLoadingLoc(locId);
+      // Geçiş ekranı hemen açılır; sunucu cevabı ve mekân görseli beklenirken oyuncu nereye girdiğini görür
+      const interior = getInterior(scenarioType, locId);
+      showScene(
+        interior
+          ? interiorScene(interior)
+          : {
+              kicker: 'Giriyorsun',
+              title: getLocationLabel(locId, scenarioType),
+              image: getNpcDialoguePortrait(scenarioType, locId),
+            },
+      );
+      try {
+        await api.post(`/game-sessions/${sessionId}/advance-time`);
+        advanceTime();
+        router.push(interior ? `/interior/${locId}` : `/interact/${locId}`);
+      } catch (err) {
+        logger.error('Failed to advance time', err);
+        hideScene();
+        setLoadingLoc(null);
+      }
+    },
+    [sessionId, timeOfDay, scenarioType, advanceTime, router]
+  );
+
+  const handleArrive = useCallback(
+    async (locId: string) => {
+      if (locId === 'home') {
+        openHome();
+      } else {
+        await handleLocationClick(locId);
+      }
+    },
+    [openHome, handleLocationClick]
+  );
 
   // Oyuncu karakteri: en son girdiği mekanın kapısında, hiç girmediyse meydanda durur
   const roads = getRoadNetwork(scenarioType);
   const restNodeId = (lastLocationId && roads.doors[lastLocationId]) || roads.spawn;
-  const [walkPos, setWalkPos] = useState<Point | null>(null);
-  const [playerFacing, setPlayerFacing] = useState<Direction>('south');
-  const [walkingTo, setWalkingTo] = useState<string | null>(null);
-  // Yürüme döngüsünün ilerlemesi (kesirli döngü sayısı); adım kareleri buna göre seçilir
-  const [walkPhase, setWalkPhase] = useState(0);
-  const walkFrame = useRef<number | null>(null);
-  const imageLayerRef = useRef<HTMLDivElement>(null);
-  const playerPos = (walkingTo && walkPos) || roads.nodes[restNodeId];
-  // Haritanın çizim ölçeğine göre karakter boyu (köydeki boy = 1)
-  const characterScale = roads.characterScale ?? 1;
+
+  // Giyili kıyafetin karakteri tüm haritalarda kullanılır; tüm yön görselleri yüklenince görünür
+  const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
+  const wornOutfitId = marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
+  const character = useCharacterManifest(wornOutfitId, 'map');
+  const characterRarity = wornOutfitId ? findOutfit(wornOutfitId)?.rarity : undefined;
+
+  const {
+    playerFacing,
+    walkingTo,
+    walkPhase,
+    layerScale,
+    playerPos,
+    characterScale,
+    handleWalkToLocation,
+  } = useMapWalking({
+    roads,
+    restNodeId,
+    character,
+    imageLayerRef,
+    onArrive: handleArrive,
+    setLastLocationId,
+  });
+
   const roadImage = roads.image;
 
-  // Harita katmanının ekrandaki ölçeği (görsel pikseli başına ekran pikseli); karakter boyu buna bağlı
-  const [layerScale, setLayerScale] = useState(CHARACTER_REF_LAYER_SCALE);
-  useEffect(() => {
-    const layer = imageLayerRef.current;
-    if (!layer || !roadImage) return;
-    const observer = new ResizeObserver(() => setLayerScale(layer.offsetWidth / roadImage.width));
-    observer.observe(layer);
-    return () => observer.disconnect();
-  }, [roadImage]);
-
   // `?debugRoads`: yol ağını harita üstünde çizer, tıklanan noktanın görsel koordinatını konsola yazar
-  const [debugRoads, setDebugRoads] = useState(false);
-  useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has('debugRoads')) return;
-    queueMicrotask(() => setDebugRoads(true));
-  }, []);
+  const [debugRoads] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('debugRoads');
+  });
+
   useEffect(() => {
     if (!debugRoads || !roadImage) return;
     const logPoint = (e: MouseEvent) => {
@@ -529,72 +172,15 @@ export default function MapPage() {
       const x = Math.round(((e.clientX - rect.left) / rect.width) * roadImage.width);
       const y = Math.round(((e.clientY - rect.top) / rect.height) * roadImage.height);
       const text = `{ x: ${x}, y: ${y} }`;
-      console.log('[debugRoads]', text);
+      logger.info('[debugRoads]', text);
       navigator.clipboard?.writeText(text).catch(() => {});
     };
     window.addEventListener('click', logPoint, true);
     return () => window.removeEventListener('click', logPoint, true);
   }, [debugRoads, roadImage]);
 
-  useEffect(() => {
-    return () => {
-      if (walkFrame.current !== null) cancelAnimationFrame(walkFrame.current);
-    };
-  }, []);
-
-  // Giyili kıyafetin karakteri tüm haritalarda kullanılır; tüm yön görselleri yüklenince görünür
-  const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
-  const wornOutfitId = marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
-  const character = useCharacterManifest(wornOutfitId, 'map');
-  const characterRarity = wornOutfitId ? findOutfit(wornOutfitId)?.rarity : undefined;
-
   // Yürürken adımlarla senkron ayak sesleri (test)
   useFootsteps(Boolean(walkingTo), walkPhase, scenarioType);
-
-  // Ses ayarları durumu ve senkronizasyonu
-  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
-  const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => getAudioSettings());
-
-  useEffect(() => {
-    if (authToken) {
-      fetchAndSyncAudioSettings(authToken).then((s) => setAudioSettings(s));
-    }
-    return subscribeAudioSettings((s) => setAudioSettings(s));
-  }, [authToken]);
-
-  const handleAudioChange = (key: keyof AudioSettings, value: number | boolean) => {
-    const updated = updateAudioSettingsLocally({ [key]: value });
-    setAudioSettings(updated);
-    saveAudioSettingsRemote({ [key]: value }, authToken);
-  };
-  
-  // Modal states
-  const [isHomeModalOpen, setIsHomeModalOpen] = useState(false);
-  const [isNotebookOpen, setIsNotebookOpen] = useState(false);
-  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
-  const [isCondemnModalOpen, setIsCondemnModalOpen] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{ 
-    isOpen: boolean; 
-    villagerId?: string;
-    title: string; 
-    message: string; 
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    villagerId: undefined,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
-  const [localNotes, setLocalNotes] = useState(notes);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // Sunucudan gelen notlar (ör. yeni ifade) yerel taslağın üzerine yazılır
-  const [syncedNotes, setSyncedNotes] = useState(notes);
-  if (notes !== syncedNotes) {
-    setSyncedNotes(notes);
-    setLocalNotes(notes);
-  }
 
   // Harita görseli yüklenene kadar geçiş ekranı kalır (görsel önbellekteyse hiç açılmaz)
   useLayoutEffect(() => {
@@ -615,28 +201,30 @@ export default function MapPage() {
     const fetchSession = async () => {
       if (sessionId && authToken) {
         try {
-          const res = await fetch(apiUrl(`/game-sessions/${sessionId}`), {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          const data = await res.json();
+          const data = await api.get<{
+            scenarioType?: string;
+            activeWarrants?: string[];
+            usedWarrants?: string[];
+          }>(`/game-sessions/${sessionId}`);
+
           if (data.scenarioType) {
             setScenarioType(data.scenarioType);
           }
           setWarrants(data.activeWarrants || [], data.usedWarrants || []);
 
-          const evidenceRes = await fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          if (evidenceRes.ok) {
-            const evidenceData = await evidenceRes.json();
+          try {
+            const evidenceData = await api.get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`);
             setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
-          }
+          } catch {}
+
           // Evdeki yataktan son gün "Hükmünü Ver" ile gelinince seçim penceresi açılır
           if (new URLSearchParams(window.location.search).get('hukum') === '1') {
             setIsCondemnModalOpen(true);
             router.replace('/map');
           }
-        } catch {}
+        } catch (err) {
+          logger.error('Failed to load session', err);
+        }
       }
     };
     if (hasHydrated) fetchSession();
@@ -658,36 +246,17 @@ export default function MapPage() {
     if (sessionId && authToken) {
       try {
         const notes = useGameStore.getState().notes;
-        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ notes }),
-        });
+        await api.post(`/game-sessions/${sessionId}/notes`, { notes });
       } catch (e) {
-        console.error('Failed to save notes', e);
+        logger.error('Failed to save notes', e);
       }
     }
     router.push('/menu');
   };
 
-  // Evi hazırlanmış evrende oyuncu evin içine girer; diğerlerinde "Evim" penceresi açılır
-  const openHome = () => {
-    playDoorSound();
-    const home = getPlayerHome(scenarioType || 'medieval');
-    if (!home) {
-      setIsHomeModalOpen(true);
-      return;
-    }
-    showScene(homeScene(home));
-    router.push('/home');
-  };
-
   const handleEndDay = async () => {
     if (!sessionId) return;
-    
+
     if (currentDay >= 4) {
       setIsCondemnModalOpen(true);
       return;
@@ -695,212 +264,13 @@ export default function MapPage() {
 
     setEndingDay(true);
     try {
-      await fetch(apiUrl(`/game-sessions/${sessionId}/end-day`), {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` },
-      });
+      await api.post(`/game-sessions/${sessionId}/end-day`);
       endDay();
     } catch (err) {
-      console.error('Failed to end day', err);
+      logger.error('Failed to end day', err);
     } finally {
       setEndingDay(false);
     }
-  };
-
-  const handleLocationClick = async (locId: string) => {
-    if (!sessionId || timeOfDay >= 4) return;
-    setLoadingLoc(locId);
-    // Geçiş ekranı hemen açılır; sunucu cevabı ve mekân görseli beklenirken oyuncu nereye girdiğini görür
-    const interior = getInterior(scenarioType, locId);
-    showScene(
-      interior
-        ? interiorScene(interior)
-        : {
-            kicker: 'Giriyorsun',
-            title: getLocationLabel(locId, scenarioType),
-            image: getNpcDialoguePortrait(scenarioType, locId),
-          },
-    );
-    try {
-      await fetch(apiUrl(`/game-sessions/${sessionId}/advance-time`), {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` },
-      });
-      advanceTime();
-      // İç görünümü hazırlanmış mekânlarda oyuncuyu önce mekânın içi karşılar
-      router.push(interior ? `/interior/${locId}` : `/interact/${locId}`);
-    } catch (err) {
-      console.error('Failed to advance time', err);
-      hideScene();
-      setLoadingLoc(null);
-    }
-  };
-
-  // Karakteri yollar boyunca mekanın kapısına yürütür, varınca mekana girmiş sayar
-  const handleWalkToLocation = (locId: string) => {
-    if (walkingTo || loadingLoc) return;
-
-    const doorId = roads.doors[locId];
-    if (!doorId) {
-      if (locId === 'home') {
-        openHome();
-      } else {
-        handleLocationClick(locId);
-      }
-      return;
-    }
-
-    if (roads.image) {
-      walkAlongImageRoads(locId, doorId, roads.image);
-      return;
-    }
-
-    const points = findPath(roads, restNodeId, doorId).map((id) => roads.nodes[id]);
-    const segmentLengths = points.slice(1).map((p, i) => distance(points[i], p));
-    const totalLength = segmentLengths.reduce((sum, len) => sum + len, 0);
-
-    const arrive = async () => {
-      walkFrame.current = null;
-      setLastLocationId(locId);
-      if (locId === 'home') {
-        openHome();
-      } else {
-        await handleLocationClick(locId);
-      }
-      setWalkingTo(null);
-      setWalkPos(null);
-    };
-
-    setWalkingTo(locId);
-    setWalkPhase(0);
-    if (totalLength === 0) {
-      arrive();
-      return;
-    }
-
-    let startTime: number | null = null;
-    const step = (now: number) => {
-      startTime ??= now;
-      let travelled = ((now - startTime) / 1000) * WALK_SPEED;
-      if (travelled >= totalLength) {
-        setWalkPos(points[points.length - 1]);
-        arrive();
-        return;
-      }
-
-      let i = 0;
-      while (travelled > segmentLengths[i]) {
-        travelled -= segmentLengths[i];
-        i++;
-      }
-      const from = points[i];
-      const to = points[i + 1];
-      const t = segmentLengths[i] === 0 ? 1 : travelled / segmentLengths[i];
-      if (to.x !== from.x || to.y !== from.y) setPlayerFacing(directionFromDelta(to.x - from.x, to.y - from.y));
-      setWalkPhase((now - startTime) / 1000 / (character?.walk.cycleSeconds ?? 1));
-      setWalkPos({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
-      walkFrame.current = requestAnimationFrame(step);
-    };
-    walkFrame.current = requestAnimationFrame(step);
-  };
-
-  // Piksel koordinatlı haritalarda yumuşatılmış yol boyunca, kalkış/varışta hızlanıp yavaşlayarak yürür
-  const walkAlongImageRoads = (
-    locId: string,
-    doorId: string,
-    image: { width: number; height: number }
-  ) => {
-    const points = expandPath(roads, findPath(roads, restNodeId, doorId));
-    const route = createRoute(smoothPath(points, 6));
-    // Bir ekran pikselinin kaç görsel pikseline denk geldiğinin tersi
-    const layerScale = (imageLayerRef.current?.offsetWidth ?? window.innerWidth) / image.width;
-
-    const arrive = async () => {
-      walkFrame.current = null;
-      setLastLocationId(locId);
-      if (locId === 'home') {
-        openHome();
-      } else {
-        await handleLocationClick(locId);
-      }
-      setWalkingTo(null);
-      setWalkPos(null);
-    };
-
-    setWalkingTo(locId);
-    setWalkPhase(0);
-    if (route.length === 0) {
-      arrive();
-      return;
-    }
-
-    // Karakterin ekrandaki boy çarpanı; hız da bununla ölçeklenir ki adım temposu her haritada aynı kalsın
-    const sizeScale = (layerScale / CHARACTER_REF_LAYER_SCALE) * characterScale;
-    // Referans ölçekteki hız; ekrandaki hız karakterle birlikte sizeScale kadar büyür.
-    // Uzun rotalarda karakterin aşırı hızlanıp bacaklarının karikatür gibi fırlamasını önlüyoruz.
-    const baseSpeed = Math.min(
-      WALK_MAX_SPEED,
-      Math.max(
-        SCREEN_WALK_SPEED,
-        (route.length * layerScale) / sizeScale / WALK_MAX_DURATION
-      )
-    );
-
-    const lookahead = WALK_LOOKAHEAD / layerScale;
-    const firstAhead = route.pointAt(lookahead);
-    let facing = directionFromDelta(firstAhead.x - points[0].x, firstAhead.y - points[0].y);
-    setPlayerFacing(facing);
-
-    let travelled = 0;
-    let elapsed = 0;
-    let phase = 0;
-    let lastTime: number | null = null;
-    const step = (now: number) => {
-      // Sekme arka plandan dönünce oluşan uzun boşlukta karakter ışınlanmasın diye üst sınır var
-      const dt = lastTime === null ? 0 : Math.min((now - lastTime) / 1000, 1);
-      lastTime = now;
-      elapsed += dt;
-
-      const pos = route.pointAt(travelled);
-      const remaining = (route.length - travelled) * layerScale;
-      const ease = Math.min(
-        1,
-        0.35 + (0.65 * elapsed) / WALK_ACCEL_TIME,
-        0.35 + (0.65 * remaining) / (WALK_DECEL_DISTANCE * sizeScale)
-      );
-      const depth = depthScaleAt(pos.y, image.height);
-      // Gidilen yöndeki adım boyu (kare pikseli); yataydaki adıma oranı ekrandaki hız çarpanıdır.
-      // Böylece karakter yerde sabit hızla yürür: dikeyde ekranda yavaşlar ama adım temposu değişmez.
-      const towards = route.pointAt(travelled + 2);
-      const stride = character ? screenStride(character, towards.x - pos.x, towards.y - pos.y) : 0;
-      const directionFactor = character ? stride / screenStride(character, 1, 0) : 1;
-      // Uzaktaki karakter ekranda daha yavaş ilerler, böylece adım boyu da ölçekle uyumlu kalır
-      const screenSpeed = baseSpeed * sizeScale * depth * ease * directionFactor;
-      const advance = (screenSpeed / layerScale) * dt;
-      travelled += advance;
-      // Ekranda kat edilen yol / ekrandaki adım boyu (sizeScale ve layerScale birbirini götürür)
-      if (stride > 0) {
-        phase +=
-          (advance * CHARACTER_REF_LAYER_SCALE) / (stride * CHARACTER_SPRITE_SCALE * characterScale * depth);
-        setWalkPhase(phase);
-      }
-
-      if (travelled >= route.length) {
-        setWalkPos(route.pointAt(route.length));
-        arrive();
-        return;
-      }
-
-      const next = route.pointAt(travelled);
-      const ahead = route.pointAt(travelled + lookahead);
-      if (Math.hypot(ahead.x - next.x, ahead.y - next.y) > 0.5) {
-        facing = directionWithHysteresis(ahead.x - next.x, ahead.y - next.y, facing);
-        setPlayerFacing(facing);
-      }
-      setWalkPos(next);
-      walkFrame.current = requestAnimationFrame(step);
-    };
-    walkFrame.current = requestAnimationFrame(step);
   };
 
   const handleToggleFullscreen = async () => {
@@ -911,57 +281,35 @@ export default function MapPage() {
         await document.exitFullscreen();
       }
     } catch (err) {
-      console.error('Failed to toggle fullscreen', err);
-    }
-  };
-
-  const handleNotesBlur = async () => {
-    if (localNotes !== notes && sessionId) {
-      setNotes(localNotes);
-      try {
-        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ notes: localNotes }),
-        });
-      } catch (err) {
-        console.error('Failed to save notes', err);
-      }
+      logger.error('Failed to toggle fullscreen', err);
     }
   };
 
   const handleCondemn = async (npcId: string) => {
     if (!sessionId) return;
-    
+
     try {
-      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/condemn`), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ npcId }),
-      });
-      const data = await res.json();
-      if (data.session && data.session.truthReveal) {
+      const data = await api.post<{
+        session?: { truthReveal?: string; locationClues?: Record<string, string> };
+        won?: boolean;
+        message?: string;
+      }>(`/game-sessions/${sessionId}/condemn`, { npcId });
+
+      if (data.session?.truthReveal) {
         useGameStore.getState().setTruthReveal(data.session.truthReveal);
       }
-      if (data.session && data.session.locationClues) {
+      if (data.session?.locationClues) {
         useGameStore.getState().setLocationClues(data.session.locationClues);
       }
       if (data.won !== undefined) {
-        router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message)}`);
+        router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message ?? '')}`);
       }
     } catch (err) {
-      console.error('Failed to condemn', err);
+      logger.error('Failed to condemn', err);
     }
   };
 
   const isNight = timeOfDay >= 4;
-  
   const getMapBg = () => getMapBackground(scenarioType, timeOfDay);
 
   const renderPlayer = (x: number, y: number, depthScale = 1) =>
@@ -983,43 +331,12 @@ export default function MapPage() {
     if (loc.id === 'home') {
       return isNight ? 'Eve Dön (Uyu)' : 'Evime Git';
     }
-
-    if (scenarioType === 'modern') {
-      if (loc.id === 'tavern') return "Karakol'a Git";
-      if (loc.id === 'farm') return "Petrol İstasyonu'na Git";
-      if (loc.id === 'clinic') return "Bar'a Git";
-      if (loc.id === 'church') return "Hotel'e Git";
-      if (loc.id === 'graveyard') return "Video Oyuncusu'na Git";
-      if (loc.id === 'mill') return "Lokanta'ya Git";
-    } else if (scenarioType === 'cyberpunk') {
-      if (loc.id === 'tavern') return "Karakol'a Git";
-      if (loc.id === 'church') return "Lokanta'ya Git";
-      if (loc.id === 'mill') return "Tamirhane'ye Git";
-      if (loc.id === 'graveyard') return "Klinik'e Git";
-      if (loc.id === 'farm') return "Sokak Pazarı'na Git";
-      if (loc.id === 'clinic') return "Bar'a Git";
-    } else if (scenarioType === 'china') {
-      if (loc.id === 'home') return "Eve Git";
-      if (loc.id === 'tavern') return "Çay Evi'ne Git";
-      if (loc.id === 'church') return "Karargah'a Git";
-      if (loc.id === 'graveyard') return "Tapınak'a Git";
-      if (loc.id === 'mill') return "Demirci'ye Git";
-      if (loc.id === 'farm') return "Balıkçı İskelesi'ne Git";
-      if (loc.id === 'clinic') return "Şifacı'ya Git";
-    } else if (scenarioType === 'winter') {
-      if (loc.id === 'home') return "Eve Git";
-      if (loc.id === 'tavern') return "Kış Hanı'na Git";
-      if (loc.id === 'church') return "Yürek Ağacı'na Git";
-      if (loc.id === 'graveyard') return "Gözcü Kalesi'ne Git";
-      if (loc.id === 'mill') return "Maden'e Git";
-      if (loc.id === 'farm') return "Sur'a Git";
-      if (loc.id === 'clinic') return "İnfaz Meydanı'na Git";
-    }
-
-    if (loc.id === 'clinic') return "Revir'e Git";
-    if (loc.id === 'farm') return "Çiftliğe Git";
-    return `${loc.name}'a Git`;
+    const label = getLocationLabel(loc.id, scenarioType);
+    return `${label}'e Git`;
   };
+
+  const scenarioName =
+    SCENARIO_REGISTRY[scenarioType as keyof typeof SCENARIO_REGISTRY]?.name ?? 'Ashenmoor Köyü';
 
   return (
     <main className={styles.main}>
@@ -1034,17 +351,7 @@ export default function MapPage() {
           Kaydet ve Çık
         </button>
         <div className={styles.headerCenter}>
-          <h1 className={styles.pageTitle}>
-            {scenarioType === 'modern'
-              ? 'Millfield Kasabasi'
-              : scenarioType === 'cyberpunk'
-                ? 'Neon Prime'
-                : scenarioType === 'china'
-                  ? 'Jinling'
-                  : scenarioType === 'winter'
-                    ? 'Frosthold'
-                    : 'Ashenmoor Koyu'}
-          </h1>
+          <h1 className={styles.pageTitle}>{scenarioName}</h1>
           <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
         </div>
         <div className={styles.sessionInfo}>
@@ -1099,16 +406,9 @@ export default function MapPage() {
                     {walkingTo === loc.id || loadingLoc === loc.id ? 'Gidiliyor...' : getLocationActionText(loc)}
                   </span>
                   {npcConfig?.name && !walkingTo && !loadingLoc && (
-                    <span className={styles.labelNpcName}>
-                      {npcConfig.name}
-                    </span>
+                    <span className={styles.labelTextNpc}>{npcConfig.name}</span>
                   )}
                 </div>
-                {!isAvailable && (
-                  <span className={styles.lockedText}>
-                    ({isNight ? 'Gece' : 'Kapalı'})
-                  </span>
-                )}
               </div>
             </div>
           );
@@ -1210,14 +510,13 @@ export default function MapPage() {
               <span className={styles.btnText}>Cinayet Mahalli</span>
             </button>
           )}
-          
+
           <button 
-            onClick={handleEndDay} 
-            disabled={endingDay}
-            className={styles.endDayBtn}
+            onClick={() => setIsHomeModalOpen(true)}
+            className={`${styles.homeBarBtn} ${isNight ? styles.homeNightGlow : ''}`}
           >
-            <span className={styles.icon}>🛌</span>
-            <span className={styles.btnText}>Günü Bitir</span>
+            <span className={styles.icon}>🏡</span>
+            <span className={styles.btnText}>{isNight ? 'Eve Dön (Dinlen)' : 'Evim'}</span>
           </button>
         </div>
       </footer>
@@ -1321,224 +620,19 @@ export default function MapPage() {
       )}
 
       {/* Notebook Modal */}
-      {isNotebookOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsNotebookOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsNotebookOpen(false)}>&times;</button>
-            <h2 className={styles.modalTitle}>Soruşturma Notları</h2>
-            <textarea 
-              className={styles.notesArea} 
-              value={localNotes} 
-              onChange={(e) => setLocalNotes(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder="Gözlemlerini buraya not et..."
-            />
-          </div>
-        </div>
-      )}
+      {isNotebookOpen && <NotebookModal onClose={() => setIsNotebookOpen(false)} />}
 
       {/* Inventory Modal */}
-      {isInventoryOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsInventoryOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsInventoryOpen(false)}>&times;</button>
-            <h2 className={styles.modalTitle}>Envanter</h2>
-            <div className={styles.inventoryList}>
-              {inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0 || evidenceItems.length > 0 ? (
-                <>
-                  {evidenceItems.map((item) => (
-                    <div key={item.id} className={`${styles.inventoryItem} ${styles.evidenceItem}`}>
-                      <span className={styles.itemName}>{item.text}</span>
-                      <span className={styles.evidenceSource}>
-                        {getLocationLabel(item.sourceId, scenarioType)} · {item.dayNumber}. gün
-                      </span>
-                    </div>
-                  ))}
-                  {inventory.activeWarrants.map((w, idx) => (
-                    <div key={`active-${idx}`} className={styles.inventoryItem}>
-                      <span className={styles.itemIcon}>📜</span>
-                      <span className={styles.itemName}>Arama İzni</span>
-                      <span style={{ color: '#8A0303', fontSize: '0.75rem' }}>
-                        {getLocationLabel(w, scenarioType)}
-                      </span>
-                      <span>(Hazır)</span>
-                    </div>
-                  ))}
-                  {inventory.usedWarrants.map((w, idx) => (
-                    <div key={`used-${idx}`} className={styles.inventoryItem} style={{ opacity: 0.6 }}>
-                      <span className={styles.itemIcon}>📜</span>
-                      <span className={styles.itemName}>Arama İzni</span>
-                      <span style={{ color: '#8a7f72', fontSize: '0.75rem' }}>
-                        {getLocationLabel(w, scenarioType)}
-                      </span>
-                      <span>(Kullanıldı)</span>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <p style={{ color: '#8a7f72', gridColumn: '1/-1' }}>Henüz bir eşyan yok.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {isInventoryOpen && <InventoryModal onClose={() => setIsInventoryOpen(false)} />}
 
       {/* Condemn Selection Modal */}
-      {isCondemnModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsCondemnModalOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsCondemnModalOpen(false)}>&times;</button>
-            <h2 className={styles.modalTitle}>
-              {currentDay === 4 && timeOfDay === 4 ? 'Vakit Doldu: Nihai Hüküm' : 'Hüküm Verilecek Kişiyi Seç'}
-            </h2>
-            <p className={styles.modalSubtitle}>
-              {currentDay === 4 && timeOfDay === 4 
-                ? 'Soruşturma için size tanınan süre bitti. Nihai kararınız nedir?' 
-                : 'Nihai kararınız hikayenin sonunu belirleyecek. Dikkatli seçin.'}
-            </p>
-            <div className={styles.villagerList}>
-              {(() => {
-                let villagers = [];
-                if (scenarioType === 'modern') {
-                  villagers = [
-                    { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Polis Amiri' },
-                    { id: 'church', name: 'Gerald', icon: '🏨', role: 'Otel İşletmecisi' },
-                    { id: 'mill', name: 'Donna Perkins', icon: '🍽️', role: 'Lokantacı' },
-                    { id: 'graveyard', name: 'Randy Kowalski', icon: '🎮', role: 'Video Oyuncusu' },
-                  ];
-                  if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Earl Hutchins', icon: '⛽', role: 'Pompacı' });
-                  }
-                  if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' });
-                  }
-                } else if (scenarioType === 'cyberpunk') {
-                  villagers = [
-                    { id: 'tavern', name: 'Officer Kael Voss', icon: '👮', role: 'Polis Memuru' },
-                    { id: 'church', name: 'Mirel Sato', icon: '🍜', role: 'Lokantacı' },
-                    { id: 'mill', name: 'AURA-9', icon: '🛠️', role: 'Tamirci Android' },
-                    { id: 'graveyard', name: 'Brakk Coil', icon: '🏥', role: 'Klinik Hekimi' },
-                  ];
-                  if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Ash', icon: '🏮', role: 'Pazar Satıcısı' });
-                  }
-                  if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Vera Nyx', icon: '🍸', role: 'Barmen' });
-                  }
-                } else if (scenarioType === 'china') {
-                  villagers = [
-                    { id: 'tavern', name: 'Lin Feng', icon: '🍵', role: 'Çay Evi Sahibi' },
-                    { id: 'church', name: 'Komutan Zhao', icon: '🏯', role: 'Garnizon Komutanı' },
-                    { id: 'graveyard', name: 'Keşiş Huikang', icon: '⛩️', role: 'Tapınak Bilgesi' },
-                    { id: 'mill', name: 'Usta Guan', icon: '⚒️', role: 'Demirci Ustası' },
-                  ];
-                  if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Mei Teyze', icon: '🎣', role: 'Balıkçı İskelesi Gözcüsü' });
-                  }
-                  if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Bilgin Song', icon: '🌿', role: 'Saray Eczacısı' });
-                  }
-                } else if (scenarioType === 'winter') {
-                  villagers = [
-                    { id: 'tavern', name: 'Torstein', icon: '🔥', role: 'Hancı' },
-                    { id: 'church', name: 'Kahin Valda', icon: '🍁', role: 'Yürek Ağacı Bekçisi' },
-                    { id: 'graveyard', name: 'Komutan Bjorn', icon: '🏰', role: 'Kale Muhafızı' },
-                    { id: 'mill', name: 'Madenci Durn', icon: '⛏️', role: 'Ustabaşı' },
-                  ];
-                  if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Einar', icon: '🛡️', role: 'Sur Muhafızı' });
-                  }
-                  if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Muhafız Kenneth', icon: '⚔️', role: 'Meydan Çavuşu' });
-                  }
-                } else {
-                  villagers = [
-                    { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
-                    { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
-                    { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
-                    { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
-                  ];
-                  if (difficulty === 'medium' || difficulty === 'hard') {
-                    villagers.push({ id: 'farm', name: 'Çiftçi Edmund', icon: '🌾', role: 'Çiftçi' });
-                  }
-                  if (difficulty === 'hard') {
-                    villagers.push({ id: 'clinic', name: 'Doktor Harland', icon: '🏥', role: 'Doktor' });
-                  }
-                }
-                return villagers;
-              })().map(villager => {
-                const portrait = getNpcDialoguePortrait(scenarioType, villager.id);
-                return (
-                  <button 
-                    key={villager.id} 
-                    className={styles.villagerItem}
-                    onClick={() => {
-                      setIsCondemnModalOpen(false);
-                      setConfirmModal({
-                        isOpen: true,
-                        villagerId: villager.id,
-                        title: 'Engizisyon Hükmü',
-                        message: `${villager.name} isimli şüpheliyi ölüme mahkum etmek istediğinizden emin misiniz? Bu karar geri alınamaz.`,
-                        onConfirm: () => handleCondemn(villager.id),
-                      });
-                    }}
-                  >
-                    <div className={styles.villagerAvatarWrap}>
-                      {portrait ? (
-                        <img 
-                          src={portrait} 
-                          alt={villager.name} 
-                          className={styles.villagerAvatar}
-                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-                        />
-                      ) : (
-                        <span className={styles.villagerIcon}>{villager.icon}</span>
-                      )}
-                    </div>
-                    <div className={styles.villagerInfo}>
-                      <span className={styles.villagerName}>{villager.name}</span>
-                      <span className={styles.villagerRole}>{villager.role}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirm Modal */}
-      {confirmModal.isOpen && (
-        <div className={styles.modalOverlay} onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            {confirmModal.villagerId && (
-              <div className={styles.confirmAvatarWrap}>
-                <img
-                  src={getNpcDialoguePortrait(scenarioType, confirmModal.villagerId)}
-                  alt="Şüpheli"
-                  className={styles.confirmAvatar}
-                />
-              </div>
-            )}
-            <h2 className={styles.modalTitle}>{confirmModal.title}</h2>
-            <p className={styles.modalMessage}>{confirmModal.message}</p>
-            <div className={styles.modalActions}>
-              <button 
-                className={styles.modalCancel} 
-                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-              >
-                Vazgeç
-              </button>
-              <button 
-                className={styles.modalConfirm} 
-                onClick={confirmModal.onConfirm}
-              >
-                Onayla
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CondemnModal
+        isOpen={isCondemnModalOpen}
+        onClose={() => setIsCondemnModalOpen(false)}
+        scenarioType={scenarioType}
+        difficulty={difficulty}
+        onConfirmCondemn={handleCondemn}
+      />
 
       {/* Audio Settings Modal */}
       {isAudioSettingsOpen && (
@@ -1556,180 +650,16 @@ export default function MapPage() {
               &times;
             </button>
             <h2 className={styles.modalTitle}>⚙️ Ses Ayarları</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
-              {/* Yürüme Sesi */}
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px',
-                  }}
-                >
-                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
-                    Yürüme / Adım Sesi
-                  </span>
-                  <span className={styles.volumeValue}>
-                    {audioSettings.footstepMuted
-                      ? 'Kapalı'
-                      : `%${Math.round(audioSettings.footstepVolume * 100)}`}
-                  </span>
-                </div>
-                <div className={styles.soundRow}>
-                  <button
-                    type="button"
-                    className={styles.muteToggle}
-                    onClick={() =>
-                      handleAudioChange('footstepMuted', !audioSettings.footstepMuted)
-                    }
-                    title={audioSettings.footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
-                    aria-label={
-                      audioSettings.footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'
-                    }
-                  >
-                    {audioSettings.footstepMuted || audioSettings.footstepVolume === 0 ? (
-                      <VolumeX size={18} />
-                    ) : (
-                      <Volume2 size={18} />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={audioSettings.footstepVolume}
-                    onChange={(e) =>
-                      handleAudioChange('footstepVolume', parseFloat(e.target.value))
-                    }
-                    className={styles.volumeSlider}
-                    style={
-                      {
-                        '--fill': `${(audioSettings.footstepMuted ? 0 : audioSettings.footstepVolume) * 100}%`,
-                      } as CSSProperties
-                    }
-                    aria-label="Yürüme sesi"
-                  />
-                </div>
-              </div>
-
-              {/* Kapı Sesi */}
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px',
-                  }}
-                >
-                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
-                    Kapı Sesi (Giriş & Çıkış)
-                  </span>
-                  <span className={styles.volumeValue}>
-                    {audioSettings.doorMuted
-                      ? 'Kapalı'
-                      : `%${Math.round(audioSettings.doorVolume * 100)}`}
-                  </span>
-                </div>
-                <div className={styles.soundRow}>
-                  <button
-                    type="button"
-                    className={styles.muteToggle}
-                    onClick={() => handleAudioChange('doorMuted', !audioSettings.doorMuted)}
-                    title={audioSettings.doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                    aria-label={audioSettings.doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                  >
-                    {audioSettings.doorMuted || audioSettings.doorVolume === 0 ? (
-                      <VolumeX size={18} />
-                    ) : (
-                      <Volume2 size={18} />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={audioSettings.doorVolume}
-                    onChange={(e) =>
-                      handleAudioChange('doorVolume', parseFloat(e.target.value))
-                    }
-                    className={styles.volumeSlider}
-                    style={
-                      {
-                        '--fill': `${(audioSettings.doorMuted ? 0 : audioSettings.doorVolume) * 100}%`,
-                      } as CSSProperties
-                    }
-                    aria-label="Kapı sesi"
-                  />
-                </div>
-              </div>
-
-              {/* Ana Menü Müziği */}
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px',
-                  }}
-                >
-                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
-                    Ana Menü Müziği
-                  </span>
-                  <span className={styles.volumeValue}>
-                    {audioSettings.musicMuted
-                      ? 'Kapalı'
-                      : `%${Math.round(audioSettings.musicVolume * 100)}`}
-                  </span>
-                </div>
-                <div className={styles.soundRow}>
-                  <button
-                    type="button"
-                    className={styles.muteToggle}
-                    onClick={() => handleAudioChange('musicMuted', !audioSettings.musicMuted)}
-                    title={audioSettings.musicMuted ? 'Müziği aç' : 'Müziği kapat'}
-                    aria-label={audioSettings.musicMuted ? 'Müziği aç' : 'Müziği kapat'}
-                  >
-                    {audioSettings.musicMuted || audioSettings.musicVolume === 0 ? (
-                      <VolumeX size={18} />
-                    ) : (
-                      <Volume2 size={18} />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={audioSettings.musicVolume}
-                    onChange={(e) =>
-                      handleAudioChange('musicVolume', parseFloat(e.target.value))
-                    }
-                    className={styles.volumeSlider}
-                    style={
-                      {
-                        '--fill': `${(audioSettings.musicMuted ? 0 : audioSettings.musicVolume) * 100}%`,
-                      } as CSSProperties
-                    }
-                    aria-label="Müzik sesi"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button
-                  type="button"
-                  className={styles.modalConfirm}
-                  onClick={() => setIsAudioSettingsOpen(false)}
-                  style={{ width: '120px' }}
-                >
-                  Tamam
-                </button>
-              </div>
+            <AudioSettingsPanel />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
+              <button
+                type="button"
+                className={styles.modalConfirm}
+                onClick={() => setIsAudioSettingsOpen(false)}
+                style={{ width: '120px' }}
+              >
+                Tamam
+              </button>
             </div>
           </div>
         </div>

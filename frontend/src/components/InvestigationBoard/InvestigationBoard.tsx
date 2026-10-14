@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { outfitThumb, wearableOutfitId } from '@/config/outfits';
@@ -87,33 +88,36 @@ export default function InvestigationBoard() {
 
   // Pano, şüpheliler ve kanıtlar sunucudan yüklenir
   useEffect(() => {
-    if (!sessionId || !authToken) return;
-    const headers = { Authorization: `Bearer ${authToken}` };
+    if (!sessionId) return;
     (async () => {
       try {
-        const [boardRes, evidenceRes] = await Promise.all([
-          fetch(apiUrl(`/game-sessions/${sessionId}/board`), { headers }),
-          fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), { headers }),
+        const [boardData, evidenceData] = await Promise.all([
+          api.get<{
+            board?: BoardState;
+            suspects?: string[];
+            canThink?: boolean;
+            thought?: string | null;
+          }>(`/game-sessions/${sessionId}/board`),
+          api.get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`),
         ]);
-        if (evidenceRes.ok) {
-          const data = await evidenceRes.json();
-          setEvidence(Array.isArray(data.evidence) ? data.evidence : []);
+
+        if (evidenceData?.evidence) {
+          setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
         }
-        if (boardRes.ok) {
-          const data = await boardRes.json();
-          setBoard(data.board ?? { cards: [], strings: [] });
-          setSuspectIds(Array.isArray(data.suspects) ? data.suspects : []);
-          setCanThink(Boolean(data.canThink));
-          setThought(typeof data.thought === 'string' ? data.thought : null);
+        if (boardData) {
+          setBoard(boardData.board ?? { cards: [], strings: [] });
+          setSuspectIds(Array.isArray(boardData.suspects) ? boardData.suspects : []);
+          setCanThink(Boolean(boardData.canThink));
+          setThought(typeof boardData.thought === 'string' ? boardData.thought : null);
           if (!readHelpSeen()) setHelpOpen(true);
         }
       } catch (err) {
-        console.error('Failed to load board', err);
+        logger.error('Failed to load board', err);
       } finally {
         setLoaded(true);
       }
     })();
-  }, [sessionId, authToken, setEvidence]);
+  }, [sessionId, setEvidence]);
 
   // Panonun ekrandaki boyutu: iplerin çizimi piksel cinsinden yapılır
   useEffect(() => {
@@ -128,23 +132,19 @@ export default function InvestigationBoard() {
 
   // Değişiklikler gecikmeli kaydedilir
   useEffect(() => {
-    if (!dirtyRef.current || !sessionId || !authToken) return;
+    if (!dirtyRef.current || !sessionId) return;
     const timer = setTimeout(async () => {
       dirtyRef.current = false;
       setSaveStatus('saving');
       try {
-        const res = await fetch(apiUrl(`/game-sessions/${sessionId}/board`), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ board }),
-        });
-        setSaveStatus(res.ok ? 'saved' : 'error');
+        await api.put(`/game-sessions/${sessionId}/board`, { board });
+        setSaveStatus('saved');
       } catch {
         setSaveStatus('error');
       }
     }, SAVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [board, sessionId, authToken]);
+  }, [board, sessionId]);
 
   const update = useCallback((fn: (prev: BoardState) => BoardState) => {
     dirtyRef.current = true;
@@ -411,22 +411,19 @@ export default function InvestigationBoard() {
     setEditingString(null);
     setPendingFrom(null);
     try {
-      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/board/think`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ board }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setThinkError(data?.message ?? 'Şu an düşünemiyorsun. Birazdan tekrar dene.');
-        return;
-      }
+      const data = await api.post<{
+        board: BoardState;
+        thought: string;
+        canThink?: boolean;
+      }>(`/game-sessions/${sessionId}/board/think`, { board });
+
       setBoard(data.board);
       setThought(data.thought);
       setCanThink(Boolean(data.canThink));
       setThoughtOpen(true);
-    } catch {
-      setThinkError('Şu an düşünemiyorsun. Birazdan tekrar dene.');
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Şu an düşünemiyorsun. Birazdan tekrar dene.';
+      setThinkError(msg);
     } finally {
       setThinking(false);
     }
