@@ -172,6 +172,7 @@ export default function HomePage() {
   // Yerel depodaki ayarları anında yükle
   useEffect(() => {
     const current = getAudioSettings();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ayarlar localStorage'da; sunucu render'ıyla uyuşsun diye mount sonrası okunur
     setIsMuted(current.musicMuted);
     setVolume(current.musicVolume);
     setFootstepMuted(current.footstepMuted);
