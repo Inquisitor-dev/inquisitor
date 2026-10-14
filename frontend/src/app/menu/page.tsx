@@ -39,6 +39,12 @@ import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outf
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import { showScene } from '@/components/SceneTransition/sceneStore';
 import { mapScene } from '@/components/SceneTransition/scenes';
+import {
+  getAudioSettings,
+  updateAudioSettingsLocally,
+  saveAudioSettingsRemote,
+  fetchAndSyncAudioSettings,
+} from '@/utils/audioSettings';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -130,9 +136,12 @@ export default function HomePage() {
   const [isTestModeStart, setIsTestModeStart] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.4);
-  // Müzik ayarları hesaptan yüklenene kadar çalma: yoksa kısılmış ses bir an varsayılan seviyede patlar
+  const [footstepMuted, setFootstepMuted] = useState(false);
+  const [footstepVolume, setFootstepVolume] = useState(0.45);
+  const [doorMuted, setDoorMuted] = useState(false);
+  const [doorVolume, setDoorVolume] = useState(0.55);
+  // Ses ayarları yüklenene kadar ana müzik çalınmaz
   const [audioSettingsLoaded, setAudioSettingsLoaded] = useState(false);
-  const saveAudioTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [accountSummary, setAccountSummary] = useState<null | {
     email: string;
     username?: string | null;
@@ -160,30 +169,37 @@ export default function HomePage() {
   const [selfRankEntry, setSelfRankEntry] = useState<LeaderboardEntry | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Ses seviyesi ve sessiz ayarı hesapta saklanır; menüye her girişte oradan okunur
+  // Yerel depodaki ayarları anında yükle
+  useEffect(() => {
+    const current = getAudioSettings();
+    setIsMuted(current.musicMuted);
+    setVolume(current.musicVolume);
+    setFootstepMuted(current.footstepMuted);
+    setFootstepVolume(current.footstepVolume);
+    setDoorMuted(current.doorMuted);
+    setDoorVolume(current.doorVolume);
+    setAudioSettingsLoaded(true);
+  }, []);
+
+  // Kullanıcı giriş yaptıysa sunucudaki güncel ses tercihlerini çekip eşitle
   useEffect(() => {
     if (!hasHydrated || !authToken) return;
     let cancelled = false;
 
-    const loadAudioSettings = async () => {
-      try {
-        const res = await fetch(apiUrl('/auth/audio-settings'), {
-          headers: { Authorization: `Bearer ${authToken}` },
-          cache: 'no-store',
-        });
-        if (res.ok && !cancelled) {
-          const data = await res.json();
-          if (typeof data.musicVolume === 'number') setVolume(data.musicVolume);
-          if (typeof data.musicMuted === 'boolean') setIsMuted(data.musicMuted);
+    fetchAndSyncAudioSettings(authToken)
+      .then((settings) => {
+        if (!cancelled) {
+          setIsMuted(settings.musicMuted);
+          setVolume(settings.musicVolume);
+          setFootstepMuted(settings.footstepMuted);
+          setFootstepVolume(settings.footstepVolume);
+          setDoorMuted(settings.doorMuted);
+          setDoorVolume(settings.doorVolume);
+          setAudioSettingsLoaded(true);
         }
-      } catch (err) {
-        console.error('Failed to load audio settings', err);
-      } finally {
-        if (!cancelled) setAudioSettingsLoaded(true);
-      }
-    };
+      })
+      .catch((err) => console.error('Failed to load audio settings', err));
 
-    void loadAudioSettings();
     return () => {
       cancelled = true;
     };
@@ -242,28 +258,43 @@ export default function HomePage() {
     }
   };
 
-  const saveAudioSettings = (settings: { musicVolume?: number; musicMuted?: boolean }) => {
-    if (!authToken) return;
-    // Kaydırıcı sürüklenirken her adımda istek atmamak için kısa bir gecikmeyle kaydedilir
-    if (saveAudioTimer.current) clearTimeout(saveAudioTimer.current);
-    saveAudioTimer.current = setTimeout(() => {
-      fetch(apiUrl('/auth/audio-settings'), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify(settings),
-      }).catch((err) => console.error('Failed to save audio settings', err));
-    }, 400);
-  };
-
   const handleVolumeChange = (value: number) => {
     setVolume(value);
-    saveAudioSettings({ musicVolume: value, musicMuted: isMuted });
+    updateAudioSettingsLocally({ musicVolume: value });
+    saveAudioSettingsRemote({ musicVolume: value }, authToken);
   };
 
   const handleMuteToggle = () => {
     const next = !isMuted;
     setIsMuted(next);
-    saveAudioSettings({ musicVolume: volume, musicMuted: next });
+    updateAudioSettingsLocally({ musicMuted: next });
+    saveAudioSettingsRemote({ musicMuted: next }, authToken);
+  };
+
+  const handleFootstepVolumeChange = (value: number) => {
+    setFootstepVolume(value);
+    updateAudioSettingsLocally({ footstepVolume: value });
+    saveAudioSettingsRemote({ footstepVolume: value }, authToken);
+  };
+
+  const handleFootstepMuteToggle = () => {
+    const next = !footstepMuted;
+    setFootstepMuted(next);
+    updateAudioSettingsLocally({ footstepMuted: next });
+    saveAudioSettingsRemote({ footstepMuted: next }, authToken);
+  };
+
+  const handleDoorVolumeChange = (value: number) => {
+    setDoorVolume(value);
+    updateAudioSettingsLocally({ doorVolume: value });
+    saveAudioSettingsRemote({ doorVolume: value }, authToken);
+  };
+
+  const handleDoorMuteToggle = () => {
+    const next = !doorMuted;
+    setDoorMuted(next);
+    updateAudioSettingsLocally({ doorMuted: next });
+    saveAudioSettingsRemote({ doorMuted: next }, authToken);
   };
 
   useEffect(() => {
@@ -284,7 +315,6 @@ export default function HomePage() {
 
   useEffect(() => {
     return () => {
-      if (saveAudioTimer.current) clearTimeout(saveAudioTimer.current);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -1186,30 +1216,103 @@ export default function HomePage() {
             </section>
 
             <section className={styles.settingsBlock}>
-              <h3 className={styles.blockLabel}>Ana Menü Müziği</h3>
-              <div className={styles.soundRow}>
-                <button
-                  className={styles.muteToggle}
-                  onClick={handleMuteToggle}
-                  title={isMuted ? 'Sesi aç' : 'Sesi kapat'}
-                  aria-label={isMuted ? 'Sesi aç' : 'Sesi kapat'}
-                >
-                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className={styles.volumeSlider}
-                  style={{ '--fill': `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
-                  aria-label="Müzik sesi"
-                />
-                <span className={styles.volumeValue}>
-                  {isMuted ? 'Kapalı' : `%${Math.round(volume * 100)}`}
-                </span>
+              <h3 className={styles.blockLabel}>Ses Ayarları</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '12px' }}>
+                {/* Ana Menü Müziği */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Ana Menü Müziği</span>
+                    <span className={styles.volumeValue}>
+                      {isMuted ? 'Kapalı' : `%${Math.round(volume * 100)}`}
+                    </span>
+                  </div>
+                  <div className={styles.soundRow}>
+                    <button
+                      type="button"
+                      className={styles.muteToggle}
+                      onClick={handleMuteToggle}
+                      title={isMuted ? 'Müziği aç' : 'Müziği kapat'}
+                      aria-label={isMuted ? 'Müziği aç' : 'Müziği kapat'}
+                    >
+                      {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={volume}
+                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                      className={styles.volumeSlider}
+                      style={{ '--fill': `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
+                      aria-label="Müzik sesi"
+                    />
+                  </div>
+                </div>
+
+                {/* Yürüme Sesi */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Yürüme / Adım Sesi</span>
+                    <span className={styles.volumeValue}>
+                      {footstepMuted ? 'Kapalı' : `%${Math.round(footstepVolume * 100)}`}
+                    </span>
+                  </div>
+                  <div className={styles.soundRow}>
+                    <button
+                      type="button"
+                      className={styles.muteToggle}
+                      onClick={handleFootstepMuteToggle}
+                      title={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
+                      aria-label={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
+                    >
+                      {footstepMuted || footstepVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={footstepVolume}
+                      onChange={(e) => handleFootstepVolumeChange(parseFloat(e.target.value))}
+                      className={styles.volumeSlider}
+                      style={{ '--fill': `${(footstepMuted ? 0 : footstepVolume) * 100}%` } as React.CSSProperties}
+                      aria-label="Yürüme sesi"
+                    />
+                  </div>
+                </div>
+
+                {/* Kapı Sesi */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Kapı Sesi (Giriş & Çıkış)</span>
+                    <span className={styles.volumeValue}>
+                      {doorMuted ? 'Kapalı' : `%${Math.round(doorVolume * 100)}`}
+                    </span>
+                  </div>
+                  <div className={styles.soundRow}>
+                    <button
+                      type="button"
+                      className={styles.muteToggle}
+                      onClick={handleDoorMuteToggle}
+                      title={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
+                      aria-label={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
+                    >
+                      {doorMuted || doorVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={doorVolume}
+                      onChange={(e) => handleDoorVolumeChange(parseFloat(e.target.value))}
+                      className={styles.volumeSlider}
+                      style={{ '--fill': `${(doorMuted ? 0 : doorVolume) * 100}%` } as React.CSSProperties}
+                      aria-label="Kapı sesi"
+                    />
+                  </div>
+                </div>
               </div>
             </section>
 
