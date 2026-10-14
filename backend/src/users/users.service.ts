@@ -56,7 +56,7 @@ export class UsersService {
 
     const today = new Date().toISOString().slice(0, 10);
     const lastReset = user.lastResetDate
-      ? user.lastResetDate.toISOString().slice(0, 10)
+      ? user.lastResetDate.slice(0, 10)
       : null;
 
     if (lastReset !== today) {

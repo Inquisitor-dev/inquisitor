@@ -2,8 +2,9 @@ import {
   FEAR_GAIN,
   FEAR_BREAK_THRESHOLD,
   fearPrompt,
+  EvidenceImpact,
 } from './fear';
-import { EVIDENCE_TAG, EvidenceImpact } from './evidence';
+import { EVIDENCE_TAG } from './evidence';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
@@ -41,13 +42,13 @@ export interface BuildNpcPromptParams {
   scenarioConfig: ScenarioConfig;
   session: {
     scenarioType: string;
-    scenario: string;
-    truthReveal: string;
-    culpritId: string;
+    scenario?: string | null;
+    truthReveal?: string | null;
+    culpritId?: string | null;
     warrantsIssued: number;
     activeWarrants: string[];
-    caseFacts?: CaseFacts | null;
-    locationClues?: Record<string, string> | null;
+    caseFacts?: Partial<CaseFacts> | null;
+    locationClues?: Record<string, string> | any | null;
   };
   npc: {
     id: string;
@@ -55,7 +56,7 @@ export interface BuildNpcPromptParams {
     description: string;
     basePrompt: string;
   };
-  dynamicPrompt: string;
+  dynamicPrompt?: string | null;
   fearLevel: number;
   hasConfessed: boolean;
   confrontation?: { evidenceText: string; impact: EvidenceImpact };
@@ -88,7 +89,10 @@ export function buildNpcPrompt({
     .map((n) => `- ${n.id}: ${n.name} (${n.role})`)
     .join('\n');
 
-  const isCulprit = session.culpritId === npc.id;
+  const scenarioText = session.scenario ?? '';
+  const truthRevealText = session.truthReveal ?? '';
+  const dynamicPromptText = dynamicPrompt ?? '';
+  const isCulprit = !!session.culpritId && session.culpritId === npc.id;
   const confrontationRules = isCulprit
     ? `CONFESSION RULES FOR THE CULPRIT:
 1. You are the real culprit of the main crime.
@@ -115,7 +119,7 @@ CANONICAL CAST:
 ${rosterText}
 
 INCIDENT SCENARIO:
-${session.scenario}
+${scenarioText}
 
 STRICT CANON RULES:
 1. You must stay faithful to the canonical cast and canonical locations above.
@@ -128,7 +132,7 @@ STRICT CANON RULES:
 
   const isNarrator = npc.id.startsWith('narrator_');
   const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
-  const caseFacts = (session.caseFacts ?? null) as CaseFacts | null;
+  const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
 
   const forcedConfession = isForcedConfession({
     isNarrator,
@@ -148,7 +152,7 @@ NARRATOR ROLE:
 You are the objective environment narrator for ${narratedLocation?.name ?? narratedLocationId}.
 
 THE ABSOLUTE TRUTH OF WHAT HAPPENED:
-${session.truthReveal}
+${truthRevealText}
 
 CANONICAL HIDDEN CLUE FOR THIS LOCATION:
 ${canonicalClueForLocation}
@@ -172,13 +176,13 @@ Your public role is ${canonicalNpc?.role ?? npc.description}.
 ${canonicalNpc?.personaPrompt ?? npc.basePrompt}
 
 YOUR PERSONAL SECRET/ROLE IN THIS:
-${dynamicPrompt}
+${dynamicPromptText}
 `;
 
     if (isCulprit) {
       combinedPrompt += `
 THE ABSOLUTE TRUTH OF THE INCIDENT:
-${session.truthReveal}
+${truthRevealText}
 `;
     } else if (caseFacts?.alibis?.[npc.id]) {
       combinedPrompt += `

@@ -58,13 +58,14 @@ describe('prompt-builder domain', () => {
       warrantsIssued: 1,
       activeWarrants: ['mill'],
       caseFacts: {
-        victim: 'Lord',
+        victim: { name: 'Lord Aldous', profession: 'Lord' },
         weapon: 'Zehir',
         motive: 'İntikam',
         alibis: {
           tavern: 'Gece boyu bardaydı.',
         },
         verification: {
+          kind: 'CORROBORATION' as const,
           placement: { type: 'TESTIMONY' as const, npcId: 'tavern' },
         },
         verificationText: 'Gece yarısı kiliseden gelen bir ses duyuldu.',
