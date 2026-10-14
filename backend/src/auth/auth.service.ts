@@ -421,10 +421,24 @@ export class AuthService implements OnModuleInit {
     };
   }
 
-  async getAudioSettings(userId: string): Promise<{ musicVolume: number; musicMuted: boolean }> {
+  async getAudioSettings(userId: string): Promise<{
+    musicVolume: number;
+    musicMuted: boolean;
+    footstepVolume: number;
+    footstepMuted: boolean;
+    doorVolume: number;
+    doorMuted: boolean;
+  }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { musicVolume: true, musicMuted: true },
+      select: {
+        musicVolume: true,
+        musicMuted: true,
+        footstepVolume: true,
+        footstepMuted: true,
+        doorVolume: true,
+        doorMuted: true,
+      },
     });
     if (!user) throw new UnauthorizedException('Kullanıcı bulunamadı.');
     return user;
@@ -432,19 +446,59 @@ export class AuthService implements OnModuleInit {
 
   async updateAudioSettings(
     userId: string,
-    settings: { musicVolume?: unknown; musicMuted?: unknown },
-  ): Promise<{ musicVolume: number; musicMuted: boolean }> {
-    const data: { musicVolume?: number; musicMuted?: boolean } = {};
+    settings: {
+      musicVolume?: unknown;
+      musicMuted?: unknown;
+      footstepVolume?: unknown;
+      footstepMuted?: unknown;
+      doorVolume?: unknown;
+      doorMuted?: unknown;
+    },
+  ): Promise<{
+    musicVolume: number;
+    musicMuted: boolean;
+    footstepVolume: number;
+    footstepMuted: boolean;
+    doorVolume: number;
+    doorMuted: boolean;
+  }> {
+    const data: {
+      musicVolume?: number;
+      musicMuted?: boolean;
+      footstepVolume?: number;
+      footstepMuted?: boolean;
+      doorVolume?: number;
+      doorMuted?: boolean;
+    } = {};
     if (typeof settings.musicVolume === 'number' && Number.isFinite(settings.musicVolume)) {
       data.musicVolume = Math.min(1, Math.max(0, settings.musicVolume));
     }
     if (typeof settings.musicMuted === 'boolean') {
       data.musicMuted = settings.musicMuted;
     }
+    if (typeof settings.footstepVolume === 'number' && Number.isFinite(settings.footstepVolume)) {
+      data.footstepVolume = Math.min(1, Math.max(0, settings.footstepVolume));
+    }
+    if (typeof settings.footstepMuted === 'boolean') {
+      data.footstepMuted = settings.footstepMuted;
+    }
+    if (typeof settings.doorVolume === 'number' && Number.isFinite(settings.doorVolume)) {
+      data.doorVolume = Math.min(1, Math.max(0, settings.doorVolume));
+    }
+    if (typeof settings.doorMuted === 'boolean') {
+      data.doorMuted = settings.doorMuted;
+    }
     return this.prisma.user.update({
       where: { id: userId },
       data,
-      select: { musicVolume: true, musicMuted: true },
+      select: {
+        musicVolume: true,
+        musicMuted: true,
+        footstepVolume: true,
+        footstepMuted: true,
+        doorVolume: true,
+        doorMuted: true,
+      },
     });
   }
 

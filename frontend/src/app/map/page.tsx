@@ -24,6 +24,17 @@ import styles from './map.module.scss';
 import MapCharacter from './MapCharacter';
 import { getRoadNetwork, findPath, distance, expandPath, type Point, type RoadNetwork } from './roads';
 import { smoothPath, createRoute, directionWithHysteresis } from './walkPath';
+import { Volume2, VolumeX } from 'lucide-react';
+import { useFootsteps } from './useFootsteps';
+import { playDoorSound } from '@/utils/doorSound';
+import {
+  getAudioSettings,
+  updateAudioSettingsLocally,
+  saveAudioSettingsRemote,
+  fetchAndSyncAudioSettings,
+  subscribeAudioSettings,
+  type AudioSettings,
+} from '@/utils/audioSettings';
 
 
 // Medieval köy konumları
@@ -444,7 +455,8 @@ const CHARACTER_SPRITE_SCALE = 0.36;
 // Referans ölçekte, derinlik 1 iken yatay yürüyüşte px/sn (saniyede ~2 adım, kararlı bir tempo).
 // Dikey yürüyüşte kamera açısı yüzünden ekranda daha az yol alınır; adım temposu her yönde aynı kalır.
 const SCREEN_WALK_SPEED = 75;
-const WALK_MAX_DURATION = 6; // sn, uzun rotalarda hız bu süreyi aşmayacak kadar artar
+const WALK_MAX_SPEED = 90; // px/sn; uzun rotalarda karakterin anormal derecede hızlı koşmasını önleyen tavan hız
+const WALK_MAX_DURATION = 9; // sn, rotanın makul sürede tamamlanması için referans süre
 const WALK_ACCEL_TIME = 0.25; // sn, kalkışta tam hıza çıkma süresi
 const WALK_DECEL_DISTANCE = 30; // px (referans ölçekte), varmadan önce yavaşlamaya başlanan mesafe
 const WALK_LOOKAHEAD = 24; // px, bakış yönü bu kadar ilerideki noktaya göre hesaplanır
@@ -535,6 +547,26 @@ export default function MapPage() {
   const wornOutfitId = marketHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
   const character = useCharacterManifest(wornOutfitId, 'map');
   const characterRarity = wornOutfitId ? findOutfit(wornOutfitId)?.rarity : undefined;
+
+  // Yürürken adımlarla senkron ayak sesleri (test)
+  useFootsteps(Boolean(walkingTo), walkPhase, scenarioType);
+
+  // Ses ayarları durumu ve senkronizasyonu
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => getAudioSettings());
+
+  useEffect(() => {
+    if (authToken) {
+      fetchAndSyncAudioSettings(authToken).then((s) => setAudioSettings(s));
+    }
+    return subscribeAudioSettings((s) => setAudioSettings(s));
+  }, [authToken]);
+
+  const handleAudioChange = (key: keyof AudioSettings, value: number | boolean) => {
+    const updated = updateAudioSettingsLocally({ [key]: value });
+    setAudioSettings(updated);
+    saveAudioSettingsRemote({ [key]: value }, authToken);
+  };
   
   // Modal states
   const [isHomeModalOpen, setIsHomeModalOpen] = useState(false);
@@ -643,6 +675,7 @@ export default function MapPage() {
 
   // Evi hazırlanmış evrende oyuncu evin içine girer; diğerlerinde "Evim" penceresi açılır
   const openHome = () => {
+    playDoorSound();
     const home = getPlayerHome(scenarioType || 'medieval');
     if (!home) {
       setIsHomeModalOpen(true);
@@ -739,6 +772,7 @@ export default function MapPage() {
     };
 
     setWalkingTo(locId);
+    setWalkPhase(0);
     if (totalLength === 0) {
       arrive();
       return;
@@ -794,6 +828,7 @@ export default function MapPage() {
     };
 
     setWalkingTo(locId);
+    setWalkPhase(0);
     if (route.length === 0) {
       arrive();
       return;
@@ -801,10 +836,14 @@ export default function MapPage() {
 
     // Karakterin ekrandaki boy çarpanı; hız da bununla ölçeklenir ki adım temposu her haritada aynı kalsın
     const sizeScale = (layerScale / CHARACTER_REF_LAYER_SCALE) * characterScale;
-    // Referans ölçekteki hız; ekrandaki hız karakterle birlikte sizeScale kadar büyür
-    const baseSpeed = Math.max(
-      SCREEN_WALK_SPEED,
-      (route.length * layerScale) / sizeScale / WALK_MAX_DURATION
+    // Referans ölçekteki hız; ekrandaki hız karakterle birlikte sizeScale kadar büyür.
+    // Uzun rotalarda karakterin aşırı hızlanıp bacaklarının karikatür gibi fırlamasını önlüyoruz.
+    const baseSpeed = Math.min(
+      WALK_MAX_SPEED,
+      Math.max(
+        SCREEN_WALK_SPEED,
+        (route.length * layerScale) / sizeScale / WALK_MAX_DURATION
+      )
     );
 
     const lookahead = WALK_LOOKAHEAD / layerScale;
@@ -1141,6 +1180,13 @@ export default function MapPage() {
             </svg>
             <span>Envanter</span>
           </button>
+          <button className={styles.iconBtn} onClick={() => setIsAudioSettingsOpen(true)} title="Ses Ayarları">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>Ayarlar</span>
+          </button>
         </div>
 
         {/* Central Condemn Button */}
@@ -1178,9 +1224,23 @@ export default function MapPage() {
 
       {/* Home Modal */}
       {isHomeModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsHomeModalOpen(false)}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => {
+            playDoorSound();
+            setIsHomeModalOpen(false);
+          }}
+        >
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsHomeModalOpen(false)}>&times;</button>
+            <button
+              className={styles.closeBtn}
+              onClick={() => {
+                playDoorSound();
+                setIsHomeModalOpen(false);
+              }}
+            >
+              &times;
+            </button>
             <h2 className={styles.modalTitle}>🏡 Evim (Engizisyoncu Odası)</h2>
             <p className={styles.modalMessage}>
               Köydeki ikametgahındasın. Kapıyı kilitleyip dinlenebilir, günü tamamlayabilir,
@@ -1231,7 +1291,23 @@ export default function MapPage() {
               </button>
               <button
                 className={styles.homeActionBtn}
-                onClick={() => setIsHomeModalOpen(false)}
+                onClick={() => {
+                  setIsHomeModalOpen(false);
+                  setIsAudioSettingsOpen(true);
+                }}
+              >
+                <span className={styles.homeActionIcon}>⚙️</span>
+                <div className={styles.homeActionInfo}>
+                  <span className={styles.homeActionTitle}>Ses Ayarları</span>
+                  <span className={styles.homeActionDesc}>Yürüme, kapı ve müzik ses seviyelerini ayarla.</span>
+                </div>
+              </button>
+              <button
+                className={styles.homeActionBtn}
+                onClick={() => {
+                  playDoorSound();
+                  setIsHomeModalOpen(false);
+                }}
               >
                 <span className={styles.homeActionIcon}>🚪</span>
                 <div className={styles.homeActionInfo}>
@@ -1463,6 +1539,201 @@ export default function MapPage() {
           </div>
         </div>
       )}
+
+      {/* Audio Settings Modal */}
+      {isAudioSettingsOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsAudioSettingsOpen(false)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '480px' }}
+          >
+            <button
+              className={styles.closeBtn}
+              onClick={() => setIsAudioSettingsOpen(false)}
+              aria-label="Kapat"
+            >
+              &times;
+            </button>
+            <h2 className={styles.modalTitle}>⚙️ Ses Ayarları</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
+              {/* Yürüme Sesi */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
+                    Yürüme / Adım Sesi
+                  </span>
+                  <span className={styles.volumeValue}>
+                    {audioSettings.footstepMuted
+                      ? 'Kapalı'
+                      : `%${Math.round(audioSettings.footstepVolume * 100)}`}
+                  </span>
+                </div>
+                <div className={styles.soundRow}>
+                  <button
+                    type="button"
+                    className={styles.muteToggle}
+                    onClick={() =>
+                      handleAudioChange('footstepMuted', !audioSettings.footstepMuted)
+                    }
+                    title={audioSettings.footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
+                    aria-label={
+                      audioSettings.footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'
+                    }
+                  >
+                    {audioSettings.footstepMuted || audioSettings.footstepVolume === 0 ? (
+                      <VolumeX size={18} />
+                    ) : (
+                      <Volume2 size={18} />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={audioSettings.footstepVolume}
+                    onChange={(e) =>
+                      handleAudioChange('footstepVolume', parseFloat(e.target.value))
+                    }
+                    className={styles.volumeSlider}
+                    style={
+                      {
+                        '--fill': `${(audioSettings.footstepMuted ? 0 : audioSettings.footstepVolume) * 100}%`,
+                      } as CSSProperties
+                    }
+                    aria-label="Yürüme sesi"
+                  />
+                </div>
+              </div>
+
+              {/* Kapı Sesi */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
+                    Kapı Sesi (Giriş & Çıkış)
+                  </span>
+                  <span className={styles.volumeValue}>
+                    {audioSettings.doorMuted
+                      ? 'Kapalı'
+                      : `%${Math.round(audioSettings.doorVolume * 100)}`}
+                  </span>
+                </div>
+                <div className={styles.soundRow}>
+                  <button
+                    type="button"
+                    className={styles.muteToggle}
+                    onClick={() => handleAudioChange('doorMuted', !audioSettings.doorMuted)}
+                    title={audioSettings.doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
+                    aria-label={audioSettings.doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
+                  >
+                    {audioSettings.doorMuted || audioSettings.doorVolume === 0 ? (
+                      <VolumeX size={18} />
+                    ) : (
+                      <Volume2 size={18} />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={audioSettings.doorVolume}
+                    onChange={(e) =>
+                      handleAudioChange('doorVolume', parseFloat(e.target.value))
+                    }
+                    className={styles.volumeSlider}
+                    style={
+                      {
+                        '--fill': `${(audioSettings.doorMuted ? 0 : audioSettings.doorVolume) * 100}%`,
+                      } as CSSProperties
+                    }
+                    aria-label="Kapı sesi"
+                  />
+                </div>
+              </div>
+
+              {/* Ana Menü Müziği */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span style={{ fontSize: '0.9rem', color: '#e8dcc4', fontWeight: 600 }}>
+                    Ana Menü Müziği
+                  </span>
+                  <span className={styles.volumeValue}>
+                    {audioSettings.musicMuted
+                      ? 'Kapalı'
+                      : `%${Math.round(audioSettings.musicVolume * 100)}`}
+                  </span>
+                </div>
+                <div className={styles.soundRow}>
+                  <button
+                    type="button"
+                    className={styles.muteToggle}
+                    onClick={() => handleAudioChange('musicMuted', !audioSettings.musicMuted)}
+                    title={audioSettings.musicMuted ? 'Müziği aç' : 'Müziği kapat'}
+                    aria-label={audioSettings.musicMuted ? 'Müziği aç' : 'Müziği kapat'}
+                  >
+                    {audioSettings.musicMuted || audioSettings.musicVolume === 0 ? (
+                      <VolumeX size={18} />
+                    ) : (
+                      <Volume2 size={18} />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={audioSettings.musicVolume}
+                    onChange={(e) =>
+                      handleAudioChange('musicVolume', parseFloat(e.target.value))
+                    }
+                    className={styles.volumeSlider}
+                    style={
+                      {
+                        '--fill': `${(audioSettings.musicMuted ? 0 : audioSettings.musicVolume) * 100}%`,
+                      } as CSSProperties
+                    }
+                    aria-label="Müzik sesi"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  className={styles.modalConfirm}
+                  onClick={() => setIsAudioSettingsOpen(false)}
+                  style={{ width: '120px' }}
+                >
+                  Tamam
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -1485,7 +1756,7 @@ function RoadDebugOverlay({
         <polyline
           key={`${a}-${b}`}
           points={smoothPath(expandPath(roads, [a, b]), 6)
-            .map((p) => `${p.x},${p.y}`)
+            .map((p: Point) => `${p.x},${p.y}`)
             .join(' ')}
         />
       ))}

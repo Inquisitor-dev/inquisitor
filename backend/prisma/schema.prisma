@@ -25,6 +25,10 @@ model User {
   lastResetDate     String        @default("")
   musicVolume       Float         @default(0.4) // Ana menü müziği, 0..1
   musicMuted        Boolean       @default(false)
+  footstepVolume    Float         @default(0.45) // Yürüme/adım sesi, 0..1
+  footstepMuted     Boolean       @default(false)
+  doorVolume        Float         @default(0.55) // Kapı sesi, 0..1
+  doorMuted         Boolean       @default(false)
   tokenBalance      Int           @default(1000) // Başlangıç bakiyesi (akçe/token)
   score             Int           @default(0)    // Sıralama için toplam dedektiflik puanı
   createdAt         DateTime      @default(now())

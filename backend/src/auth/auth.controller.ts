@@ -91,7 +91,18 @@ export class AuthController {
     @Request() req: any,
     @Body('musicVolume') musicVolume?: unknown,
     @Body('musicMuted') musicMuted?: unknown,
+    @Body('footstepVolume') footstepVolume?: unknown,
+    @Body('footstepMuted') footstepMuted?: unknown,
+    @Body('doorVolume') doorVolume?: unknown,
+    @Body('doorMuted') doorMuted?: unknown,
   ) {
-    return this.authService.updateAudioSettings(req.user.userId, { musicVolume, musicMuted });
+    return this.authService.updateAudioSettings(req.user.userId, {
+      musicVolume,
+      musicMuted,
+      footstepVolume,
+      footstepMuted,
+      doorVolume,
+      doorMuted,
+    });
   }
 }

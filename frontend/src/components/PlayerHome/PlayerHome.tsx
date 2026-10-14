@@ -17,6 +17,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import sceneStyles from '@/components/InteriorViewer/InteriorViewer.module.scss';
 import styles from './PlayerHome.module.scss';
+import { playDoorSound } from '@/utils/doorSound';
 
 // Ev görselleri iç mekânlarla aynı 21:9 oranında üretilir
 const HOME_ASPECT_RATIO = 3168 / 1344;
@@ -57,7 +58,7 @@ export default function PlayerHome() {
             Dinlenmek, notlarını ve envanterini görmek için haritadaki evine tıklayabilirsin.
           </p>
           <div className={sceneStyles.unavailableActions}>
-            <Link href="/map" className={sceneStyles.backBtn}>
+            <Link href="/map" className={sceneStyles.backBtn} onClick={() => playDoorSound()}>
               Haritaya Dön
             </Link>
           </div>
@@ -153,6 +154,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     if (!sessionId || endingDay) return;
     // Son günün sonunda uyunmaz: hüküm haritadaki seçim penceresinden verilir
     if (isLastDay) {
+      playDoorSound();
       goToMap('Hüküm vakti');
       router.push('/map?hukum=1');
       return;
@@ -211,6 +213,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
       label: 'Dışarı Çık',
       desc: 'Sokaklara geri dön.',
       run: () => {
+        playDoorSound();
         goToMap();
         router.push('/map');
       },
@@ -333,7 +336,14 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
 
       <header className={sceneStyles.topHud}>
         <div className={sceneStyles.hudGroup}>
-          <Link href="/map" className={sceneStyles.backBtn} onClick={() => goToMap()}>
+          <Link
+            href="/map"
+            className={sceneStyles.backBtn}
+            onClick={() => {
+              playDoorSound();
+              goToMap();
+            }}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
