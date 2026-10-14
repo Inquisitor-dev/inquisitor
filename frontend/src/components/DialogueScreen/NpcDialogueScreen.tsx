@@ -29,6 +29,10 @@ import {
   Scale,
 } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
+import { resolveNpcAlias } from './npcAliases';
+import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
+import ConfrontModal from './components/ConfrontModal/ConfrontModal';
+import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
 import styles from './NpcDialogueScreen.module.scss';
 
 type FearBand = 'CALM' | 'UNEASY' | 'NERVOUS' | 'PANIC';
@@ -40,11 +44,7 @@ const FEAR_LABELS: Record<FearBand, string> = {
   PANIC: 'Paniğe kapıldı',
 };
 
-interface Message {
-  role: 'player' | 'npc';
-  text: string;
-  timestamp: Date;
-}
+type Message = DialogueMessage;
 
 export interface NpcDialogueScreenProps {
   npcKey: string;
@@ -74,64 +74,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     hasHydrated,
   } = useGameStore();
 
-  // Çin ve diğer evrenler için doğrudan isimle çağrılan NPC anahtar eşleştirmeleri
-  const CHINA_NPC_ALIASES: Record<string, string> = {
-    lin_feng: 'tavern',
-    zhao: 'church',
-    komutan_zhao: 'church',
-    huikang: 'graveyard',
-    kesis_huikang: 'graveyard',
-    keşiş_huikang: 'graveyard',
-    guan: 'mill',
-    usta_guan: 'mill',
-    song: 'clinic',
-    bilgin_song: 'clinic',
-    mei: 'farm',
-    mei_teyze: 'farm',
-  };
-
-  const CYBERPUNK_NPC_ALIASES: Record<string, string> = {
-    kael: 'tavern',
-    kael_voss: 'tavern',
-    voss: 'tavern',
-    mirel: 'church',
-    mirel_sato: 'church',
-    sato: 'church',
-    brakk: 'graveyard',
-    brakk_coil: 'graveyard',
-    coil: 'graveyard',
-    aura: 'mill',
-    'aura-9': 'mill',
-    aura9: 'mill',
-    ash: 'farm',
-    vera: 'clinic',
-    vera_nyx: 'clinic',
-    nyx: 'clinic',
-  };
-
-  const WINTER_NPC_ALIASES: Record<string, string> = {
-    torstein: 'tavern',
-    valda: 'church',
-    kahin_valda: 'church',
-    kâhin_valda: 'church',
-    bjorn: 'graveyard',
-    komutan_bjorn: 'graveyard',
-    durn: 'mill',
-    madenci_durn: 'mill',
-    einar: 'farm',
-    kenneth: 'clinic',
-    muhafiz_kenneth: 'clinic',
-    muhafız_kenneth: 'clinic',
-  };
-
-  const isExplicitChinaNpc = Boolean(CHINA_NPC_ALIASES[npcKey]);
-  const isExplicitCyberpunkNpc = Boolean(CYBERPUNK_NPC_ALIASES[npcKey]);
-  const isExplicitWinterNpc = Boolean(WINTER_NPC_ALIASES[npcKey]);
-  const actualNpcKey =
-    CHINA_NPC_ALIASES[npcKey] ||
-    CYBERPUNK_NPC_ALIASES[npcKey] ||
-    WINTER_NPC_ALIASES[npcKey] ||
-    npcKey;
+  const { actualNpcKey, inferredScenario } = resolveNpcAlias(npcKey);
   const [urlScenario, setUrlScenario] = useState<string | null>(null);
 
   useEffect(() => {
@@ -142,13 +85,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   }, []);
 
-  const scenario = isExplicitChinaNpc
-    ? 'china'
-    : isExplicitCyberpunkNpc
-    ? 'cyberpunk'
-    : isExplicitWinterNpc
-    ? 'winter'
-    : (urlScenario || scenarioType || 'medieval');
+  const scenario = inferredScenario || urlScenario || scenarioType || 'medieval';
   const profile = getNpcProfile(actualNpcKey, scenario) ?? {
     name: 'Meçhul Köylü',
     title: 'Gölgelerin arasından bir yabancı',
@@ -753,34 +690,12 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     </main>
 
       {/* ─── DİYALOG GEÇMİŞİ ÇEKMECESİ ─── */}
-      {isHistoryDrawerOpen && (
-        <div className={styles.historyDrawer}>
-          <div className={styles.modalHeader}>
-            <h3 className={styles.modalTitle}>Konuşma Geçmişi</h3>
-            <button
-              className={styles.modalCloseBtn}
-              onClick={() => setIsHistoryDrawerOpen(false)}
-            >
-              ✕
-            </button>
-          </div>
-          <div className={styles.historyList}>
-            {messages.map((m, idx) => (
-              <div
-                key={idx}
-                className={`${styles.historyBubble} ${
-                  m.role === 'player' ? styles.historyPlayer : styles.historyNpc
-                }`}
-              >
-                <div className={styles.historySpeaker}>
-                  {m.role === 'player' ? 'Engizitör' : profile.name}
-                </div>
-                <div>{m.text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <DialogueHistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        messages={messages}
+        npcName={profile.name}
+      />
 
       {/* ─── NOTLAR MODALI ─── */}
       {isNotesOpen && <NotebookModal onClose={() => setIsNotesOpen(false)} />}
@@ -789,73 +704,25 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
       {isInventoryOpen && <InventoryModal onClose={() => setIsInventoryOpen(false)} />}
 
       {/* ─── KANIT GÖSTERME (CONFRONT) MODALI ─── */}
-      {isEvidencePickerOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsEvidencePickerOpen(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Kanıt Göster</h3>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setIsEvidencePickerOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <p style={{ color: '#cfc5b4', fontSize: '0.88rem', marginBottom: '14px' }}>
-              {profile.name} karşısında hangi kanıtı ortaya koyacaksın?
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {evidence.map((item) => (
-                <button
-                  key={item.id}
-                  className={styles.choiceBtn}
-                  onClick={() => handleConfront(item)}
-                  disabled={loading}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#f7eedd' }}>
-                      {item.category === 'ITEM' ? '🔍' : '📜'} {item.text}
-                    </div>
-                    <div style={{ fontSize: '0.76rem', color: '#8c8376', marginTop: 2 }}>
-                      {evidenceSource(item)}
-                      {shownEvidenceIds.includes(item.id) ? ' (Zaten Gösterildi)' : ''}
-                    </div>
-                  </div>
-                  <span className={styles.choiceIcon}>→</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfrontModal
+        isOpen={isEvidencePickerOpen}
+        onClose={() => setIsEvidencePickerOpen(false)}
+        npcName={profile.name}
+        evidence={evidence}
+        shownEvidenceIds={shownEvidenceIds}
+        loading={loading}
+        onConfront={handleConfront}
+        evidenceSource={evidenceSource}
+      />
 
       {/* ─── ONAY MODALI ─── */}
-      {confirmModal.isOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard} style={{ maxWidth: 440 }}>
-            <h3 className={styles.modalTitle}>{confirmModal.title}</h3>
-            <p style={{ color: '#cfc5b4', margin: '14px 0 20px', lineHeight: 1.5 }}>
-              {confirmModal.message}
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                className={styles.choiceBtn}
-                style={{ width: 'auto', padding: '8px 16px' }}
-                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-              >
-                Vazgeç
-              </button>
-              <button
-                className={styles.sendBtn}
-                style={{ padding: '8px 18px' }}
-                onClick={confirmModal.onConfirm}
-              >
-                Onayla
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DialogueConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+      />
 
       {/* ─── BİLDİRİM TOAST ─── */}
       {toast && <div className={styles.toast}>{toast}</div>}

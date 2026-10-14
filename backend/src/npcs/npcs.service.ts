@@ -4,25 +4,24 @@ import { LlmService } from '../llm/llm.service';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts } from '../scenarios/case-setup';
-import { EVIDENCE_TAG, EvidenceDraft, evidenceFromTags, extractEvidenceTags } from './evidence';
+import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence';
 import {
   EvidenceImpact,
-  FEAR_BREAK_THRESHOLD,
-  FEAR_GAIN,
   evidenceImpact,
   fearBand,
-  fearPrompt,
   raiseFear,
   startingFear,
 } from './fear';
 import {
   deflectionReply,
-  foldTurkish,
   leaksHiddenPrompt,
   looksLikePromptInjection,
 } from './prompt-guard';
 import { isExplicitWarrantRequest } from './warrant';
 import { buildNpcPrompt, isForcedConfession } from './prompt-builder';
+import { buildTestReply } from './test-reply.builder';
+import { appendStatementsToNotes, recordEvidence } from './evidence-recorder';
+
 
 @Injectable()
 export class NpcsService {
@@ -200,7 +199,7 @@ export class NpcsService {
       ? { reply: deflectionReply(npcDisplayName, isNarrator) }
       : currentState.session.isTestMode
       ? {
-          reply: this.buildTestReply(
+          reply: buildTestReply(
             canonicalNpc?.name ?? currentState.npc.name,
             isGreetingSignal,
             userMessage,
@@ -264,10 +263,12 @@ export class NpcsService {
     const extracted = extractEvidenceTags(finalReply);
     finalReply = extracted.reply;
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);
-    const newEvidence = await this.recordEvidence(
+    const newEvidence = await recordEvidence(
+      this.prisma,
       sessionId,
       state.session.currentDay,
       existingEvidence,
+
       evidenceFromTags({
         tags: extracted.tags,
         npcId: isNarrator ? null : currentState.npc.id,
@@ -291,11 +292,13 @@ export class NpcsService {
     });
 
     // Karakter ifadeleri Not defterine otomatik yazılır; fiziksel nesneler Envanter'de görünür
-    const notes = await this.appendStatementsToNotes(
+    const notes = await appendStatementsToNotes(
+      this.prisma,
       sessionId,
       newEvidence.filter((evidence) => evidence.category === 'STATEMENT'),
       (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
     );
+
 
     return {
       reply: finalReply,
@@ -306,89 +309,7 @@ export class NpcsService {
     };
   }
 
-  // Daha önce kaydedilmemiş kanıtları ekler ve sadece yenilerini döndürür
-  private async recordEvidence(
-    sessionId: string,
-    dayNumber: number,
-    existing: { kind: string; sourceId: string }[],
-    drafts: EvidenceDraft[],
-  ) {
-    const fresh = drafts.filter(
-      (draft) => !existing.some((e) => e.kind === draft.kind && e.sourceId === draft.sourceId),
-    );
-    const created: Array<EvidenceDraft & { id: string; dayNumber: number }> = [];
-    for (const draft of fresh) {
-      try {
-        const row = await this.prisma.evidence.create({
-          data: { ...draft, sessionId, dayNumber },
-          select: { id: true, kind: true, category: true, sourceId: true, text: true, dayNumber: true },
-        });
-        created.push(row as EvidenceDraft & { id: string; dayNumber: number });
-      } catch (err) {
-        // Aynı anda gelen iki istek aynı kanıtı yazmaya çalışırsa ikincisi atlanır
-        if ((err as { code?: string }).code !== 'P2002') throw err;
-      }
-    }
-    return created;
-  }
 
-  private async appendStatementsToNotes(
-    sessionId: string,
-    statements: { sourceId: string; text: string; dayNumber: number }[],
-    nameOf: (npcId: string) => string,
-  ): Promise<string | undefined> {
-    if (statements.length === 0) return undefined;
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-      select: { notes: true },
-    });
-    const lines = statements.map(
-      (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
-    );
-    const current = (session?.notes ?? '').trimEnd();
-    const notes = [current, ...lines].filter(Boolean).join('\n\n');
-    await this.prisma.gameSession.update({ where: { id: sessionId }, data: { notes } });
-    return notes;
-  }
-
-  private buildTestReply(
-    npcName: string,
-    isGreeting: boolean,
-    userMessage: string,
-    locations: { id: string; localizedName: string }[],
-    isNarrator = false,
-    confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
-  ) {
-    if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
-    if (confrontation) {
-      const reaction = confrontation.forcedConfession
-        ? 'dayanamıyor ve sırrını itiraf ediyor.'
-        : `kanıta bakıyor (etki: ${confrontation.impact}).`;
-      return `[TEST MODU] ${npcName} ${reaction} Korku: ${confrontation.fear}/10`;
-    }
-
-    // Kanıt Defteri yapay zekâ olmadan denenebilsin diye anahtar kelimelerle etiket eklenir:
-    // anlatıcıda "ara/incele", karakterde "itiraf" ve "kanıt"
-    const folded = foldTurkish(userMessage);
-    if (isNarrator) {
-      const found = /\b(ara|incele)/.test(folded);
-      return `[TEST MODU] Anlatıcı: ${found ? 'Gizli ipucunu buldun.' : 'Etrafta olağandışı bir şey yok.'}${found ? ` [${EVIDENCE_TAG.clue}]` : ''}`;
-    }
-    const evidenceTags = [
-      /itiraf/.test(folded) ? ` [${EVIDENCE_TAG.confession}]` : '',
-      /kanit/.test(folded) ? ` [${EVIDENCE_TAG.verification}]` : '',
-    ].join('');
-
-    // "Değirmen" ile "degirmen" aynı sayılsın diye Türkçe karakterler sadeleştirilerek karşılaştırılır
-    const normalized = foldTurkish(userMessage);
-    const requested = locations.find(
-      (location) =>
-        location.id !== 'crime_scene' &&
-        normalized.includes(foldTurkish(location.localizedName)),
-    );
-    const warrantTag = requested ? ` [GRANT_WARRANT: ${requested.id}]` : '';
-    return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${warrantTag}${evidenceTags}`;
-  }
 
   getOwnedSession(sessionId: string, userId: string) {
     return findOwnedSession(this.prisma, sessionId, userId);
