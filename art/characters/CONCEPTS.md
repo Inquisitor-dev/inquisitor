@@ -1,9 +1,29 @@
 # Karakter Konseptleri
 
-Gardıropta 5 tam kıyafet var: 1 varsayılan + 4 satın alınabilir. Her kıyafet baştan sona tek bir görsel setidir; parça parça giydirme yok.
+Gardıropta 11 tam karakter var. Her karakter baştan sona tek bir görsel setidir; parça parça giydirme yok. Karakter listesi, adlar, nadirlikler ve fiyatlar `frontend/src/config/outfits.ts` ile aynıdır (id = klasör adı).
 Akış: Gemini referans görseli → görselden 3D → Mixamo (iskelet + yürüme/durma) → Blender render → `frontend/public/characters/<id>/`.
 
-Karakter listesi henüz belirlenmedi.
+| id | Ad | Nadirlik | Fiyat | Tema |
+|---|---|---|---|---|
+| `engizitor` | Engizitör | yaygın | ücretsiz | Ortaçağ / Ashenmoor |
+| `engizitor_hanim` | Engizitör Hanım | yaygın | ücretsiz | Ortaçağ, kilise arşivi |
+| `sokak_kurdu` | Sokak Kurdu | yaygın | 500 | Günümüz sokak dedektifi |
+| `sis_dedektifi` | Sis Dedektifi | nadir | 700 | Viktorya dönemi |
+| `sehir_dedektifi` | Şehir Dedektifi | nadir | 700 | Kırklı yıllar |
+| `golge_ajan` | Gölge Ajan | nadir | 700 | Modern, taktik birim |
+| `kara_yargic` | Kara Yargıç | nadir | 900 | Gotik, gece avcısı |
+| `kul_avcisi` | Kül Avcısı | nadir | 900 | Gotik avcı |
+| `kizil_devre` | Kızıl Devre | efsanevi | 1200 | Neon Prime, paralı asker |
+| `mavi_rozet` | Mavi Rozet | efsanevi | 1200 | Neon Prime, polis |
+| `neon_kuzgun` | Neon Kuzgun | efsanevi | 1200 | Neon Prime, Bölge 13 |
+
+Oyundan çıkarılan 4 karakterin (`kizil_yemin`, `jinling_golgesi`, `krom_serif`, `kizil_lotus`) görsel dosyaları `art/` ve `frontend/public/` altında yerinde duruyor, kodda kullanılmıyor.
+
+Yetenek ve hikâye tasarımı: yerel `KARAKTER_YETENEKLERI.md` (git dışı).
+
+## Malzeme ayarı
+
+Görselden-3D araçları bazı karakterlerde fazla parlak lake/vinil üretir. `art/tools/render_character.py` içindeki `OUTFIT_TWEAKS` karakter başına pürüzlülük, metal ve taban rengini bellekte düzeltir; kaynak GLB'ye dokunmaz. `render_character.py`, `export_web_model.py` ve `render_preview.py` aynı ayarı kullanır. Şu an yalnızca `kara_yargic` tanımlı (mat, koyu kömür/kahve).
 
 ## Tasarım kuralları
 

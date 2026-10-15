@@ -41,7 +41,7 @@ scene.render.fps = 30
 
 arm, meshes = import_fbx(os.path.join(src, f"{args.outfit}_idle.fbx"))
 idle_action = take_action(arm)
-mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"))
+mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"), args.outfit)
 for m in meshes:
     apply_glb_materials(m, mats)
 

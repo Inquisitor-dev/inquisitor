@@ -37,7 +37,7 @@ def main():
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=os.path.join(src, f"{args.outfit}_mixamo.fbx"))
     meshes = [o for o in bpy.data.objects if o not in before and o.type == "MESH"]
-    mats = rc.glb_materials(os.path.join(src, f"{args.outfit}_model.glb"))
+    mats = rc.glb_materials(os.path.join(src, f"{args.outfit}_model.glb"), args.outfit)
 
     root = bpy.data.objects.new("Root", None)
     scene.collection.objects.link(root)

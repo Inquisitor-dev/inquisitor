@@ -105,7 +105,71 @@ def base_name(name):
     return head if head and tail.isdigit() else name
 
 
-def glb_materials(glb_path):
+# Karakter başına malzeme ayarı (dokular bellekte değiştirilir; kaynak GLB'ye dokunulmaz).
+#   roughness_min: pürüzlülük haritasının alt sınırı (parlak lake/vinil görünümünü kırar)
+#   roughness_gain: haritanın değeri bu çarpanla alt sınıra eklenir (0..1 aralığını [min, min+gain]'e sıkıştırır)
+#   metal_scale: metal haritasının çarpanı (parlayan metali matlaştırır)
+#   tint / lift: taban renginin kanal çarpanı ve eklenen sabit (tonu kömür/kahveye çeker)
+OUTFIT_TWEAKS = {
+    "kara_yargic": {
+        "roughness_min": 0.55,
+        "roughness_gain": 0.35,
+        "metal_scale": 0.2,
+        "tint": (1.0, 0.93, 0.85),
+        "lift": (0.045, 0.032, 0.022),
+    },
+}
+
+
+def _tex_image(node):
+    return node.image if node and node.type == "TEX_IMAGE" else None
+
+
+def apply_outfit_tweak(mat, outfit):
+    tweak = OUTFIT_TWEAKS.get(outfit)
+    if not tweak:
+        return
+    import numpy as np
+
+    nodes = mat.node_tree.nodes
+    bsdf = next((n for n in nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if not bsdf:
+        return
+
+    def source(socket_name):
+        link = bsdf.inputs[socket_name].links
+        return link[0].from_node if link else None
+
+    def edit(image, fn):
+        buf = np.empty(len(image.pixels), dtype=np.float32)
+        image.pixels.foreach_get(buf)
+        px = buf.reshape(-1, 4)
+        fn(px)
+        image.pixels.foreach_set(px.ravel())
+        image.update()
+
+    base = _tex_image(source("Base Color"))
+    if base:
+        tint, lift = np.array(tweak["tint"], dtype=np.float32), np.array(tweak["lift"], dtype=np.float32)
+
+        def color(px):
+            px[:, :3] = np.clip(px[:, :3] * tint + lift, 0.0, 1.0)
+
+        edit(base, color)
+
+    # glTF: G = pürüzlülük, B = metal; ikisi de aynı dokudan Separate Color ile ayrılır
+    rough = source("Roughness")
+    rough_img = _tex_image(next((l.from_node for l in rough.inputs[0].links), None)) if rough else None
+    if rough_img:
+
+        def mr(px):
+            px[:, 1] = tweak["roughness_min"] + px[:, 1] * tweak["roughness_gain"]
+            px[:, 2] = px[:, 2] * tweak["metal_scale"]
+
+        edit(rough_img, mr)
+
+
+def glb_materials(glb_path, outfit=None):
     # Görselden-3D aracının malzemeleri (renk + metal/pürüzlülük + normal) FBX gidiş-dönüşünden daha eksiksiz.
     # Parçalı modellerde her parçanın kendi malzemesi var; adlarıyla eşleştirilmek üzere döndürülür.
     before = set(bpy.data.objects)
@@ -126,6 +190,7 @@ def glb_materials(glb_path):
             for name, value in (("Specular IOR Level", 0.15), ("Coat Weight", 0.0), ("Sheen Weight", 0.0)):
                 if name in bsdf.inputs:
                     bsdf.inputs[name].default_value = value
+        apply_outfit_tweak(mat, outfit)
     return mats
 
 
@@ -309,7 +374,7 @@ def main():
     for o in [idle_arm, *idle_meshes]:
         bpy.data.objects.remove(o, do_unlink=True)
 
-    mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"))
+    mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"), args.outfit)
     for m in meshes:
         apply_glb_materials(m, mats)
         if args.outline:
