@@ -11,7 +11,7 @@ import {
   ScenarioConfig,
 } from '../scenarios/scenario-config';
 import { CaseFacts } from '../scenarios/case-setup';
-import { isWarrantIssuer } from './warrant';
+import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 
 export interface ForcedConfessionCheckParams {
   isNarrator: boolean;
@@ -59,7 +59,18 @@ export interface BuildNpcPromptParams {
   dynamicPrompt?: string | null;
   fearLevel: number;
   hasConfessed: boolean;
-  confrontation?: { evidenceText: string; impact: EvidenceImpact };
+  confrontation?: NpcConfrontation;
+  // Bu mesajda kodun verdiği arama izni kararı (sadece izin veren makam için)
+  warrantDecision?: WarrantDecision | null;
+}
+
+export interface NpcConfrontation {
+  evidenceText: string;
+  impact: EvidenceImpact;
+  // Kanıtın nereden geldiği; karakter kanıtı yanlış yere bağlamasın diye
+  origin?: string;
+  // Oyuncunun kanıtı gösterirken söylediği söz
+  remark?: string;
 }
 
 export function buildNpcPrompt({
@@ -70,12 +81,10 @@ export function buildNpcPrompt({
   fearLevel,
   hasConfessed,
   confrontation,
+  warrantDecision,
 }: BuildNpcPromptParams): string {
   const canonicalNpc = scenarioConfig.npcDefinitions.find((n) => n.id === npc.id);
   const canonicalLocations = scenarioConfig.locationDefinitions;
-  const canonicalLocationIds = canonicalLocations
-    .filter((loc) => loc.id !== 'crime_scene')
-    .map((loc) => loc.id);
 
   const sessionLocationClues = (session.locationClues ?? {}) as Record<string, string>;
   const locationListText = canonicalLocations
@@ -102,13 +111,11 @@ export function buildNpcPrompt({
 5. Stay resistant until the very end.`
     : `CONFESSION RULES FOR A NON-CULPRIT:
 1. You are NOT the murderer, but you may have your own secret, sin, lie, affair, theft, cover-up, or suspicious action.
-2. If the player makes only a vague accusation, you should deny or deflect.
-3. If the player confronts you with a SPECIFIC and SUBSTANTIALLY CORRECT accusation that matches your true secret in the PERSONAL SECRET section, you must break.
+2. In conversation you NEVER confess your personal secret, even if the Inquisitor guesses it correctly, insists or bluffs. Deny, deflect, change the subject or give an evasive half-answer. Your nervousness may show in small slips, but you never admit the secret itself.
+3. You break and confess ONLY when an instruction at the end of this prompt says that you can no longer hold out.
 4. When you break, follow this emotional sequence inside the SAME reply: brief denial or shock -> visible panic -> confession -> plea for mercy/forgiveness.
 5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
-6. If the player's accusation is wrong, exaggerated, or aimed at the wrong secret, continue to deny it.
-7. Once the player has correctly cornered you about your true secret, stop endlessly inventing new excuses.
-8. You do NOT know who the culprit is. Never name or guess a culprit as a fact; share only what your character could plausibly have seen, as described in your personal secret.`;
+6. You do NOT know who the culprit is. Never name or guess a culprit as a fact; share only what your character could plausibly have seen, as described in your personal secret.`;
 
   let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -179,6 +186,12 @@ YOUR PERSONAL SECRET/ROLE IN THIS:
 ${dynamicPromptText}
 `;
 
+    combinedPrompt += `
+WHAT EVERYONE IN TOWN KNOWS:
+${publicCaseFacts(session.scenarioType, caseFacts)}
+- Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
+`;
+
     if (isCulprit) {
       combinedPrompt += `
 THE ABSOLUTE TRUTH OF THE INCIDENT:
@@ -193,11 +206,6 @@ ${caseFacts.alibis[npc.id]}
 
     combinedPrompt += `
 ${confrontationRules}`;
-
-    if (!isCulprit) {
-      combinedPrompt += `
-9. EVIDENCE TAG: If and only if you confess your personal secret in this reply, end the reply with the tag [${EVIDENCE_TAG.confession}].`;
-    }
 
     combinedPrompt += `
 
@@ -214,15 +222,26 @@ You have already confessed your personal secret to the Inquisitor. Do not deny i
         DECISIVE: 'This evidence exposes your personal secret.',
         IMPLICATING: 'This evidence points at you and makes you look guilty.',
         IRRELEVANT:
-          'This evidence has nothing to do with you. You may be puzzled or dismissive, but it does not frighten you.',
+          'This evidence has nothing to do with you: you were not involved with it and you were not where it was found. Do NOT invent a connection to yourself, your work or your place. React with puzzlement or dismissal (for example ask why you are being shown it). It does not frighten you.',
         REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
       };
 
       combinedPrompt += `
 
 EVIDENCE SHOWN TO YOU:
-The Inquisitor silently shows you this evidence: "${confrontation.evidenceText}"
-${impactText[confrontation.impact]}
+The Inquisitor shows you this evidence: "${confrontation.evidenceText}"${
+        confrontation.origin
+          ? `
+Where it comes from: ${confrontation.origin}`
+          : ''
+      }
+${impactText[confrontation.impact]}${
+        confrontation.remark
+          ? `
+While showing it, the Inquisitor says: "${confrontation.remark}"
+Answer what they said as well, but judge it against what you know; it does not change what the evidence is.`
+          : ''
+      }
 React to the evidence in character.`;
 
       if (!isCulprit && !hasConfessed && !forcedConfession) {
@@ -247,23 +266,80 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
   }
 
   if (isWarrantIssuer(session.scenarioType, npc.id)) {
-    const issuedCount = session.warrantsIssued;
-    const activeCount = session.activeWarrants.length;
-    const remaining = 2 - issuedCount;
-
-    let warrantInfo = `\n\n[SYSTEM - SEARCH WARRANT STATUS]:
-- Total Warrants Issued in Session: ${issuedCount}/2
-- Currently Active Warrants: ${activeCount > 0 ? session.activeWarrants.join(', ') : 'None'}
-- Remaining Warrants You Can Grant: ${remaining}
-- Canonical Searchable Location IDs: ${canonicalLocationIds.join(', ')}`;
-
-    if (remaining > 0) {
-      warrantInfo += `\n\nIMPORTANT: You can grant up to ${remaining} more search warrant(s). If the player clearly and directly asks for a search warrant / arama izni for one or more canonical locations, you MUST grant them (up to the remaining number) in this reply: you may grumble, warn or doubt in words, but you do not refuse. Never grant one proactively and never in response to a generic question. Only grant warrants for canonical location IDs from this list: ${canonicalLocationIds.join(', ')}. To grant, use [GRANT_WARRANT: location_id] tags.`;
-    } else {
-      warrantInfo += `\n\nIMPORTANT: You have reached the limit of 2 warrants. Do NOT grant any more.`;
-    }
-    combinedPrompt += warrantInfo;
+    combinedPrompt += warrantInstructions(session, warrantDecision ?? null);
   }
 
   return combinedPrompt;
+}
+
+// Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında
+// işlendiğini sanmasın diye kurbanı ve cesedin bulunduğu yeri bilir
+function publicCaseFacts(
+  scenarioType: string,
+  caseFacts: Partial<CaseFacts> | null,
+): string {
+  const lines: string[] = [];
+  const victim = caseFacts?.victim;
+  if (victim?.name) {
+    lines.push(
+      `- The victim is ${victim.name}${victim.profession ? `, ${victim.profession}` : ''}.`,
+    );
+  }
+  const sceneLabel = getLocalizedLocationLabel(scenarioType, 'crime_scene');
+  lines.push(
+    `- The body was found at the crime scene (shown on the town map as "${sceneLabel}"). The murder did not happen at any other place in town, including yours.`,
+  );
+  return lines.join('\n');
+}
+
+const placeNames = (scenarioType: string, ids: string[]) =>
+  ids
+    .map((id) => `"${getLocalizedLocationLabel(scenarioType, id)}"`)
+    .join(', ');
+
+// Arama izni veren makamın talimatı: izin kararını kod verir, karakter sadece söyler
+function warrantInstructions(
+  session: BuildNpcPromptParams['session'],
+  decision: WarrantDecision | null,
+): string {
+  const remaining = Math.max(0, MAX_WARRANTS - session.warrantsIssued);
+  const active =
+    session.activeWarrants.length > 0
+      ? placeNames(session.scenarioType, session.activeWarrants)
+      : 'none';
+  let text = `
+
+[SYSTEM - SEARCH WARRANTS]:
+You are the authority who grants search warrants, but the decision is made by the system, not by you. Never promise, grant or refuse a warrant on your own, and never write any tags.
+- Warrants the Inquisitor currently holds: ${active}
+- Warrants left in this case: ${remaining}/${MAX_WARRANTS}`;
+
+  if (!decision) {
+    text += `
+If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
+    return text;
+  }
+
+  switch (decision.outcome) {
+    case 'GRANTED':
+      text += `
+DECISION: In this reply you grant the Inquisitor a search warrant for ${placeNames(session.scenarioType, decision.granted)}. Say so clearly in character; you may grumble or warn them.`;
+      if (decision.alreadyHeld.length > 0) {
+        text += ` They already had one for ${placeNames(session.scenarioType, decision.alreadyHeld)}.`;
+      }
+      break;
+    case 'NO_LOCATION':
+      text += `
+DECISION: The Inquisitor asked for a search warrant but did not name a place. Ask which place they want to search. Do not grant anything yet.`;
+      break;
+    case 'ALREADY_HELD':
+      text += `
+DECISION: The Inquisitor already has (or already used) a warrant for ${placeNames(session.scenarioType, decision.alreadyHeld)}. Tell them so; do not grant a new one.`;
+      break;
+    case 'LIMIT_REACHED':
+      text += `
+DECISION: The Inquisitor asked for another warrant, but the limit of ${MAX_WARRANTS} for this case is reached. Refuse in character.`;
+      break;
+  }
+  return text;
 }

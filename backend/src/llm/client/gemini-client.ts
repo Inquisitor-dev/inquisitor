@@ -5,6 +5,8 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // GEMINI_MODELS verilmezse kullanılan zincir. gemini-1.5-* ve gemini-pro kapatıldı (404),
 // 2.5 serisi yeni kullanıcılara kapalı; bu yüzden yalnızca güncel modeller var.
+// Yerelde ve canlıda kullanılan zincirle aynı tutulmalı ve sadece ucuz Flash-Lite modelleri
+// içermeli: bir hata pahalı bir modele sessizce düşmesin.
 const DEFAULT_MODELS = [
   'gemini-3.5-flash-lite',
   'gemini-3.1-flash-lite',

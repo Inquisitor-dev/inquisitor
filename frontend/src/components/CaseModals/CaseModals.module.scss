@@ -129,3 +129,30 @@
     padding-right: 28px;
   }
 }
+
+/* ─── ENVANTER: kanıt fotoğrafları ─── */
+.inventoryContent {
+  max-width: 760px;
+}
+
+.sectionTitle {
+  margin: 0 0 4px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: #e0bb5e;
+  letter-spacing: 0.04em;
+}
+
+.sectionHint {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  color: #8a7f72;
+}
+
+.polaroidGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px 16px;
+  margin-bottom: 28px;
+  padding: 4px;
+}

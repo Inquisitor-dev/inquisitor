@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { BoardModule } from './board/board.module';
+import { NotebookModule } from './notebook/notebook.module';
 import { NpcsModule } from './npcs/npcs.module';
 import { LlmModule } from './llm/llm.module';
 import { MarketModule } from './market/market.module';
@@ -24,6 +25,7 @@ import { APP_GUARD } from '@nestjs/core';
     AuthModule, 
     GameSessionsModule, 
     BoardModule,
+    NotebookModule,
     NpcsModule, 
     LlmModule,
     MarketModule,

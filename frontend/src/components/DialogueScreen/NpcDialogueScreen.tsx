@@ -12,9 +12,10 @@ import {
 } from '@/config/dialogueConfig';
 import { getNpcProfile } from '@/config/npcProfiles';
 import { getLocationLabel } from '@/config/locationLabels';
+import { getQuickQuestions } from '@/config/quickQuestions';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
-import { api } from '@/shared/api/client';
+import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import {
   HeartPulse,
@@ -27,6 +28,7 @@ import {
   BookOpen,
   Briefcase,
   Scale,
+  ListChecks,
 } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
@@ -55,6 +57,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const router = useRouter();
   const {
     scenarioType,
+    username,
     isAdmin,
     dialoguesUsedToday,
     incrementDialogue,
@@ -114,6 +117,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isQuickQuestionsOpen, setIsQuickQuestionsOpen] = useState(false);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
@@ -140,6 +144,9 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(actualNpcKey);
 
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
+  // Hazır sorular karakterlere sorulur; mekân araştırmasında ve olay yerinde gösterilmez
+  const canAskQuickQuestions = !isInvestigating && !isCrimeScene;
+  const quickQuestions = getQuickQuestions({ scenarioType: scenario, username });
 
   const evidenceSource = (item: EvidenceItem) =>
     item.category === 'ITEM'
@@ -299,7 +306,8 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    // Hazır soru gönderilince oyuncunun yarım kalmış yazısı silinmesin
+    setInput((current) => (current.trim() === trimmed ? '' : current));
     setLoading(true);
 
     try {
@@ -353,14 +361,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   };
 
-  const handleConfront = async (item: EvidenceItem) => {
+  const handleConfront = async (item: EvidenceItem, remark: string) => {
     const maxLimit = isAdmin ? 999 : 100;
     if (loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
 
     setIsEvidencePickerOpen(false);
     setMessages((prev) => [
       ...prev,
-      { role: 'player', text: `*Ona bir kanıt gösteriyorsun:* ${item.text}`, timestamp: new Date() },
+      {
+        role: 'player',
+        text: `*Ona bir kanıt gösteriyorsun:* ${item.text}${remark ? `\n${remark}` : ''}`,
+        timestamp: new Date(),
+      },
     ]);
     setLoading(true);
 
@@ -371,7 +383,12 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         notes?: string;
         fear?: { level: number; band: FearBand } | null;
         message?: string;
-      }>('/npcs/confront', { sessionId, npcId: npcKey, evidenceId: item.id });
+      }>('/npcs/confront', {
+        sessionId,
+        npcId: npcKey,
+        evidenceId: item.id,
+        ...(remark ? { message: remark } : {}),
+      });
 
       if (data.reply) {
         setShownEvidenceIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
@@ -384,15 +401,13 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
           { role: 'npc', text: `*[Sistem hatası: ${data.message ?? 'Kanıt gösterilemedi.'}]*`, timestamp: new Date() },
         ]);
       }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'npc',
-          text: '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*',
-          timestamp: new Date(),
-        },
-      ]);
+    } catch (err) {
+      // Sunucu reddettiyse (ör. kanıt ona zaten gösterilmiş) sebebi gösterilir
+      const text =
+        err instanceof ApiError
+          ? `*[${err.message}]*`
+          : '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*';
+      setMessages((prev) => [...prev, { role: 'npc', text, timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
@@ -570,6 +585,24 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
               </div>
             </div>
 
+            {/* Hazır Sorular: genel sorgu cümleleri tek tıkla sorulur */}
+            {isQuickQuestionsOpen && canAskQuickQuestions && (
+              <div className={styles.quickQuestions} role="group" aria-label="Hazır sorular">
+                {quickQuestions.map((question) => (
+                  <button
+                    key={question.label}
+                    type="button"
+                    className={styles.quickQuestionBtn}
+                    onClick={() => sendMessageText(question.text)}
+                    disabled={loading}
+                    title={question.text}
+                  >
+                    {question.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Doğrudan Soru Yazma ve Gönderme Alanı */}
             <form
               className={styles.inputBar}
@@ -613,6 +646,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                   <MessageSquare size={13} />
                   <span>Chat Geçmişi ({messages.length})</span>
                 </button>
+
+                {canAskQuickQuestions && (
+                  <button
+                    className={`${styles.utilityBtn} ${isQuickQuestionsOpen ? styles.activeUtilityBtn : ''}`}
+                    onClick={() => setIsQuickQuestionsOpen((open) => !open)}
+                    aria-expanded={isQuickQuestionsOpen}
+                    title="Sık sorulan soruları tek tıkla sor"
+                  >
+                    <ListChecks size={13} />
+                    <span>Hazır Sorular</span>
+                  </button>
+                )}
 
                 {!isInvestigating && !isCrimeScene && (
                   <button

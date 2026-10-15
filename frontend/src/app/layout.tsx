@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter, Caveat } from "next/font/google";
 import "./globals.css";
 import SceneTransition from "@/components/SceneTransition/SceneTransition";
 
@@ -14,6 +14,13 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
+});
+
+// Not Defteri'ndeki el yazısı; Türkçe harfler (ğ, ş, ı) latin-ext alt kümesinde
+const caveat = Caveat({
+  variable: "--font-hand",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -34,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${playfair.variable} ${inter.variable}`}>
+    <html lang="tr" className={`${playfair.variable} ${inter.variable} ${caveat.variable}`}>
       <body>
         {children}
         <SceneTransition />

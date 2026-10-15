@@ -56,6 +56,7 @@ model GameSession {
   activeWarrants String[]         @default([]) // Aktif arama izinleri
   usedWarrants   String[]         @default([]) // Kullanılmış arama izinleri
   warrantsIssued Int               @default(0)  // Toplam alınan izin sayısı
+  notebookState  Json?                          // Not Defteri: gün sayfalarındaki yazılar ve kayıt kartlarının yerleri (src/notebook/notebook.ts)
   boardState     Json?                          // Soruşturma Panosu: kartlar, konumlar ve ipler (src/board/board.ts)
   boardThought   String?           @db.Text     // Panoda son "Düşün"ün iç ses metni
   boardThoughtDay Int              @default(0)  // Son "Düşün"ün günü; günde bir kez düşünülür
@@ -116,6 +117,22 @@ model Evidence {
 }
 
 // Satın alınan market eşyaları (evrenler, zorluklar, hikâyeler, kozmetikler)
+// Yapay zekâ çağrılarının token kullanımı: maliyet ölçümü için her başarılı çağrıda bir satır yazılır
+model LlmUsage {
+  id               String   @id @default(uuid())
+  sessionId        String?  // Çağrının ait olduğu vaka (yabancı anahtar yok; vaka silinse de kayıt kalır)
+  kind             String   // SCENARIO | SCENARIO_REVIEW | NPC_REPLY | CONFRONT | NARRATOR | BOARD_THOUGHT
+  model            String
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  durationMs       Int
+  createdAt        DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
 model UserPurchase {
   id        String   @id @default(uuid())
   userId    String

@@ -1,0 +1,234 @@
+// Not Defteri: oyun günlerine ayrılmış sayfa çiftleri. Oyuncunun yazı kutuları, sayfaya
+// bantladığı kanıt fotoğrafları ve otomatik kayıt kartlarının (itiraf, tanıklık) yerleri burada tutulur.
+// Kayıt kartlarının metni defterde saklanmaz; her açılışta Evidence satırlarından gelir.
+
+export type NotebookPage = 'L' | 'R';
+
+export interface NotebookTextItem {
+  id: string;
+  kind: 'text';
+  day: number;
+  page: NotebookPage;
+  // Sayfanın yüzdesi olarak konum ve genişlik: defter hangi boyutta açılırsa açılsın aynı yerde durur
+  x: number;
+  y: number;
+  w: number;
+  text: string;
+}
+
+// Bir kayıt kartının oyuncunun taşıdığı yeri. Taşınmamış kartlar sayfanın başına sırayla dizilir.
+export interface NotebookRecordItem {
+  id: string;
+  kind: 'record';
+  day: number;
+  page: NotebookPage;
+  x: number;
+  y: number;
+  evidenceId: string;
+}
+
+// Sayfaya bantlanmış kanıt fotoğrafı (bulunan fiziksel kanıtlardan) ve altına yazılan not
+export interface NotebookPhotoItem {
+  id: string;
+  kind: 'photo';
+  day: number;
+  page: NotebookPage;
+  x: number;
+  y: number;
+  evidenceId: string;
+  caption: string;
+  // Fotoğrafın hafif eğikliği (derece)
+  rot: number;
+}
+
+export type PenColor = 'ink' | 'red' | 'blue';
+export const PEN_COLORS: PenColor[] = ['ink', 'red', 'blue'];
+
+// Kalemle çizilmiş tek bir çizgi: noktalar sayfanın yüzdesi olarak [x1, y1, x2, y2, ...]
+export interface NotebookStrokeItem {
+  id: string;
+  kind: 'stroke';
+  day: number;
+  page: NotebookPage;
+  color: PenColor;
+  // 1 ince, 2 kalın
+  size: 1 | 2;
+  points: number[];
+}
+
+export type NotebookItem =
+  | NotebookTextItem
+  | NotebookRecordItem
+  | NotebookPhotoItem
+  | NotebookStrokeItem;
+
+export interface NotebookState {
+  items: NotebookItem[];
+}
+
+// Yazı, fotoğraf ve kayıt kartı sınırı; çizgiler ayrı sayılır
+export const MAX_NOTEBOOK_ITEMS = 150;
+export const MAX_STROKES = 300;
+// İstemci çizgiyi sadeleştirerek gönderir; daha uzunu kırpılır
+export const MAX_STROKE_POINTS = 120;
+export const MAX_NOTEBOOK_TEXT = 600;
+export const MAX_PHOTO_CAPTION = 160;
+export const MAX_PHOTO_TILT = 8;
+export const NOTEBOOK_DAYS = 4;
+
+const ID_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;
+
+const clamp = (value: unknown, min: number, max: number, fallback: number) => {
+  const n =
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  return Math.min(max, Math.max(min, Math.round(n * 10) / 10));
+};
+
+// İstemciden gelen, henüz doğrulanmamış öğe
+type LooseItem = Partial<
+  Record<
+    | 'id'
+    | 'kind'
+    | 'day'
+    | 'page'
+    | 'x'
+    | 'y'
+    | 'w'
+    | 'text'
+    | 'caption'
+    | 'rot'
+    | 'color'
+    | 'size'
+    | 'points'
+    | 'evidenceId',
+    unknown
+  >
+>;
+
+const isPage = (value: unknown): value is NotebookPage =>
+  value === 'L' || value === 'R';
+
+export interface NotebookStatement {
+  id: string;
+  dayNumber: number;
+}
+
+// İstemciden gelen defteri temizler: bilinmeyen öğeler, sahip olunmayan kanıtlar ve sınır
+// dışı değerler atılır. Kayıt kartı her zaman kanıtın alındığı günde kalır; fotoğraf sadece
+// oyuncunun bulduğu fiziksel kanıtlardan (ITEM) olabilir.
+export function sanitizeNotebook(
+  input: unknown,
+  statements: NotebookStatement[],
+  itemEvidenceIds: string[] = [],
+): NotebookState {
+  const raw = (input as Partial<NotebookState> | null)?.items;
+  if (!Array.isArray(raw)) return { items: [] };
+
+  const statementDay = new Map(statements.map((s) => [s.id, s.dayNumber]));
+  const ownedItems = new Set(itemEvidenceIds);
+  const seenIds = new Set<string>();
+  const seenRecords = new Set<string>();
+  const items: NotebookItem[] = [];
+  let placed = 0;
+  let strokes = 0;
+
+  for (const entry of raw.slice(0, MAX_NOTEBOOK_ITEMS + MAX_STROKES + 50)) {
+    if (!entry || typeof entry !== 'object') continue;
+    const item = entry as LooseItem;
+    if (
+      typeof item.id !== 'string' ||
+      !ID_PATTERN.test(item.id) ||
+      seenIds.has(item.id)
+    )
+      continue;
+    const page = isPage(item.page) ? item.page : 'L';
+    const x = clamp(item.x, 0, 96, 6);
+    const y = clamp(item.y, 0, 96, 10);
+
+    if (item.kind === 'stroke') {
+      const stroke = sanitizeStroke(item, page);
+      if (!stroke || strokes >= MAX_STROKES) continue;
+      strokes++;
+      items.push(stroke);
+      seenIds.add(item.id);
+      continue;
+    }
+    if (placed >= MAX_NOTEBOOK_ITEMS) continue;
+
+    if (item.kind === 'text') {
+      const day = clamp(item.day, 1, NOTEBOOK_DAYS, 1);
+      const text =
+        typeof item.text === 'string'
+          ? item.text.slice(0, MAX_NOTEBOOK_TEXT)
+          : '';
+      if (!text.trim()) continue;
+      items.push({
+        id: item.id,
+        kind: 'text',
+        day,
+        page,
+        x,
+        y,
+        w: clamp(item.w, 12, 100, 60),
+        text,
+      });
+    } else if (item.kind === 'photo') {
+      const evidenceId = item.evidenceId;
+      if (typeof evidenceId !== 'string' || !ownedItems.has(evidenceId))
+        continue;
+      items.push({
+        id: item.id,
+        kind: 'photo',
+        day: clamp(item.day, 1, NOTEBOOK_DAYS, 1),
+        page,
+        x,
+        y,
+        evidenceId,
+        caption:
+          typeof item.caption === 'string'
+            ? item.caption.slice(0, MAX_PHOTO_CAPTION)
+            : '',
+        rot: clamp(item.rot, -MAX_PHOTO_TILT, MAX_PHOTO_TILT, 0),
+      });
+    } else if (item.kind === 'record') {
+      const evidenceId = item.evidenceId;
+      if (typeof evidenceId !== 'string' || seenRecords.has(evidenceId))
+        continue;
+      const day = statementDay.get(evidenceId);
+      if (day === undefined) continue;
+      seenRecords.add(evidenceId);
+      items.push({ id: item.id, kind: 'record', day, page, x, y, evidenceId });
+    } else {
+      continue;
+    }
+    placed++;
+    seenIds.add(item.id);
+  }
+  return { items };
+}
+
+// Çizgi: renk ve kalınlık listeden, noktalar sayfa içinde ve sayı sınırında olmalı
+function sanitizeStroke(
+  item: LooseItem,
+  page: NotebookPage,
+): NotebookStrokeItem | null {
+  if (!PEN_COLORS.includes(item.color as PenColor)) return null;
+  if (!Array.isArray(item.points)) return null;
+  const raw = item.points.slice(0, MAX_STROKE_POINTS * 2);
+  if (raw.length < 4 || raw.some((n) => typeof n !== 'number')) return null;
+  const even = raw.length - (raw.length % 2);
+  return {
+    id: item.id as string,
+    kind: 'stroke',
+    day: clamp(item.day, 1, NOTEBOOK_DAYS, 1),
+    page,
+    color: item.color as PenColor,
+    size: item.size === 2 ? 2 : 1,
+    points: raw.slice(0, even).map((n) => clamp(n, 0, 100, 0)),
+  };
+}
+
+export function parseStoredNotebook(value: unknown): NotebookState {
+  const items = (value as Partial<NotebookState> | null)?.items;
+  return { items: Array.isArray(items) ? items : [] };
+}

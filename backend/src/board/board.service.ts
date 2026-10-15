@@ -157,6 +157,7 @@ export class BoardService {
       const llmText = await this.llm.generateBoardThought(
         describeJudged(judged, (card) => labelOf(card, true)),
         scenarioType,
+        session.id,
       );
       thought = llmText ?? templateThought(shortLines);
     }

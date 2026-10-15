@@ -6,7 +6,6 @@ import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts } from '../scenarios/case-setup';
 import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence';
 import {
-  EvidenceImpact,
   evidenceImpact,
   fearBand,
   raiseFear,
@@ -17,10 +16,14 @@ import {
   leaksHiddenPrompt,
   looksLikePromptInjection,
 } from './prompt-guard';
-import { isExplicitWarrantRequest } from './warrant';
-import { buildNpcPrompt, isForcedConfession } from './prompt-builder';
+import { decideWarrants, isWarrantIssuer, WarrantDecision } from './warrant';
+import {
+  buildNpcPrompt,
+  isForcedConfession,
+  NpcConfrontation,
+} from './prompt-builder';
 import { buildTestReply } from './test-reply.builder';
-import { appendStatementsToNotes, recordEvidence } from './evidence-recorder';
+import { recordEvidence } from './evidence-recorder';
 
 
 @Injectable()
@@ -58,9 +61,13 @@ export class NpcsService {
     });
   }
 
-  // Yüzleştirme: oyuncu Kanıt Defteri'nden bir kanıtı karaktere gösterir. Kanıtın karakterle ilgisi
-  // ve korkuya etkisi kodla belirlenir; karakterin tepkisini yapay zekâ bu karara göre yazar.
-  async confront(sessionId: string, npcId: string, evidenceId: string) {
+  // Yüzleştirmenin yapılabilir olduğunu kontrol eder. Controller bunu kota harcanmadan önce çağırır:
+  // geçersiz ya da aynı kişiye ikinci kez gösterilen kanıt sorgu hakkı yemesin.
+  async assertConfrontable(
+    sessionId: string,
+    npcId: string,
+    evidenceId: string,
+  ) {
     if (npcId.startsWith('narrator_') || npcId === 'crime_scene') {
       throw new BadRequestException('Kanıt sadece karakterlere gösterilebilir.');
     }
@@ -70,25 +77,66 @@ export class NpcsService {
     if (!evidence) throw new NotFoundException('Kanıt bulunamadı.');
 
     const state = await this.loadState(sessionId, npcId);
+    if (state.shownEvidenceIds.includes(evidence.id)) {
+      throw new BadRequestException('Bu kanıtı ona zaten gösterdin.');
+    }
+    return { evidence, state };
+  }
+
+  // Yüzleştirme: oyuncu Kanıt Defteri'nden bir kanıtı karaktere gösterir, isterse bir şey de söyler.
+  // Kanıtın karakterle ilgisi ve korkuya etkisi kodla belirlenir; karakterin tepkisini yapay zekâ
+  // bu karara göre yazar. Kanıtın nereden geldiği de söylenir ki karakter onu kendi mekânına bağlamasın.
+  async confront(
+    sessionId: string,
+    npcId: string,
+    evidenceId: string,
+    remark?: string,
+  ) {
+    const { evidence, state } = await this.assertConfrontable(
+      sessionId,
+      npcId,
+      evidenceId,
+    );
     const impact = evidenceImpact({
       evidence,
       targetNpcId: npcId,
       culpritId: state.session.culpritId,
       caseFacts: (state.session.caseFacts ?? null) as CaseFacts | null,
-      alreadyShown: state.shownEvidenceIds.includes(evidence.id),
+      alreadyShown: false,
     });
 
     await this.prisma.sessionNpcState.update({
       where: { id: state.id },
       data: {
         currentFear: raiseFear(state.currentFear, impact),
-        ...(impact === 'REPEAT' ? {} : { shownEvidenceIds: { push: evidence.id } }),
+        shownEvidenceIds: { push: evidence.id },
       },
     });
 
-    return this.interact(sessionId, npcId, `*Ona bir kanıt gösteriyorsun:* ${evidence.text}`, {
+    // Talimatları ezmeye çalışan söz yapay zekâya hiç gitmez; kanıt yine de gösterilir
+    const trimmed = remark?.trim();
+    const cleanRemark =
+      trimmed && !looksLikePromptInjection(trimmed) ? trimmed : undefined;
+    const scenarioConfig = getScenarioConfig(
+      state.session.scenarioType,
+      state.session.difficulty,
+    );
+    const nameOf = (id: string) =>
+      scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id;
+
+    const playerLine =
+      `*Ona bir kanıt gösteriyorsun:* ${evidence.text}` +
+      (cleanRemark ? `\n${cleanRemark}` : '');
+    return this.interact(sessionId, npcId, playerLine, {
       evidenceText: evidence.text,
       impact,
+      origin: describeEvidenceOrigin(
+        evidence,
+        npcId,
+        state.session.scenarioType,
+        nameOf,
+      ),
+      remark: cleanRemark,
     });
   }
 
@@ -96,15 +144,18 @@ export class NpcsService {
     sessionId: string,
     npcId: string,
     userMessage: string,
-    confrontation?: { evidenceText: string; impact: EvidenceImpact },
+    confrontation?: NpcConfrontation,
   ) {
     const state = await this.loadState(sessionId, npcId);
 
-    const historyData = await this.prisma.dialogueHistory.findMany({
-      where: { sessionId, npcId },
-      orderBy: { createdAt: 'asc' },
-      take: 10,
-    });
+    // Yapay zekâya konuşmanın son 10 mesajı gider (en eskileri değil), eskiden yeniye sıralı
+    const historyData = (
+      await this.prisma.dialogueHistory.findMany({
+        where: { sessionId, npcId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      })
+    ).reverse();
 
     const chatHistory = historyData.map((h) => ({
       role: h.speaker === 'PLAYER' ? 'user' : 'assistant',
@@ -163,6 +214,38 @@ export class NpcsService {
       fearLevel,
     });
 
+    const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
+    // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
+    const isInjectionAttempt =
+      !isGreetingSignal && !confrontation && looksLikePromptInjection(userMessage);
+
+    // Arama iznini kod verir; izin veren karakter sadece kararı kendi ağzından söyler
+    const warrantDecision: WarrantDecision | null =
+      !isGreetingSignal &&
+      !confrontation &&
+      !isInjectionAttempt &&
+      isWarrantIssuer(currentState.session.scenarioType, currentState.npc.id)
+        ? decideWarrants({
+            userMessage,
+            locations: localizedLocationList
+              .filter((location) => canonicalLocationIds.includes(location.id))
+              .map((location) => ({
+                id: location.id,
+                localizedName: location.localizedName,
+                // İzni veren kişinin kendi adı geçince kendi mekânı istenmiş sayılmasın
+                ownerName:
+                  location.id === currentState.npc.id
+                    ? undefined
+                    : scenarioConfig.npcDefinitions.find(
+                        (npc) => npc.id === location.id,
+                      )?.name,
+              })),
+            warrantsIssued: currentState.session.warrantsIssued,
+            activeWarrants: currentState.session.activeWarrants,
+            usedWarrants: currentState.session.usedWarrants,
+          })
+        : null;
+
     const combinedPrompt = buildNpcPrompt({
       scenarioConfig,
       session: {
@@ -180,6 +263,7 @@ export class NpcsService {
       fearLevel,
       hasConfessed,
       confrontation,
+      warrantDecision,
     });
 
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
@@ -189,12 +273,7 @@ export class NpcsService {
       ? '[Engizisyoncu iceri giriyor. Sen onlari daha once gordun. Yeni gune uygun bir sekilde selamla.]'
       : userMessage;
 
-    const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
-    // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
-    const isInjectionAttempt =
-      !isGreetingSignal && !confrontation && looksLikePromptInjection(userMessage);
-
-    // Test modunda yapay zeka çağrılmaz; arama izni istenirse izin akışı da denenebilsin diye etiket eklenir
+    // Test modunda yapay zekâ çağrılmaz; arama izni kararı cevaba not olarak eklenir
     const llmResponse = isInjectionAttempt
       ? { reply: deflectionReply(npcDisplayName, isNarrator) }
       : currentState.session.isTestMode
@@ -203,9 +282,13 @@ export class NpcsService {
             canonicalNpc?.name ?? currentState.npc.name,
             isGreetingSignal,
             userMessage,
-            localizedLocationList,
             isNarrator,
             confrontation ? { impact: confrontation.impact, fear: fearLevel, forcedConfession } : undefined,
+            warrantDecision
+              ? testWarrantNote(warrantDecision, (id) =>
+                  getLocalizedLocationLabel(currentState.session.scenarioType, id),
+                )
+              : undefined,
           ),
         }
       : await this.llm.generateNpcResponse(
@@ -214,55 +297,44 @@ export class NpcsService {
           chatHistory,
           effectiveMessage,
           isNewDay,
+          {
+            kind: isNarrator
+              ? 'NARRATOR'
+              : confrontation
+                ? 'CONFRONT'
+                : 'NPC_REPLY',
+            sessionId,
+          },
         );
 
     // Cevapta prompt'un bölüm başlıkları görünüyorsa model gizli talimatları sızdırmıştır
     let finalReply = leaksHiddenPrompt(llmResponse.reply)
       ? deflectionReply(npcDisplayName, isNarrator)
       : llmResponse.reply;
-    const explicitWarrantRequest = isExplicitWarrantRequest(
-      userMessage,
-      localizedLocationList.map((location) => location.localizedName),
-    );
+    // Yapay zekâ eski alışkanlıkla izin etiketi yazarsa oyuncu görmesin; izni sadece kod verir
+    finalReply = finalReply.replace(/\[GRANT_WARRANT:[^\]]*\]/gi, '').trim();
 
-    const warrantMatches = Array.from(
-      finalReply.matchAll(/\[GRANT_WARRANT:\s*['"]?([a-zA-Z0-9_]+)['"]?\s*\]/gi),
-    );
-    const newlyGranted: string[] = [];
-
-    if (warrantMatches.length > 0) {
-      let issuedCount = currentState.session.warrantsIssued;
-
-      for (const match of warrantMatches) {
-        if (explicitWarrantRequest && issuedCount < 2) {
-          const loc = match[1];
-          if (
-            canonicalLocationIds.includes(loc) &&
-            !currentState.session.activeWarrants.includes(loc) &&
-            !currentState.session.usedWarrants.includes(loc)
-          ) {
-            newlyGranted.push(loc);
-            issuedCount++;
-          }
-        }
-        finalReply = finalReply.replace(match[0], '').trim();
-      }
-
-      if (newlyGranted.length > 0) {
-        await this.prisma.gameSession.update({
-          where: { id: sessionId },
-          data: {
-            activeWarrants: [...currentState.session.activeWarrants, ...newlyGranted],
-            warrantsIssued: { increment: newlyGranted.length },
-          },
-        });
-      }
+    const newlyGranted = warrantDecision?.granted ?? [];
+    if (newlyGranted.length > 0) {
+      await this.prisma.gameSession.update({
+        where: { id: sessionId },
+        data: {
+          activeWarrants: [
+            ...currentState.session.activeWarrants,
+            ...newlyGranted,
+          ],
+          warrantsIssued: { increment: newlyGranted.length },
+        },
+      });
     }
 
     // Kanıt etiketleri cevaptan ayıklanır ve deftere işlenir; oyuncu etiketleri hiç görmez
     const extracted = extractEvidenceTags(finalReply);
     finalReply = extracted.reply;
+    // İtirafa yapay zekâ değil korku eşiği karar verir: sohbetteki itiraf etiketi sayılmaz,
+    // eşik aşıldığında ise itiraf her zaman kaydedilir (Not defterine de düşer)
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);
+    else extracted.tags.delete(EVIDENCE_TAG.confession);
     const newEvidence = await recordEvidence(
       this.prisma,
       sessionId,
@@ -291,20 +363,13 @@ export class NpcsService {
       },
     });
 
-    // Karakter ifadeleri Not defterine otomatik yazılır; fiziksel nesneler Envanter'de görünür
-    const notes = await appendStatementsToNotes(
-      this.prisma,
-      sessionId,
-      newEvidence.filter((evidence) => evidence.category === 'STATEMENT'),
-      (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
-    );
-
+    // Karakter ifadeleri (STATEMENT) Not Defteri'nde alındıkları günün sayfasına kayıt kartı
+    // olarak çıkar (src/notebook); fiziksel nesneler Envanter'de görünür
 
     return {
       reply: finalReply,
       grantedWarrants: newlyGranted,
       newEvidence,
-      notes,
       fear: isNarrator ? null : { level: fearLevel, band: fearBand(fearLevel) },
     };
   }
@@ -351,5 +416,41 @@ export class NpcsService {
           : null,
       shownEvidenceIds: state?.shownEvidenceIds ?? [],
     };
+  }
+}
+
+// Kanıtın nereden geldiği, karakterin anlayacağı dille
+function describeEvidenceOrigin(
+  evidence: { category: string; sourceId: string },
+  npcId: string,
+  scenarioType: string,
+  nameOf: (id: string) => string,
+): string {
+  if (evidence.category === 'STATEMENT') {
+    return evidence.sourceId === npcId
+      ? 'It is a statement you gave yourself earlier.'
+      : `It is a statement given by ${nameOf(evidence.sourceId)}.`;
+  }
+  if (evidence.sourceId === 'crime_scene') {
+    return 'It was found at the crime scene, where the body was.';
+  }
+  if (evidence.sourceId === npcId) return 'It was found at your own place.';
+  return `It was found at "${getLocalizedLocationLabel(scenarioType, evidence.sourceId)}".`;
+}
+
+// Test modunda arama izni kararı cevaba kısa bir not olarak eklenir
+function testWarrantNote(
+  decision: WarrantDecision,
+  label: (id: string) => string,
+): string {
+  switch (decision.outcome) {
+    case 'GRANTED':
+      return `Arama izni verildi: ${decision.granted.map(label).join(', ')}.`;
+    case 'NO_LOCATION':
+      return 'Hangi mekân için izin istiyorsun?';
+    case 'ALREADY_HELD':
+      return `Bu mekân için iznin zaten var: ${decision.alreadyHeld.map(label).join(', ')}.`;
+    case 'LIMIT_REACHED':
+      return 'Bu vakada arama izni hakkın doldu.';
   }
 }
