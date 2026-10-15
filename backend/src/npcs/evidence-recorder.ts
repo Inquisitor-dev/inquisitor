@@ -27,23 +27,3 @@ export async function recordEvidence(
   }
   return created;
 }
-
-export async function appendStatementsToNotes(
-  prisma: PrismaService,
-  sessionId: string,
-  statements: { sourceId: string; text: string; dayNumber: number }[],
-  nameOf: (npcId: string) => string,
-): Promise<string | undefined> {
-  if (statements.length === 0) return undefined;
-  const session = await prisma.gameSession.findUnique({
-    where: { id: sessionId },
-    select: { notes: true },
-  });
-  const lines = statements.map(
-    (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
-  );
-  const current = (session?.notes ?? '').trimEnd();
-  const notes = [current, ...lines].filter(Boolean).join('\n\n');
-  await prisma.gameSession.update({ where: { id: sessionId }, data: { notes } });
-  return notes;
-}

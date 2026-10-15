@@ -343,7 +343,7 @@ describe('NpcsService — yüzleştirme ve korku', () => {
       currentFear,
     });
 
-  it('kendi sırrını açığa çıkaran kanıt masumu kırar: itiraf kodla kaydedilir ve notlara yazılır', async () => {
+  it('kendi sırrını açığa çıkaran kanıt masumu kırar: itiraf kodla kaydedilir', async () => {
     const { service, generateNpcResponse, state, sessionRow } = confrontSetup(
       'tavern',
       1,
@@ -358,9 +358,8 @@ describe('NpcsService — yüzleştirme ve korku', () => {
     expect(result.newEvidence).toMatchObject([
       { kind: 'CONFESSION', category: 'STATEMENT', sourceId: 'tavern' },
     ]);
-    expect(sessionRow.notes).toContain('Kardeş Aldric');
-    expect(sessionRow.notes).toContain('mahzende kaçak içki');
-    expect(result.notes).toBe(sessionRow.notes);
+    // İfade eski not metnine eklenmez; Not Defteri'nde kayıt kartı olarak görünür
+    expect(sessionRow.notes).toBe('');
   });
 
   it('ilgisiz kanıt korkuyu artırmaz ve itiraf ettirmez', async () => {

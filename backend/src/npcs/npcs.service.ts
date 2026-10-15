@@ -23,7 +23,7 @@ import {
   NpcConfrontation,
 } from './prompt-builder';
 import { buildTestReply } from './test-reply.builder';
-import { appendStatementsToNotes, recordEvidence } from './evidence-recorder';
+import { recordEvidence } from './evidence-recorder';
 
 
 @Injectable()
@@ -363,20 +363,13 @@ export class NpcsService {
       },
     });
 
-    // Karakter ifadeleri Not defterine otomatik yazılır; fiziksel nesneler Envanter'de görünür
-    const notes = await appendStatementsToNotes(
-      this.prisma,
-      sessionId,
-      newEvidence.filter((evidence) => evidence.category === 'STATEMENT'),
-      (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
-    );
-
+    // Karakter ifadeleri (STATEMENT) Not Defteri'nde alındıkları günün sayfasına kayıt kartı
+    // olarak çıkar (src/notebook); fiziksel nesneler Envanter'de görünür
 
     return {
       reply: finalReply,
       grantedWarrants: newlyGranted,
       newEvidence,
-      notes,
       fear: isNarrator ? null : { level: fearLevel, band: fearBand(fearLevel) },
     };
   }
