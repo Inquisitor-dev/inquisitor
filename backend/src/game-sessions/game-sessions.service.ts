@@ -7,6 +7,7 @@ import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { startingFear } from '../npcs/fear';
+import { DEFAULT_CHARACTER_ID } from '../abilities/abilities';
 
 import { MarketService } from '../market/market.service';
 
@@ -25,9 +26,10 @@ export class GameSessionsService {
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
     testMode = false,
+    characterId: string = DEFAULT_CHARACTER_ID,
   ) {
     this.logger.log(
-      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`,
+      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType}, character: ${characterId})`,
     );
 
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
@@ -73,6 +75,7 @@ export class GameSessionsService {
         caseFacts: caseFacts as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
         isTestMode: testMode,
+        characterId,
       },
     });
 

@@ -59,6 +59,8 @@ model GameSession {
   boardState     Json?                          // Soruşturma Panosu: kartlar, konumlar ve ipler (src/board/board.ts)
   boardThought   String?           @db.Text     // Panoda son "Düşün"ün iç ses metni
   boardThoughtDay Int              @default(0)  // Son "Düşün"ün günü; günde bir kez düşünülür
+  characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
+  abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]

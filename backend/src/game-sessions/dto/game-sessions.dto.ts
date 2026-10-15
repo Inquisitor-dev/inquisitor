@@ -1,4 +1,5 @@
 import { IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
+import { CHARACTER_IDS } from '../../abilities/abilities';
 
 export class CreateSessionDto {
   @IsOptional()
@@ -16,6 +17,12 @@ export class CreateSessionDto {
   @IsOptional()
   @IsBoolean()
   testMode?: boolean;
+
+  // Giyili karakter; vaka boyunca yeteneklerini belirler
+  @IsOptional()
+  @IsString()
+  @IsIn([...CHARACTER_IDS], { message: 'Geçersiz karakter seçimi.' })
+  characterId?: string;
 }
 
 export class UpdateNotesDto {
