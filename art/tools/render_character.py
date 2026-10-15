@@ -105,7 +105,121 @@ def base_name(name):
     return head if head and tail.isdigit() else name
 
 
-def glb_materials(glb_path):
+# Karakter başına malzeme ayarı (dokular bellekte değiştirilir; kaynak GLB'ye dokunulmaz).
+#   roughness_min: pürüzlülük haritasının alt sınırı (parlak lake/vinil görünümünü kırar)
+#   roughness_gain: haritanın değeri bu çarpanla alt sınıra eklenir (0..1 aralığını [min, min+gain]'e sıkıştırır)
+#   metal_scale: metal haritasının çarpanı (parlayan metali matlaştırır)
+#   tint / lift: taban renginin kanal çarpanı ve eklenen sabit (tonu kömür/kahveye çeker); verilmezse renk değişmez
+#   erase: dokudan silinecek bölgeler (AI'nin ürettiği bozuk yazı gibi). polygon: doku pikseli, sol üstten, 4 köşe;
+#          sample: dolgu rengi için örneklenen kutu (x0, y0, x1, y1). Renk haritası düzlenir, normal haritası düz yapılır.
+OUTFIT_TWEAKS = {
+    "kara_yargic": {
+        "roughness_min": 0.55,
+        "roughness_gain": 0.35,
+        "metal_scale": 0.2,
+        "tint": (1.0, 0.93, 0.85),
+        "lift": (0.045, 0.032, 0.022),
+    },
+    # Daha hafif ayar: renkler korunur, yalnızca parlaklık kırılır
+    # Göğüs yamasındaki bozuk yazı ("DETLSONE") silinir, boş yama kalır
+    "mavi_rozet": {
+        "erase": [
+            {
+                "polygon": [(2272, 86), (2356, 76), (2380, 328), (2300, 342)],
+                "sample": (2257, 125, 2275, 300),
+            }
+        ],
+    },
+    "kul_avcisi": {"roughness_min": 0.45, "roughness_gain": 0.4, "metal_scale": 0.35},
+    "kizil_devre": {"roughness_min": 0.45, "roughness_gain": 0.4, "metal_scale": 0.35},
+    "engizitor_hanim": {"roughness_min": 0.45, "roughness_gain": 0.4, "metal_scale": 0.35},
+}
+
+
+def _tex_image(node):
+    return node.image if node and node.type == "TEX_IMAGE" else None
+
+
+def erase_region(image, region, np, flat):
+    # Dörtgeni doku üzerinde sabit renkle doldurur (flat=True: normal haritası için düz yüzey)
+    w, h = image.size
+    buf = np.empty(w * h * 4, dtype=np.float32)
+    image.pixels.foreach_get(buf)
+    px = buf.reshape(h, w, 4)  # Blender dokuları sol alttan başlar; y'yi çevir
+    pts = region["polygon"]
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    x0, x1, y0, y1 = int(min(xs)), int(max(xs)) + 1, int(min(ys)), int(max(ys)) + 1
+    gx, gy = np.meshgrid(np.arange(x0, x1), np.arange(y0, y1))
+    inside = np.ones(gx.shape, dtype=bool)
+    # Köşe sırasından bağımsız: her kenarın aynı tarafında kalan noktalar
+    area = sum(ax * by - bx * ay for (ax, ay), (bx, by) in zip(pts, pts[1:] + pts[:1]))
+    side = 1.0 if area > 0 else -1.0
+    for (ax, ay), (bx, by) in zip(pts, pts[1:] + pts[:1]):
+        inside &= side * ((bx - ax) * (gy - ay) - (by - ay) * (gx - ax)) >= 0
+    rows = h - 1 - gy
+    if flat:
+        fill = np.array([0.5, 0.5, 1.0], dtype=np.float32)
+    else:
+        sx0, sy0, sx1, sy1 = region["sample"]
+        fill = np.median(px[h - 1 - sy1 : h - 1 - sy0 + 1, sx0 : sx1 + 1, :3].reshape(-1, 3), axis=0)
+    px[rows[inside], gx[inside], :3] = fill
+    image.pixels.foreach_set(px.ravel())
+    image.update()
+
+
+def apply_outfit_tweak(mat, outfit):
+    tweak = OUTFIT_TWEAKS.get(outfit)
+    if not tweak:
+        return
+    import numpy as np
+
+    nodes = mat.node_tree.nodes
+    bsdf = next((n for n in nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if not bsdf:
+        return
+
+    def source(socket_name):
+        link = bsdf.inputs[socket_name].links
+        return link[0].from_node if link else None
+
+    def edit(image, fn):
+        buf = np.empty(len(image.pixels), dtype=np.float32)
+        image.pixels.foreach_get(buf)
+        px = buf.reshape(-1, 4)
+        fn(px)
+        image.pixels.foreach_set(px.ravel())
+        image.update()
+
+    base = _tex_image(source("Base Color"))
+    for region in tweak.get("erase", []):
+        if base:
+            erase_region(base, region, np, flat=False)
+        normal = source("Normal")
+        normal_img = _tex_image(next((l.from_node for l in normal.inputs["Color"].links), None)) if normal else None
+        if normal_img:
+            erase_region(normal_img, region, np, flat=True)
+    if base and ("tint" in tweak or "lift" in tweak):
+        tint = np.array(tweak.get("tint", (1.0, 1.0, 1.0)), dtype=np.float32)
+        lift = np.array(tweak.get("lift", (0.0, 0.0, 0.0)), dtype=np.float32)
+
+        def color(px):
+            px[:, :3] = np.clip(px[:, :3] * tint + lift, 0.0, 1.0)
+
+        edit(base, color)
+
+    # glTF: G = pürüzlülük, B = metal; ikisi de aynı dokudan Separate Color ile ayrılır
+    rough = source("Roughness")
+    rough_img = _tex_image(next((l.from_node for l in rough.inputs[0].links), None)) if rough else None
+    if rough_img and "roughness_min" in tweak:
+
+        def mr(px):
+            px[:, 1] = tweak["roughness_min"] + px[:, 1] * tweak["roughness_gain"]
+            px[:, 2] = px[:, 2] * tweak["metal_scale"]
+
+        edit(rough_img, mr)
+
+
+def glb_materials(glb_path, outfit=None):
     # Görselden-3D aracının malzemeleri (renk + metal/pürüzlülük + normal) FBX gidiş-dönüşünden daha eksiksiz.
     # Parçalı modellerde her parçanın kendi malzemesi var; adlarıyla eşleştirilmek üzere döndürülür.
     before = set(bpy.data.objects)
@@ -126,6 +240,7 @@ def glb_materials(glb_path):
             for name, value in (("Specular IOR Level", 0.15), ("Coat Weight", 0.0), ("Sheen Weight", 0.0)):
                 if name in bsdf.inputs:
                     bsdf.inputs[name].default_value = value
+        apply_outfit_tweak(mat, outfit)
     return mats
 
 
@@ -309,7 +424,7 @@ def main():
     for o in [idle_arm, *idle_meshes]:
         bpy.data.objects.remove(o, do_unlink=True)
 
-    mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"))
+    mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"), args.outfit)
     for m in meshes:
         apply_glb_materials(m, mats)
         if args.outline:

@@ -89,7 +89,7 @@ $legendary: $gold-bright;
 
 .eyebrow {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -144,30 +144,41 @@ $legendary: $gold-bright;
 .rarity_common {
   --rarity: #8a7f72;
   --rarity-glow: rgba(138, 127, 114, 0.18);
+  --rarity-line: rgba(138, 127, 114, 0.22);
+  --rarity-bar: transparent;
+  --rarity-tint: transparent;
 }
 
 .rarity_rare {
   --rarity: #{$rare};
   --rarity-glow: rgba(178, 58, 58, 0.28);
+  --rarity-line: rgba(178, 58, 58, 0.55);
+  --rarity-bar: linear-gradient(90deg, transparent, #{$rare}, transparent);
+  --rarity-tint: rgba(178, 58, 58, 0.08);
 }
 
 .rarity_legendary {
   --rarity: #{$legendary};
   --rarity-glow: rgba(224, 187, 94, 0.25);
+  --rarity-line: rgba(224, 187, 94, 0.7);
+  --rarity-bar: linear-gradient(90deg, transparent, #{$legendary}, transparent);
+  --rarity-tint: rgba(224, 187, 94, 0.1);
 }
 
 // ─── Önizleme sahnesi ────────────────────────────────────────
 
 .stagePanel {
   @extend %panel;
-  padding: 24px 28px 28px;
+  padding: 20px 28px 24px;
   position: sticky;
   top: 24px;
+  border-top: 2px solid var(--rarity, rgba(138, 3, 3, 0.4));
 }
 
+// Sahne ekran yüksekliğine göre büyür; altındaki başlık ve düğmeyle birlikte ekrana sığar
 .stage {
   position: relative;
-  height: 440px;
+  height: clamp(460px, calc(100vh - 330px), 700px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -177,8 +188,8 @@ $legendary: $gold-bright;
   position: absolute;
   left: 50%;
   bottom: 40px;
-  width: 340px;
-  height: 340px;
+  width: min(560px, 92%);
+  aspect-ratio: 1;
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(circle, var(--rarity-glow, rgba(138, 3, 3, 0.18)) 0%, transparent 68%);
@@ -189,7 +200,7 @@ $legendary: $gold-bright;
 .stillPreview {
   position: relative;
   z-index: 1;
-  height: 430px;
+  height: calc(100% - 6px);
   filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.85));
 }
 
@@ -203,35 +214,55 @@ $legendary: $gold-bright;
   position: absolute;
   left: 50%;
   bottom: 4px;
-  width: 220px;
-  height: 30px;
+  width: min(300px, 70%);
+  height: 34px;
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(ellipse, rgba(0, 0, 0, 0.9) 0%, rgba(138, 3, 3, 0.22) 55%, transparent 72%);
   border: 1px solid rgba(138, 3, 3, 0.25);
 }
 
-.details {
-  margin-top: 22px;
-  padding-top: 20px;
+// Sahne altı başlık: nadirlik, ad ve eylem düğmesi
+.caption {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-top: 14px;
+  padding-top: 16px;
   border-top: 1px solid rgba(232, 220, 196, 0.07);
 }
 
-.rarity {
-  float: right;
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--rarity);
+.captionActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-.detailsEyebrow {
+.rarityLabel {
   display: block;
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: $text-muted;
-  margin-bottom: 6px;
+  color: var(--rarity);
+  margin-bottom: 4px;
+}
+
+// Sağ sütun: ayrıntı kartı + liste
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.detailsPanel {
+  @extend %panel;
+  padding: 22px 24px 20px;
+  border-left: 3px solid var(--rarity);
+  background: linear-gradient(90deg, var(--rarity-tint), transparent 60%), $panel-bg;
 }
 
 .detailsName {
@@ -245,10 +276,14 @@ $legendary: $gold-bright;
   color: $text-muted;
   font-size: 0.92rem;
   line-height: 1.65;
-  margin: 10px 0 12px;
+  margin: 0 0 14px;
 }
 
 // Karakterin kısa geçmişi ve sözü
+.detailsStory {
+  margin: 0 0 12px;
+}
+
 .detailsLore {
   color: rgba(232, 220, 196, 0.72);
   font-size: 0.88rem;
@@ -259,7 +294,7 @@ $legendary: $gold-bright;
 }
 
 .detailsQuote {
-  margin: 0 0 20px;
+  margin: 0;
   padding-left: 14px;
   border-left: 2px solid var(--rarity, #{$gold});
   font-family: 'Playfair Display', serif;
@@ -281,9 +316,9 @@ $legendary: $gold-bright;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   letter-spacing: 0.1em;
-  color: $text-dim;
+  color: $text-muted;
 }
 
 // ─── Butonlar ────────────────────────────────────────────────
@@ -406,14 +441,78 @@ $legendary: $gold-bright;
   gap: 6px;
   padding: 10px 10px 12px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(232, 220, 196, 0.08);
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--rarity-tint), transparent 55%), rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--rarity-line);
   border-radius: $radius-sm;
   transition: border-color $transition-normal, transform $transition-normal, box-shadow $transition-normal;
+
+  // Nadirlik şeridi: nadir kırmızı, efsanevi altın
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--rarity-bar);
+  }
 
   &:hover {
     transform: translateY(-3px);
     border-color: var(--rarity);
+  }
+}
+
+// Efsanevi karoda yavaş geçen ışık
+.rarity_legendary.tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 40%, rgba(255, 236, 180, 0.12) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: tileShine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tileShine {
+  0%, 55% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+// Sahiplik: sahip olunmayan karakter hafif sönük; üzerine gelince ve seçilince canlanır
+.tileLocked .tileImage img {
+  filter: saturate(0.55) brightness(0.78);
+  transition: filter $transition-normal;
+}
+
+.tileLocked:hover .tileImage img,
+.tileLocked.tileActive .tileImage img {
+  filter: none;
+}
+
+.tileBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(10, 8, 7, 0.85);
+  border: 1px solid rgba(232, 220, 196, 0.25);
+  color: rgba(232, 220, 196, 0.7);
+}
+
+.tileWorn .tileBadge {
+  background: var(--rarity);
+  border-color: var(--rarity);
+  color: #120a0a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rarity_legendary.tile::after {
+    animation: none;
+    display: none;
   }
 }
 
@@ -453,7 +552,7 @@ $legendary: $gold-bright;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: $text-muted;
@@ -590,11 +689,88 @@ $legendary: $gold-bright;
 
 @media (max-width: 900px) {
   .layout {
-    grid-template-columns: 1fr;
+    // minmax(0, ...): yatay kaydırmalı şerit sütunu genişletmesin
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .stagePanel {
     position: static;
+    // Sahnenin üstünde sabit çubuk (liste) varken kaydırınca başlık altında kalmasın
+    scroll-margin-top: 12px;
+  }
+
+  .stage {
+    height: clamp(340px, 52vh, 480px);
+  }
+
+  // Sağ sütun kutusu kalkar; ayrıntı ve liste doğrudan düzenin öğesi olur (liste ekranın altında sabit kalır)
+  .side {
+    display: contents;
+  }
+
+  .captionActions {
+    align-items: flex-start;
+  }
+
+  // Karakter listesi telefonda ekranın altında sabit, yatay kaydırmalı şerit
+  .listPanel {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin: 0 -16px;
+    padding: 10px 12px 12px;
+    border-radius: 14px 14px 0 0;
+    background: rgba(12, 7, 7, 0.95);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.65);
+  }
+
+  .listHeader {
+    margin-bottom: 8px;
+
+    h2 {
+      font-size: 1rem;
+    }
+  }
+
+  .grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 2px 2px 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 3, 3, 0.7) transparent;
+  }
+
+  .tile {
+    flex: 0 0 108px;
+    scroll-snap-align: center;
+    padding: 6px 6px 8px;
+    gap: 3px;
+  }
+
+  .tileState {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .tileImage {
+    aspect-ratio: auto;
+    height: 84px;
+    overflow: hidden;
+
+    img {
+      width: auto;
+      max-width: 100%;
+      height: 100%;
+    }
+  }
+
+  .tileName {
+    font-size: 0.8rem;
   }
 }
 
@@ -617,7 +793,4 @@ $legendary: $gold-bright;
     height: 260px;
   }
 
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }

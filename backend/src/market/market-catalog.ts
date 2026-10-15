@@ -40,10 +40,7 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
   // Karakterler (gardırop). Her biri baştan sona tam bir görünüm; id'ler frontend config/outfits.ts ile aynı.
   { id: 'outfit_engizitor', category: 'outfit', title: 'Engizitör', price: 0, ownedByDefault: true },
   { id: 'outfit_sis_dedektifi', category: 'outfit', title: 'Sis Dedektifi', price: 700 },
-  { id: 'outfit_jinling_golgesi', category: 'outfit', title: 'Jinling Gölgesi', price: 900 },
-  { id: 'outfit_kizil_yemin', category: 'outfit', title: 'Kızıl Yemin', price: 900 },
   { id: 'outfit_neon_kuzgun', category: 'outfit', title: 'Neon Kuzgun', price: 1200 },
-  { id: 'outfit_krom_serif', category: 'outfit', title: 'Krom Şerif', price: 1200 },
   // Yeni karakterler (frontend'de görselleri hazır olana kadar "Yakında")
   { id: 'outfit_engizitor_hanim', category: 'outfit', title: 'Engizitör Hanım', price: 0, ownedByDefault: true },
   { id: 'outfit_sehir_dedektifi', category: 'outfit', title: 'Şehir Dedektifi', price: 700 },
@@ -51,7 +48,6 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
   { id: 'outfit_golge_ajan', category: 'outfit', title: 'Gölge Ajan', price: 700 },
   { id: 'outfit_kara_yargic', category: 'outfit', title: 'Kara Yargıç', price: 900 },
   { id: 'outfit_kul_avcisi', category: 'outfit', title: 'Kül Avcısı', price: 900 },
-  { id: 'outfit_kizil_lotus', category: 'outfit', title: 'Kızıl Lotus', price: 1200 },
   { id: 'outfit_kizil_devre', category: 'outfit', title: 'Kızıl Devre', price: 1200 },
   { id: 'outfit_mavi_rozet', category: 'outfit', title: 'Mavi Rozet', price: 1200 },
 ];
@@ -60,10 +56,7 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
 export const LEGACY_ITEM_IDS: Record<string, string> = {
   outfit_default: 'outfit_engizitor',
   outfit_dedektif: 'outfit_sis_dedektifi',
-  outfit_china_girl: 'outfit_jinling_golgesi',
-  outfit_fantastic_girl: 'outfit_kizil_yemin',
   outfit_cyber_girl: 'outfit_neon_kuzgun',
-  outfit_cyber_man: 'outfit_krom_serif',
 };
 
 export const canonicalItemId = (itemId: string) => LEGACY_ITEM_IDS[itemId] ?? itemId;
