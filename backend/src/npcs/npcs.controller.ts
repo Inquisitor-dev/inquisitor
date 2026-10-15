@@ -40,8 +40,20 @@ export class NpcsController {
     @CurrentUser('userId') userId: string,
     @Body() dto: ConfrontDto,
   ) {
+    // Geçersiz ya da aynı kişiye ikinci kez gösterilen kanıt sorgu hakkı harcamasın diye önce kontrol edilir
+    await this.npcsService.getOwnedSession(dto.sessionId, userId);
+    await this.npcsService.assertConfrontable(
+      dto.sessionId,
+      dto.npcId,
+      dto.evidenceId,
+    );
     await this.checkSessionAndQuota(dto.sessionId, userId, true);
-    return await this.npcsService.confront(dto.sessionId, dto.npcId, dto.evidenceId);
+    return await this.npcsService.confront(
+      dto.sessionId,
+      dto.npcId,
+      dto.evidenceId,
+      dto.message,
+    );
   }
 
   private async checkSessionAndQuota(sessionId: string, userId: string, usesQuota: boolean) {

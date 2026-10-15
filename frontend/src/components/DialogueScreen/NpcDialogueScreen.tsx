@@ -14,7 +14,7 @@ import { getNpcProfile } from '@/config/npcProfiles';
 import { getLocationLabel } from '@/config/locationLabels';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
-import { api } from '@/shared/api/client';
+import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import {
   HeartPulse,
@@ -353,14 +353,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   };
 
-  const handleConfront = async (item: EvidenceItem) => {
+  const handleConfront = async (item: EvidenceItem, remark: string) => {
     const maxLimit = isAdmin ? 999 : 100;
     if (loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
 
     setIsEvidencePickerOpen(false);
     setMessages((prev) => [
       ...prev,
-      { role: 'player', text: `*Ona bir kanıt gösteriyorsun:* ${item.text}`, timestamp: new Date() },
+      {
+        role: 'player',
+        text: `*Ona bir kanıt gösteriyorsun:* ${item.text}${remark ? `\n${remark}` : ''}`,
+        timestamp: new Date(),
+      },
     ]);
     setLoading(true);
 
@@ -371,7 +375,12 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         notes?: string;
         fear?: { level: number; band: FearBand } | null;
         message?: string;
-      }>('/npcs/confront', { sessionId, npcId: npcKey, evidenceId: item.id });
+      }>('/npcs/confront', {
+        sessionId,
+        npcId: npcKey,
+        evidenceId: item.id,
+        ...(remark ? { message: remark } : {}),
+      });
 
       if (data.reply) {
         setShownEvidenceIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
@@ -384,15 +393,13 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
           { role: 'npc', text: `*[Sistem hatası: ${data.message ?? 'Kanıt gösterilemedi.'}]*`, timestamp: new Date() },
         ]);
       }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'npc',
-          text: '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*',
-          timestamp: new Date(),
-        },
-      ]);
+    } catch (err) {
+      // Sunucu reddettiyse (ör. kanıt ona zaten gösterilmiş) sebebi gösterilir
+      const text =
+        err instanceof ApiError
+          ? `*[${err.message}]*`
+          : '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*';
+      setMessages((prev) => [...prev, { role: 'npc', text, timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }

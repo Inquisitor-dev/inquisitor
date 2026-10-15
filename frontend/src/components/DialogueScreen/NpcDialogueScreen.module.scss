@@ -714,3 +714,113 @@
     font-size: 0.94rem;
   }
 }
+
+/* ─── KANIT GÖSTER PENCERESİ ─── */
+.confrontIntro {
+  color: #cfc5b4;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.choiceBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(22, 23, 31, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 10px;
+  color: #e9e1cf;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(36, 32, 26, 0.95);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.choiceBtnSelected {
+  border-color: #d4af37;
+  background: rgba(64, 52, 22, 0.55);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.18);
+}
+
+.choiceText {
+  font-weight: 600;
+  color: #f7eedd;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.choiceMeta {
+  font-size: 0.76rem;
+  color: #8c8376;
+  margin-top: 2px;
+}
+
+.choiceIcon {
+  flex-shrink: 0;
+  color: #d4af37;
+}
+
+.confrontRemarkLabel {
+  display: block;
+  margin: 16px 0 6px;
+  color: #cfc5b4;
+  font-size: 0.85rem;
+
+  span {
+    color: #7a7165;
+  }
+}
+
+.confrontRemark {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+  padding: 10px 12px;
+  background: rgba(16, 17, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 10px;
+  color: #f5eedd;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+
+  &:focus {
+    border-color: rgba(212, 175, 55, 0.8);
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.18);
+  }
+
+  &::placeholder {
+    color: #7a7165;
+  }
+}
+
+.confrontFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}

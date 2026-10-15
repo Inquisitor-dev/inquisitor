@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_PLAYER_MESSAGE_LENGTH } from '../prompt-guard';
 
 export class InteractDto {
@@ -30,6 +30,14 @@ export class ConfrontDto {
   @IsNotEmpty({ message: 'evidenceId gereklidir' })
   @IsString()
   evidenceId: string;
+
+  // Kanıtı gösterirken söylenen söz (isteğe bağlı)
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_PLAYER_MESSAGE_LENGTH, {
+    message: `Mesaj en fazla ${MAX_PLAYER_MESSAGE_LENGTH} karakter olabilir.`,
+  })
+  message?: string;
 }
 
 export class HistoryDto {
