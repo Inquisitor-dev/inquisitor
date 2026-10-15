@@ -16,6 +16,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 
 import bpy
@@ -134,6 +135,45 @@ OUTFIT_TWEAKS = {
     "kizil_devre": {"roughness_min": 0.45, "roughness_gain": 0.4, "metal_scale": 0.35},
     "engizitor_hanim": {"roughness_min": 0.45, "roughness_gain": 0.4, "metal_scale": 0.35},
 }
+
+
+# Karakter başına poz ayarı (yalnızca menü/gardırop 3D modeli ve vitrin görselleri; harita sprite'ları değil).
+#   freeze_fingers: parmak kemiklerinin animasyonu silinir, parmaklar modelin kendi şeklinde kalır.
+#                   Görselden-3D modelde parmaklar zaten kıvrık üretildiyse Mixamo'nun büküm animasyonu
+#                   üstüne eklenip parmakları kırıyor (clip_sheet.py --hands [--tweaks] ile karşılaştırılır).
+POSE_TWEAKS = {
+    "sokak_kurdu": {"freeze_fingers": True},
+}
+
+FINGER_BONE = re.compile(r"Hand(Thumb|Index|Middle|Ring|Pinky)\d$")
+
+
+def action_fcurve_bags(action):
+    # Blender 5'te F-eğrileri katman/şerit/kanal torbası içinde; eski sürümde doğrudan action.fcurves
+    if hasattr(action, "layers") and len(action.layers):
+        return [bag.fcurves for layer in action.layers for strip in layer.strips for bag in strip.channelbags]
+    return [action.fcurves]
+
+
+def apply_pose_tweaks(arm, action, outfit):
+    tweak = POSE_TWEAKS.get(outfit)
+    if not tweak:
+        return
+    fingers = [b for b in arm.pose.bones if FINGER_BONE.search(b.name)]
+    if tweak.get("freeze_fingers"):
+        names = {b.name for b in fingers}
+        removed = 0
+        for fcurves in action_fcurve_bags(action):
+            for fc in list(fcurves):
+                path = fc.data_path
+                if path.startswith('pose.bones["') and path.split('"')[1] in names:
+                    fcurves.remove(fc)
+                    removed += 1
+        for b in fingers:
+            b.rotation_mode = "QUATERNION"
+            b.rotation_quaternion = (1, 0, 0, 0)
+            b.location = (0, 0, 0)
+        print(f"POSE_TWEAK {outfit}: {removed} parmak eğrisi silindi")
 
 
 def _tex_image(node):

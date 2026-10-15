@@ -5,7 +5,10 @@
 #   art/tools/rebuild_character.sh <id> [--pose] [--sprites]
 #
 #   --pose     Gardırop/menü 3D modelini source/<id>_pose.fbx klibiyle üretir (varsayılan <id>_idle.fbx).
+#              Klip bir kez oynatılacak şekilde aktarılır (kırpma: export_web_model.py CLIP_TRIM).
 #              Harita sprite'ları (yürüme/durma) idle klibinden üretilmeye devam eder.
+#
+# source/<id>_thumb.fbx varsa market/gardırop görselleri (thumb, portrait) o pozdan render edilir.
 #   --sprites  Harita yürüme/durma + turntable sprite'larını da yeniden render eder (karakter başına ~5 dk)
 #              ve manifest.json'u yeniden paketler. Malzeme ayarı (OUTFIT_TWEAKS) veya yürüme/durma klibi
 #              değiştiyse gerekir; yalnızca duruş değiştiyse gerekmez.
@@ -35,7 +38,11 @@ PUBLIC="$ROOT/frontend/public/characters/$ID"
 [ -f "$CHAR/source/${ID}_${CLIP}.fbx" ] || { echo "Klip yok: $CHAR/source/${ID}_${CLIP}.fbx"; exit 1; }
 
 echo "[1/5] Web GLB ($CLIP klibi)"
-"$BLENDER" -b -P "$ROOT/art/tools/export_web_model.py" -- --outfit "$ID" --clip "$CLIP" | grep -E "IDLE_LOOP|EXPORT_DONE|Traceback|Klip"
+"$BLENDER" -b -P "$ROOT/art/tools/export_web_model.py" -- --outfit "$ID" --clip "$CLIP" | grep -E "IDLE_LOOP|ONCE_CLIP|STATIC_POSE|POSE_TWEAK|EXPORT_DONE|Traceback|Klip"
+if [ -f "$CHAR/source/${ID}_thumb.fbx" ]; then
+  echo "      Vitrin pozu (thumb klibi)"
+  "$BLENDER" -b -P "$ROOT/art/tools/export_web_model.py" -- --outfit "$ID" --clip thumb | grep -E "STATIC_POSE|ONCE_CLIP|EXPORT_DONE|Traceback"
+fi
 
 echo "[2/5] GLB sıkıştırma"
 (cd "$ROOT" && npx --yes @gltf-transform/cli optimize "art/characters/$ID/web/$ID.glb" "frontend/public/characters/$ID/model.glb" \
