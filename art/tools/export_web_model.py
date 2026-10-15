@@ -5,16 +5,16 @@
 #   - pose klibi "bir kez oynatılır": gösterim karakter öne dönünce klibi baştan sona oynatır, ilk karesi
 #     tur sırasındaki dinlenme pozudur. Klibin tamamı ya da CLIP_TRIM'deki aralık dışa aktarılır.
 #   - idle klibi döngüdür: yalnızca dikişsiz döngü aralığı (best_idle_loop) dışa aktarılır
-#   - thumb klibi (tek kare poz) market/gardırop görseli içindir: web/<id>_thumb.glb'ye yazılır,
+#   - pic klibi (market/gardırop görseli için ayrı poz) web/<id>_pic.glb'ye yazılır,
 #     render_showcase.py varsa onu kullanır; oyuna giden model.glb değişmez
 #   - render_character.POSE_TWEAKS uygulanır (ör. Sokak Kurdu'nun parmakları)
 #
 # Kullanım:
-#   blender -b -P art/tools/export_web_model.py -- --outfit engizitor [--clip pose|idle|thumb] [--loop|--once]
+#   blender -b -P art/tools/export_web_model.py -- --outfit engizitor [--clip pose|idle|pic] [--loop|--once]
 #   npx @gltf-transform/cli optimize art/characters/<id>/web/<id>.glb \
 #       frontend/public/characters/<id>/model.glb --compress meshopt --texture-compress webp --texture-size 2048
 #
-# Çıktı: art/characters/<id>/web/<id>.glb (sıkıştırılmamış ara dosya); thumb için web/<id>_thumb.glb
+# Çıktı: art/characters/<id>/web/<id>.glb (sıkıştırılmamış ara dosya); pic için web/<id>_pic.glb
 import argparse
 import os
 import sys
@@ -36,7 +36,16 @@ from render_character import (  # noqa: E402
 # Bir kez oynatılan kliplerin kırpma aralıkları (kaynak FBX kare numaraları, iki uç dahil).
 # Klip ayakta, nötr bir pozla başlamalı ve aynı poza yakın bitmeli; ilk kare tur sırasındaki duruştur.
 # Aralığı seçmek için: blender -b -P art/tools/clip_sheet.py -- --outfit <id> --clip pose
-CLIP_TRIM = {}
+CLIP_TRIM = {
+    # Kollarını açıp esneme; öncesindeki uzun bekleme ve sonrası atılır (kaynak 1-345)
+    ("engizitor", "pose"): (129, 249),
+    # Bileğine bakıp el hareketi; sonraki öne eğilme pozları atılır (kaynak 1-401)
+    ("kizil_devre", "pose"): (1, 145),
+    # Kol esnetme; sondaki hareketsiz bekleme atılır (kaynak 1-267)
+    ("mavi_rozet", "pose"): (1, 185),
+    # Şapkayı indirip başını eğme; sonraki bacak savurma ve öne eğilme atılır (kaynak 1-318)
+    ("sis_dedektifi", "pose"): (1, 73),
+}
 
 argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 p = argparse.ArgumentParser()
@@ -51,7 +60,7 @@ mode.add_argument("--once", action="store_true", help="Klibi döngü aramadan, t
 mode.add_argument("--loop", action="store_true", help="Dikişsiz döngü aralığını aktar")
 args = p.parse_args(argv)
 # pose klibi varsayılan olarak bir kez oynatılır, idle döngüdür
-once = args.once or (args.clip in ("pose", "thumb") and not args.loop)
+once = args.once or (args.clip in ("pose", "pic") and not args.loop)
 
 src = os.path.join(ROOT, "art", "characters", args.outfit, "source")
 out_dir = os.path.join(ROOT, "art", "characters", args.outfit, "web")
@@ -87,7 +96,7 @@ else:
 scene.frame_start, scene.frame_end = a, b
 action.name = args.clip
 
-name = f"{args.outfit}_thumb.glb" if args.clip == "thumb" else f"{args.outfit}.glb"
+name = f"{args.outfit}_pic.glb" if args.clip == "pic" else f"{args.outfit}.glb"
 dst = os.path.join(out_dir, name)
 bpy.ops.export_scene.gltf(
     filepath=dst,

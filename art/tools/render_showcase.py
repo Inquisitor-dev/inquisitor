@@ -1,5 +1,5 @@
 # Market, gardırop ve menü kartlarındaki karakter görselini (thumb.webp) vitrin kalitesinde render eder:
-#   - vitrin pozu varsa web/<id>_thumb.glb (export_web_model.py --clip thumb), yoksa export_web_model.py'nin
+#   - vitrin pozu varsa web/<id>_pic.glb (export_web_model.py --clip pic; portrede kullanılmaz), yoksa export_web_model.py'nin
 #     GLB'si (klibin ilk karesi, orijinal malzemeler); o da yoksa görselden-3D aracının iskeletsiz modeli
 #     (<id>_model.glb, A-poz) — Mixamo'dan önce "Yakında" kartı için
 #   - Cycles + denoise, perspektif (85 mm) kamera, hafif alttan bakış
@@ -41,9 +41,10 @@ p.add_argument("--portrait", action="store_true", help="Baş-omuz portresi (kafa
 args = p.parse_args(argv)
 
 char_dir = os.path.join(ROOT, "art", "characters", args.outfit)
-# Vitrin için ayrı indirilmiş poz (source/<id>_thumb.fbx → web/<id>_thumb.glb) varsa o kullanılır
-src = os.path.join(char_dir, "web", f"{args.outfit}_thumb.glb")
-if not os.path.exists(src):
+# Market/gardırop görseli için ayrı indirilmiş poz (source/<id>_pic.fbx → web/<id>_pic.glb) varsa o
+# kullanılır. Portre (baş-omuz) duruş modelinden kalır: vitrin pozlarında kol başın önüne gelebiliyor.
+src = os.path.join(char_dir, "web", f"{args.outfit}_pic.glb")
+if args.portrait or not os.path.exists(src):
     src = os.path.join(char_dir, "web", f"{args.outfit}.glb")
 if not os.path.exists(src):
     src = os.path.join(char_dir, "source", f"{args.outfit}_model.glb")
