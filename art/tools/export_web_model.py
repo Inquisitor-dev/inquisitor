@@ -56,7 +56,12 @@ for m in meshes:
 
 i_start, i_end = (int(v) for v in idle_action.frame_range)
 assign_action(arm, idle_action)
-loop_a, loop_b = best_idle_loop(scene, arm, i_start, i_end)
+if i_end - i_start < 15:
+    # Tek karelik (sabit) poz: döngü aranmaz, olduğu gibi dışa aktarılır (nefes/sallanma yok)
+    loop_a, loop_b = i_start, max(i_end, i_start + 1)
+    print("STATIC_POSE")
+else:
+    loop_a, loop_b = best_idle_loop(scene, arm, i_start, i_end)
 scene.frame_start, scene.frame_end = loop_a, loop_b
 idle_action.name = "idle"
 print(f"IDLE_LOOP {loop_a}-{loop_b}")
