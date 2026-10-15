@@ -304,7 +304,7 @@ export default function MarketCategorySection({
       <h3 className={styles.cardTitle}>{item.title}</h3>
       <p className={styles.cardDesc}>{item.description}</p>
       {item.outfitId && findOutfit(item.outfitId) && (
-        <OutfitStory outfit={findOutfit(item.outfitId)!} className={styles.outfitStoryBlock} />
+        <OutfitStory outfit={findOutfit(item.outfitId)!} className={styles.outfitStoryBlock} compact />
       )}
       {renderFooter(item)}
       {isOwned(item) && !item.comingSoon && (

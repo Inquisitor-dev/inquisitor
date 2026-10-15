@@ -8,10 +8,43 @@ $gold: #e0bb5e;
   gap: 10px;
 }
 
+.blockHead,
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionHead {
+  margin-bottom: 10px;
+}
+
+.blockLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 196, 0.7);
+}
+
 .abilities {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+// Kompakt görünümde ek yetenekler ad olarak sıralanır
+.extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.extraChip {
+  padding: 3px 9px;
+  border: 1px solid rgba($gold, 0.3);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  color: $gold;
 }
 
 // Yetenek kartı: altın çerçeveli, ön planda
@@ -43,24 +76,25 @@ $gold: #e0bb5e;
 }
 
 .abilityUsage {
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(232, 220, 196, 0.7);
-  padding: 2px 7px;
+  color: rgba(232, 220, 196, 0.78);
+  padding: 2px 8px;
   border: 1px solid rgba(232, 220, 196, 0.2);
   border-radius: 999px;
 }
 
+// Bilgi rozeti: uyarı kırmızısı değil, soğuk mavi (kırmızı nadirlik ve marka rengi)
 .soon {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #e8a0a0;
-  padding: 2px 7px;
-  border: 1px solid rgba(138, 3, 3, 0.7);
+  color: #9dbbe0;
+  padding: 2px 8px;
+  border: 1px solid rgba(157, 187, 224, 0.4);
   border-radius: 999px;
-  background: rgba(138, 3, 3, 0.18);
+  background: rgba(157, 187, 224, 0.1);
 }
 
 .abilitySummary {
@@ -68,6 +102,14 @@ $gold: #e0bb5e;
   font-size: 0.86rem;
   line-height: 1.5;
   color: #e8dcc4;
+}
+
+// Kart görünümünde özet en çok 3 satır; kart boyları eşit kalır
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .rules {
@@ -163,7 +205,7 @@ $gold: #e0bb5e;
 }
 
 .eyebrow {
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--rarity);
@@ -198,11 +240,11 @@ $gold: #e0bb5e;
 }
 
 .sectionTitle {
-  margin: 0 0 10px;
-  font-size: 0.7rem;
+  margin: 0;
+  font-size: 0.76rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(232, 220, 196, 0.55);
+  color: rgba(232, 220, 196, 0.7);
   font-weight: 600;
 }
 

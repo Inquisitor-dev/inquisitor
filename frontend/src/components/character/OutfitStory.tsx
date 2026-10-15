@@ -13,16 +13,28 @@ const RARITY_LABELS: Record<Outfit['rarity'], string> = {
   legendary: 'Efsanevi',
 };
 
-function AbilityCard({ ability, detailed }: { ability: OutfitAbility; detailed?: boolean }) {
+// "Yakında aktif" rozeti bir blokta yalnızca bir kez gösterilir
+function SoonBadge() {
+  return ABILITIES_LIVE ? null : <span className={styles.soon}>Yakında aktif</span>;
+}
+
+function AbilityCard({
+  ability,
+  detailed,
+  clamp,
+}: {
+  ability: OutfitAbility;
+  detailed?: boolean;
+  clamp?: boolean;
+}) {
   return (
     <div className={`${styles.ability} ${detailed ? styles.abilityDetailed : ''}`}>
       <div className={styles.abilityHead}>
         <Sparkles size={14} aria-hidden />
         <span className={styles.abilityName}>{ability.name}</span>
         <span className={styles.abilityUsage}>{ability.usage}</span>
-        {!ABILITIES_LIVE && <span className={styles.soon}>Yakında aktif</span>}
       </div>
-      <p className={styles.abilitySummary}>{ability.summary}</p>
+      <p className={`${styles.abilitySummary} ${clamp ? styles.clamp : ''}`}>{ability.summary}</p>
       {detailed && (
         <ul className={styles.rules}>
           {ability.rules.map((rule) => (
@@ -35,17 +47,44 @@ function AbilityCard({ ability, detailed }: { ability: OutfitAbility; detailed?:
 }
 
 // Karakterin yetenekleri (kısa görünüm) ve "Detaylı Bak" düğmesi. Market, gardırop ve menüde kullanılır.
-export default function OutfitStory({ outfit, className = '' }: { outfit: Outfit; className?: string }) {
+// compact: kartlarda (market, lobi) ilk yetenek özetiyle görünür, diğerleri ad olarak sıralanır; kart boyları eşit kalır
+export default function OutfitStory({
+  outfit,
+  className = '',
+  compact = false,
+}: {
+  outfit: Outfit;
+  className?: string;
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const data = getOutfitStory(outfit.id);
   if (!data) return null;
+  const [first, ...rest] = data.abilities;
 
   return (
     <div className={`${styles.block} ${className}`}>
+      <div className={styles.blockHead}>
+        <span className={styles.blockLabel}>{data.abilities.length > 1 ? 'Yetenekler' : 'Yetenek'}</span>
+        <SoonBadge />
+      </div>
       <div className={styles.abilities}>
-        {data.abilities.map((ability) => (
-          <AbilityCard key={ability.name} ability={ability} />
-        ))}
+        {compact ? (
+          <>
+            <AbilityCard ability={first} clamp />
+            {rest.length > 0 && (
+              <div className={styles.extras}>
+                {rest.map((ability) => (
+                  <span key={ability.name} className={styles.extraChip}>
+                    + {ability.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          data.abilities.map((ability) => <AbilityCard key={ability.name} ability={ability} />)
+        )}
       </div>
       <button type="button" className={styles.moreBtn} onClick={() => setOpen(true)}>
         <BookOpen size={14} /> Detaylı Bak
@@ -97,7 +136,10 @@ function StoryModal({ outfit, onClose }: { outfit: Outfit; onClose: () => void }
         </header>
 
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>{data.abilities.length > 1 ? 'Yetenekler' : 'Yetenek'}</h3>
+          <div className={styles.sectionHead}>
+            <h3 className={styles.sectionTitle}>{data.abilities.length > 1 ? 'Yetenekler' : 'Yetenek'}</h3>
+            <SoonBadge />
+          </div>
           {data.abilities.map((ability) => (
             <AbilityCard key={ability.name} ability={ability} detailed />
           ))}

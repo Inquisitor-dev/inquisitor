@@ -89,7 +89,7 @@ $legendary: $gold-bright;
 
 .eyebrow {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -219,7 +219,7 @@ $legendary: $gold-bright;
 
 .rarity {
   float: right;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--rarity);
@@ -227,7 +227,7 @@ $legendary: $gold-bright;
 
 .detailsEyebrow {
   display: block;
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: $text-muted;
@@ -285,9 +285,9 @@ $legendary: $gold-bright;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   letter-spacing: 0.1em;
-  color: $text-dim;
+  color: $text-muted;
 }
 
 // ─── Butonlar ────────────────────────────────────────────────
@@ -457,7 +457,7 @@ $legendary: $gold-bright;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: $text-muted;
@@ -594,11 +594,69 @@ $legendary: $gold-bright;
 
 @media (max-width: 900px) {
   .layout {
-    grid-template-columns: 1fr;
+    // minmax(0, ...): yatay kaydırmalı şerit sütunu genişletmesin
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .stagePanel {
     position: static;
+    // Sahnenin üstünde sabit çubuk (liste) varken kaydırınca başlık altında kalmasın
+    scroll-margin-top: 12px;
+  }
+
+  // Karakter listesi telefonda ekranın altında sabit, yatay kaydırmalı şerit
+  .listPanel {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin: 0 -16px;
+    padding: 10px 12px 12px;
+    border-radius: 14px 14px 0 0;
+    background: rgba(12, 7, 7, 0.95);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.65);
+  }
+
+  .listHeader {
+    margin-bottom: 8px;
+
+    h2 {
+      font-size: 1rem;
+    }
+  }
+
+  .grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 2px 2px 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 3, 3, 0.7) transparent;
+  }
+
+  .tile {
+    flex: 0 0 96px;
+    scroll-snap-align: center;
+    padding: 6px 6px 8px;
+    gap: 3px;
+  }
+
+  .tileImage {
+    aspect-ratio: auto;
+    height: 84px;
+    overflow: hidden;
+
+    img {
+      width: auto;
+      max-width: 100%;
+      height: 100%;
+    }
+  }
+
+  .tileName {
+    font-size: 0.8rem;
   }
 }
 
@@ -621,7 +679,4 @@ $legendary: $gold-bright;
     height: 260px;
   }
 
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }

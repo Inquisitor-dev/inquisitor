@@ -580,26 +580,17 @@ export default function HomePage() {
           {wornOutfit && (
             <div className={styles.outfitStory}>
               <p className={styles.outfitLore}>{wornOutfit.lore}</p>
-              <OutfitStory outfit={wornOutfit} />
+              <OutfitStory outfit={wornOutfit} compact />
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0 6px' }}>
-            <img
-              src={getAvatarSrc(effectiveAvatar)}
-              alt="Avatar"
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                border: '1.5px solid #daa520',
-                boxShadow: '0 0 10px rgba(218, 165, 32, 0.3)',
-                objectFit: 'cover',
-              }}
-            />
-            <span className={styles.panelEyebrow}>Engizitör</span>
+          {/* Oyuncu kimliği: avatar, ad ve rütbe tek satırda; karakterin (kıyafetin) bilgisinden ayrı */}
+          <div className={styles.identity}>
+            <img src={getAvatarSrc(effectiveAvatar)} alt="Avatar" className={styles.identityAvatar} />
+            <div className={styles.identityText}>
+              <h2 className={styles.characterName}>{inquisitorName}</h2>
+              <span className={styles.characterRank}>{getAvatarInfo(effectiveAvatar).role}</span>
+            </div>
           </div>
-          <h2 className={styles.characterName}>{inquisitorName}</h2>
-          <span className={styles.characterRank}>{getAvatarInfo(effectiveAvatar).role}</span>
           <div style={{ display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'center' }}>
             <button
               onClick={() => setIsSettingsOpen(true)}

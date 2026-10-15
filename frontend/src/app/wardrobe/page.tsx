@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Clock, Coins, Lock, MoveHorizontal, Shirt, X } from 'lucide-react';
 import { useGameStore } from '@/store/useGameStore';
@@ -37,6 +37,7 @@ export default function WardrobePage() {
   const wornId = hasHydrated ? wearableOutfitId(equippedOutfitId, ownedItemIds) : null;
   // Önizlenen karakter; seçilmediyse giyili olan
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const stageRef = useRef<HTMLElement>(null);
   const previewId = selectedId ?? wornId;
   const preview = previewId ? findOutfit(previewId) : undefined;
 
@@ -115,6 +116,14 @@ export default function WardrobePage() {
 
   const shortfall = pending ? pending.price - tokenBalance : 0;
 
+  // Telefonda liste sahnenin altında sabit durur; seçince sahneyi görünür yap
+  const selectOutfit = (id: string) => {
+    setSelectedId(id);
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.vignette} />
@@ -142,7 +151,7 @@ export default function WardrobePage() {
 
         <div className={styles.layout}>
           {/* Önizleme sahnesi */}
-          <section className={`${styles.stagePanel} ${preview ? styles[`rarity_${preview.rarity}`] : ''}`}>
+          <section ref={stageRef} className={`${styles.stagePanel} ${preview ? styles[`rarity_${preview.rarity}`] : ''}`}>
             <div className={styles.stage}>
               <span className={styles.halo} />
               {preview?.ready ? (
@@ -195,7 +204,7 @@ export default function WardrobePage() {
                   <button
                     key={outfit.id}
                     className={`${styles.tile} ${styles[`rarity_${outfit.rarity}`]} ${previewId === outfit.id ? styles.tileActive : ''} ${!outfit.ready ? styles.tileSoon : ''}`}
-                    onClick={() => setSelectedId(outfit.id)}
+                    onClick={() => selectOutfit(outfit.id)}
                     aria-pressed={previewId === outfit.id}
                   >
                     <span className={styles.tileImage}>
