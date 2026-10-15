@@ -24,6 +24,15 @@ export class NotebookService {
     });
   }
 
+  // Sayfaya bantlanabilecek fiziksel kanıtlar
+  private async loadItemEvidenceIds(sessionId: string) {
+    const rows = await this.prisma.evidence.findMany({
+      where: { sessionId, category: 'ITEM' },
+      select: { id: true },
+    });
+    return rows.map((row) => row.id);
+  }
+
   async getNotebook(sessionId: string, userId: string) {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
     const statements = await this.loadStatements(sessionId);
@@ -50,7 +59,8 @@ export class NotebookService {
       throw new BadRequestException('Bu soruşturma sona erdi.');
     }
     const statements = await this.loadStatements(sessionId);
-    const notebook = sanitizeNotebook(input, statements);
+    const itemIds = await this.loadItemEvidenceIds(sessionId);
+    const notebook = sanitizeNotebook(input, statements, itemIds);
     await this.prisma.gameSession.update({
       where: { id: sessionId },
       data: { notebookState: notebook as unknown as Prisma.InputJsonValue },

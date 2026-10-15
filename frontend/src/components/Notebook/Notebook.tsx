@@ -1,20 +1,25 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ChevronLeft, ChevronRight, GripVertical, PenLine, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, GripVertical, Paperclip, PenLine, X } from 'lucide-react';
 import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
-import { useGameStore } from '@/store/useGameStore';
+import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
+import EvidencePolaroid from '@/components/EvidencePolaroid/EvidencePolaroid';
+import { evidencePhoto, evidenceTitle } from '@/components/InvestigationBoard/boardModel';
 import {
   clamp,
   DEFAULT_TEXT_WIDTH,
+  MAX_CAPTION_LENGTH,
   MAX_TEXT_LENGTH,
   newItemId,
   NOTEBOOK_DAYS,
+  randomTilt,
   recordLabel,
   spreadCount,
   type NotebookItem,
   type NotebookPage,
+  type NotebookPhotoItem,
   type NotebookRecord,
   type NotebookRecordItem,
   type NotebookState,
@@ -51,11 +56,17 @@ function AutoTextarea({
   onChange,
   onBlur,
   autoFocus,
+  placeholder = 'Bir şeyler yaz…',
+  maxLength = MAX_TEXT_LENGTH,
+  className = styles.textInput,
 }: {
   value: string;
   onChange: (value: string) => void;
-  onBlur: () => void;
+  onBlur?: () => void;
   autoFocus: boolean;
+  placeholder?: string;
+  maxLength?: number;
+  className?: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
@@ -67,12 +78,12 @@ function AutoTextarea({
   return (
     <textarea
       ref={ref}
-      className={styles.textInput}
+      className={className}
       value={value}
       rows={1}
-      maxLength={MAX_TEXT_LENGTH}
+      maxLength={maxLength}
       autoFocus={autoFocus}
-      placeholder="Bir şeyler yaz…"
+      placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       onBlur={onBlur}
       onPointerDown={(e) => e.stopPropagation()}
@@ -85,7 +96,7 @@ function AutoTextarea({
 // sonrakiler her oyun günü için birer sayfa çifti. Yazılar sayfaya serbestçe yerleştirilir,
 // itiraf ve tanıklıklar alındıkları günün sayfasına damgalı kayıt kartı olarak düşer.
 export default function Notebook({ onClose }: { onClose: () => void }) {
-  const { sessionId, scenarioType, scenario, notes, setNotes } = useGameStore();
+  const { sessionId, scenarioType, scenario, notes, setNotes, evidence, setEvidence } = useGameStore();
   const theme = scenarioType || 'medieval';
   const isNarrow = useMediaQuery('(max-width: 820px)');
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -100,6 +111,10 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [quickNotes, setQuickNotes] = useState(notes);
+  // Kanıt çekmecesi ve yapıştırılmak üzere seçilen kanıt
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [placingId, setPlacingId] = useState<string | null>(null);
+  const itemEvidence = evidence.filter((item) => item.category === 'ITEM');
 
   const pageRefs = useRef<Record<NotebookPage, HTMLDivElement | null>>({ L: null, R: null });
   const itemsRef = useRef(items);
@@ -129,10 +144,17 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         logger.error('Failed to load notebook', err);
         if (!cancelled) setSpread(0);
       });
+    // Çekmecedeki kanıt fotoğrafları için güncel kanıt listesi
+    api
+      .get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`)
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.evidence)) setEvidence(data.evidence);
+      })
+      .catch((err) => logger.error('Failed to load evidence', err));
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, setEvidence]);
 
   const persist = useCallback(
     async (next: NotebookItem[]) => {
@@ -211,7 +233,12 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     keyRef.current = (e: KeyboardEvent) => {
       const typing = (e.target as HTMLElement | null)?.tagName === 'TEXTAREA';
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') {
+        if (placingId || addMode) {
+          setPlacingId(null);
+          setAddMode(false);
+        } else close();
+      }
       else if (!typing && e.key === 'ArrowRight') next();
       else if (!typing && e.key === 'ArrowLeft') prev();
     };
@@ -254,6 +281,36 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
     setAddMode(false);
   };
 
+  const addPhoto = (page: NotebookPage, clientX: number, clientY: number) => {
+    if (!placingId || current < 1) return;
+    const point = pointOnPage(page, clientX, clientY);
+    const item: NotebookPhotoItem = {
+      id: newItemId(),
+      kind: 'photo',
+      day: current,
+      page,
+      x: clamp(point.x - 6, 0, 70),
+      y: clamp(point.y - 6, 0, 80),
+      evidenceId: placingId,
+      caption: '',
+      rot: randomTilt(),
+    };
+    changeItems((prev) => [...prev, item]);
+    setPlacingId(null);
+  };
+
+  // Çekmeceden bir kanıt seçilir; vaka dosyasındaysan bugünün sayfasına geçilir
+  const choosePhoto = (evidenceId: string) => {
+    setAddMode(false);
+    setPlacingId((selected) => (selected === evidenceId ? null : evidenceId));
+    if (current === 0) goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS));
+  };
+
+  const updateCaption = (id: string, caption: string) =>
+    changeItems((prev) =>
+      prev.map((item) => (item.id === id && item.kind === 'photo' ? { ...item, caption } : item)),
+    );
+
   const updateText = (id: string, text: string) =>
     changeItems((prev) =>
       prev.map((item) => (item.id === id && item.kind === 'text' ? { ...item, text } : item)),
@@ -268,7 +325,9 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   };
 
   const onPageClick = (page: NotebookPage, e: React.MouseEvent) => {
-    if (addMode && e.target === e.currentTarget) addText(page, e.clientX, e.clientY);
+    if (e.target !== e.currentTarget) return;
+    if (placingId) addPhoto(page, e.clientX, e.clientY);
+    else if (addMode) addText(page, e.clientX, e.clientY);
   };
 
   // ─── Sürükleme ───
@@ -388,6 +447,56 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
     </div>
   );
 
+  const evidenceById = new Map(evidence.map((e) => [e.id, e]));
+
+  const renderPhotoItem = (item: NotebookPhotoItem) => {
+    const source = evidenceById.get(item.evidenceId);
+    if (!source) return null;
+    const photo = evidencePhoto(theme, source);
+    return (
+      <div
+        key={item.id}
+        className={`${styles.photoItem} ${drag?.id === item.id ? styles.dragging : ''}`}
+        style={{ left: `${item.x}%`, top: `${item.y}%`, transform: `rotate(${item.rot}deg)` }}
+      >
+        <span className={`${styles.tape} ${styles.tapeLeft}`} aria-hidden />
+        <span className={`${styles.tape} ${styles.tapeRight}`} aria-hidden />
+        <button
+          type="button"
+          className={styles.grip}
+          aria-label="Fotoğrafı taşı"
+          onPointerDown={(e) => startDrag(e, item.id, e.currentTarget.parentElement)}
+        >
+          <GripVertical size={14} />
+        </button>
+        <button
+          type="button"
+          className={styles.remove}
+          aria-label="Fotoğrafı kaldır"
+          onClick={() => removeItem(item.id)}
+        >
+          <X size={12} />
+        </button>
+        <div
+          className={styles.photoImage}
+          style={photo ? { backgroundImage: `url(${photo})` } : undefined}
+          title={source.text}
+          aria-label={source.text}
+          role="img"
+        />
+        <span className={styles.photoTitle}>{evidenceTitle(theme, source)}</span>
+        <AutoTextarea
+          value={item.caption}
+          autoFocus={false}
+          placeholder="Not ekle…"
+          maxLength={MAX_CAPTION_LENGTH}
+          className={styles.photoCaption}
+          onChange={(caption) => updateCaption(item.id, caption)}
+        />
+      </div>
+    );
+  };
+
   const renderDayPage = (page: NotebookPage) => {
     const day = current;
     const onPage = items.filter((item) => item.day === day && item.page === page);
@@ -408,6 +517,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         )}
         {onPage.map((item) => {
           if (item.kind === 'text') return renderTextItem(item);
+          if (item.kind === 'photo') return renderPhotoItem(item);
           const record = recordFor(item.evidenceId);
           return record ? renderRecordCard(record, item) : null;
         })}
@@ -445,7 +555,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         pageRefs.current[page] = el;
       }}
       className={`${styles.page} ${page === 'L' ? styles.pageLeft : styles.pageRight} ${
-        addMode && current > 0 ? styles.adding : ''
+        (addMode || placingId) && current > 0 ? styles.adding : ''
       }`}
       onClick={(e) => onPageClick(page, e)}
       onDoubleClick={(e) => {
@@ -463,7 +573,10 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
 
   return (
     <div className={styles.overlay} data-theme={theme} onClick={close}>
-      <div className={styles.shell} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`${styles.shell} ${isDrawerOpen ? styles.withDrawer : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button type="button" className={styles.closeBtn} onClick={close} aria-label="Defteri kapat">
           <X size={18} />
         </button>
@@ -497,6 +610,31 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
+        {isDrawerOpen && (
+          <div className={styles.drawer}>
+            <p className={styles.drawerHint}>
+              {itemEvidence.length === 0
+                ? 'Henüz fotoğrafı çekilecek bir kanıt bulmadın.'
+                : placingId
+                  ? 'Şimdi sayfada fotoğrafı yapıştıracağın yere tıkla.'
+                  : 'Bir kanıt seç, sonra sayfada yapıştıracağın yere tıkla.'}
+            </p>
+            <div className={styles.drawerStrip}>
+              {itemEvidence.map((item) => (
+                <EvidencePolaroid
+                  key={item.id}
+                  compact
+                  photo={evidencePhoto(theme, item)}
+                  title={evidenceTitle(theme, item)}
+                  text={item.text}
+                  selected={placingId === item.id}
+                  onClick={() => choosePhoto(item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className={styles.toolbar}>
           <button type="button" className={styles.navBtn} onClick={prev} disabled={atStart} aria-label="Önceki sayfa">
             <ChevronLeft size={18} />
@@ -508,11 +646,27 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className={`${styles.toolBtn} ${addMode ? styles.toolActive : ''}`}
-            onClick={() => (current === 0 ? goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS)) : setAddMode((v) => !v))}
+            onClick={() => {
+              setPlacingId(null);
+              if (current === 0) goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS));
+              else setAddMode((v) => !v);
+            }}
             aria-pressed={addMode}
           >
             <PenLine size={15} />
             <span>{addMode ? 'Sayfada bir yere tıkla' : 'Yazı ekle'}</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${isDrawerOpen ? styles.toolActive : ''}`}
+            onClick={() => {
+              setIsDrawerOpen((open) => !open);
+              setPlacingId(null);
+            }}
+            aria-expanded={isDrawerOpen}
+          >
+            <Paperclip size={15} />
+            <span>Kanıt yapıştır</span>
           </button>
         </div>
       </div>

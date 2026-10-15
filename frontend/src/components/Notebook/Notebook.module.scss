@@ -127,15 +127,24 @@
 }
 
 /* ─── DEFTER ─── */
+/* Defter, altındaki araç çubuğu (ve açıksa kanıt çekmecesi) ekrana sığacak kadar büyür */
 .book {
   position: relative;
-  width: min(1120px, 92vw, 124vh);
+  width: min(1120px, 92vw, calc((100vh - 120px) * 1.5));
   aspect-ratio: 3 / 2;
   font-size: clamp(13px, 1.45vw, 19px);
 }
 
+.withDrawer .book:not(.single) {
+  width: min(1120px, 92vw, calc((100vh - 330px) * 1.5));
+}
+
+.withDrawer .book.single {
+  width: min(520px, 92vw, calc((100vh - 420px) / 1.4));
+}
+
 .book.single {
-  width: min(520px, 92vw);
+  width: min(520px, 92vw, calc((100vh - 240px) / 1.4));
   aspect-ratio: 3 / 4.2;
   font-size: clamp(13px, 3.8vw, 17px);
 }
@@ -597,4 +606,107 @@
   .flipSheet {
     display: none;
   }
+}
+
+/* ─── BANTLI KANIT FOTOĞRAFLARI ─── */
+.photoItem {
+  position: absolute;
+  z-index: 3;
+  width: 36%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.45em 0.45em 0.35em;
+  background: #fbf8f1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+
+  &:hover .grip,
+  &:focus-within .grip,
+  &:hover .remove,
+  &:focus-within .remove {
+    opacity: 1;
+  }
+}
+
+.single .photoItem {
+  width: 62%;
+}
+
+.photoImage {
+  aspect-ratio: 4 / 3;
+  background-color: #3a332d;
+  background-size: cover;
+  background-position: center;
+  filter: sepia(0.3) contrast(1.05);
+}
+
+.photoTitle {
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--accent);
+}
+
+.photoCaption {
+  display: block;
+  width: 100%;
+  min-height: 1.3em;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.05em;
+  line-height: 1.15;
+  color: var(--ink);
+
+  &::placeholder {
+    color: var(--ink-soft);
+  }
+}
+
+/* Köşelerdeki yarı saydam bant parçaları */
+.tape {
+  position: absolute;
+  top: -0.55em;
+  width: 32%;
+  height: 1.1em;
+  background: rgba(236, 222, 180, 0.72);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+.tapeLeft {
+  left: -6%;
+  transform: rotate(-32deg);
+}
+
+.tapeRight {
+  right: -6%;
+  transform: rotate(32deg);
+}
+
+/* ─── KANIT ÇEKMECESİ ─── */
+.drawer {
+  width: min(1120px, 92vw);
+  padding: 10px 14px 12px;
+  border-radius: 12px;
+  background: rgba(15, 12, 12, 0.88);
+  border: 1px solid rgba(224, 187, 94, 0.3);
+}
+
+.drawerHint {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: #cfc5b4;
+}
+
+.drawerStrip {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 4px 8px;
 }

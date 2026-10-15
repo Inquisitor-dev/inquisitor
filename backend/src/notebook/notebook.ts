@@ -1,5 +1,5 @@
-// Not Defteri: oyun günlerine ayrılmış sayfa çiftleri. Oyuncunun yazı kutuları ve
-// otomatik kayıt kartlarının (itiraf, tanıklık) yerleri burada tutulur.
+// Not Defteri: oyun günlerine ayrılmış sayfa çiftleri. Oyuncunun yazı kutuları, sayfaya
+// bantladığı kanıt fotoğrafları ve otomatik kayıt kartlarının (itiraf, tanıklık) yerleri burada tutulur.
 // Kayıt kartlarının metni defterde saklanmaz; her açılışta Evidence satırlarından gelir.
 
 export type NotebookPage = 'L' | 'R';
@@ -27,7 +27,24 @@ export interface NotebookRecordItem {
   evidenceId: string;
 }
 
-export type NotebookItem = NotebookTextItem | NotebookRecordItem;
+// Sayfaya bantlanmış kanıt fotoğrafı (bulunan fiziksel kanıtlardan) ve altına yazılan not
+export interface NotebookPhotoItem {
+  id: string;
+  kind: 'photo';
+  day: number;
+  page: NotebookPage;
+  x: number;
+  y: number;
+  evidenceId: string;
+  caption: string;
+  // Fotoğrafın hafif eğikliği (derece)
+  rot: number;
+}
+
+export type NotebookItem =
+  | NotebookTextItem
+  | NotebookRecordItem
+  | NotebookPhotoItem;
 
 export interface NotebookState {
   items: NotebookItem[];
@@ -35,6 +52,8 @@ export interface NotebookState {
 
 export const MAX_NOTEBOOK_ITEMS = 150;
 export const MAX_NOTEBOOK_TEXT = 600;
+export const MAX_PHOTO_CAPTION = 160;
+export const MAX_PHOTO_TILT = 8;
 export const NOTEBOOK_DAYS = 4;
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;
@@ -48,7 +67,17 @@ const clamp = (value: unknown, min: number, max: number, fallback: number) => {
 // İstemciden gelen, henüz doğrulanmamış öğe
 type LooseItem = Partial<
   Record<
-    'id' | 'kind' | 'day' | 'page' | 'x' | 'y' | 'w' | 'text' | 'evidenceId',
+    | 'id'
+    | 'kind'
+    | 'day'
+    | 'page'
+    | 'x'
+    | 'y'
+    | 'w'
+    | 'text'
+    | 'caption'
+    | 'rot'
+    | 'evidenceId',
     unknown
   >
 >;
@@ -61,16 +90,19 @@ export interface NotebookStatement {
   dayNumber: number;
 }
 
-// İstemciden gelen defteri temizler: bilinmeyen öğeler, sahip olunmayan kayıtlar ve sınır
-// dışı değerler atılır. Kayıt kartı her zaman kanıtın alındığı günde kalır.
+// İstemciden gelen defteri temizler: bilinmeyen öğeler, sahip olunmayan kanıtlar ve sınır
+// dışı değerler atılır. Kayıt kartı her zaman kanıtın alındığı günde kalır; fotoğraf sadece
+// oyuncunun bulduğu fiziksel kanıtlardan (ITEM) olabilir.
 export function sanitizeNotebook(
   input: unknown,
   statements: NotebookStatement[],
+  itemEvidenceIds: string[] = [],
 ): NotebookState {
   const raw = (input as Partial<NotebookState> | null)?.items;
   if (!Array.isArray(raw)) return { items: [] };
 
   const statementDay = new Map(statements.map((s) => [s.id, s.dayNumber]));
+  const ownedItems = new Set(itemEvidenceIds);
   const seenIds = new Set<string>();
   const seenRecords = new Set<string>();
   const items: NotebookItem[] = [];
@@ -105,6 +137,24 @@ export function sanitizeNotebook(
         y,
         w: clamp(item.w, 12, 100, 60),
         text,
+      });
+    } else if (item.kind === 'photo') {
+      const evidenceId = item.evidenceId;
+      if (typeof evidenceId !== 'string' || !ownedItems.has(evidenceId))
+        continue;
+      items.push({
+        id: item.id,
+        kind: 'photo',
+        day: clamp(item.day, 1, NOTEBOOK_DAYS, 1),
+        page,
+        x,
+        y,
+        evidenceId,
+        caption:
+          typeof item.caption === 'string'
+            ? item.caption.slice(0, MAX_PHOTO_CAPTION)
+            : '',
+        rot: clamp(item.rot, -MAX_PHOTO_TILT, MAX_PHOTO_TILT, 0),
       });
     } else if (item.kind === 'record') {
       const evidenceId = item.evidenceId;

@@ -145,6 +145,58 @@ describe('sanitizeNotebook', () => {
     expect((item as { text: string }).text).toHaveLength(MAX_NOTEBOOK_TEXT);
   });
 
+  it('sadece bulunan fiziksel kanıtların fotoğrafını kabul eder, notu ve eğikliği sınırlar', () => {
+    const result = sanitizeNotebook(
+      {
+        items: [
+          {
+            id: 'p1',
+            kind: 'photo',
+            day: 2,
+            page: 'R',
+            x: 30,
+            y: 40,
+            evidenceId: 'item-1',
+            caption: 'Kan izi mi?',
+            rot: 3,
+          },
+          {
+            id: 'p2',
+            kind: 'photo',
+            day: 2,
+            page: 'R',
+            x: 30,
+            y: 40,
+            evidenceId: 'ev-1',
+            caption: '',
+            rot: 0,
+          },
+          {
+            id: 'p3',
+            kind: 'photo',
+            day: 2,
+            page: 'R',
+            x: 30,
+            y: 40,
+            evidenceId: 'item-1',
+            caption: 'x'.repeat(500),
+            rot: 45,
+          },
+        ],
+      },
+      statements,
+      ['item-1'],
+    );
+    expect(result.items.map((i) => i.id)).toEqual(['p1', 'p3']);
+    expect(result.items[0]).toMatchObject({
+      kind: 'photo',
+      caption: 'Kan izi mi?',
+      rot: 3,
+    });
+    expect(result.items[1]).toMatchObject({ rot: 8 });
+    expect((result.items[1] as { caption: string }).caption).toHaveLength(160);
+  });
+
   it('bozuk girdiden boş defter çıkarır', () => {
     expect(sanitizeNotebook(null, statements)).toEqual({ items: [] });
     expect(sanitizeNotebook({ items: 'x' }, statements)).toEqual({ items: [] });

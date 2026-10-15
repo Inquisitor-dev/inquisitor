@@ -76,9 +76,9 @@ Run each in its own directory.
   - The verdicts are then turned into the detective's inner monologue: Gemini writes it (`generateBoardThought`, which receives only the verdicts), test mode returns a `[Test Düşüncesi]` template.
   - Thinking is allowed once per in-game day (`boardThoughtDay`); if there is nothing to judge, the day's use is not spent.
 - `notebook/` — the **notebook** (`GET`/`PUT /game-sessions/:id/notebook`), stored on `GameSession.notebookState`.
-  - One page spread per in-game day. Items are the player's text boxes and the positions of record cards, in percent of the page (`notebook.ts`).
+  - One page spread per in-game day. Items are the player's text boxes, taped evidence photos (with a caption and a slight tilt) and the positions of record cards, in percent of the page (`notebook.ts`).
   - Record cards are the session's `STATEMENT` evidence (confessions, testimony); their text is never stored in the notebook, it comes from `Evidence` on every load. A card stays on the day its evidence was obtained.
-  - `sanitizeNotebook` drops unknown items, cards for evidence the player does not own, duplicates and empty text, and clamps positions, days and text length (600).
+  - `sanitizeNotebook` drops unknown items, cards for evidence the player does not own, photos of anything but the player's own `ITEM` evidence, duplicates and empty text, and clamps positions, days, tilt and text length (600; captions 160).
 - `llm/` — single `LlmService` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`).
   - The HTTP client lives in `llm/client/gemini-client.ts`; the prompts for scenarios, NPC replies and board thoughts are in `llm/prompts/*.builder.ts`.
   - **Token usage logging:** every successful call goes through `LlmService.complete`, which logs and stores one `LlmUsage` row (`llm/usage/llm-usage.recorder.ts`: kind `SCENARIO`/`SCENARIO_REVIEW`/`NPC_REPLY`/`CONFRONT`/`NARRATOR`/`BOARD_THOUGHT`, model, prompt/completion tokens, duration, `sessionId`). A failed write only logs a warning. `createSession` pre-generates the session id so scenario calls are tied to the case. `npm run usage:report [days]` prints averages per kind and totals per case. New LLM calls must pass a usage context.
@@ -100,7 +100,7 @@ Run each in its own directory.
   - A MESSY/TIDY scene appearance that is independent of the clue (deliberately hidden from players).
   - A verifying evidence item (CORROBORATION or FLAW) placed at a location or in one NPC's testimony, an alibi for each innocent, and the victim's name and profession.
 - **Per-session state** lives on `GameSession` (day, `timeOfDay` 0–4, warrants, `locationClues` JSON, `truthReveal`, `caseFacts`, `notes`), `SessionNpcState` (`currentFear`, lie tendency, `dynamicPrompt`, `shownEvidenceIds`) and `Evidence` (`kind` CLUE/VERIFICATION/CONFESSION, `category` ITEM/STATEMENT, unique per session+kind+source). A case lasts 4 days. Creating a session marks the user's previous `ACTIVE` sessions as `LOST`.
-- **Evidence split:** `ITEM` evidence (physical objects found at locations) is shown in the inventory (dialogue screen and map). `STATEMENT` evidence (confessions, testimony) appears in the notebook as a stamped record card on the page of the day it was obtained; it is no longer appended to `GameSession.notes`.
+- **Evidence split:** `ITEM` evidence (physical objects found at locations) is shown in the inventory (dialogue screen, map and home) as polaroid photos (`components/EvidencePolaroid`; the photo is the image of the place where it was found, `evidencePhoto` in `InvestigationBoard/boardModel.ts`). `STATEMENT` evidence (confessions, testimony) appears in the notebook as a stamped record card on the page of the day it was obtained; it is no longer appended to `GameSession.notes`.
 - **`GameSession.notes`** is the free-text "quick notes" (Hızlı Notlar). The crime-scene page sidebar and interior clue snippets still write to it, and the notebook shows it on its first spread.
 - **The case answer must never reach the client while a session is `ACTIVE`.**
   - Every response containing a session goes through `toPublicSession`, which strips `culpritId`, `truthReveal`, `locationClues` and `caseFacts` until the session is `WON`/`LOST`. Any new endpoint returning a session must do the same.
@@ -123,7 +123,8 @@ Run each in its own directory.
     - It shares the drag/pan and particle hooks with interiors (`InteriorViewer/useScenePan.ts`, `useAmbientParticles.ts`).
   - **Notebook** (`components/Notebook`, opened through `CaseModals/NotebookModal` from the home desk, the map and the dialogue screen) is an open book with two pages and a 3D page-turn.
     - The first spread is the case file (scenario text) and the quick notes (`notes`); then one spread per in-game day, with ribbon tabs to jump between them. It opens on the current day.
-    - Double-click on an empty spot (or use "Yazı ekle") to place a handwritten text box; text boxes and record cards are dragged by their handle, also across the two pages. Changes autosave.
+    - Double-click on an empty spot (or use "Yazı ekle") to place a handwritten text box; text boxes, photos and record cards are dragged by their handle, also across the two pages. Changes autosave.
+    - "Kanıt yapıştır" opens a drawer of the found evidence as polaroids; pick one, then click on the page to tape its photo there and write a caption under it.
     - Cover and paper follow the universe (`data-theme`). On narrow screens one page is shown at a time. The handwriting font is Caveat (`--font-hand`, loaded in `app/layout.tsx`).
   - **Investigation board** (`/board`, `components/InvestigationBoard`) opens from the home's board.
     - The player pins suspects, found evidence and their own notes from the drawer, then drags from a pin to another card to stretch a string and chooses its meaning.
