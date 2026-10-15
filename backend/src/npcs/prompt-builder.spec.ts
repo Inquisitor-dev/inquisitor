@@ -136,5 +136,14 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('Warrants left in this case: 1/2');
       expect(prompt).toContain('the decision is made by the system');
     });
+
+    it('Sessiz Oda yalnızca istendiğinde eklenir, katil için de itiraf kuralı korunur', () => {
+      const npc = { id: 'church', name: 'Peder', description: 'Rahip', basePrompt: '' };
+      const params = { scenarioConfig: config, session: baseSession, npc, fearLevel: 2, hasConfessed: false };
+      expect(buildNpcPrompt(params)).not.toContain('PRIVATE ROOM:');
+      const prompt = buildNpcPrompt({ ...params, quietRoom: true });
+      expect(prompt).toContain('PRIVATE ROOM:');
+      expect(prompt).toContain('must NEVER openly confess');
+    });
   });
 });

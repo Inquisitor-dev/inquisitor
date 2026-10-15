@@ -27,3 +27,20 @@ export async function recordEvidence(
   }
   return created;
 }
+
+// Hızlı notların (GameSession.notes) sonuna paragraf paragraf ekler ve son hâlini döndürür.
+// Yeteneklerin sonuçları (Arşiv Özeti, Muhbir, Çelişki Taraması) buraya yazılır.
+export async function appendToNotes(
+  prisma: PrismaService,
+  sessionId: string,
+  lines: string[],
+): Promise<string> {
+  const session = await prisma.gameSession.findUnique({
+    where: { id: sessionId },
+    select: { notes: true },
+  });
+  const current = (session?.notes ?? '').trimEnd();
+  const notes = [current, ...lines].filter(Boolean).join('\n\n');
+  await prisma.gameSession.update({ where: { id: sessionId }, data: { notes } });
+  return notes;
+}

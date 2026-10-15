@@ -14,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { isTestModeEnabled } from '../test-mode';
 import { MarketService } from '../market/market.service';
+import { DEFAULT_CHARACTER_ID } from '../abilities/abilities';
 import {
   CreateSessionDto,
   UpdateNotesDto,
@@ -73,12 +74,19 @@ export class GameSessionsController {
       }
     }
 
+    // Karakter vaka boyunca kilitlenir; yalnızca sahip olunan karakterle başlanır
+    const characterId = dto.characterId || DEFAULT_CHARACTER_ID;
+    const ownsCharacter = await this.marketService.hasPurchased(userId, `outfit_${characterId}`);
+    if (!ownsCharacter) {
+      throw new ForbiddenException('Bu karaktere sahip değilsin. Markette token ile açabilirsin.');
+    }
+
     // Yapay zekasız test oturumu: kota kısıtları uygulanmaz, sayaç artmaz
     if (dto.testMode === true) {
       if (!isTestModeEnabled()) {
         throw new ForbiddenException('Test modu bu sunucuda kapalı.');
       }
-      return this.gameSessionsService.createSession(userId, diff, sType, true);
+      return this.gameSessionsService.createSession(userId, diff, sType, true, characterId);
     }
 
     // Günlük kota kontrolü (Premium kaldırıldı, standart limit 5 oturum)
@@ -88,7 +96,7 @@ export class GameSessionsController {
       throw new ForbiddenException(`Bugünkü soruşturma hakkın doldu (${maxSessions}/${maxSessions}). Yarın tekrar gel.`);
     }
 
-    const session = await this.gameSessionsService.createSession(userId, diff, sType);
+    const session = await this.gameSessionsService.createSession(userId, diff, sType, false, characterId);
 
     // Başarılı oluşturulunca sayacı artır
     await this.authService.incrementSessionCount(userId);

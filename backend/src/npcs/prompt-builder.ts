@@ -62,6 +62,8 @@ export interface BuildNpcPromptParams {
   confrontation?: NpcConfrontation;
   // Bu mesajda kodun verdiği arama izni kararı (sadece izin veren makam için)
   warrantDecision?: WarrantDecision | null;
+  // Sessiz Oda (Gölge Ajan): o gün daha doğrudan konuşur; suçluya da masuma da aynı uygulanır
+  quietRoom?: boolean;
 }
 
 export interface NpcConfrontation {
@@ -82,6 +84,7 @@ export function buildNpcPrompt({
   hasConfessed,
   confrontation,
   warrantDecision,
+  quietRoom = false,
 }: BuildNpcPromptParams): string {
   const canonicalNpc = scenarioConfig.npcDefinitions.find((n) => n.id === npc.id);
   const canonicalLocations = scenarioConfig.locationDefinitions;
@@ -215,6 +218,13 @@ ${fearPrompt(fearLevel, isCulprit)}`;
     if (hasConfessed) {
       combinedPrompt += `
 You have already confessed your personal secret to the Inquisitor. Do not deny it again.`;
+    }
+
+    if (quietRoom) {
+      combinedPrompt += `
+
+PRIVATE ROOM:
+The Inquisitor has taken you somewhere quiet where nobody else is listening. Today you speak more directly with them: give concrete answers about where you were, what you saw and who you saw, and avoid vague or evasive replies. Every rule above still applies; this does not make you confess anything you would not otherwise confess.`;
     }
 
     if (confrontation) {

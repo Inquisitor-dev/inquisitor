@@ -24,6 +24,8 @@ import {
 } from './prompt-builder';
 import { buildTestReply } from './test-reply.builder';
 import { recordEvidence } from './evidence-recorder';
+import { parseAbilityState } from '../abilities/abilities';
+import { chargedMessages, isQuietRoom } from '../abilities/ability-effects';
 
 
 @Injectable()
@@ -213,6 +215,14 @@ export class NpcsService {
       confrontation,
       fearLevel,
     });
+    // Sessiz Oda (Gölge Ajan): o gün bu şüpheli daha doğrudan konuşur
+    const quietRoom =
+      !isNarrator &&
+      isQuietRoom(
+        parseAbilityState(currentState.session.abilityState),
+        currentState.npc.id,
+        currentState.session.currentDay,
+      );
 
     const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
     // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
@@ -264,6 +274,7 @@ export class NpcsService {
       hasConfessed,
       confrontation,
       warrantDecision,
+      quietRoom,
     });
 
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
@@ -289,6 +300,7 @@ export class NpcsService {
                   getLocalizedLocationLabel(currentState.session.scenarioType, id),
                 )
               : undefined,
+            quietRoom,
           ),
         }
       : await this.llm.generateNpcResponse(
@@ -380,6 +392,13 @@ export class NpcsService {
     return findOwnedSession(this.prisma, sessionId, userId);
   }
 
+  // Oyuncunun o oyun gününde gönderdiği mesaj sayısı (sorgu ve yüzleştirme)
+  playerMessagesToday(sessionId: string, dayNumber: number) {
+    return this.prisma.dialogueHistory.count({
+      where: { sessionId, speaker: 'PLAYER', dayNumber },
+    });
+  }
+
   async getNpcHistory(sessionId: string, npcId: string) {
     const state = await this.prisma.sessionNpcState.findUnique({
       where: {
@@ -398,9 +417,11 @@ export class NpcsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    const totalDialoguesUsed = await this.prisma.dialogueHistory.count({
-      where: { sessionId, speaker: 'PLAYER', dayNumber: currentDay },
-    });
+    // Sabır'ın ücretsiz mesajları soru hakkından düşülmez
+    const totalDialoguesUsed = chargedMessages(
+      state?.session?.characterId ?? '',
+      await this.playerMessagesToday(sessionId, currentDay),
+    );
 
     return {
       history: historyData.map((h) => ({

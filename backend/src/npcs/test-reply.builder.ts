@@ -14,6 +14,24 @@ export function buildTestReply(
   },
   // Arama izni kararını kod verir; test cevabına not olarak eklenir
   warrantNote?: string,
+  quietRoom = false,
+): string {
+  const reply = buildReply(npcName, isGreeting, userMessage, isNarrator, confrontation, warrantNote);
+  // Sessiz Oda'nın etkisi test modunda görünsün
+  return quietRoom ? reply.replace('[TEST MODU]', '[TEST MODU] [Sessiz Oda]') : reply;
+}
+
+function buildReply(
+  npcName: string,
+  isGreeting: boolean,
+  userMessage: string,
+  isNarrator: boolean,
+  confrontation?: {
+    impact: EvidenceImpact;
+    fear: number;
+    forcedConfession: boolean;
+  },
+  warrantNote?: string,
 ): string {
   if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
   if (confrontation) {

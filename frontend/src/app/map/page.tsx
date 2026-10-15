@@ -32,6 +32,30 @@ import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { getScenarioMapLocations } from '@/config/mapLocations';
 import { SCENARIO_REGISTRY } from '@/config/scenarioRegistry';
+import { getSuspectsForScenario } from '@/config/npcProfiles';
+import { useAbilities } from '@/features/abilities/useAbilities';
+import AbilityControls, {
+  AbilityOutcome,
+  abilityErrorMessage,
+  type AbilityOutcomeProps,
+} from '@/features/abilities/AbilityControls';
+import type { AbilityId, AbilityInfo } from '@/features/abilities/abilityTypes';
+import abilityStyles from '@/features/abilities/Abilities.module.scss';
+
+// Haritada gösterilen yetenekler (Veri Sızdırma panoda)
+const MAP_ABILITIES: AbilityId[] = [
+  'patience',
+  'backstage',
+  'rooftop',
+  'informant',
+  'tracking',
+  'pulse',
+  'visor_lock',
+  'threat',
+  'quiet_room',
+  'archive_summary',
+  'contradiction_scan',
+];
 import {
   useMapWalking,
   depthScaleAt,
@@ -52,12 +76,16 @@ export default function MapPage() {
     isAdmin,
     endDay,
     advanceTime,
+    setTimeOfDay,
+    setNotes,
+    addWarrant,
     setWarrants,
     setScenarioType,
     setEvidence,
     hasHydrated,
     lastLocationId,
     setLastLocationId,
+    inventory,
   } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
@@ -93,9 +121,23 @@ export default function MapPage() {
     router.push('/home');
   }, [scenarioType, router, setIsHomeModalOpen]);
 
+  // Karakter yetenekleri. Kulis ve Çatı Geçişi önce "kurulur", bir mekâna girilince kullanılır.
+  const abilities = useAbilities(sessionId);
+  const { activate: activateAbility, abilityState } = abilities;
+  const [armedAbility, setArmedAbility] = useState<AbilityInfo | null>(null);
+  const [abilityOutcome, setAbilityOutcome] = useState<AbilityOutcomeProps | null>(null);
+  // Çatı Geçişi'yle bu gece girilen mekâna tekrar girilebilir
+  const rooftopLocationId =
+    abilityState.rooftop?.day === currentDay ? abilityState.rooftop.locationId : null;
+  const canEnterAtNight = (locId: string) =>
+    armedAbility?.id === 'rooftop' || rooftopLocationId === locId;
+
   const handleLocationClick = useCallback(
     async (locId: string) => {
-      if (!sessionId || timeOfDay >= 4) return;
+      const isNightEntry = timeOfDay >= 4;
+      const viaRooftop = isNightEntry && (armedAbility?.id === 'rooftop' || rooftopLocationId === locId);
+      if (!sessionId || (isNightEntry && !viaRooftop)) return;
+      const viaBackstage = armedAbility?.id === 'backstage' && locId !== 'crime_scene';
       setLoadingLoc(locId);
       // Geçiş ekranı hemen açılır; sunucu cevabı ve mekân görseli beklenirken oyuncu nereye girdiğini görür
       const interior = getInterior(scenarioType, locId);
@@ -109,16 +151,34 @@ export default function MapPage() {
             },
       );
       try {
-        await api.post(`/game-sessions/${sessionId}/advance-time`);
-        advanceTime();
+        if (viaRooftop) {
+          // Çatı Geçişi zaman ilerletmez; bedeli ertesi sabahtır
+          if (rooftopLocationId !== locId) await activateAbility({ abilityId: 'rooftop', locationId: locId });
+          setArmedAbility(null);
+        } else if (viaBackstage) {
+          // Kulis: bu giriş zaman dilimi harcamaz
+          await activateAbility({ abilityId: 'backstage', locationId: locId });
+          setArmedAbility(null);
+        } else {
+          await api.post(`/game-sessions/${sessionId}/advance-time`);
+          advanceTime();
+        }
         router.push(interior ? `/interior/${locId}` : `/interact/${locId}`);
       } catch (err) {
-        logger.error('Failed to advance time', err);
+        logger.error('Failed to enter location', err);
         hideScene();
         setLoadingLoc(null);
+        if (viaRooftop || viaBackstage) {
+          setArmedAbility(null);
+          setAbilityOutcome({
+            ability: { name: viaRooftop ? 'Çatı Geçişi' : 'Kulis' },
+            error: abilityErrorMessage(err),
+            onClose: () => setAbilityOutcome(null),
+          });
+        }
       }
     },
-    [sessionId, timeOfDay, scenarioType, advanceTime, router]
+    [sessionId, timeOfDay, scenarioType, advanceTime, router, armedAbility, rooftopLocationId, activateAbility, setArmedAbility]
   );
 
   const handleArrive = useCallback(
@@ -267,8 +327,12 @@ export default function MapPage() {
 
     setEndingDay(true);
     try {
-      await api.post(`/game-sessions/${sessionId}/end-day`);
+      const data = await api.post<{ timeOfDay?: number }>(`/game-sessions/${sessionId}/end-day`);
       endDay();
+      // Çatı Geçişi'nin bedeli: gün sabahsız başlayabilir
+      if (typeof data.timeOfDay === 'number') setTimeOfDay(data.timeOfDay);
+      setArmedAbility(null);
+      abilities.refresh();
     } catch (err) {
       logger.error('Failed to end day', err);
     } finally {
@@ -341,6 +405,18 @@ export default function MapPage() {
   const scenarioName =
     SCENARIO_REGISTRY[scenarioType as keyof typeof SCENARIO_REGISTRY]?.name ?? 'Ashenmoor Köyü';
 
+  // Yetenek hedefleri: vakadaki şüpheliler ve İz Sürme için henüz izni olmayan mekânlar
+  const suspectOptions = getSuspectsForScenario(scenarioType, difficulty).map((s) => ({ id: s.id, label: s.name }));
+  const trackingOptions = visibleLocations
+    .filter(
+      (loc) =>
+        loc.id !== 'home' &&
+        loc.id !== 'crime_scene' &&
+        !inventory.activeWarrants.includes(loc.id) &&
+        !inventory.usedWarrants.includes(loc.id),
+    )
+    .map((loc) => ({ id: loc.id, label: getLocationLabel(loc.id, scenarioType) }));
+
   return (
     <main className={styles.main}>
       <div className={`${styles.vignette} ${isNight ? styles.nightVignette : ''}`} />
@@ -373,7 +449,8 @@ export default function MapPage() {
         style={{ backgroundImage: `url(${getMapBg()})` }}
       >
         {visibleLocations.map((loc) => {
-          const isAvailable = (loc.available && !isNight && !walkingTo) || (loc.id === 'home' && !walkingTo);
+          const isAvailable =
+            (loc.available && (!isNight || canEnterAtNight(loc.id)) && !walkingTo) || (loc.id === 'home' && !walkingTo);
           const npcPortrait = loc.id !== 'home' ? getNpcDialoguePortrait(scenarioType, loc.id) : null;
           const npcConfig = DIALOGUE_CONFIG[scenarioType]?.[loc.id];
 
@@ -438,6 +515,29 @@ export default function MapPage() {
           renderPlayer(playerPos.x, playerPos.y)
         )}
       </div>
+
+      {armedAbility && (
+        <p className={abilityStyles.armedHint} role="status">
+          {armedAbility.id === 'rooftop'
+            ? 'Çatı Geçişi hazır: gece girmek istediğin mekâna tıkla. Yarın sabahı kaybedeceksin.'
+            : 'Kulis hazır: gireceğin mekân zaman harcatmaz.'}
+        </p>
+      )}
+
+      <AbilityControls
+        abilities={abilities}
+        only={MAP_ABILITIES}
+        suspects={suspectOptions}
+        locations={trackingOptions}
+        armedId={armedAbility?.id ?? null}
+        onArm={setArmedAbility}
+        onResult={(ability, result) => {
+          if (result.notes !== undefined) setNotes(result.notes);
+          if (ability.id === 'tracking' && result.locationId) addWarrant(result.locationId);
+        }}
+      />
+
+      {abilityOutcome && <AbilityOutcome {...abilityOutcome} />}
 
       <MapActionBar
         isFullscreen={isFullscreen}

@@ -36,8 +36,20 @@ import DialogueHistoryDrawer, { type DialogueMessage } from './components/Dialog
 import ConfrontModal from './components/ConfrontModal/ConfrontModal';
 import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
 import styles from './NpcDialogueScreen.module.scss';
+import { useAbilities } from '@/features/abilities/useAbilities';
+import AbilityControls from '@/features/abilities/AbilityControls';
+import type { AbilityId } from '@/features/abilities/abilityTypes';
 
 type FearBand = 'CALM' | 'UNEASY' | 'NERVOUS' | 'PANIC';
+
+// Sorgudaki şüpheliye doğrudan uygulanan yetenekler
+const DIALOGUE_ABILITIES: AbilityId[] = [
+  'threat',
+  'quiet_room',
+  'archive_summary',
+  'contradiction_scan',
+  'visor_lock',
+];
 
 const FEAR_LABELS: Record<FearBand, string> = {
   CALM: 'Sakin',
@@ -123,6 +135,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
   const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
+  const abilities = useAbilities(sessionId);
   const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
@@ -669,6 +682,20 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                     <Hand size={13} />
                     <span>Kanıt Göster</span>
                   </button>
+                )}
+
+                {!isInvestigating && !isCrimeScene && (
+                  <AbilityControls
+                    abilities={abilities}
+                    only={DIALOGUE_ABILITIES}
+                    npcId={actualNpcKey}
+                    npcName={profile.name}
+                    variant="inline"
+                    onResult={(_ability, result) => {
+                      if (result.notes !== undefined) setNotes(result.notes);
+                      if (result.fear) setFear({ level: result.fear.level, band: result.fear.band as FearBand });
+                    }}
+                  />
                 )}
 
                 {!isInvestigating ? (

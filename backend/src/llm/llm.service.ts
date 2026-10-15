@@ -10,6 +10,11 @@ import {
 } from './prompts/npc-prompt.builder';
 import { buildBoardThoughtPrompt } from './prompts/board-prompt.builder';
 import {
+  type Contradiction,
+  buildContradictionPrompt,
+  parseContradictions,
+} from './prompts/contradiction-prompt.builder';
+import {
   type ScenarioDraft,
   buildCaseBrief,
   buildScenarioPrompt,
@@ -229,6 +234,30 @@ export class LlmService {
       this.logger.warn(
         `Board thought failed, falling back to template. ${error}`,
       );
+      return null;
+    }
+  }
+
+  // Çelişki Taraması: şüphelinin kendi cevapları arasındaki çelişkiler; başarısızlıkta null
+  async findContradictions(
+    npcName: string,
+    replies: string[],
+    scenarioType: string,
+    sessionId?: string,
+  ): Promise<Contradiction[] | null> {
+    const prompt = buildContradictionPrompt(npcName, replies, scenarioType);
+
+    try {
+      const response = await this.complete(
+        { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
+        'Contradiction scan',
+        30_000,
+        { kind: 'CONTRADICTION_SCAN', sessionId },
+      );
+      const text = response?.choices?.[0]?.message?.content || '';
+      return parseContradictions(text, replies);
+    } catch (error) {
+      this.logger.warn(`Contradiction scan failed. ${error}`);
       return null;
     }
   }

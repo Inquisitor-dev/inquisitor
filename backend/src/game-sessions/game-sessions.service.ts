@@ -8,6 +8,8 @@ import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { startingFear } from '../npcs/fear';
+import { DEFAULT_CHARACTER_ID, parseAbilityState } from '../abilities/abilities';
+import { fearAfterNight, morningTimeOfDay } from '../abilities/ability-effects';
 
 import { MarketService } from '../market/market.service';
 
@@ -26,9 +28,10 @@ export class GameSessionsService {
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
     testMode = false,
+    characterId: string = DEFAULT_CHARACTER_ID,
   ) {
     this.logger.log(
-      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType})`,
+      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType}, character: ${characterId})`,
     );
 
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
@@ -82,6 +85,7 @@ export class GameSessionsService {
         caseFacts: caseFacts as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
         isTestMode: testMode,
+        characterId,
       },
     });
 
@@ -174,16 +178,20 @@ export class GameSessionsService {
       include: { npcStates: true },
     });
 
+    const abilityState = parseAbilityState(session.abilityState);
+    const nextDay = session.currentDay + 1;
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
       data: {
-        currentDay: session.currentDay + 1,
-        timeOfDay: 0,
+        currentDay: nextDay,
+        // Çatı Geçişi kullanıldıysa ertesi günün sabahı kaybedilir
+        timeOfDay: morningTimeOfDay(abilityState, nextDay),
       },
     });
 
     for (const state of session.npcStates) {
-      const newFear = Math.max(0, state.currentFear - 1);
+      // Vizör Kilidi'ndeki şüphelinin korkusu gece azalmaz
+      const newFear = fearAfterNight(state.npcId, state.currentFear, abilityState);
       await this.prisma.sessionNpcState.update({
         where: { id: state.id },
         data: { currentFear: newFear },

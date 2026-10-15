@@ -78,6 +78,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     currentDay,
     timeOfDay,
     endDay,
+    setTimeOfDay,
     setWarrants,
     setEvidence,
     setScenarioType,
@@ -162,8 +163,10 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     }
     setEndingDay(true);
     try {
-      await api.post(`/game-sessions/${sessionId}/end-day`);
+      const data = await api.post<{ timeOfDay?: number }>(`/game-sessions/${sessionId}/end-day`);
       endDay();
+      // Çatı Geçişi'nin bedeli: gün sabahsız başlayabilir
+      if (typeof data.timeOfDay === 'number') setTimeOfDay(data.timeOfDay);
       setActiveSpot(null);
       setDawnDay(currentDay + 1);
     } catch (err) {

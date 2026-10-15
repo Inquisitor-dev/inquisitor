@@ -8,7 +8,8 @@ export type LlmCallKind =
   | 'NPC_REPLY'
   | 'CONFRONT'
   | 'NARRATOR'
-  | 'BOARD_THOUGHT';
+  | 'BOARD_THOUGHT'
+  | 'CONTRADICTION_SCAN';
 
 export interface LlmUsageContext {
   kind: LlmCallKind;

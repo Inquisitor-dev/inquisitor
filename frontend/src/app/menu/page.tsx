@@ -374,7 +374,13 @@ export default function HomePage() {
         id: string;
         scenario?: string;
         message?: string;
-      }>('/game-sessions', { difficulty, scenarioType, testMode });
+      }>('/game-sessions', {
+        difficulty,
+        scenarioType,
+        testMode,
+        // Giyili karakter vaka boyunca kilitlenir ve yeteneklerini belirler
+        characterId: wearableOutfitId(equippedOutfitId, ownedItemIds),
+      });
 
       if (data.id) {
         setSessionId(data.id);

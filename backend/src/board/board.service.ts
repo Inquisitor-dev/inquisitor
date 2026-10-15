@@ -90,6 +90,46 @@ export class BoardService {
     return { board };
   }
 
+  // Veri Sızdırma (Kızıl Devre): tek bir ipin kararını verir. Diğer iplerin önceki kararları
+  // korunur. Panoyu yazmaz; kaydı ve günün "Düşün" hakkını AbilitiesService işler.
+  async leakString(session: OwnedSession, stringId: string, input?: unknown) {
+    const facts = session.caseFacts as unknown as CaseFacts | null;
+    if (!facts) {
+      throw new BadRequestException('Bu vakada pano değerlendirilemiyor.');
+    }
+    const evidence = await this.loadEvidence(session.id);
+    const previous = parseStoredBoard(session.boardState);
+    const board =
+      input === undefined
+        ? (previous ?? EMPTY_BOARD)
+        : sanitizeBoard(input, {
+            suspectIds: this.suspectIds(session),
+            evidenceIds: evidence.map((e) => e.id),
+            previous,
+          });
+
+    const target = board.strings.find((s) => s.id === stringId);
+    if (!target) throw new BadRequestException('Panoda böyle bir ip yok.');
+    const [judged] = judgeBoard(
+      { cards: board.cards, strings: [target] },
+      facts,
+      evidence,
+    );
+    if (!judged) {
+      throw new BadRequestException(
+        'Bu ip değerlendirilemez; bir şüpheliyle bir kanıtı ya da iki kanıtı anlamlı bir bağla birleştirmelisin.',
+      );
+    }
+
+    const leaked: BoardState = {
+      cards: board.cards,
+      strings: board.strings.map((s) =>
+        s.id === stringId ? { ...s, verdict: judged.verdict } : s,
+      ),
+    };
+    return { board: leaked, verdict: judged.verdict };
+  }
+
   // İpleri vaka gerçeklerine göre değerlendirir ve dedektifin iç sesini döndürür
   async think(sessionId: string, userId: string, input?: unknown) {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
