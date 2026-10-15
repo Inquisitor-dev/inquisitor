@@ -646,6 +646,20 @@ $panel-border: rgba(138, 3, 3, 0.28);
   }
 }
 
+// Giyili karakterin kısa hikâyesi ve yeteneği (lobi paneli)
+.outfitStory {
+  width: 100%;
+  margin: 0 0 12px;
+  text-align: left;
+}
+
+.outfitLore {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(232, 220, 196, 0.7);
+}
+
 // Nadirliğe göre sahne: nadir kızıl, efsanevi altın ışık ve kıvılcım
 .stage_common {
   --rarity-color: #c9bda5;

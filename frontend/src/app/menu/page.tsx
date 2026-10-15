@@ -24,6 +24,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
+import OutfitStory from '@/components/character/OutfitStory';
 import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outfits';
 import { getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import { showScene } from '@/components/SceneTransition/sceneStore';
@@ -575,6 +576,12 @@ export default function HomePage() {
                 </em>
               )}
             </span>
+          )}
+          {wornOutfit && (
+            <div className={styles.outfitStory}>
+              <p className={styles.outfitLore}>{wornOutfit.lore}</p>
+              <OutfitStory outfit={wornOutfit} />
+            </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '2px 0 6px' }}>
             <img

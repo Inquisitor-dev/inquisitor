@@ -466,6 +466,18 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   color: $text-parchment;
 }
 
+.outfitStoryBlock {
+  flex-grow: 1;
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+// Karakter kartında açıklama içeriğe göre yer kaplar; boşluk yetenek bloğunun altında kalır, altbilgiler hizalı durur
+.outfitCard .cardDesc {
+  flex-grow: 0;
+  margin-bottom: 14px;
+}
+
 .cardDesc {
   color: $text-muted;
   font-size: 0.88rem;

@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
 import CharacterShowcase from '@/components/character/CharacterShowcase';
+import OutfitStory from '@/components/character/OutfitStory';
 import {
   OUTFITS,
   findOutfit,
@@ -163,6 +164,7 @@ export default function WardrobePage() {
                 <span className={styles.detailsEyebrow}>{preview.title}</span>
                 <h2 className={styles.detailsName}>{preview.name}</h2>
                 <p className={styles.detailsDesc}>{preview.description}</p>
+                <OutfitStory outfit={preview} className={styles.detailsStory} />
                 <p className={styles.detailsLore}>{preview.lore}</p>
                 <blockquote className={styles.detailsQuote}>“{preview.quote}”</blockquote>
                 <div className={styles.detailsActions}>

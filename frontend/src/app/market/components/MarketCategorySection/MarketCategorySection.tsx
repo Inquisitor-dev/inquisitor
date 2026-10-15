@@ -16,6 +16,8 @@ import {
   VenetianMask,
 } from 'lucide-react';
 import styles from '../../page.module.scss';
+import OutfitStory from '@/components/character/OutfitStory';
+import { findOutfit } from '@/config/outfits';
 import {
   CATEGORY_LABELS,
   RARITY_LABELS,
@@ -301,6 +303,9 @@ export default function MarketCategorySection({
       <span className={styles.cardEyebrow}>{item.subtitle}</span>
       <h3 className={styles.cardTitle}>{item.title}</h3>
       <p className={styles.cardDesc}>{item.description}</p>
+      {item.outfitId && findOutfit(item.outfitId) && (
+        <OutfitStory outfit={findOutfit(item.outfitId)!} className={styles.outfitStoryBlock} />
+      )}
       {renderFooter(item)}
       {isOwned(item) && !item.comingSoon && (
         <Link href="/wardrobe" className={styles.wardrobeLink}>
