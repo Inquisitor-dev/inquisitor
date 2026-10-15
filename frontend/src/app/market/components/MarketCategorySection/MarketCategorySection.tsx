@@ -283,6 +283,11 @@ export default function MarketCategorySection({
       <span className={styles.rarityTag}>
         {RARITY_LABELS[item.rarity ?? 'common']}
       </span>
+      {isOwned(item) && !item.comingSoon && (
+        <span className={styles.ownedTag}>
+          <Check size={12} /> Gardırobunda
+        </span>
+      )}
       {item.comingSoon ? (
         <div className={styles.outfitPortrait}>
           <OutfitPortrait src={item.image} alt={item.title} />

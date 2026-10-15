@@ -168,15 +168,14 @@ export default function WardrobePage() {
             </div>
 
             {preview && (
-              <div className={styles.details}>
-                <span className={styles.rarity}>{RARITY_LABELS[preview.rarity]}</span>
-                <span className={styles.detailsEyebrow}>{preview.title}</span>
-                <h2 className={styles.detailsName}>{preview.name}</h2>
-                <p className={styles.detailsDesc}>{preview.description}</p>
-                <OutfitStory outfit={preview} className={styles.detailsStory} />
-                <p className={styles.detailsLore}>{preview.lore}</p>
-                <blockquote className={styles.detailsQuote}>“{preview.quote}”</blockquote>
-                <div className={styles.detailsActions}>
+              <div className={styles.caption}>
+                <div className={styles.captionText}>
+                  <span className={styles.rarityLabel}>
+                    {RARITY_LABELS[preview.rarity]} · {preview.title}
+                  </span>
+                  <h2 className={styles.detailsName}>{preview.name}</h2>
+                </div>
+                <div className={styles.captionActions}>
                   {renderAction(preview)}
                   {preview.ready && (
                     <span className={styles.dragHint}>
@@ -187,6 +186,17 @@ export default function WardrobePage() {
               </div>
             )}
           </section>
+
+          {/* Sağ sütun: karakter ayrıntısı ve liste (telefonda sahnenin altına sıralanır) */}
+          <div className={styles.side}>
+          {preview && (
+            <section className={`${styles.detailsPanel} ${styles[`rarity_${preview.rarity}`]}`} aria-label="Karakter ayrıntısı">
+              <p className={styles.detailsDesc}>{preview.description}</p>
+              <OutfitStory outfit={preview} className={styles.detailsStory} />
+              <p className={styles.detailsLore}>{preview.lore}</p>
+              <blockquote className={styles.detailsQuote}>“{preview.quote}”</blockquote>
+            </section>
+          )}
 
           {/* Karakter listesi */}
           <section className={styles.listPanel} aria-label="Karakterler">
@@ -203,13 +213,18 @@ export default function WardrobePage() {
                 return (
                   <button
                     key={outfit.id}
-                    className={`${styles.tile} ${styles[`rarity_${outfit.rarity}`]} ${previewId === outfit.id ? styles.tileActive : ''} ${!outfit.ready ? styles.tileSoon : ''}`}
+                    className={`${styles.tile} ${styles[`rarity_${outfit.rarity}`]} ${previewId === outfit.id ? styles.tileActive : ''} ${!outfit.ready ? styles.tileSoon : ''} ${own ? styles.tileOwned : styles.tileLocked} ${worn ? styles.tileWorn : ''}`}
                     onClick={() => selectOutfit(outfit.id)}
                     aria-pressed={previewId === outfit.id}
                   >
                     <span className={styles.tileImage}>
                       <img src={outfitThumb(outfit.id)} alt="" loading="lazy" />
                     </span>
+                    {(worn || !own) && (
+                      <span className={styles.tileBadge} aria-hidden>
+                        {worn ? <Check size={12} /> : <Lock size={11} />}
+                      </span>
+                    )}
                     <span className={styles.tileName}>{outfit.name}</span>
                     <span className={styles.tileState}>
                       {worn ? (
@@ -227,6 +242,7 @@ export default function WardrobePage() {
               })}
             </div>
           </section>
+          </div>
         </div>
       </div>
 
