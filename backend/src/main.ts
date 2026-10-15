@@ -8,6 +8,8 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Not Defteri'ndeki çizimler istek gövdesini büyütebilir (varsayılan sınır 100 KB)
+  app.useBodyParser('json', { limit: '1mb' });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

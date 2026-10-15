@@ -41,16 +41,36 @@ export interface NotebookPhotoItem {
   rot: number;
 }
 
+export type PenColor = 'ink' | 'red' | 'blue';
+export const PEN_COLORS: PenColor[] = ['ink', 'red', 'blue'];
+
+// Kalemle çizilmiş tek bir çizgi: noktalar sayfanın yüzdesi olarak [x1, y1, x2, y2, ...]
+export interface NotebookStrokeItem {
+  id: string;
+  kind: 'stroke';
+  day: number;
+  page: NotebookPage;
+  color: PenColor;
+  // 1 ince, 2 kalın
+  size: 1 | 2;
+  points: number[];
+}
+
 export type NotebookItem =
   | NotebookTextItem
   | NotebookRecordItem
-  | NotebookPhotoItem;
+  | NotebookPhotoItem
+  | NotebookStrokeItem;
 
 export interface NotebookState {
   items: NotebookItem[];
 }
 
+// Yazı, fotoğraf ve kayıt kartı sınırı; çizgiler ayrı sayılır
 export const MAX_NOTEBOOK_ITEMS = 150;
+export const MAX_STROKES = 300;
+// İstemci çizgiyi sadeleştirerek gönderir; daha uzunu kırpılır
+export const MAX_STROKE_POINTS = 120;
 export const MAX_NOTEBOOK_TEXT = 600;
 export const MAX_PHOTO_CAPTION = 160;
 export const MAX_PHOTO_TILT = 8;
@@ -77,6 +97,9 @@ type LooseItem = Partial<
     | 'text'
     | 'caption'
     | 'rot'
+    | 'color'
+    | 'size'
+    | 'points'
     | 'evidenceId',
     unknown
   >
@@ -106,9 +129,10 @@ export function sanitizeNotebook(
   const seenIds = new Set<string>();
   const seenRecords = new Set<string>();
   const items: NotebookItem[] = [];
+  let placed = 0;
+  let strokes = 0;
 
-  for (const entry of raw) {
-    if (items.length >= MAX_NOTEBOOK_ITEMS) break;
+  for (const entry of raw.slice(0, MAX_NOTEBOOK_ITEMS + MAX_STROKES + 50)) {
     if (!entry || typeof entry !== 'object') continue;
     const item = entry as LooseItem;
     if (
@@ -120,6 +144,16 @@ export function sanitizeNotebook(
     const page = isPage(item.page) ? item.page : 'L';
     const x = clamp(item.x, 0, 96, 6);
     const y = clamp(item.y, 0, 96, 10);
+
+    if (item.kind === 'stroke') {
+      const stroke = sanitizeStroke(item, page);
+      if (!stroke || strokes >= MAX_STROKES) continue;
+      strokes++;
+      items.push(stroke);
+      seenIds.add(item.id);
+      continue;
+    }
+    if (placed >= MAX_NOTEBOOK_ITEMS) continue;
 
     if (item.kind === 'text') {
       const day = clamp(item.day, 1, NOTEBOOK_DAYS, 1);
@@ -167,9 +201,31 @@ export function sanitizeNotebook(
     } else {
       continue;
     }
+    placed++;
     seenIds.add(item.id);
   }
   return { items };
+}
+
+// Çizgi: renk ve kalınlık listeden, noktalar sayfa içinde ve sayı sınırında olmalı
+function sanitizeStroke(
+  item: LooseItem,
+  page: NotebookPage,
+): NotebookStrokeItem | null {
+  if (!PEN_COLORS.includes(item.color as PenColor)) return null;
+  if (!Array.isArray(item.points)) return null;
+  const raw = item.points.slice(0, MAX_STROKE_POINTS * 2);
+  if (raw.length < 4 || raw.some((n) => typeof n !== 'number')) return null;
+  const even = raw.length - (raw.length % 2);
+  return {
+    id: item.id as string,
+    kind: 'stroke',
+    day: clamp(item.day, 1, NOTEBOOK_DAYS, 1),
+    page,
+    color: item.color as PenColor,
+    size: item.size === 2 ? 2 : 1,
+    points: raw.slice(0, even).map((n) => clamp(n, 0, 100, 0)),
+  };
 }
 
 export function parseStoredNotebook(value: unknown): NotebookState {

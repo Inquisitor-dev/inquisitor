@@ -76,7 +76,9 @@ Run each in its own directory.
   - The verdicts are then turned into the detective's inner monologue: Gemini writes it (`generateBoardThought`, which receives only the verdicts), test mode returns a `[Test Düşüncesi]` template.
   - Thinking is allowed once per in-game day (`boardThoughtDay`); if there is nothing to judge, the day's use is not spent.
 - `notebook/` — the **notebook** (`GET`/`PUT /game-sessions/:id/notebook`), stored on `GameSession.notebookState`.
-  - One page spread per in-game day. Items are the player's text boxes, taped evidence photos (with a caption and a slight tilt) and the positions of record cards, in percent of the page (`notebook.ts`).
+  - One page spread per in-game day. Items are the player's text boxes, taped evidence photos (with a caption and a slight tilt), pen strokes and the positions of record cards, in percent of the page (`notebook.ts`).
+  - A pen stroke stores its color (`ink`/`red`/`blue`), size (1 thin, 2 thick) and flattened points `[x1, y1, x2, y2, ...]`. Strokes have their own limit (`MAX_STROKES` 300, `MAX_STROKE_POINTS` 120 per stroke) and do not count toward the 150-item limit.
+  - The notebook PUT route allows 120 requests per minute (`@Throttle`), because it autosaves while the player writes and draws. `main.ts` raises the JSON body limit to 1 MB for drawings.
   - Record cards are the session's `STATEMENT` evidence (confessions, testimony); their text is never stored in the notebook, it comes from `Evidence` on every load. A card stays on the day its evidence was obtained.
   - `sanitizeNotebook` drops unknown items, cards for evidence the player does not own, photos of anything but the player's own `ITEM` evidence, duplicates and empty text, and clamps positions, days, tilt and text length (600; captions 160).
 - `llm/` — single `LlmService` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`).
@@ -125,7 +127,9 @@ Run each in its own directory.
     - The first spread is the case file (scenario text) and the quick notes (`notes`); then one spread per in-game day, with ribbon tabs to jump between them. It opens on the current day.
     - Double-click on an empty spot (or use "Yazı ekle") to place a handwritten text box; text boxes, photos and record cards are dragged by their handle, also across the two pages. Changes autosave.
     - "Kanıt yapıştır" opens a drawer of the found evidence as polaroids; pick one, then click on the page to tape its photo there and write a caption under it.
-    - Cover and paper follow the universe (`data-theme`). On narrow screens one page is shown at a time. The handwriting font is Caveat (`--font-hand`, loaded in `app/layout.tsx`).
+    - "Kalem" opens the pen bar: three colors, thin/thick, an eraser that removes whole strokes and undo (also Ctrl+Z). Strokes are simplified before saving (`simplifyStroke`, Ramer–Douglas–Peucker) and drawn as an SVG layer over the page. On phones the tool buttons show icons only.
+    - Cover and paper follow the universe (`data-theme`). On narrow screens one page is shown at a time and a horizontal swipe turns the page. The handwriting font is Caveat (`--font-hand`, loaded in `app/layout.tsx`).
+    - Turning a page plays a paper rustle synthesized with Web Audio (`features/audio/pageSound.ts`); it follows the door-sound volume and mute setting. A short help card opens on the first visit (remembered in `localStorage` under `inquisitor-notebook-help-seen`) and from the "?" button.
   - **Investigation board** (`/board`, `components/InvestigationBoard`) opens from the home's board.
     - The player pins suspects, found evidence and their own notes from the drawer, then drags from a pin to another card to stretch a string and chooses its meaning.
     - The board autosaves. "Düşün" shows the inner monologue, seals correct strings and stamps AKLANDI on a suspect cleared by a correct `CLEARS` string.

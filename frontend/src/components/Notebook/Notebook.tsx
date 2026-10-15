@@ -1,9 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ChevronLeft, ChevronRight, GripVertical, Paperclip, PenLine, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eraser,
+  GripVertical,
+  HelpCircle,
+  Paperclip,
+  PenLine,
+  PenTool,
+  Undo2,
+  X,
+} from 'lucide-react';
 import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
+import { playPageTurnSound } from '@/features/audio/pageSound';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import EvidencePolaroid from '@/components/EvidencePolaroid/EvidencePolaroid';
 import { evidencePhoto, evidenceTitle } from '@/components/InvestigationBoard/boardModel';
@@ -14,20 +26,50 @@ import {
   MAX_TEXT_LENGTH,
   newItemId,
   NOTEBOOK_DAYS,
+  PEN_COLORS,
   randomTilt,
   recordLabel,
+  simplifyStroke,
   spreadCount,
+  strokeHit,
+  strokePath,
+  type PenColor,
   type NotebookItem,
   type NotebookPage,
   type NotebookPhotoItem,
   type NotebookRecord,
   type NotebookRecordItem,
   type NotebookState,
+  type NotebookStrokeItem,
   type NotebookTextItem,
 } from './notebookModel';
 import styles from './Notebook.module.scss';
 
 const SAVE_DELAY_MS = 700;
+// Telefonda bu kadar yatay kaydırma sayfayı çevirir (piksel)
+const SWIPE_DISTANCE = 60;
+// Kullanım ipucu bir kez gösterilir (sadece bu tarayıcıda hatırlanır)
+const HELP_SEEN_KEY = 'inquisitor-notebook-help-seen';
+
+const readHelpSeen = () => {
+  try {
+    return localStorage.getItem(HELP_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+// Silginin çizgiye ne kadar yakından değmesi gerektiği (piksel)
+const ERASER_RADIUS = 12;
+
+// Kalem çizgilerinin rengi: mürekkep temanın yazı rengini izler
+const PEN_STROKE: Record<PenColor, string> = {
+  ink: 'var(--ink)',
+  red: 'var(--pen-red)',
+  blue: 'var(--pen-blue)',
+};
+
+// Geri al için: kalemle eklenen ya da silgiyle silinen çizgiler
+type InkAction = { type: 'add'; id: string } | { type: 'erase'; strokes: NotebookStrokeItem[] };
 const FLIP_MS = 600;
 
 function useMediaQuery(query: string) {
@@ -106,14 +148,25 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   const [currentDay, setCurrentDay] = useState(1);
   const [spread, setSpread] = useState<number | null>(null);
   const [narrowPage, setNarrowPage] = useState<NotebookPage>('L');
-  const [flip, setFlip] = useState<{ dir: 'next' | 'prev'; key: number } | null>(null);
+  // Sayfa çevrilirken dönen yaprak; çevirme bitince kaldırılır, bir sonrakinde yeniden oynar
+  const [flip, setFlip] = useState<{ dir: 'next' | 'prev' } | null>(null);
   const [addMode, setAddMode] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [quickNotes, setQuickNotes] = useState(notes);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const swipeRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   // Kanıt çekmecesi ve yapıştırılmak üzere seçilen kanıt
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [placingId, setPlacingId] = useState<string | null>(null);
+  // Kalem araçları
+  const [tool, setTool] = useState<'pen' | 'eraser' | null>(null);
+  const [penColor, setPenColor] = useState<PenColor>('ink');
+  const [penSize, setPenSize] = useState<1 | 2>(1);
+  const [liveStroke, setLiveStroke] = useState<{ page: NotebookPage; points: number[] } | null>(null);
+  const [undoCount, setUndoCount] = useState(0);
+  const inkHistory = useRef<InkAction[]>([]);
+  const drawingRef = useRef<{ page: NotebookPage; pointerId: number; points: number[] } | null>(null);
   const itemEvidence = evidence.filter((item) => item.category === 'ITEM');
 
   const pageRefs = useRef<Record<NotebookPage, HTMLDivElement | null>>({ L: null, R: null });
@@ -139,6 +192,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         const day = data.currentDay ?? 1;
         setCurrentDay(day);
         setSpread(clamp(day, 1, NOTEBOOK_DAYS));
+        if (!readHelpSeen()) setHelpOpen(true);
       })
       .catch((err) => {
         logger.error('Failed to load notebook', err);
@@ -205,12 +259,13 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
       return;
     }
     setFocusId(null);
+    playPageTurnSound();
     if (reducedMotion) {
       setSpread(target);
       setNarrowPage(landing);
       return;
     }
-    setFlip({ dir: target > spread ? 'next' : 'prev', key: Date.now() });
+    setFlip({ dir: target > spread ? 'next' : 'prev' });
     window.setTimeout(() => {
       setSpread(target);
       setNarrowPage(landing);
@@ -220,34 +275,43 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
 
   // Telefonda tek sayfa görünür: önce sol, sonra sağ sayfa, sonra sonraki gün
   const next = () => {
-    if (isNarrow && narrowPage === 'L') setNarrowPage('R');
-    else goToSpread(current + 1, 'L');
+    if (isNarrow && narrowPage === 'L') {
+      playPageTurnSound();
+      setNarrowPage('R');
+    } else goToSpread(current + 1, 'L');
   };
   const prev = () => {
-    if (isNarrow && narrowPage === 'R') setNarrowPage('L');
-    else goToSpread(current - 1, isNarrow ? 'R' : 'L');
+    if (isNarrow && narrowPage === 'R') {
+      playPageTurnSound();
+      setNarrowPage('L');
+    } else goToSpread(current - 1, isNarrow ? 'R' : 'L');
   };
 
-  // Klavye: oklarla sayfa çevrilir, Escape kapatır (yazı yazarken oklar imleci taşır)
-  const keyRef = useRef<(e: KeyboardEvent) => void>(() => {});
-  useEffect(() => {
-    keyRef.current = (e: KeyboardEvent) => {
-      const typing = (e.target as HTMLElement | null)?.tagName === 'TEXTAREA';
-      if (e.key === 'Escape') {
-        if (placingId || addMode) {
-          setPlacingId(null);
-          setAddMode(false);
-        } else close();
-      }
-      else if (!typing && e.key === 'ArrowRight') next();
-      else if (!typing && e.key === 'ArrowLeft') prev();
-    };
-  });
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => keyRef.current(e);
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  const closeHelp = () => {
+    setHelpOpen(false);
+    try {
+      localStorage.setItem(HELP_SEEN_KEY, '1');
+    } catch {
+      // Tarayıcı kaydı engellerse ipucu bir sonraki açılışta yeniden çıkar
+    }
+  };
+
+  // Telefonda boş sayfa üzerinde yana kaydırınca sayfa çevrilir
+  const onSwipeStart = (e: React.PointerEvent) => {
+    if (!isNarrow || tool || addMode || placingId) return;
+    if (!(e.target as HTMLElement).className?.toString().includes('page')) return;
+    swipeRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
+  };
+  const onSwipeEnd = (e: React.PointerEvent) => {
+    const start = swipeRef.current;
+    swipeRef.current = null;
+    if (!start || start.pointerId !== e.pointerId) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_DISTANCE || Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) next();
+    else prev();
+  };
 
   // ─── Öğeler ───
   const pointOnPage = (page: NotebookPage, clientX: number, clientY: number) => {
@@ -302,6 +366,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   // Çekmeceden bir kanıt seçilir; vaka dosyasındaysan bugünün sayfasına geçilir
   const choosePhoto = (evidenceId: string) => {
     setAddMode(false);
+    setTool(null);
     setPlacingId((selected) => (selected === evidenceId ? null : evidenceId));
     if (current === 0) goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS));
   };
@@ -329,6 +394,126 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
     if (placingId) addPhoto(page, e.clientX, e.clientY);
     else if (addMode) addText(page, e.clientX, e.clientY);
   };
+
+  // ─── Kalem ───
+  const pushInk = (action: InkAction) => {
+    inkHistory.current.push(action);
+    setUndoCount(inkHistory.current.length);
+  };
+
+  const undoInk = () => {
+    const action = inkHistory.current.pop();
+    setUndoCount(inkHistory.current.length);
+    if (!action) return;
+    if (action.type === 'add') changeItems((prev) => prev.filter((item) => item.id !== action.id));
+    else changeItems((prev) => [...prev, ...action.strokes]);
+  };
+
+  const chooseTool = (next: 'pen' | 'eraser' | null) => {
+    setAddMode(false);
+    setPlacingId(null);
+    setTool(next);
+    if (next && current === 0) goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS));
+  };
+
+  const eraseAt = (page: NotebookPage, clientX: number, clientY: number) => {
+    const rect = pageRefs.current[page]?.getBoundingClientRect();
+    if (!rect) return;
+    const px = clientX - rect.left;
+    const py = clientY - rect.top;
+    const hit = itemsRef.current.filter(
+      (item): item is NotebookStrokeItem =>
+        item.kind === 'stroke' &&
+        item.day === current &&
+        item.page === page &&
+        strokeHit(item.points, px, py, rect.width, rect.height, ERASER_RADIUS),
+    );
+    if (hit.length === 0) return;
+    const ids = new Set(hit.map((s) => s.id));
+    itemsRef.current = itemsRef.current.filter((item) => !ids.has(item.id));
+    changeItems((prev) => prev.filter((item) => !ids.has(item.id)));
+    pushInk({ type: 'erase', strokes: hit });
+  };
+
+  const onInkDown = (page: NotebookPage, e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    if (tool === 'eraser') {
+      drawingRef.current = { page, pointerId: e.pointerId, points: [] };
+      eraseAt(page, e.clientX, e.clientY);
+      return;
+    }
+    const point = pointOnPage(page, e.clientX, e.clientY);
+    drawingRef.current = { page, pointerId: e.pointerId, points: [point.x, point.y] };
+    setLiveStroke({ page, points: [point.x, point.y] });
+  };
+
+  const onInkMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drawing = drawingRef.current;
+    if (!drawing || drawing.pointerId !== e.pointerId) return;
+    if (tool === 'eraser') {
+      eraseAt(drawing.page, e.clientX, e.clientY);
+      return;
+    }
+    const rect = pageRefs.current[drawing.page]?.getBoundingClientRect();
+    if (!rect) return;
+    const x = clamp(((e.clientX - rect.left) / rect.width) * 100, 0, 100);
+    const y = clamp(((e.clientY - rect.top) / rect.height) * 100, 0, 100);
+    const pts = drawing.points;
+    // Çok yakın noktalar eklenmez
+    if (Math.hypot(x - pts[pts.length - 2], y - pts[pts.length - 1]) < 0.3) return;
+    pts.push(x, y);
+    setLiveStroke({ page: drawing.page, points: [...pts] });
+  };
+
+  const onInkUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drawing = drawingRef.current;
+    if (!drawing || drawing.pointerId !== e.pointerId) return;
+    drawingRef.current = null;
+    setLiveStroke(null);
+    if (tool !== 'pen') return;
+    const pts = drawing.points;
+    // Tek dokunuş bir nokta olarak çizilir
+    const points = simplifyStroke(pts.length === 2 ? [pts[0], pts[1], pts[0] + 0.1, pts[1]] : pts);
+    if (points.length < 4) return;
+    const stroke: NotebookStrokeItem = {
+      id: newItemId(),
+      kind: 'stroke',
+      day: current,
+      page: drawing.page,
+      color: penColor,
+      size: penSize,
+      points,
+    };
+    changeItems((prev) => [...prev, stroke]);
+    pushInk({ type: 'add', id: stroke.id });
+  };
+
+  // Klavye: oklarla sayfa çevrilir, Escape kapatır (yazı yazarken oklar imleci taşır)
+  const keyRef = useRef<(e: KeyboardEvent) => void>(() => {});
+  useEffect(() => {
+    keyRef.current = (e: KeyboardEvent) => {
+      const typing = (e.target as HTMLElement | null)?.tagName === 'TEXTAREA';
+      if (e.key === 'Escape') {
+        if (helpOpen) closeHelp();
+        else if (placingId || addMode || tool) {
+          setPlacingId(null);
+          setAddMode(false);
+          setTool(null);
+        } else close();
+      } else if (!typing && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undoInk();
+      }
+      else if (!typing && e.key === 'ArrowRight') next();
+      else if (!typing && e.key === 'ArrowLeft') prev();
+    };
+  });
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => keyRef.current(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // ─── Sürükleme ───
   const startDrag = (e: React.PointerEvent, id: string, element: HTMLElement | null) => {
@@ -497,9 +682,49 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
     );
   };
 
+  const renderInk = (page: NotebookPage) => {
+    const strokes = items.filter(
+      (item): item is NotebookStrokeItem =>
+        item.kind === 'stroke' && item.day === current && item.page === page,
+    );
+    const live = liveStroke?.page === page ? liveStroke : null;
+    return (
+      <>
+        <svg className={styles.inkLayer} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          {strokes.map((stroke) => (
+            <path
+              key={stroke.id}
+              d={strokePath(stroke.points)}
+              stroke={PEN_STROKE[stroke.color]}
+              strokeWidth={stroke.size === 2 ? '0.26em' : '0.13em'}
+            />
+          ))}
+          {live && live.points.length >= 4 && (
+            <path
+              d={strokePath(live.points)}
+              stroke={PEN_STROKE[penColor]}
+              strokeWidth={penSize === 2 ? '0.26em' : '0.13em'}
+            />
+          )}
+        </svg>
+        {tool && (
+          <div
+            className={`${styles.drawLayer} ${tool === 'eraser' ? styles.erasing : ''}`}
+            onPointerDown={(e) => onInkDown(page, e)}
+            onPointerMove={onInkMove}
+            onPointerUp={onInkUp}
+            onPointerCancel={onInkUp}
+          />
+        )}
+      </>
+    );
+  };
+
   const renderDayPage = (page: NotebookPage) => {
     const day = current;
-    const onPage = items.filter((item) => item.day === day && item.page === page);
+    const onPage = items.filter(
+      (item) => item.day === day && item.page === page && item.kind !== 'stroke',
+    );
     const placedRecords = new Set(
       items.filter((item) => item.kind === 'record').map((item) => (item as NotebookRecordItem).evidenceId),
     );
@@ -518,9 +743,11 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         {onPage.map((item) => {
           if (item.kind === 'text') return renderTextItem(item);
           if (item.kind === 'photo') return renderPhotoItem(item);
+          if (item.kind !== 'record') return null;
           const record = recordFor(item.evidenceId);
           return record ? renderRecordCard(record, item) : null;
         })}
+        {renderInk(page)}
       </>
     );
   };
@@ -574,12 +801,54 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   return (
     <div className={styles.overlay} data-theme={theme} onClick={close}>
       <div
-        className={`${styles.shell} ${isDrawerOpen ? styles.withDrawer : ''}`}
+        className={`${styles.shell} ${isDrawerOpen ? styles.withDrawer : ''} ${tool ? styles.withPen : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button type="button" className={styles.closeBtn} onClick={close} aria-label="Defteri kapat">
           <X size={18} />
         </button>
+        <button
+          type="button"
+          className={styles.helpBtn}
+          onClick={() => setHelpOpen(true)}
+          aria-label="Defter nasıl kullanılır?"
+          title="Nasıl kullanılır?"
+        >
+          <HelpCircle size={18} />
+        </button>
+
+        {helpOpen && (
+          <div className={styles.helpOverlay} onClick={closeHelp}>
+            <div className={styles.helpCard} onClick={(e) => e.stopPropagation()}>
+              <h2 className={styles.helpTitle}>Not Defteri</h2>
+              <ol className={styles.helpSteps}>
+                <li>
+                  <strong>Günler.</strong> Her oyun günü için ayrı bir sayfa çifti var. Kenardaki
+                  sekmelerle ya da oklarla gezin; telefonda sayfayı yana kaydır.
+                </li>
+                <li>
+                  <strong>Yaz.</strong> Boş bir yere çift tıkla ya da &ldquo;Yazı ekle&rdquo;ye bas. Yazıyı
+                  sol üstteki tutamaçtan sürükleyerek taşı.
+                </li>
+                <li>
+                  <strong>Kayıtlar.</strong> Aldığın itiraf ve tanıklıklar o günün sayfasına damgalı
+                  kart olarak kendiliğinden düşer.
+                </li>
+                <li>
+                  <strong>Kanıt yapıştır.</strong> Bulduğun bir kanıtı seç, sayfada bir yere tıkla;
+                  fotoğrafı bantlanır, altına not yazabilirsin.
+                </li>
+                <li>
+                  <strong>Kalem.</strong> Üç renk ve iki kalınlıkla karala. Silgi bir çizgiyi tamamen
+                  siler; Geri al (Ctrl+Z) son adımı geri alır.
+                </li>
+              </ol>
+              <button type="button" className={styles.helpConfirm} onClick={closeHelp}>
+                Anladım
+              </button>
+            </div>
+          </div>
+        )}
 
         <nav className={styles.tabs} aria-label="Defter bölümleri">
           {Array.from({ length: total }, (_, i) => (
@@ -597,11 +866,13 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
 
         <div className={`${styles.book} ${isNarrow ? styles.single : ''}`}>
           <div className={styles.cover} aria-hidden />
-          <div className={styles.pages}>{visiblePages.map(renderPage)}</div>
+          <div className={styles.pages} onPointerDown={onSwipeStart} onPointerUp={onSwipeEnd}>
+            {visiblePages.map(renderPage)}
+          </div>
           {!isNarrow && <div className={styles.spine} aria-hidden />}
           {flip && (
             <div
-              key={flip.key}
+              key={flip.dir}
               className={`${styles.flipSheet} ${flip.dir === 'next' ? styles.flipNext : styles.flipPrev} ${
                 isNarrow ? styles.flipSingle : ''
               }`}
@@ -635,6 +906,64 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
+        {tool && (
+          <div className={styles.penBar} role="toolbar" aria-label="Kalem araçları">
+            {PEN_COLORS.map((color) => (
+              <button
+                key={color.id}
+                type="button"
+                className={`${styles.swatch} ${styles[`swatch_${color.id}`]} ${
+                  tool === 'pen' && penColor === color.id ? styles.swatchActive : ''
+                }`}
+                onClick={() => {
+                  setPenColor(color.id);
+                  setTool('pen');
+                }}
+                aria-label={color.label}
+                title={color.label}
+              />
+            ))}
+            <span className={styles.penDivider} aria-hidden />
+            {([1, 2] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                className={`${styles.sizeBtn} ${tool === 'pen' && penSize === size ? styles.toolActive : ''}`}
+                onClick={() => {
+                  setPenSize(size);
+                  setTool('pen');
+                }}
+                aria-label={size === 1 ? 'İnce kalem' : 'Kalın kalem'}
+                title={size === 1 ? 'İnce' : 'Kalın'}
+              >
+                <span className={size === 1 ? styles.dotThin : styles.dotThick} />
+              </button>
+            ))}
+            <span className={styles.penDivider} aria-hidden />
+            <button
+              type="button"
+              className={`${styles.toolBtn} ${tool === 'eraser' ? styles.toolActive : ''}`}
+              aria-label="Silgi"
+              onClick={() => setTool(tool === 'eraser' ? 'pen' : 'eraser')}
+              aria-pressed={tool === 'eraser'}
+            >
+              <Eraser size={15} />
+              <span>Silgi</span>
+            </button>
+            <button
+              type="button"
+              className={styles.toolBtn}
+              aria-label="Geri al"
+              onClick={undoInk}
+              disabled={undoCount === 0}
+              title="Geri al (Ctrl+Z)"
+            >
+              <Undo2 size={15} />
+              <span>Geri al</span>
+            </button>
+          </div>
+        )}
+
         <div className={styles.toolbar}>
           <button type="button" className={styles.navBtn} onClick={prev} disabled={atStart} aria-label="Önceki sayfa">
             <ChevronLeft size={18} />
@@ -646,8 +975,10 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className={`${styles.toolBtn} ${addMode ? styles.toolActive : ''}`}
+            aria-label="Yazı ekle"
             onClick={() => {
               setPlacingId(null);
+              setTool(null);
               if (current === 0) goToSpread(clamp(currentDay, 1, NOTEBOOK_DAYS));
               else setAddMode((v) => !v);
             }}
@@ -659,6 +990,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className={`${styles.toolBtn} ${isDrawerOpen ? styles.toolActive : ''}`}
+            aria-label="Kanıt yapıştır"
             onClick={() => {
               setIsDrawerOpen((open) => !open);
               setPlacingId(null);
@@ -667,6 +999,16 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
           >
             <Paperclip size={15} />
             <span>Kanıt yapıştır</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${tool ? styles.toolActive : ''}`}
+            aria-label="Kalem"
+            onClick={() => chooseTool(tool ? null : 'pen')}
+            aria-pressed={!!tool}
+          >
+            <PenTool size={15} />
+            <span>Kalem</span>
           </button>
         </div>
       </div>

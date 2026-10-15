@@ -197,6 +197,116 @@ describe('sanitizeNotebook', () => {
     expect((result.items[1] as { caption: string }).caption).toHaveLength(160);
   });
 
+  it('geçerli çizgileri korur, bozuk olanları atar', () => {
+    const result = sanitizeNotebook(
+      {
+        items: [
+          {
+            id: 's1',
+            kind: 'stroke',
+            day: 1,
+            page: 'L',
+            color: 'red',
+            size: 2,
+            points: [10, 10, 20.04, 25, 150, -3],
+          },
+          {
+            id: 's2',
+            kind: 'stroke',
+            day: 1,
+            page: 'L',
+            color: 'green',
+            size: 1,
+            points: [1, 1, 2, 2],
+          },
+          {
+            id: 's3',
+            kind: 'stroke',
+            day: 1,
+            page: 'L',
+            color: 'ink',
+            size: 1,
+            points: [1, 1],
+          },
+          {
+            id: 's4',
+            kind: 'stroke',
+            day: 1,
+            page: 'L',
+            color: 'ink',
+            size: 1,
+            points: [1, 'x', 2, 2],
+          },
+          {
+            id: 's5',
+            kind: 'stroke',
+            day: 1,
+            page: 'R',
+            color: 'blue',
+            size: 7,
+            points: [1, 1, 2, 2, 3],
+          },
+        ],
+      },
+      statements,
+    );
+    expect(result.items).toEqual([
+      {
+        id: 's1',
+        kind: 'stroke',
+        day: 1,
+        page: 'L',
+        color: 'red',
+        size: 2,
+        points: [10, 10, 20, 25, 100, 0],
+      },
+      {
+        id: 's5',
+        kind: 'stroke',
+        day: 1,
+        page: 'R',
+        color: 'blue',
+        size: 1,
+        points: [1, 1, 2, 2],
+      },
+    ]);
+  });
+
+  it('çizgiler yazı sınırına sayılmaz ve nokta sayısı kırpılır', () => {
+    const long = Array.from({ length: 1000 }, (_, i) => i % 100);
+    const result = sanitizeNotebook(
+      {
+        items: [
+          ...Array.from({ length: 160 }, (_, i) => ({
+            id: `t${i}`,
+            kind: 'text',
+            day: 1,
+            page: 'L',
+            x: 1,
+            y: 1,
+            w: 20,
+            text: 'not',
+          })),
+          {
+            id: 'long',
+            kind: 'stroke',
+            day: 1,
+            page: 'L',
+            color: 'ink',
+            size: 1,
+            points: long,
+          },
+        ],
+      },
+      statements,
+    );
+    expect(result.items.filter((i) => i.kind === 'text')).toHaveLength(150);
+    const stroke = result.items.find((i) => i.kind === 'stroke') as {
+      points: number[];
+    };
+    expect(stroke.points).toHaveLength(240);
+  });
+
   it('bozuk girdiden boş defter çıkarır', () => {
     expect(sanitizeNotebook(null, statements)).toEqual({ items: [] });
     expect(sanitizeNotebook({ items: 'x' }, statements)).toEqual({ items: [] });

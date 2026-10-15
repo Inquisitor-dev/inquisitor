@@ -15,6 +15,8 @@
   --tab: #5c3a22;
   --tab-text: #f3e6c8;
   --record: #f7efdc;
+  --pen-red: #a3141b;
+  --pen-blue: #1f3a7a;
 
   position: fixed;
   inset: 0;
@@ -137,6 +139,15 @@
 
 .withDrawer .book:not(.single) {
   width: min(1120px, 92vw, calc((100vh - 330px) * 1.5));
+}
+
+/* Kalem araçları açıkken araç çubuğuna yer açılır */
+.withPen .book:not(.single) {
+  width: min(1120px, 92vw, calc((100vh - 180px) * 1.5));
+}
+
+.withPen.withDrawer .book:not(.single) {
+  width: min(1120px, 92vw, calc((100vh - 390px) * 1.5));
 }
 
 .withDrawer .book.single {
@@ -709,4 +720,225 @@
   gap: 14px;
   overflow-x: auto;
   padding: 4px 4px 8px;
+}
+
+/* ─── KALEM ─── */
+.inkLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.drawLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.erasing {
+  cursor: cell;
+}
+
+.penBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 12, 12, 0.88);
+  border: 1px solid rgba(224, 187, 94, 0.3);
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.swatch_ink {
+  background: #2b1d12;
+}
+
+.swatch_red {
+  background: #a3141b;
+}
+
+.swatch_blue {
+  background: #1f3a7a;
+}
+
+.swatchActive {
+  border-color: #e0bb5e;
+  box-shadow: 0 0 0 2px rgba(224, 187, 94, 0.35);
+  transform: scale(1.1);
+}
+
+.sizeBtn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(224, 187, 94, 0.35);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dotThin,
+.dotThick {
+  display: block;
+  border-radius: 50%;
+  background: #e9e1cf;
+}
+
+.dotThin {
+  width: 5px;
+  height: 5px;
+}
+
+.dotThick {
+  width: 10px;
+  height: 10px;
+}
+
+.penDivider {
+  width: 1px;
+  height: 22px;
+  background: rgba(224, 187, 94, 0.25);
+}
+
+.toolBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Telefonda araç çubuklarında sadece simgeler kalır; çubuklar ekrana sığar */
+@media (max-width: 820px) {
+  .toolbar,
+  .penBar {
+    max-width: 94vw;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .toolBtn {
+    padding: 7px 10px;
+
+    span {
+      display: none;
+    }
+  }
+
+  .pageLabel {
+    min-width: 72px;
+    font-size: 0.85rem;
+  }
+
+  .withPen .book.single {
+    width: min(520px, 92vw, calc((100vh - 300px) / 1.4));
+  }
+
+  .drawer {
+    width: 94vw;
+  }
+}
+
+/* ─── KULLANIM İPUCU ─── */
+.helpBtn {
+  position: absolute;
+  top: -6px;
+  right: 38px;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(224, 187, 94, 0.45);
+  background: rgba(15, 12, 12, 0.9);
+  color: #e9e1cf;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+    border-color: #e0bb5e;
+  }
+}
+
+.helpOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 4, 4, 0.55);
+}
+
+.helpCard {
+  width: min(460px, 92vw);
+  padding: 24px 26px;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.helpTitle {
+  margin: 0 0 12px;
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.helpSteps {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  strong {
+    color: var(--accent);
+  }
+}
+
+.helpConfirm {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+@media (max-width: 820px) {
+  .helpBtn {
+    top: -48px;
+    right: 44px;
+  }
 }
