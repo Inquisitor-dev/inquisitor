@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_OUTFIT_ID, LEGACY_OUTFIT_IDS } from '@/config/outfits';
+import { DEFAULT_OUTFIT_ID, LEGACY_OUTFIT_IDS, REMOVED_OUTFIT_IDS } from '@/config/outfits';
 import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 
@@ -153,7 +153,8 @@ export const useMarketStore = create<MarketState>()(
     {
       name: 'inquisitor-market',
       // v1: karakter id'leri yeniden adlandırıldı (LEGACY_OUTFIT_IDS)
-      version: 1,
+      // v2: 4 karakter oyundan çıkarıldı (REMOVED_OUTFIT_IDS)
+      version: 2,
       migrate: (persisted, version) => {
         const state = persisted as Partial<MarketState>;
         if (version < 1) {
@@ -164,6 +165,14 @@ export const useMarketStore = create<MarketState>()(
             const outfit = id.startsWith('outfit_') ? LEGACY_OUTFIT_IDS[id.slice('outfit_'.length)] : undefined;
             return outfit ? `outfit_${outfit}` : id;
           });
+        }
+        if (version < 2) {
+          if (state.equippedOutfitId && REMOVED_OUTFIT_IDS.includes(state.equippedOutfitId)) {
+            state.equippedOutfitId = DEFAULT_OUTFIT_ID;
+          }
+          state.ownedItemIds = state.ownedItemIds?.filter(
+            (id) => !REMOVED_OUTFIT_IDS.some((removed) => id === `outfit_${removed}`),
+          );
         }
         return state as MarketState;
       },

@@ -23,15 +23,18 @@ export type Outfit = {
 export const DEFAULT_OUTFIT_ID = 'engizitor';
 
 // Karakter id'leri gardıroptaki adlarla değiştirildi; tarayıcıda kayıtlı eski id'ler yenilerine çevrilir
-// (backend'deki LEGACY_ITEM_IDS ile aynı eşleme).
+// (backend'deki LEGACY_ITEM_IDS ile aynı eşleme değil: çıkarılan karakterlerin eski adları burada varsayılana düşer).
 export const LEGACY_OUTFIT_IDS: Record<string, string> = {
   default: 'engizitor',
   dedektif: 'sis_dedektifi',
-  china_girl: 'jinling_golgesi',
-  fantastic_girl: 'kizil_yemin',
+  china_girl: 'engizitor',
+  fantastic_girl: 'engizitor',
   cyber_girl: 'neon_kuzgun',
-  cyber_man: 'krom_serif',
+  cyber_man: 'engizitor',
 };
+
+// Oyundan çıkarılan karakterler (dosyaları yerinde duruyor). Kayıtlı state'ten ayıklanır.
+export const REMOVED_OUTFIT_IDS = ['kizil_yemin', 'jinling_golgesi', 'krom_serif', 'kizil_lotus'];
 
 // Yeni karakterler listenin başında.
 export const OUTFITS: Outfit[] = [
@@ -102,17 +105,6 @@ export const OUTFITS: Outfit[] = [
     quote: 'Kül her şeyi örter. Ama ben eşelemeyi severim.',
   },
   {
-    id: 'kizil_lotus',
-    name: 'Kızıl Lotus',
-    title: 'Jinling Suikastçısı',
-    description: 'Siyah ipek qipao üzerinde kızıl çiçekler, saçında altın tarak. Zarafeti en keskin silahıdır.',
-    price: 1200,
-    rarity: 'legendary',
-    ready: true,
-    lore: 'Jinling sarayında çay döken bir hizmetkâr sanılırdı. Saray muhafızlarından üçü düştüğünde herkes onun kim olduğunu öğrendi.',
-    quote: 'Lotus çamurda açar; ben de en temiz yalanın içinde.',
-  },
-  {
     id: 'kizil_devre',
     name: 'Kızıl Devre',
     title: 'Neon Prime Paralı Askeri',
@@ -157,28 +149,6 @@ export const OUTFITS: Outfit[] = [
     quote: 'Sis her şeyi saklar; ama ayak izlerini asla.',
   },
   {
-    id: 'jinling_golgesi',
-    name: 'Jinling Gölgesi',
-    title: 'Doğu Saray Muhafızı',
-    description: 'Erik çiçeği desenli ipek, altın püsküller. Tapınak avlusunda adımları duyulmaz.',
-    price: 900,
-    rarity: 'rare',
-    ready: true,
-    lore: 'İmparatorluk ailesinin gölge muhafızıydı. Saray yandığında hanedanın son sırrıyla birlikte ortadan kayboldu.',
-    quote: 'Rüzgâr nereden eserse essin, erik çiçeği yerini bilir.',
-  },
-  {
-    id: 'kizil_yemin',
-    name: 'Kızıl Yemin',
-    title: 'Diyar Avcısı',
-    description: 'Deri korse, işlemeli kolluklar ve dize kadar çizmeler. Verdiği sözü kılıcıyla tutar.',
-    price: 900,
-    rarity: 'rare',
-    ready: true,
-    lore: 'Diyarların sınırında bir yemin etti: kardeşinin katilini bulmadan kılıcını kınına sokmayacak. Kılıç hâlâ kınının dışında.',
-    quote: 'Yeminim kızıl; ya kanla ya gerçekle silinir.',
-  },
-  {
     id: 'neon_kuzgun',
     name: 'Neon Kuzgun',
     title: 'Bölge 13 Ajanı',
@@ -188,17 +158,6 @@ export const OUTFITS: Outfit[] = [
     ready: true,
     lore: "Bölge 13'ün çatılarında yaşar, şehre yukarıdan bakar. Kuzgunlar gibi parlayan her şeyi toplar; özellikle de sırları.",
     quote: 'Bu şehirde ışık yalan söyler. Gölge söylemez.',
-  },
-  {
-    id: 'krom_serif',
-    name: 'Krom Şerif',
-    title: 'Neon Prime Kanun Adamı',
-    description: 'Işıklı trençkot, krom eldivenler ve kovboy şapkası. Şehrin kanunu ondan sorulur.',
-    price: 1200,
-    rarity: 'legendary',
-    ready: true,
-    lore: "Neon Prime'a çölden geldi, eski usul adaleti yanında getirdi. Krom eldivenleriyle sıktığı el bir daha yalan yazamaz.",
-    quote: 'Kasabada tek bir kanun var. O da benim.',
   },
 ];
 

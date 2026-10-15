@@ -45,6 +45,7 @@ Run each in its own directory.
 ## Architecture
 
 ### Backend modules (`backend/src`)
+- Request bodies are typed DTO classes (`*/dto/*.dto.ts`, class-validator); `main.ts` registers a global `ValidationPipe` (`whitelist`, `transform`). New endpoints should take a DTO instead of an inline body type; `auth/current-user.decorator.ts` provides the authenticated user.
 - `auth/` — email verification-code signup (mails via `MAIL_USER`/`MAIL_PASS`), password login and JWT (`JwtAuthGuard`).
   - Also owns daily quota tracking (`checkAndResetDailyQuota`, session/message counters on `User`), premium activation and per-user audio settings.
   - The admin user is bootstrapped from `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `onModuleInit`.
@@ -55,28 +56,29 @@ Run each in its own directory.
   - The daily session quota is enforced in the **controller**. Universe and difficulty are not gated server-side yet (they will be tied to market purchases).
   - Every route resolves the session with `findOwnedSession` (`session-access.ts`); other users' sessions return 404.
 - `npcs/` — `POST /npcs/interact` (one dialogue turn), `POST /npcs/confront` (show an evidence item to an NPC) and `POST /npcs/history`. Builds the NPC prompt from scenario config + session state and persists `DialogueHistory`.
+  - The service is split by responsibility: `prompt-builder.ts` (NPC system prompt from scenario + session state), `evidence-recorder.ts` (persists evidence/confession rows), `test-reply.builder.ts` (stock replies for test mode) and `warrant.ts` (search-warrant request matching).
   - All routes check session ownership. `interact` and `confront` also require an `ACTIVE` session and spend the daily message quota; `interact` messages are at most 500 characters.
   - Replies return `newEvidence`, `fear` (`{ level, band }`, null for narrators) and, when a statement was added, the updated `notes`.
   - `evidence.ts`: the **evidence log**. The LLM appends hidden tags (`[CLUE_FOUND]` from narrators, `[CONFESSED]` from innocents, `[EVIDENCE_REVEALED]` from the testimony witness), which are stripped server-side and turned into `Evidence` rows. Evidence text always comes from the stored case facts / `locationClues`, never from the live reply. `sharesTestimony` also catches a witness who tells the testimony without the tag.
   - `fear.ts`: **fear is driven by code**. Showing evidence raises `SessionNpcState.currentFear` (own location clue +7, so it always breaks an innocent; implicating evidence +3, irrelevant or repeated 0, max 10, −1 each night). At the threshold (7) an innocent is forced to confess and the confession is recorded by code; the culprit only panics and never confesses. Starting fear is `startingFear(baseFear)` (0–4).
   - `prompt-guard.ts` answers prompt-injection attempts in character without calling the LLM, and replaces replies that leak prompt section headers.
-  - Its `foldTurkish` makes text matching diacritic-insensitive (used for warrant requests).
+  - `foldTurkish` (in `warrant.ts`) makes text matching diacritic-insensitive (used for warrant requests).
 - `board/` — the **investigation board** (`GET`/`PUT /game-sessions/:id/board`, `POST /game-sessions/:id/board/think`).
-  - The board (cards, positions, strings) is stored on `GameSession.boardState`. `sanitizeBoard` drops cards for evidence the player has not found or suspects not in the case, and clients can never write a string's verdict.
+  - The board logic is pure code under `board/domain/` (`board.ts` only re-exports it): `board.types.ts`, `board-sanitizer.ts`, `board-judge.ts`, `board-thought.ts`. The board (cards, positions, strings) is stored on `GameSession.boardState`. `sanitizeBoard` drops cards for evidence the player has not found or suspects not in the case, and clients can never write a string's verdict.
   - String types depend on the two ends: suspect–evidence `CLEARS`/`IMPLICATES`, evidence–evidence `SUPPORTS`/`CONTRADICTS`, anything else `LINK` (not judged).
   - "Düşün" (think) judges strings in code against `caseFacts` (`judgeBoard`). A string only confirms what its two cards themselves say; for example, a planted crime-scene clue is exposed only when it is linked to the verifying evidence. The judgments never name the culprit.
   - The verdicts are then turned into the detective's inner monologue: Gemini writes it (`generateBoardThought`, which receives only the verdicts), test mode returns a `[Test Düşüncesi]` template.
   - Thinking is allowed once per in-game day (`boardThoughtDay`); if there is nothing to judge, the day's use is not spent.
-- `llm/` — single `LlmService` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`).
-  - `createCompletion` walks a model fallback chain (`GEMINI_MODELS` env, comma-separated), with retries on 404/429/5xx/connection errors.
+- `llm/` — `LlmService` (generation flows) on top of `client/gemini-client.ts`, a `GeminiClient` using the **OpenAI SDK pointed at Gemini's OpenAI-compatible endpoint** (`GEMINI_API_KEY`). Prompt texts live in `prompts/` (`npc-`, `scenario-`, `board-prompt.builder.ts`).
+  - `GeminiClient.createCompletion` walks a model fallback chain (`GEMINI_MODELS` env, comma-separated), with retries on 404/429/5xx/connection errors. If `GEMINI_MODELS` is unset (as on Render), the hard-coded `DEFAULT_MODELS` list is used; its `gemini-1.5-*` entries are probably retired and just 404 before reaching `gemini-flash-latest`.
   - Generates both NPC replies and the per-session scenario (story, truth reveal, per-NPC secret prompts, per-location clues), then runs a consistency-reconciliation pass.
   - The NPC system prompt ends with SECURITY RULES that treat player messages as in-world speech, never as instructions.
-- `scenarios/` — static game content: `scenario-config.ts` (three scenario types `medieval|modern|cyberpunk` × difficulty `easy|medium|hard`, NPC personas, localized location labels) and `clues-config.ts` (clues tagged with the NPC ids they implicate).
+- `scenarios/` — static game content: `scenario-config.ts` (lookup helpers `getScenarioConfig`, `getLocalizedLocationLabel`, `normalizeScenarioType`) over `universes/` (one file per universe: `medieval|modern|cyberpunk|china|winter`, registered in `UNIVERSE_REGISTRY`; each holds NPC personas, locations and localized location labels; × difficulty `easy|medium|hard`) and `clues-config.ts` (clues tagged with the NPC ids they implicate).
 - A global `ThrottlerGuard` limits every route to 20 req/min.
 
 ### Key design points
-- **NPC ids double as location ids** (`tavern`, `church`, `graveyard`, `mill`, `farm`, `clinic`, plus `crime_scene`). The same ids are reused across all scenario types; only display labels/personas change per scenario (`getLocalizedLocationLabel`). Keep ids consistent across `scenario-config.ts`, `clues-config.ts`, `prisma/seed.ts`, and the frontend/mobile location configs.
-- **Location display names** come from `LOCALIZED_LOCATION_LABELS` in `scenario-config.ts`. The frontend keeps its own copies (`interact/[npcId]/page.tsx`, `components/TruthRevealPanel.tsx`) that must stay identical.
+- **NPC ids double as location ids** (`tavern`, `church`, `graveyard`, `mill`, `farm`, `clinic`, plus `crime_scene`). The same ids are reused across all scenario types; only display labels/personas change per scenario (`getLocalizedLocationLabel`). Keep ids consistent across `scenarios/universes/*`, `clues-config.ts`, `prisma/seed.ts`, and the frontend/mobile location configs.
+- **Location display names** come from each universe's `locationLabels` in `backend/src/scenarios/universes/*.ts`. The frontend keeps its own copies (`config/locationLabels.ts` → `SCENARIO_LOCATION_LABELS` / `getLocationLabel`, and a local map in `components/TruthRevealPanel.tsx`) that must stay identical.
 - **The case is planned in code, not by the LLM** (`planCase` in `scenarios/case-setup.ts`, called from `GameSessionsService.createSession`). The plan is stored as `GameSession.caseFacts`; the LLM only writes narrative around it.
   - A random culprit and a HURRIED (genuine clue) / PLANNED (planted clue) murder style.
   - An information budget: the crime-scene clue eliminates exactly `ELIMINATION_TARGET[difficulty]` suspects.
@@ -90,10 +92,12 @@ Run each in its own directory.
 - **Test mode (no AI):** with `ALLOW_TEST_MODE=true` on the backend, `POST /game-sessions` with `testMode: true` builds a canned scenario and NPCs answer with stock replies — no Gemini quota used, no quota counters touched. Use this for exercising game flow locally. Must stay off in production.
 
 ### Clients
-- **Frontend** calls the API through `apiUrl()` (`src/config/api.ts`), which defaults to `/api`; `next.config.ts` rewrites `/api/*` → `http://127.0.0.1:3001/*`.
-  - Game/auth state is a persisted Zustand store (`src/store/useGameStore.ts`), including the session's `evidence` list.
-  - The dialogue screen (`interact/[npcId]`) has the "Kanıt Göster" picker (calls `/npcs/confront`) and a fear indicator under the NPC name.
-  - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiorConfig.ts`) are defined per universe; `medieval`, `cyberpunk`, `china`, `winter` and `modern` have them; other universes show a "henüz hazır değil" screen.
+- **Frontend** calls the API through the `api` client (`src/shared/api/client.ts`: `api.get/post/...`, throws `ApiError`), which builds URLs with `apiUrl()` (`src/config/api.ts`, defaults to `/api`); log through `shared/lib/logger.ts` instead of `console`; `next.config.ts` rewrites `/api/*` → `http://127.0.0.1:3001/*`.
+  - Game/auth state is a persisted Zustand store (`src/store/useGameStore.ts`), composed from slices in `src/store/slices/` (auth, session, evidence, inventory), including the session's `evidence` list.
+  - Per-universe frontend config is split into folders with an `index.ts` registry: `config/interiors/`, `config/locations/` (map locations), `config/dialogue/`; `interiorConfig.ts` / `dialogueConfig.ts` only re-export them. `config/scenarioRegistry.ts` + `shared/types/scenario.ts` hold the universe list (names, map backgrounds, footsteps). A new universe needs an entry in each.
+  - Audio settings live in `src/features/audio/` (`audioSettings.ts`, `useAudioSettings`, `AudioSettingsPanel`, `doorSound.ts`).
+  - The dialogue screen (`interact/[npcId]`, implemented in `components/DialogueScreen/NpcDialogueScreen.tsx`) has the "Kanıt Göster" picker (calls `/npcs/confront`) and a fear indicator under the NPC name.
+  - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiors/`) are defined per universe; `medieval`, `cyberpunk`, `china`, `winter` and `modern` have them; other universes show a "henüz hazır değil" screen.
     - Entering a location from the map opens its interior first when one exists, otherwise the dialogue screen.
     - Hotspot positions are percentages of the image.
     - A `clue` hotspot without `clueSnippet` is a search spot: it checks the warrant and links to `/interact/<id>?ara=1`, which opens investigation mode.
