@@ -43,7 +43,7 @@ function setup(session: Record<string, unknown> = activeSession) {
     sessionNpcState: { update: jest.fn() },
   } as unknown as PrismaService;
   const service = new GameSessionsService(prisma, {} as LlmService);
-  return { service, gameSession };
+  return { service, gameSession, prisma };
 }
 
 const expectNoSecrets = (result: object) => {
@@ -116,6 +116,32 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
     const result = await service.condemnNpc('session-1', 'owner', 'mill');
     expect(result.won).toBe(true);
     expect(result.session).toHaveProperty('truthReveal');
+  });
+
+  it('gün sonunda korku azalır; Vizör Kilidi ve Çatı Geçişi bedeli uygulanır', async () => {
+    const session = {
+      ...activeSession,
+      abilityState: { uses: {}, visorLockNpcId: 'mill', lostMorningDay: 2 },
+    };
+    const { service, gameSession, prisma } = setup(session);
+    gameSession.findUniqueOrThrow.mockResolvedValue({
+      ...session,
+      npcStates: [
+        { id: 's-mill', npcId: 'mill', currentFear: 5 },
+        { id: 's-tavern', npcId: 'tavern', currentFear: 5 },
+      ],
+    });
+    await service.endDay('session-1', 'owner');
+    expect(gameSession.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { currentDay: 2, timeOfDay: 1 } }),
+    );
+    const fearUpdates = (prisma.sessionNpcState.update as jest.Mock).mock.calls.map(
+      ([arg]: [{ where: { id: string }; data: { currentFear: number } }]) => [arg.where.id, arg.data.currentFear],
+    );
+    expect(fearUpdates).toEqual([
+      ['s-mill', 5],
+      ['s-tavern', 4],
+    ]);
   });
 
   it('kazanılmış vaka süre dolunca kayba çevrilmez', async () => {

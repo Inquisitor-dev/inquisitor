@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { InteractDto, ConfrontDto, HistoryDto } from './dto/npc-requests.dto';
+import { isFreeMessage } from '../abilities/ability-effects';
 
 @Controller('npcs')
 export class NpcsController {
@@ -50,8 +51,16 @@ export class NpcsController {
       throw new BadRequestException('Bu soruşturma sona erdi.');
     }
 
+    // Sabır (Engizitör): oyun gününün ilk mesajları kotadan düşmez
+    const isFree =
+      usesQuota &&
+      isFreeMessage(
+        session.characterId,
+        await this.npcsService.playerMessagesToday(sessionId, session.currentDay),
+      );
+
     // Günlük mesaj kotası (test oturumları kota harcamaz)
-    if (usesQuota && !session.isTestMode) {
+    if (usesQuota && !isFree && !session.isTestMode) {
       const quota = await this.authService.checkAndResetDailyQuota(userId);
       const maxMessages = quota.isAdmin ? 999 : 100;
       if (quota.dailyMessageCount >= maxMessages) {

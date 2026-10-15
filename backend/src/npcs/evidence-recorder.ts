@@ -35,13 +35,25 @@ export async function appendStatementsToNotes(
   nameOf: (npcId: string) => string,
 ): Promise<string | undefined> {
   if (statements.length === 0) return undefined;
+  return appendToNotes(
+    prisma,
+    sessionId,
+    statements.map(
+      (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
+    ),
+  );
+}
+
+// Not defterinin sonuna paragraf paragraf ekler ve notların son hâlini döndürür
+export async function appendToNotes(
+  prisma: PrismaService,
+  sessionId: string,
+  lines: string[],
+): Promise<string> {
   const session = await prisma.gameSession.findUnique({
     where: { id: sessionId },
     select: { notes: true },
   });
-  const lines = statements.map(
-    (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
-  );
   const current = (session?.notes ?? '').trimEnd();
   const notes = [current, ...lines].filter(Boolean).join('\n\n');
   await prisma.gameSession.update({ where: { id: sessionId }, data: { notes } });

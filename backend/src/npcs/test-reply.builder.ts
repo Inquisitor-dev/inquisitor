@@ -9,6 +9,20 @@ export function buildTestReply(
   locations: { id: string; localizedName: string }[],
   isNarrator = false,
   confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
+  quietRoom = false,
+): string {
+  const reply = buildReply(npcName, isGreeting, userMessage, locations, isNarrator, confrontation);
+  // Sessiz Oda'nın etkisi test modunda görünsün
+  return quietRoom ? reply.replace('[TEST MODU]', '[TEST MODU] [Sessiz Oda]') : reply;
+}
+
+function buildReply(
+  npcName: string,
+  isGreeting: boolean,
+  userMessage: string,
+  locations: { id: string; localizedName: string }[],
+  isNarrator: boolean,
+  confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
 ): string {
   if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
   if (confrontation) {
