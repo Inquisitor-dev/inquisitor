@@ -1,0 +1,266 @@
+@use '../../styles/variables' as *;
+
+$gold: #e0bb5e;
+$gold-soft: rgba(224, 187, 94, 0.35);
+
+// Harita: eylem çubuğunun üstünde ortalanmış yetenek şeridi
+.dock {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  gap: $sp-sm;
+  max-width: calc(100% - 32px);
+  overflow-x: auto;
+  padding: 6px;
+  border-radius: $radius-md;
+  background: rgba(12, 10, 8, 0.72);
+  border: 1px solid $gold-soft;
+  backdrop-filter: blur(8px);
+  scrollbar-width: none;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 80px;
+    max-width: calc(100% - 16px);
+  }
+}
+
+// Diyalog ve pano: satır içinde
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: $radius-sm;
+  border: 1px solid $gold-soft;
+  background: rgba(20, 16, 12, 0.9);
+  color: $gold;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color $transition-fast, background $transition-fast, box-shadow $transition-fast;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    background: rgba(40, 30, 18, 0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.chipArmed {
+  border-color: $primary;
+  color: $text-parchment;
+  background: rgba(90, 2, 2, 0.6);
+  box-shadow: 0 0 14px $primary-glow;
+}
+
+// Pasif yetenek her zaman açık görünür; tıklanmaz ama soluk durmaz
+.chipPassive:disabled {
+  opacity: 0.85;
+  cursor: default;
+  border-style: dashed;
+}
+
+.chipName {
+  font-weight: 600;
+}
+
+.chipStatus {
+  font-size: 0.7rem;
+  color: $text-muted;
+  letter-spacing: 0.02em;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $sp-md;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: $sp-lg;
+  border-radius: $radius-md;
+  border: 1px solid #3d342d;
+  background: #1a1512;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-muted;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-parchment;
+  }
+}
+
+.kicker {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $gold;
+}
+
+.title {
+  margin: 0 0 $sp-sm;
+  font-family: $font-title;
+  font-size: 1.5rem;
+  color: $text-parchment;
+}
+
+.summary {
+  margin: 0 0 $sp-md;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #c9bda6;
+}
+
+.hint,
+.empty {
+  margin: 0 0 $sp-md;
+  font-size: 0.85rem;
+  color: $text-muted;
+}
+
+.error {
+  margin: 0 0 $sp-md;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e07a6a;
+}
+
+.targets {
+  display: grid;
+  gap: $sp-sm;
+  margin-bottom: $sp-sm;
+}
+
+.target {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  border: 1px solid $gold-soft;
+  background: rgba(40, 30, 18, 0.6);
+  color: $text-parchment;
+  font-family: $font-body;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color $transition-fast, background $transition-fast;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    background: rgba(60, 44, 22, 0.8);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+.pulse {
+  list-style: none;
+  margin: 0 0 $sp-md;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.pulseRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: $text-parchment;
+}
+
+.pulseName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pulseBar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(232, 220, 196, 0.12);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, $gold, $primary);
+  }
+}
+
+.pulseValue {
+  font-size: 0.78rem;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+// Haritada kurulmuş yeteneğin ipucu (Kulis, Çatı Geçişi)
+.armedHint {
+  position: absolute;
+  left: 50%;
+  bottom: 148px;
+  transform: translateX(-50%);
+  z-index: 90;
+  max-width: calc(100% - 32px);
+  padding: 6px 12px;
+  border-radius: $radius-sm;
+  background: rgba(90, 2, 2, 0.85);
+  color: $text-parchment;
+  font-size: 0.82rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 136px;
+  }
+}

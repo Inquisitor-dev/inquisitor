@@ -29,6 +29,12 @@ import BoardHelpModal from './components/BoardHelpModal/BoardHelpModal';
 import BoardThoughtPanel from './components/BoardThoughtPanel/BoardThoughtPanel';
 import StringContextMenu from './components/StringContextMenu/StringContextMenu';
 import BoardDrawer from './components/BoardDrawer/BoardDrawer';
+import { useAbilities } from '@/features/abilities/useAbilities';
+import AbilityControls, {
+  AbilityOutcome,
+  abilityErrorMessage,
+  type AbilityOutcomeProps,
+} from '@/features/abilities/AbilityControls';
 
 
 // Kayıt, son değişiklikten bu kadar sonra yapılır (sürüklerken her karede istek atılmasın)
@@ -76,6 +82,10 @@ export default function InvestigationBoard() {
   const [thoughtOpen, setThoughtOpen] = useState(false);
   const [thinkError, setThinkError] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const abilities = useAbilities(sessionId);
+  const [leakArmed, setLeakArmed] = useState(false);
+  const [leaking, setLeaking] = useState(false);
+  const [abilityOutcome, setAbilityOutcome] = useState<Omit<AbilityOutcomeProps, 'onClose'> | null>(null);
 
   // İç ses panelinde oyuncunun giydiği karakterin yüzü görünür
   const { equippedOutfitId, ownedItemIds, hasHydrated: marketHydrated } = useMarketStore();
@@ -435,6 +445,25 @@ export default function InvestigationBoard() {
     }
   };
 
+  // Veri Sızdırma (Kızıl Devre): seçilen tek ipin kararı; o günün "Düşün" hakkını harcar
+  const handleLeak = async (stringId: string) => {
+    if (leaking) return;
+    setLeaking(true);
+    setEditingString(null);
+    setPendingFrom(null);
+    try {
+      const { result } = await abilities.activate({ abilityId: 'data_leak', stringId, board });
+      if (result.board) setBoard(result.board as BoardState);
+      setCanThink(false);
+      setAbilityOutcome({ ability: { name: 'Veri Sızdırma' }, result });
+    } catch (err) {
+      setAbilityOutcome({ ability: { name: 'Veri Sızdırma' }, error: abilityErrorMessage(err) });
+    } finally {
+      setLeaking(false);
+      setLeakArmed(false);
+    }
+  };
+
   const closeHelp = () => {
     setHelpOpen(false);
     try {
@@ -479,6 +508,13 @@ export default function InvestigationBoard() {
               Son Düşünce
             </button>
           )}
+          <AbilityControls
+            abilities={abilities}
+            only={['data_leak']}
+            variant="inline"
+            armedId={leakArmed ? 'data_leak' : null}
+            onArm={(ability) => setLeakArmed(Boolean(ability))}
+          />
           <button
             type="button"
             className={styles.thinkBtn}
@@ -492,6 +528,17 @@ export default function InvestigationBoard() {
       </header>
 
       <BoardHelpModal isOpen={helpOpen} onClose={closeHelp} />
+
+      {leakArmed && (
+        <div className={styles.thinkError} role="status">
+          {leaking ? 'Kayıtlar sızdırılıyor…' : 'Veri Sızdırma: doğruluğunu öğrenmek istediğin ipin düğümüne tıkla.'}
+          <button type="button" className={styles.linkBtn} onClick={() => setLeakArmed(false)} disabled={leaking}>
+            Vazgeç
+          </button>
+        </div>
+      )}
+
+      {abilityOutcome && <AbilityOutcome {...abilityOutcome} onClose={() => setAbilityOutcome(null)} />}
 
       {thinkError && (
         <div className={styles.thinkError} role="alert">
@@ -528,7 +575,7 @@ export default function InvestigationBoard() {
                 <g
                   key={s.id}
                   className={`${styles.stringGroup} ${editingString === s.id ? styles.stringEditing : ''}`}
-                  onClick={() => setEditingString(s.id)}
+                  onClick={() => (leakArmed ? void handleLeak(s.id) : setEditingString(s.id))}
                 >
                   <title>{`${info.label}: anlamını değiştirmek ya da ipi koparmak için tıkla`}</title>
                   <path d={d} className={styles.stringHit} />

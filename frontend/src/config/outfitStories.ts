@@ -18,7 +18,7 @@ export type OutfitStory = {
 };
 
 // Yetenek sistemi oyunda çalışmaya başlayınca true yap. Kapalıyken kartlarda "Yakında" rozeti görünür.
-export const ABILITIES_LIVE = false;
+export const ABILITIES_LIVE = true;
 
 export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   engizitor: {
@@ -240,6 +240,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
         usage: 'Günde 1 kez',
         rules: [
           'Gece (günün son dilimi) tek bir mekân için kullanılır.',
+          'Mekânı aramak için yine arama izni gerekir.',
           'Bedel: ertesi sabahın ilk zaman dilimini kaybedersin.',
           'Soruşturmanın son gecesinde kullanılamaz; o gece nihai hükmündür.',
         ],
