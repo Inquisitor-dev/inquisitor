@@ -795,10 +795,51 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   --rarity: #8a7f72;
   --rarity-glow: rgba(232, 200, 150, 0.22);
   --rarity-beam: rgba(255, 228, 190, 0.1);
+  --rarity-line: rgba(138, 127, 114, 0.22);
+  --rarity-bar: transparent;
+  // Kart çerçevesi nadirliği gösterir; sahiplik rozetle belirtilir (altın çerçeve karışmasın)
+  border-color: var(--rarity-line);
+
+  // Nadirlik şeridi: nadir kırmızı, efsanevi altın
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--rarity-bar);
+  }
+
+  &:hover {
+    border-color: var(--rarity);
+  }
 
   .cardFooter {
     width: 100%;
   }
+}
+
+// Sahip olunan karakter hafif geri çekilir; satın alınabilir olanlar öne çıkar
+.outfitCard.isOwned .outfitPortrait {
+  opacity: 0.85;
+  filter: saturate(0.85);
+}
+
+.ownedTag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid rgba(224, 187, 94, 0.45);
+  border-radius: 999px;
+  background: rgba(10, 8, 7, 0.8);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $gold-bright;
 }
 
 // Karakter vitrini: tepeden düşen sahne ışığı, arkada nadirlik renginde hâle, ayak altında ışıklı zemin
@@ -970,12 +1011,16 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   --rarity: #{$rare};
   --rarity-glow: rgba(214, 64, 52, 0.38);
   --rarity-beam: rgba(255, 150, 120, 0.12);
+  --rarity-line: rgba(178, 58, 58, 0.55);
+  --rarity-bar: linear-gradient(90deg, transparent, #{$rare}, transparent);
 }
 
 .rarity_legendary {
   --rarity: #{$legendary};
   --rarity-glow: rgba(240, 196, 92, 0.4);
   --rarity-beam: rgba(255, 220, 140, 0.16);
+  --rarity-line: rgba(224, 187, 94, 0.7);
+  --rarity-bar: linear-gradient(90deg, transparent, #{$legendary}, transparent);
   background:
     radial-gradient(circle at 50% 20%, rgba(224, 187, 94, 0.08), transparent 60%),
     $card-bg;
