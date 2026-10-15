@@ -28,6 +28,10 @@ import {
   threatenedFear,
 } from './ability-effects';
 import { UseAbilityDto } from './dto/use-ability.dto';
+import { LlmService } from '../llm/llm.service';
+import { BoardService } from '../board/board.service';
+import type { BoardState, BoardVerdict } from '../board/board';
+import type { Contradiction } from '../llm/prompts/contradiction-prompt.builder';
 
 type OwnedSession = Awaited<ReturnType<typeof findOwnedSession>>;
 
@@ -38,6 +42,23 @@ export interface AbilityResult {
   fear?: { npcId: string; level: number; band: string };
   pulse?: { npcId: string; name: string; level: number; toThreshold: number }[];
   locationId?: string;
+  board?: BoardState;
+  verdict?: BoardVerdict;
+}
+
+// Çelişki Taraması'nın baktığı en fazla cevap sayısı
+const SCAN_REPLIES = 12;
+
+// Test modunda yapay zekâ çağrılmaz: ilk ve son cevaptan yer tutucu bir madde
+function testContradictions(replies: string[]): Contradiction[] {
+  const head = (text: string) => text.slice(0, 40);
+  return [
+    {
+      quoteA: head(replies[0]),
+      quoteB: head(replies[replies.length - 1]),
+      note: '[TEST MODU] Yer tutucu çelişki.',
+    },
+  ];
 }
 
 interface Applied {
@@ -50,7 +71,11 @@ interface Applied {
 export class AbilitiesService {
   private readonly logger = new Logger(AbilitiesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly llm: LlmService,
+    private readonly board: BoardService,
+  ) {}
 
   // Vakadaki karakterin yetenekleri ve şu an kullanılıp kullanılamayacakları
   async list(sessionId: string, userId: string) {
@@ -287,6 +312,78 @@ export class AbilitiesService {
             message: `Muhbirin fısıldadı: ${labelOf(locationId)}.`,
             notes,
             locationId,
+          },
+        };
+      }
+
+      case 'contradiction_scan': {
+        const npcId = suspect();
+        const rows = await this.prisma.dialogueHistory.findMany({
+          where: { sessionId: session.id, npcId, speaker: 'NPC' },
+          orderBy: { createdAt: 'desc' },
+          take: SCAN_REPLIES,
+          select: { message: true },
+        });
+        const replies = rows.reverse().map((r) => r.message);
+        if (replies.length < 2) {
+          throw new BadRequestException(
+            `${nameOf(npcId)} ile en az iki cevap alacak kadar konuşmalısın.`,
+          );
+        }
+        const found = session.isTestMode
+          ? testContradictions(replies)
+          : await this.llm.findContradictions(
+              nameOf(npcId),
+              replies,
+              session.scenarioType,
+            );
+        // Tarama yapılamadıysa hak harcanmaz
+        if (!found) {
+          throw new BadRequestException(
+            'Cevapları şu an tarayamadın. Biraz sonra yeniden dene.',
+          );
+        }
+        const body =
+          found.length === 0
+            ? 'Belirgin bir çelişki bulamadın.'
+            : found
+                .map((c) => `— “${c.quoteA}” / “${c.quoteB}”: ${c.note}`)
+                .join('\n');
+        const notes = await appendToNotes(this.prisma, session.id, [
+          `[${day}. gün · Çelişki Taraması · ${nameOf(npcId)}]\n${body}`,
+        ]);
+        return {
+          state,
+          result: {
+            message:
+              found.length === 0
+                ? `${nameOf(npcId)} kendi sözleriyle çelişmiyor gibi.`
+                : `${nameOf(npcId)} için ${found.length} çelişki defterine geçti.`,
+            notes,
+          },
+        };
+      }
+
+      case 'data_leak': {
+        const leak = await this.board.leakString(
+          session,
+          dto.stringId ?? '',
+          dto.board,
+        );
+        return {
+          state,
+          // O günün "Düşün" hakkı bu yeteneğin bedelidir
+          data: {
+            boardState: leak.board as unknown as Prisma.InputJsonValue,
+            boardThoughtDay: day,
+          },
+          result: {
+            message:
+              leak.verdict === 'CORRECT'
+                ? 'Sızan kayıtlar bu bağı doğruluyor.'
+                : 'Sızan kayıtlar bu bağı doğrulamıyor.',
+            board: leak.board,
+            verdict: leak.verdict,
           },
         };
       }

@@ -8,5 +8,6 @@ import { BoardController } from './board.controller';
   imports: [PrismaModule, LlmModule],
   providers: [BoardService],
   controllers: [BoardController],
+  exports: [BoardService],
 })
 export class BoardModule {}

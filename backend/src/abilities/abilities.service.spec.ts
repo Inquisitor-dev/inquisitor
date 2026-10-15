@@ -2,6 +2,8 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AbilitiesService } from './abilities.service';
 import { UseAbilityDto } from './dto/use-ability.dto';
+import { LlmService } from '../llm/llm.service';
+import { BoardService } from '../board/board.service';
 
 const SECRET_FIELDS = [
   'culpritId',
@@ -12,7 +14,12 @@ const SECRET_FIELDS = [
 
 function setup(
   patch: Record<string, unknown> = {},
-  extra: { fear?: number; replies?: string[] } = {},
+  extra: {
+    fear?: number;
+    replies?: string[];
+    evidence?: Record<string, string>[];
+    contradictions?: unknown;
+  } = {},
 ) {
   const session: Record<string, unknown> = {
     id: 'session-1',
@@ -62,18 +69,26 @@ function setup(
         (extra.replies ?? []).map((message) => ({ message })).reverse(),
       ),
   };
-  const evidence = { findMany: jest.fn().mockResolvedValue([]) };
+  const evidence = {
+    findMany: jest.fn().mockResolvedValue(extra.evidence ?? []),
+  };
   const prisma = {
     gameSession,
     sessionNpcState,
     dialogueHistory,
     evidence,
   } as unknown as PrismaService;
+  const findContradictions = jest
+    .fn()
+    .mockResolvedValue('contradictions' in extra ? extra.contradictions : []);
+  const llm = { findContradictions } as unknown as LlmService;
+  const board = new BoardService(prisma, {} as LlmService);
   return {
-    service: new AbilitiesService(prisma),
+    service: new AbilitiesService(prisma, llm, board),
     gameSession,
     sessionNpcState,
     session,
+    findContradictions,
   };
 }
 
@@ -198,5 +213,138 @@ describe('AbilitiesService', () => {
     const { result } = await use(service, { abilityId: 'informant' });
     expect(result.locationId).toBe('church');
     expect(result.notes).toContain('Muhbir');
+  });
+
+  describe('Çelişki Taraması', () => {
+    const scan = (service: AbilitiesService) =>
+      use(service, { abilityId: 'contradiction_scan', npcId: 'mill' });
+
+    it('bulunan çelişkileri notlara yazar', async () => {
+      const { service, findContradictions } = setup(
+        { characterId: 'sis_dedektifi' },
+        {
+          replies: ['Akşam evdeydim.', 'Akşam handaydım.'],
+          contradictions: [
+            { quoteA: 'evdeydim', quoteB: 'handaydım', note: 'Yeri tutmuyor.' },
+          ],
+        },
+      );
+      const { result } = await scan(service);
+      expect(findContradictions).toHaveBeenCalledWith(
+        expect.any(String),
+        ['Akşam evdeydim.', 'Akşam handaydım.'],
+        'medieval',
+      );
+      expect(result.notes).toContain(
+        '“evdeydim” / “handaydım”: Yeri tutmuyor.',
+      );
+    });
+
+    it('tek cevapta ve tarama başarısız olunca hak harcanmaz', async () => {
+      const few = setup({ characterId: 'sis_dedektifi' }, { replies: ['Bir'] });
+      await expect(scan(few.service)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(few.findContradictions).not.toHaveBeenCalled();
+
+      const failed = setup(
+        { characterId: 'sis_dedektifi' },
+        { replies: ['Bir', 'İki'], contradictions: null },
+      );
+      await expect(scan(failed.service)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(failed.gameSession.update).not.toHaveBeenCalled();
+    });
+
+    it('test modunda yapay zekâ çağrılmaz', async () => {
+      const { service, findContradictions } = setup(
+        { characterId: 'sis_dedektifi', isTestMode: true },
+        { replies: ['Bir', 'İki'] },
+      );
+      const { result } = await scan(service);
+      expect(findContradictions).not.toHaveBeenCalled();
+      expect(result.notes).toContain('[TEST MODU]');
+    });
+  });
+
+  describe('Veri Sızdırma', () => {
+    // Katil değirmenci; doğrulayan kanıt (e-verif) gerçek izi doğrular ve katili suçlar
+    const caseFacts = {
+      culpritId: 'mill',
+      innocentIds: ['tavern', 'church'],
+      crimeSceneClue: {
+        authentic: true,
+        implicatedNpcIds: ['tavern', 'mill'],
+        eliminatedNpcIds: ['church'],
+      },
+      verification: {
+        kind: 'CORROBORATION',
+        placement: { type: 'LOCATION', locationId: 'mill' },
+      },
+    };
+    const evidence = [
+      {
+        id: 'e-verif',
+        kind: 'VERIFICATION',
+        category: 'ITEM',
+        sourceId: 'mill',
+        text: 'doğrulama',
+      },
+    ];
+    const boardState = {
+      cards: [
+        { id: 'c-mill', kind: 'suspect', refId: 'mill', x: 10, y: 10 },
+        { id: 'c-tavern', kind: 'suspect', refId: 'tavern', x: 30, y: 10 },
+        { id: 'c-verif', kind: 'evidence', refId: 'e-verif', x: 20, y: 40 },
+      ],
+      strings: [
+        { id: 's1', from: 'c-verif', to: 'c-mill', type: 'IMPLICATES' },
+        {
+          id: 's2',
+          from: 'c-verif',
+          to: 'c-tavern',
+          type: 'CLEARS',
+          verdict: 'WRONG',
+        },
+      ],
+    };
+    const leakSetup = (patch: Record<string, unknown> = {}) =>
+      setup(
+        { characterId: 'kizil_devre', caseFacts, boardState, ...patch },
+        { evidence },
+      );
+
+    it('tek ipin kararını verir, diğer kararları korur ve günün düşünme hakkını harcar', async () => {
+      const { service, session } = leakSetup();
+      const { result } = await use(service, {
+        abilityId: 'data_leak',
+        stringId: 's1',
+      });
+      expect(result.verdict).toBe('CORRECT');
+      expect(result.board?.strings).toEqual([
+        {
+          id: 's1',
+          from: 'c-verif',
+          to: 'c-mill',
+          type: 'IMPLICATES',
+          verdict: 'CORRECT',
+        },
+        boardState.strings[1],
+      ]);
+      expect(session.boardThoughtDay).toBe(2);
+      // Vaka başına bir kez
+      await expect(
+        use(service, { abilityId: 'data_leak', stringId: 's1' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('panoda olmayan ip için hak harcanmaz', async () => {
+      const { service, gameSession } = leakSetup();
+      await expect(
+        use(service, { abilityId: 'data_leak', stringId: 'yok' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(gameSession.update).not.toHaveBeenCalled();
+    });
   });
 });
