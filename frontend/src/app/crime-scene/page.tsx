@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '../../store/useGameStore';
 import styles from './crime-scene.module.scss';
 
 export default function CrimeScenePage() {
   const router = useRouter();
-  const { isAdmin, currentDay, dialoguesUsedToday, scenario, notes, setNotes, sessionId, authToken } = useGameStore();
+  const { isAdmin, currentDay, dialoguesUsedToday, scenario, notes, setNotes, sessionId } = useGameStore();
   
   const [inspected, setInspected] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
@@ -51,16 +52,9 @@ export default function CrimeScenePage() {
   const handleNotesBlur = async () => {
     if (!sessionId) return;
     try {
-      await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ notes }),
-      });
+      await api.post(`/game-sessions/${sessionId}/notes`, { notes });
     } catch (err) {
-      console.error('Failed to save notes', err);
+      logger.error('Failed to save notes', err);
     }
   };
 

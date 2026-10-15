@@ -1,6 +1,10 @@
-import { Controller, Post, Body, HttpCode, UseGuards, Request, Get, Patch } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Get, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt.guard';
+import { CurrentUser } from './current-user.decorator';
+import { UpdateAudioSettingsDto } from './dto/update-audio-settings.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SendCodeDto, VerifyCodeDto, LoginDto, ActivatePremiumDto } from './dto/auth-requests.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -8,101 +12,71 @@ export class AuthController {
 
   @Post('send-code')
   @HttpCode(200)
-  async sendCode(
-    @Body('email') email: string,
-    @Body('password') password?: string,
-    @Body('username') username?: string,
-    @Body('avatar') avatar?: string,
-  ) {
-    if (!email || !email.includes('@')) {
-      return { error: 'Geçerli bir e-posta adresi girin.' };
-    }
+  async sendCode(@Body() dto: SendCodeDto) {
     return this.authService.sendVerificationCode(
-      email.toLowerCase().trim(),
-      password,
-      username,
-      avatar,
+      dto.email.toLowerCase().trim(),
+      dto.password,
+      dto.username,
+      dto.avatar,
     );
   }
 
   @Post('verify')
   @HttpCode(200)
-  async verify(
-    @Body('email') email: string,
-    @Body('code') code: string,
-  ) {
-    return this.authService.verifyCode(email.toLowerCase().trim(), code.trim());
+  async verify(@Body() dto: VerifyCodeDto) {
+    return this.authService.verifyCode(dto.email.toLowerCase().trim(), dto.code.trim());
   }
 
   @Post('login')
   @HttpCode(200)
-  async login(
-    @Body('email') email?: string,
-    @Body('username') username?: string,
-    @Body('identifier') identifier?: string,
-    @Body('password') password?: string,
-  ) {
-    const loginId = (identifier || username || email || '').trim();
-    if (!loginId || !password) {
+  async login(@Body() dto: LoginDto) {
+    const loginId = (dto.identifier || dto.username || dto.email || '').trim();
+    if (!loginId || !dto.password) {
       return { error: 'Kullanıcı adı veya e-posta ile şifre gereklidir.' };
     }
-    return this.authService.login(loginId, password);
+    return this.authService.login(loginId, dto.password);
   }
 
   @Patch('profile')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   async updateProfile(
-    @Request() req: any,
-    @Body('username') username?: string,
-    @Body('avatar') avatar?: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: UpdateProfileDto,
   ) {
-    return this.authService.updateProfile(req.user.userId, { username, avatar });
+    return this.authService.updateProfile(userId, dto);
   }
 
   @Post('activate-premium')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   async activatePremium(
-    @Request() req: any,
-    @Body('activationCode') activationCode: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: ActivatePremiumDto,
   ) {
-    const userId: string = req.user.userId;
-    return this.authService.activatePremium(userId, activationCode);
+    return this.authService.activatePremium(userId, dto.activationCode);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async me(@Request() req: any) {
-    const userId: string = req.user.userId;
+  async me(@CurrentUser('userId') userId: string) {
     return this.authService.getAccountSummary(userId);
   }
 
-  // Ana menü müziği ayarları hesapta saklanır
+  // Ana menü müziği ve ses efektleri ayarları hesapta saklanır
   @Get('audio-settings')
   @UseGuards(JwtAuthGuard)
-  async getAudioSettings(@Request() req: any) {
-    return this.authService.getAudioSettings(req.user.userId);
+  async getAudioSettings(@CurrentUser('userId') userId: string) {
+    return this.authService.getAudioSettings(userId);
   }
 
   @Patch('audio-settings')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   async updateAudioSettings(
-    @Request() req: any,
-    @Body('musicVolume') musicVolume?: unknown,
-    @Body('musicMuted') musicMuted?: unknown,
-    @Body('footstepVolume') footstepVolume?: unknown,
-    @Body('footstepMuted') footstepMuted?: unknown,
-    @Body('doorVolume') doorVolume?: unknown,
-    @Body('doorMuted') doorMuted?: unknown,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: UpdateAudioSettingsDto,
   ) {
-    return this.authService.updateAudioSettings(req.user.userId, {
-      musicVolume,
-      musicMuted,
-      footstepVolume,
-      footstepMuted,
-      doorVolume,
-      doorMuted,
-    });
+    return this.authService.updateAudioSettings(userId, dto);
   }
 }

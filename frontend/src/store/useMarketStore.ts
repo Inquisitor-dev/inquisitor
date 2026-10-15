@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_OUTFIT_ID, LEGACY_OUTFIT_IDS, REMOVED_OUTFIT_IDS } from '@/config/outfits';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 
 const STARTING_BALANCE = 1000;
 
@@ -50,25 +51,22 @@ export const useMarketStore = create<MarketState>()(
         if (!authToken) return;
         set({ isLoading: true });
         try {
-          const res = await fetch(apiUrl('/market/me'), {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
+          const data = await api.get<{
+            tokenBalance: number;
+            score?: number;
+            ownedItemIds?: string[];
+            ledger?: TokenTransactionItem[];
+          }>('/market/me', { token: authToken });
+
+          set({
+            tokenBalance: data.tokenBalance,
+            score: data.score ?? 0,
+            ownedItemIds: data.ownedItemIds || [],
+            ledger: data.ledger || [],
+            isLoading: false,
           });
-          if (res.ok) {
-            const data = await res.json();
-            set({
-              tokenBalance: data.tokenBalance,
-              score: data.score ?? 0,
-              ownedItemIds: data.ownedItemIds || [],
-              ledger: data.ledger || [],
-              isLoading: false,
-            });
-          } else {
-            set({ isLoading: false });
-          }
         } catch (e) {
-          console.warn('Failed to fetch market data from backend:', e);
+          logger.warn('Failed to fetch market data from backend:', e);
           set({ isLoading: false });
         }
       },
@@ -80,22 +78,10 @@ export const useMarketStore = create<MarketState>()(
         }
 
         try {
-          const res = await fetch(apiUrl('/market/purchase'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({ itemId }),
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            return {
-              success: false,
-              message: data.message || 'Satın alma işlemi başarısız oldu.',
-            };
-          }
+          const data = await api.post<{
+            tokenBalance: number;
+            ownedItemIds: string[];
+          }>('/market/purchase', { itemId }, { token: authToken });
 
           set({
             tokenBalance: data.tokenBalance,
@@ -103,8 +89,9 @@ export const useMarketStore = create<MarketState>()(
           });
 
           return { success: true };
-        } catch (err) {
-          return { success: false, message: (err instanceof Error && err.message) || 'Bağlantı hatası.' };
+        } catch (err: unknown) {
+          const message = err instanceof ApiError ? err.message : (err instanceof Error ? err.message : 'Bağlantı hatası.');
+          return { success: false, message };
         }
       },
 
@@ -132,51 +119,34 @@ export const useMarketStore = create<MarketState>()(
 
       createCheckout: async (packId: string, authToken: string) => {
         try {
-          const res = await fetch(apiUrl('/payments/create-checkout-session'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({ packId }),
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            return { error: data.message || 'Ödeme oturumu oluşturulamadı.' };
-          }
+          const data = await api.post<{
+            checkoutUrl?: string;
+            isSimulated?: boolean;
+          }>('/payments/create-checkout-session', { packId }, { token: authToken });
 
           return {
             checkoutUrl: data.checkoutUrl,
             isSimulated: data.isSimulated,
           };
-        } catch (e) {
-          return { error: (e instanceof Error && e.message) || 'Sunucuya bağlanılamadı.' };
+        } catch (e: unknown) {
+          const error = e instanceof ApiError ? e.message : (e instanceof Error ? e.message : 'Sunucuya bağlanılamadı.');
+          return { error };
         }
       },
 
       simulatePayment: async (packId: string, authToken: string) => {
         try {
-          const res = await fetch(apiUrl('/payments/simulate-success'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({ packId }),
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            return { success: false, error: data.message || 'İşlem başarısız.' };
-          }
+          const data = await api.post<{
+            newBalance: number;
+          }>('/payments/simulate-success', { packId }, { token: authToken });
 
           set({ tokenBalance: data.newBalance });
           // Güncel verileri çek
           get().fetchMarketData(authToken);
           return { success: true };
-        } catch (e) {
-          return { success: false, error: (e instanceof Error && e.message) || 'Bağlantı hatası.' };
+        } catch (e: unknown) {
+          const error = e instanceof ApiError ? e.message : (e instanceof Error ? e.message : 'İşlem başarısız.');
+          return { success: false, error };
         }
       },
     }),

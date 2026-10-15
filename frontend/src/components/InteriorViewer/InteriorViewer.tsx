@@ -11,7 +11,8 @@ import {
 } from '@/config/interiorConfig';
 import { getNpcDialoguePortrait } from '@/config/dialogueConfig';
 import { useGameStore } from '@/store/useGameStore';
-import { apiUrl } from '@/config/api';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import styles from './InteriorViewer.module.scss';
@@ -87,7 +88,7 @@ function InteriorScene({
   scenarioInteriors: LocationInteriorData[];
 }) {
   const router = useRouter();
-  const { sessionId, authToken, notes, setNotes, inventory, scenarioType, timeOfDay, currentDay } = useGameStore();
+  const { sessionId, notes, setNotes, inventory, scenarioType, timeOfDay, currentDay } = useGameStore();
 
   // Mekân görseli yüklenene kadar geçiş ekranı kalır
   useLayoutEffect(() => {
@@ -156,16 +157,9 @@ function InteriorScene({
 
     if (sessionId) {
       try {
-        await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ notes: updatedNotes }),
-        });
+        await api.post(`/game-sessions/${sessionId}/notes`, { notes: updatedNotes });
       } catch (err) {
-        console.error('Failed to sync note', err);
+        logger.error('Failed to sync note', err);
       }
     }
   };

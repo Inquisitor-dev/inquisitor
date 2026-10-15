@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
 import { useGameStore } from '../../store/useGameStore';
-import { DEFAULT_AVATARS, getAvatarInfo } from '@/config/avatars';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
+import VerifyCodeForm from './components/VerifyCodeForm';
+import styles from './login.module.scss';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,28 +51,32 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/login'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: email.trim(), password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setUser(
-          data.email,
-          data.userId,
-          data.token,
-          data.isAdmin,
-          data.isPremium || false,
-          data.username,
-          data.avatar,
-        );
-        router.push('/menu');
+      const data = await api.post<{
+        email: string;
+        userId: string;
+        token: string;
+        isAdmin: boolean;
+        isPremium?: boolean;
+        username?: string;
+        avatar?: string;
+      }>('/auth/login', { identifier: email.trim(), password }, { token: null });
+
+      setUser(
+        data.email,
+        data.userId,
+        data.token,
+        data.isAdmin,
+        data.isPremium || false,
+        data.username,
+        data.avatar,
+      );
+      router.push('/menu');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Giriş başarısız.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }
@@ -87,26 +94,25 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/send-code'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const data = await api.post<{ message?: string }>(
+        '/auth/send-code',
+        {
           email: email.trim(),
           password,
           username: username.trim(),
           avatar: selectedAvatar,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        // Yerel test modunda backend kodu mesajda döndürür; canlıda sadece genel bir bilgi gelir
-        setInfo(data.message || 'Doğrulama kodu e-posta adresine gönderildi.');
-        setStep('code');
+        },
+        { token: null },
+      );
+
+      setInfo(data.message || 'Doğrulama kodu e-posta adresine gönderildi.');
+      setStep('code');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Bir hata oluştu.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }
@@ -120,345 +126,109 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/auth/verify'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), code }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setUser(
-          data.email,
-          data.userId,
-          data.token,
-          data.isAdmin,
-          data.isPremium || false,
-          data.username,
-          data.avatar,
-        );
-        router.push('/menu');
+      const data = await api.post<{
+        email: string;
+        userId: string;
+        token: string;
+        isAdmin: boolean;
+        isPremium?: boolean;
+        username?: string;
+        avatar?: string;
+      }>('/auth/verify', { email: email.trim(), code }, { token: null });
+
+      setUser(
+        data.email,
+        data.userId,
+        data.token,
+        data.isAdmin,
+        data.isPremium || false,
+        data.username,
+        data.avatar,
+      );
+      router.push('/menu');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err.message);
       } else {
-        setError(data.message || data.error || 'Kod hatalı.');
+        setError('Sunucuya bağlanılamadı.');
       }
-    } catch {
-      setError('Sunucuya bağlanılamadı.');
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: '#e5d9c5',
-    padding: '14px 16px',
-    fontSize: '1rem',
-    fontFamily: 'Inter, sans-serif',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-    transition: 'border-color 0.2s',
-  };
-
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse at center, #0d0404 0%, #000 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Playfair Display', serif",
-      padding: '24px',
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '440px',
-        background: 'rgba(10,5,5,0.8)',
-        border: '1px solid rgba(138,3,3,0.3)',
-        backdropFilter: 'blur(20px)',
-        padding: '48px 40px',
-        boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
-      }}>
+    <main className={styles.main}>
+      <div className={styles.card}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <svg viewBox="0 0 80 80" fill="none" style={{ width: '60px', margin: '0 auto 16px' }}>
-            <circle cx="40" cy="40" r="36" stroke="#8A0303" strokeWidth="1" strokeDasharray="4 3"/>
-            <line x1="40" y1="10" x2="40" y2="70" stroke="#8A0303" strokeWidth="1.5"/>
-            <line x1="10" y1="40" x2="70" y2="40" stroke="#8A0303" strokeWidth="1.5"/>
-            <rect x="36" y="36" width="8" height="8" fill="#8A0303" transform="rotate(45 40 40)"/>
+        <div className={styles.logoArea}>
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="36" stroke="#8A0303" strokeWidth="1" strokeDasharray="4 3" />
+            <line x1="40" y1="10" x2="40" y2="70" stroke="#8A0303" strokeWidth="1.5" />
+            <line x1="10" y1="40" x2="70" y2="40" stroke="#8A0303" strokeWidth="1.5" />
+            <rect x="36" y="36" width="8" height="8" fill="#8A0303" transform="rotate(45 40 40)" />
           </svg>
-          <h1 style={{ fontSize: '1.8rem', color: '#e5d9c5', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '4px' }}>
-            The Inquisitor
-          </h1>
+          <h1>The Inquisitor</h1>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', marginBottom: '32px', borderBottom: '1px solid rgba(138,3,3,0.3)' }}>
+        <div className={styles.tabs}>
           <button
+            type="button"
             onClick={() => switchMode('login')}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: mode === 'login' ? '2px solid #8A0303' : '2px solid transparent',
-              color: mode === 'login' ? '#e5d9c5' : '#666',
-              padding: '12px',
-              fontSize: '0.85rem',
-              letterSpacing: '2px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              fontFamily: 'Playfair Display, serif',
-            }}
+            className={`${styles.tabBtn} ${mode === 'login' ? styles.active : ''}`}
           >
             Giriş Yap
           </button>
           <button
+            type="button"
             onClick={() => switchMode('register')}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: mode === 'register' ? '2px solid #8A0303' : '2px solid transparent',
-              color: mode === 'register' ? '#e5d9c5' : '#666',
-              padding: '12px',
-              fontSize: '0.85rem',
-              letterSpacing: '2px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              fontFamily: 'Playfair Display, serif',
-            }}
+            className={`${styles.tabBtn} ${mode === 'register' ? styles.active : ''}`}
           >
             Kaydol
           </button>
         </div>
 
         {mode === 'login' && (
-          <>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                E-posta veya Kullanıcı Adı
-              </label>
-              <input
-                type="text"
-                placeholder="Örn: ornek@engizisyon.org veya dedektif"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                style={inputStyle}
-              />
-            </div>
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Şifre
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                style={inputStyle}
-              />
-            </div>
-            <button
-              onClick={handleLogin}
-              disabled={loading}
-              style={{
-                width: '100%',
-                background: loading ? 'rgba(138,3,3,0.3)' : '#8A0303',
-                border: 'none',
-                color: '#fff',
-                padding: '14px',
-                fontSize: '0.85rem',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                fontFamily: 'Playfair Display, serif',
-              }}
-            >
-              {loading ? 'Bağlanıyor...' : 'Ashenmoor\'a Dön'}
-            </button>
-          </>
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            loading={loading}
+            onSubmit={handleLogin}
+          />
         )}
 
         {mode === 'register' && step === 'details' && (
-          <>
-            {/* Avatar Seçici */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#aaa', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Engizisyon Avatarı Seç
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '8px' }}>
-                {DEFAULT_AVATARS.map((av) => {
-                  const isSelected = selectedAvatar === av.id;
-                  return (
-                    <button
-                      key={av.id}
-                      type="button"
-                      onClick={() => setSelectedAvatar(av.id)}
-                      style={{
-                        background: isSelected ? 'rgba(138, 3, 3, 0.45)' : 'rgba(255, 255, 255, 0.03)',
-                        border: isSelected ? '2px solid #daa520' : '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        padding: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        boxShadow: isSelected ? '0 0 14px rgba(218, 165, 32, 0.45)' : 'none',
-                        transform: isSelected ? 'scale(1.06)' : 'scale(1)',
-                        transition: 'all 0.2s ease',
-                      }}
-                      title={`${av.name} — ${av.role}`}
-                    >
-                      <img
-                        src={av.src}
-                        alt={av.name}
-                        style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#daa520', fontFamily: 'Inter, sans-serif' }}>
-                <strong>{getAvatarInfo(selectedAvatar).name}</strong>
-                <span style={{ color: '#888', marginLeft: '6px' }}>— {getAvatarInfo(selectedAvatar).role}</span>
-              </div>
-            </div>
-
-            {/* Kullanıcı Adı */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Kullanıcı Adı
-              </label>
-              <input
-                type="text"
-                placeholder="Örn: engizitor_marcus"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-                style={inputStyle}
-              />
-            </div>
-
-            {/* E-posta */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                E-posta
-              </label>
-              <input
-                type="email"
-                placeholder="ornek@engizisyon.org"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-                style={inputStyle}
-              />
-            </div>
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Şifre Belirle
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-                style={inputStyle}
-              />
-            </div>
-            <button
-              onClick={handleSendCode}
-              disabled={loading}
-              style={{
-                width: '100%',
-                background: loading ? 'rgba(138,3,3,0.3)' : '#8A0303',
-                border: 'none',
-                color: '#fff',
-                padding: '14px',
-                fontSize: '0.85rem',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                fontFamily: 'Playfair Display, serif',
-              }}
-            >
-              {loading ? 'Gönderiliyor...' : 'Doğrulama Kodu Gönder'}
-            </button>
-          </>
+          <RegisterForm
+            username={username}
+            setUsername={setUsername}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            selectedAvatar={selectedAvatar}
+            setSelectedAvatar={setSelectedAvatar}
+            loading={loading}
+            onSubmit={handleSendCode}
+          />
         )}
 
         {mode === 'register' && step === 'code' && (
-          <>
-            {info && (
-              <p style={{ color: '#7a9e7a', fontSize: '0.85rem', marginBottom: '16px', textAlign: 'center', fontFamily: 'Inter, sans-serif', background: 'rgba(0,100,0,0.1)', padding: '10px', border: '1px solid rgba(0,150,0,0.2)' }}>
-                ✓ {info}
-              </p>
-            )}
-            <p style={{ color: '#888', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '24px', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
-              <strong style={{ color: '#e5d9c5' }}>{email}</strong> adresine gönderilen 6 haneli kodu girin.
-            </p>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '2px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Doğrulama Kodu
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-                placeholder="000000"
-                style={{
-                  ...inputStyle,
-                  fontSize: '1.8rem',
-                  fontFamily: 'monospace',
-                  letterSpacing: '8px',
-                  textAlign: 'center',
-                }}
-              />
-            </div>
-            <button
-              onClick={handleVerify}
-              disabled={loading}
-              style={{
-                width: '100%',
-                background: loading ? 'rgba(138,3,3,0.3)' : '#8A0303',
-                border: 'none',
-                color: '#fff',
-                padding: '14px',
-                fontSize: '0.85rem',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Playfair Display, serif',
-              }}
-            >
-              {loading ? 'Doğrulanıyor...' : 'Ashenmoor\'a Gir'}
-            </button>
-            <button
-              onClick={() => resetState()}
-              style={{
-                width: '100%',
-                background: 'transparent',
-                border: 'none',
-                color: '#555',
-                padding: '12px',
-                fontSize: '0.75rem',
-                letterSpacing: '1px',
-                cursor: 'pointer',
-                marginTop: '8px',
-                fontFamily: 'Inter, sans-serif',
-              }}
-            >
-              ← Geri Dön
-            </button>
-          </>
+          <VerifyCodeForm
+            email={email}
+            code={code}
+            setCode={setCode}
+            info={info}
+            loading={loading}
+            onVerify={handleVerify}
+            onBack={resetState}
+          />
         )}
 
         {error && (
-          <div style={{ marginTop: '16px', padding: '10px 14px', background: 'rgba(138,3,3,0.15)', border: '1px solid rgba(138,3,3,0.4)', color: '#e07070', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif', textAlign: 'center' }}>
+          <div className={styles.errorBox}>
             ⚠️ {error}
           </div>
         )}

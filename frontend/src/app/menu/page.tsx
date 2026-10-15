@@ -5,46 +5,38 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BookOpen,
-  Check,
   ChevronLeft,
   ChevronRight,
   Coins,
   Crown,
-  Gavel,
-  Hourglass,
-  KeyRound,
-  Lightbulb,
-  Lock,
-  LogOut,
   Map as MapIcon,
   Maximize,
   Minimize,
-  NotebookPen,
   Settings,
   Shirt,
   Skull,
   Store,
-  Target,
   Users,
-  Volume2,
-  VolumeX,
-  X,
 } from 'lucide-react';
-import { apiUrl } from '@/config/api';
+import { api, ApiError } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
 import { OUTFITS, findOutfit, ownsOutfit, wearableOutfitId } from '@/config/outfits';
-import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
+import { getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import { showScene } from '@/components/SceneTransition/sceneStore';
 import { mapScene } from '@/components/SceneTransition/scenes';
+import { useAudioSettings } from '@/features/audio/useAudioSettings';
+import HowToPlayModal from './components/HowToPlayModal/HowToPlayModal';
+import SettingsModal from './components/SettingsModal/SettingsModal';
+import ScenarioConfigModal from './components/ScenarioConfigModal/ScenarioConfigModal';
 import {
-  getAudioSettings,
-  updateAudioSettingsLocally,
-  saveAudioSettingsRemote,
-  fetchAndSyncAudioSettings,
-} from '@/utils/audioSettings';
+  DIFFICULTY_DETAILS,
+  STORY_DETAILS,
+  getMapImage,
+} from './components/ScenarioConfigModal/scenarioConfigData';
 import styles from './page.module.scss';
 
 const subscribeFullscreen = (onChange: () => void) => {
@@ -134,86 +126,38 @@ export default function HomePage() {
   // Yapay zekasız test modu: sunucuda açıksa menüde ayrı bir düğme görünür
   const [testModeAvailable, setTestModeAvailable] = useState(false);
   const [isTestModeStart, setIsTestModeStart] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.4);
-  const [footstepMuted, setFootstepMuted] = useState(false);
-  const [footstepVolume, setFootstepVolume] = useState(0.45);
-  const [doorMuted, setDoorMuted] = useState(false);
-  const [doorVolume, setDoorVolume] = useState(0.55);
-  // Ses ayarları yüklenene kadar ana müzik çalınmaz
-  const [audioSettingsLoaded, setAudioSettingsLoaded] = useState(false);
-  const [accountSummary, setAccountSummary] = useState<null | {
+  const [audioSettings] = useAudioSettings();
+
+  interface AccountSummary {
     email: string;
     username?: string | null;
     avatar?: string;
-    isAdmin: boolean;
-    tokenBalance?: number;
-    score?: number;
-    dailySessionCount: number;
-    dailyMessageCount: number;
-    maxSessionsPerDay: number;
     maxMessagesPerDay: number;
-  }>(null);
+    maxSessionsPerDay?: number;
+    dailySessionCount?: number;
+    dailyMessageCount?: number;
+    isAdmin?: boolean;
+    score?: number;
+  }
 
   interface LeaderboardEntry {
     rank: number;
     userId: string;
     name: string;
-    score: number;
+    score?: number;
     avatar?: string;
-    username?: string | null;
     isSelf?: boolean;
   }
 
+  const [accountSummary, setAccountSummary] = useState<AccountSummary | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [selfRankEntry, setSelfRankEntry] = useState<LeaderboardEntry | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Yerel depodaki ayarları anında yükle
-  useEffect(() => {
-    const current = getAudioSettings();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- ayarlar localStorage'da; sunucu render'ıyla uyuşsun diye mount sonrası okunur
-    setIsMuted(current.musicMuted);
-    setVolume(current.musicVolume);
-    setFootstepMuted(current.footstepMuted);
-    setFootstepVolume(current.footstepVolume);
-    setDoorMuted(current.doorMuted);
-    setDoorVolume(current.doorVolume);
-    setAudioSettingsLoaded(true);
-  }, []);
-
-  // Kullanıcı giriş yaptıysa sunucudaki güncel ses tercihlerini çekip eşitle
   useEffect(() => {
     if (!hasHydrated || !authToken) return;
     let cancelled = false;
-
-    fetchAndSyncAudioSettings(authToken)
-      .then((settings) => {
-        if (!cancelled) {
-          setIsMuted(settings.musicMuted);
-          setVolume(settings.musicVolume);
-          setFootstepMuted(settings.footstepMuted);
-          setFootstepVolume(settings.footstepVolume);
-          setDoorMuted(settings.doorMuted);
-          setDoorVolume(settings.doorVolume);
-          setAudioSettingsLoaded(true);
-        }
-      })
-      .catch((err) => console.error('Failed to load audio settings', err));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, hasHydrated]);
-
-  useEffect(() => {
-    if (!hasHydrated || !authToken) return;
-    let cancelled = false;
-    fetch(apiUrl('/game-sessions/test-mode'), {
-      headers: { Authorization: `Bearer ${authToken}` },
-      cache: 'no-store',
-    })
-      .then((res) => (res.ok ? res.json() : null))
+    api.get<{ enabled?: boolean }>('/game-sessions/test-mode', { cache: 'no-store' })
       .then((data) => {
         if (!cancelled && data?.enabled) setTestModeAvailable(true);
       })
@@ -221,8 +165,7 @@ export default function HomePage() {
 
     // Backend'den pazar bakiyesi ve gerçek sıralama verilerini çek
     fetchMarketData(authToken);
-    fetch(apiUrl('/market/leaderboard'))
-      .then((res) => (res.ok ? res.json() : null))
+    api.get<{ leaderboard?: LeaderboardEntry[]; self?: LeaderboardEntry }>('/market/leaderboard')
       .then((data) => {
         if (!cancelled && data?.leaderboard) {
           setLeaderboard(data.leaderboard);
@@ -259,60 +202,20 @@ export default function HomePage() {
     }
   };
 
-  const handleVolumeChange = (value: number) => {
-    setVolume(value);
-    updateAudioSettingsLocally({ musicVolume: value });
-    saveAudioSettingsRemote({ musicVolume: value }, authToken);
-  };
-
-  const handleMuteToggle = () => {
-    const next = !isMuted;
-    setIsMuted(next);
-    updateAudioSettingsLocally({ musicMuted: next });
-    saveAudioSettingsRemote({ musicMuted: next }, authToken);
-  };
-
-  const handleFootstepVolumeChange = (value: number) => {
-    setFootstepVolume(value);
-    updateAudioSettingsLocally({ footstepVolume: value });
-    saveAudioSettingsRemote({ footstepVolume: value }, authToken);
-  };
-
-  const handleFootstepMuteToggle = () => {
-    const next = !footstepMuted;
-    setFootstepMuted(next);
-    updateAudioSettingsLocally({ footstepMuted: next });
-    saveAudioSettingsRemote({ footstepMuted: next }, authToken);
-  };
-
-  const handleDoorVolumeChange = (value: number) => {
-    setDoorVolume(value);
-    updateAudioSettingsLocally({ doorVolume: value });
-    saveAudioSettingsRemote({ doorVolume: value }, authToken);
-  };
-
-  const handleDoorMuteToggle = () => {
-    const next = !doorMuted;
-    setDoorMuted(next);
-    updateAudioSettingsLocally({ doorMuted: next });
-    saveAudioSettingsRemote({ doorMuted: next }, authToken);
-  };
-
   useEffect(() => {
-    if (!audioSettingsLoaded) return;
     if (!audioRef.current) {
       audioRef.current = new Audio('/sounds/Main_Soundtrack.mp3');
       audioRef.current.loop = true;
     }
 
-    audioRef.current.volume = volume;
+    audioRef.current.volume = audioSettings.musicVolume;
 
-    if (isMuted || volume === 0) {
+    if (audioSettings.musicMuted || audioSettings.musicVolume === 0) {
       audioRef.current.pause();
     } else {
       audioRef.current.play().catch((err) => console.log('Audio play failed:', err));
     }
-  }, [audioSettingsLoaded, isMuted, volume]);
+  }, [audioSettings.musicMuted, audioSettings.musicVolume]);
 
   useEffect(() => {
     return () => {
@@ -341,16 +244,12 @@ export default function HomePage() {
       if (!authToken) return;
 
       try {
-        const res = await fetch(apiUrl('/game-sessions/active'), {
-          headers: { Authorization: `Bearer ${authToken}` },
+        const data = await api.get<{ session?: ActiveSession | null }>('/game-sessions/active', {
           cache: 'no-store',
         });
-        // Backend kapalıyken/yeniden başlarken proxy düz metin 500 döner; JSON okumaya çalışma
-        if (!res.ok) return;
-        const data = await res.json();
         setActiveSession(data.session ?? null);
       } catch (err) {
-        console.error('Failed to check active session', err);
+        logger.error('Failed to check active session', err);
       } finally {
         setCheckingSession(false);
       }
@@ -368,18 +267,15 @@ export default function HomePage() {
     if (!authToken) return;
 
     try {
-      const res = await fetch(apiUrl('/auth/me'), {
-        headers: { Authorization: `Bearer ${authToken}` },
+      const data = await api.get<AccountSummary>('/auth/me', {
         cache: 'no-store',
       });
-      if (!res.ok) return;
-      const data = await res.json();
       setAccountSummary(data);
       if (data.username || data.avatar) {
         setProfile(data.username ?? null, data.avatar || 'avatar_1');
       }
     } catch (err) {
-      console.error('Failed to load account summary', err);
+      logger.error('Failed to load account summary', err);
     }
   }, [authToken, setProfile]);
 
@@ -411,39 +307,26 @@ export default function HomePage() {
     setProfileSaving(true);
     setProfileMsg(null);
     try {
-      const res = await fetch(apiUrl('/auth/profile'), {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          username: editUsername.trim(),
-          avatar: editAvatar,
-        }),
+      const data = await api.patch<{ success: boolean; username: string; avatar: string }>('/auth/profile', {
+        username: editUsername.trim(),
+        avatar: editAvatar,
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      if (data.success) {
         setProfile(data.username, data.avatar);
         setAccountSummary((prev) =>
           prev ? { ...prev, username: data.username, avatar: data.avatar } : null
         );
         setProfileMsg({ type: 'success', text: 'Profil başarıyla güncellendi.' });
-        fetch(apiUrl('/market/leaderboard'))
-          .then((r) => (r.ok ? r.json() : null))
+        api.get<{ leaderboard?: LeaderboardEntry[]; self?: LeaderboardEntry }>('/market/leaderboard')
           .then((lb) => {
             if (lb?.leaderboard) setLeaderboard(lb.leaderboard);
             if (lb?.self) setSelfRankEntry(lb.self);
           })
           .catch(() => {});
-      } else {
-        setProfileMsg({
-          type: 'error',
-          text: data.message || data.error || 'Profil güncellenemedi.',
-        });
       }
-    } catch {
-      setProfileMsg({ type: 'error', text: 'Sunucuya bağlanılamadı.' });
+    } catch (err: unknown) {
+      const text = err instanceof ApiError ? err.message : 'Profil güncellenemedi.';
+      setProfileMsg({ type: 'error', text });
     } finally {
       setProfileSaving(false);
     }
@@ -486,27 +369,11 @@ export default function HomePage() {
     setError(null);
 
     try {
-      const res = await fetch(apiUrl('/game-sessions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ difficulty, scenarioType, testMode }),
-      });
-      const data = await res.json();
-
-      if (res.status === 401) {
-        logout();
-        router.push('/');
-        return;
-      }
-
-      if (res.status === 403) {
-        setError(data.message || 'Bugünkü soruşturma hakkın doldu.');
-        setLoading(false);
-        return;
-      }
+      const data = await api.post<{
+        id: string;
+        scenario?: string;
+        message?: string;
+      }>('/game-sessions', { difficulty, scenarioType, testMode });
 
       if (data.id) {
         setSessionId(data.id);
@@ -519,17 +386,29 @@ export default function HomePage() {
         setLocationClues(null);
         showScene(mapScene(scenarioType, 0, 1, 'Soruşturma başlıyor'));
         router.push('/map');
-        setLoading(false);
       } else {
         setError(
           data.message ||
             'Yapay zekâ şu an meşgul ya da bir hata oluştu. Biraz bekleyip tekrar dene.',
         );
-        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to start session', err);
-      setError('Sunucuya bağlanılamadı. Bağlantını kontrol edip tekrar dene.');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          logout();
+          router.push('/');
+          return;
+        }
+        if (err.status === 403) {
+          setError(err.message || 'Bugünkü soruşturma hakkın doldu.');
+          return;
+        }
+        setError(err.message);
+      } else {
+        logger.error('Failed to start session', err);
+        setError('Sunucuya bağlanılamadı. Bağlantını kontrol edip tekrar dene.');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -560,40 +439,6 @@ export default function HomePage() {
     setIsConfigModalOpen(false);
   };
 
-  const DIFFICULTY_DETAILS: Record<string, { label: string; level: number; suspects: number; desc: string }> = {
-    easy: { label: 'Kolay', level: 1, suspects: 4, desc: 'Dört şüpheliyle klasik bir soruşturma. İlk vaka için ideal.' },
-    medium: { label: 'Orta', level: 2, suspects: 5, desc: 'Beşinci bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.' },
-    hard: { label: 'Zor', level: 3, suspects: 6, desc: 'Altı şüpheli ve çakışan tanıklıklar. En karmaşık hikâye.' },
-  };
-
-  const STORY_DETAILS: Record<string, { title: string; era: string; desc: string }> = {
-    medieval: {
-      title: 'Ashenmoor',
-      era: 'Karanlık Ortaçağ',
-      desc: 'Engizisyon, batıl inanç ve sisli mezarlıklar. Her köylünün dualarının altında bir sır yatar.',
-    },
-    modern: {
-      title: 'Oakhaven',
-      era: "90'lar Amerikan Kasabası",
-      desc: 'Yerel polis, cinayet dedektifleri ve ormanın kenarında birbirini koruyan şüpheli kasabalılar.',
-    },
-    cyberpunk: {
-      title: 'Neon Prime',
-      era: 'Distopik Cyberpunk',
-      desc: 'Yozlaşmış mega şirketler, siber geliştirmeler ve hafızaların bile satılık olduğu tech-noir bir şehir.',
-    },
-    china: {
-      title: 'Jinling',
-      era: 'Antik Doğu / Feodal Hanedanlık',
-      desc: 'Bambu korulukları, tapınaklar ve çay evleri. Hanedan entrikaları ve kadim sırlar.',
-    },
-    winter: {
-      title: 'Frosthold',
-      era: 'Kutup / Kar Fırtınası',
-      desc: 'Buz tutmuş sığınaklar, gözetleme kuleleri ve donmuş cesetler. Soğukta saklanan tecrit edilmiş sırlar.',
-    },
-  };
-
   const story = STORY_DETAILS[selectedStory] ?? STORY_DETAILS.medieval;
   const difficulty = DIFFICULTY_DETAILS[selectedDifficulty] ?? DIFFICULTY_DETAILS.easy;
 
@@ -606,8 +451,6 @@ export default function HomePage() {
   const fallbackMaxMessages = effectiveIsAdmin ? 999 : 100;
 
   // Hesapta açık olanlar: varsayılanlar (Ashenmoor, Kolay), markette satın alınanlar ve admin
-  const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'];
-  const DIFFICULTY_IDS = ['easy', 'medium', 'hard'];
   const unlocksEverything = effectiveIsAdmin;
   const ownsMarketItem = (itemId: string) => marketHydrated && ownedItemIds.includes(itemId);
   const ownsUniverse = (id: string) =>
@@ -615,17 +458,6 @@ export default function HomePage() {
   const ownsDifficulty = (id: string) =>
     id === 'easy' || unlocksEverything || ownsMarketItem(`difficulty_${id}`);
   const getUnlockPrice = (itemId: string) => MARKET_ITEMS.find((item) => item.id === itemId)?.price ?? '—';
-
-  const getMapImage = (story: string) => {
-    switch (story) {
-      case 'modern': return '/map/town_map_night.webp';
-      case 'cyberpunk': return '/map/cyberpunk_map_night.webp';
-      case 'china': return '/map/china_night.webp';
-      case 'winter': return '/map/winter_night.webp';
-      case 'medieval':
-      default: return '/map/village_map.webp';
-    }
-  };
 
   return (
     <main className={styles.main}>
@@ -940,543 +772,47 @@ export default function HomePage() {
         <span />
       </div>
 
-      {isHowToPlayOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsHowToPlayOpen(false)}>
-          <div
-            className={`${styles.sheet} ${styles.guideSheet}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="guide-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.sheetClose} onClick={() => setIsHowToPlayOpen(false)} aria-label="Kapat">
-              <X size={18} />
-            </button>
-            <span className={styles.sheetSeal} aria-hidden>✠</span>
-            <span className={styles.sheetEyebrow}>Engizitörün El Kitabı</span>
-            <h2 id="guide-title" className={styles.sheetTitle}>Soruşturma Kılavuzu</h2>
-            <p className={styles.sheetLead}>
-              Bir cinayet işlendi ve katil hâlâ aranızda. Dört gün içinde gerçeği bul ve doğru kişiyi mahkûm et.
-            </p>
+      <HowToPlayModal
+        isOpen={isHowToPlayOpen}
+        onClose={() => setIsHowToPlayOpen(false)}
+      />
 
-            <ol className={styles.guideSteps}>
-              <li className={styles.guideStep}>
-                <span className={styles.guideIcon}><Target size={18} /></span>
-                <div>
-                  <h3>Amacın</h3>
-                  <p>
-                    Sen, cinayeti çözmekle görevli bir Engizisyon müfettişisin. <strong>Dört günün</strong> var:
-                    şüphelileri sorgula, kanıtları topla ve süre dolmadan katili bul.
-                  </p>
-                </div>
-              </li>
-              <li className={styles.guideStep}>
-                <span className={styles.guideIcon}><Hourglass size={18} /></span>
-                <div>
-                  <h3>Zaman</h3>
-                  <p>
-                    Bir mekâna her girdiğinde vakit ilerler. Gece çöktüğünde herkes evine çekilir ve gün biter;
-                    zamanını nereye harcadığına dikkat et.
-                  </p>
-                </div>
-              </li>
-              <li className={styles.guideStep}>
-                <span className={styles.guideIcon}><KeyRound size={18} /></span>
-                <div>
-                  <h3>Arama İzinleri</h3>
-                  <p>
-                    Kanıtları yalnızca sorgularda değil, mekânları arayarak da bulabilirsin. Bir mekânı aramak için
-                    izin gerekir: Ashenmoor’da izni <strong>Peder Malachar</strong>, diğer evrenlerde karakoldaki yetkili
-                    verir. Bir soruşturmada en fazla iki izin alabilirsin.
-                  </p>
-                </div>
-              </li>
-              <li className={styles.guideStep}>
-                <span className={styles.guideIcon}><NotebookPen size={18} /></span>
-                <div>
-                  <h3>Notlar</h3>
-                  <p>
-                    Şüphelilerin anlattıkları birbiriyle çelişebilir. Önemli ayrıntıları not defterine yaz; çelişkiler
-                    seni katile götürür.
-                  </p>
-                </div>
-              </li>
-              <li className={styles.guideStep}>
-                <span className={styles.guideIcon}><Gavel size={18} /></span>
-                <div>
-                  <h3>Hüküm</h3>
-                  <p>
-                    Hazır olduğunda haritadaki <strong>Hüküm Verilecek Kişiyi Seç</strong> düğmesiyle kararını ver.
-                    Yanlış kişiyi mahkûm edersen gerçek katil elini kolunu sallayarak dolaşmaya devam eder.
-                  </p>
-                </div>
-              </li>
-            </ol>
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        effectiveAvatar={effectiveAvatar}
+        inquisitorName={inquisitorName}
+        effectiveEmail={effectiveEmail}
+        effectiveIsAdmin={effectiveIsAdmin}
+        editAvatar={editAvatar}
+        setEditAvatar={setEditAvatar}
+        editUsername={editUsername}
+        setEditUsername={setEditUsername}
+        onSaveProfile={handleSaveProfile}
+        profileSaving={profileSaving}
+        profileMsg={profileMsg}
+        tokenBalance={tokenBalance}
+        accountSummary={accountSummary}
+        fallbackMaxSessions={fallbackMaxSessions}
+        fallbackMaxMessages={fallbackMaxMessages}
+        onLogout={() => {
+          logout();
+          router.push('/');
+        }}
+      />
 
-            <div className={styles.guideTip}>
-              <Lightbulb size={16} />
-              <p>
-                <strong>İpucu:</strong> Yalan söyleyen herkes katil değildir. Masumların da saklayacak sırları var.
-              </p>
-            </div>
-
-            <button className={styles.sheetPrimary} onClick={() => setIsHowToPlayOpen(false)}>
-              Anladım
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isSettingsOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsSettingsOpen(false)}>
-          <div
-            className={`${styles.sheet} ${styles.settingsSheet}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="settings-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.sheetClose} onClick={() => setIsSettingsOpen(false)} aria-label="Kapat">
-              <X size={18} />
-            </button>
-            <span className={styles.sheetSeal} aria-hidden><Settings size={20} /></span>
-            <span className={styles.sheetEyebrow}>Hesap ve Tercihler</span>
-            <h2 id="settings-title" className={styles.sheetTitle}>Ayarlar</h2>
-
-            <section className={styles.settingsBlock}>
-              <h3 className={styles.blockLabel}>Hesap & Profil</h3>
-              <div className={styles.profileRow}>
-                <img
-                  src={getAvatarSrc(effectiveAvatar)}
-                  alt="Avatar"
-                  style={{
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '50%',
-                    border: '2px solid #daa520',
-                    boxShadow: '0 0 14px rgba(218, 165, 32, 0.35)',
-                    objectFit: 'cover',
-                  }}
-                />
-                <div className={styles.profileText}>
-                  <strong>{inquisitorName}</strong>
-                  <span>{effectiveEmail}</span>
-                  <small style={{ color: '#daa520', fontSize: '0.74rem', marginTop: '2px' }}>
-                    {getAvatarInfo(effectiveAvatar).name} ({getAvatarInfo(effectiveAvatar).role})
-                  </small>
-                </div>
-                <span className={styles.planBadge}>
-                  {effectiveIsAdmin ? 'Admin' : 'Standart'}
-                </span>
-              </div>
-
-              {/* Avatar ve İsim Değiştir */}
-              <div style={{ marginTop: '16px', padding: '14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(232, 220, 196, 0.1)', borderRadius: '6px' }}>
-                <span style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '2px', color: '#daa520', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
-                  Avatar ve Kullanıcı Adını Değiştir
-                </span>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
-                  {DEFAULT_AVATARS.map((av) => {
-                    const isSelected = editAvatar === av.id;
-                    return (
-                      <button
-                        key={av.id}
-                        type="button"
-                        onClick={() => setEditAvatar(av.id)}
-                        style={{
-                          background: isSelected ? 'rgba(138, 3, 3, 0.45)' : 'rgba(0, 0, 0, 0.35)',
-                          border: isSelected ? '2px solid #daa520' : '1px solid rgba(255, 255, 255, 0.1)',
-                          borderRadius: '8px',
-                          padding: '6px 4px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          boxShadow: isSelected ? '0 0 10px rgba(218, 165, 32, 0.4)' : 'none',
-                          transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                          transition: 'all 0.2s ease',
-                        }}
-                        title={`${av.name} — ${av.role}`}
-                      >
-                        <img
-                          src={av.src}
-                          alt={av.name}
-                          style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                        <span style={{ fontSize: '0.62rem', color: isSelected ? '#daa520' : '#888', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
-                          {av.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    value={editUsername}
-                    onChange={(e) => setEditUsername(e.target.value)}
-                    placeholder="Kullanıcı adı"
-                    style={{
-                      flex: 1,
-                      background: 'rgba(0, 0, 0, 0.4)',
-                      border: '1px solid rgba(232, 220, 196, 0.15)',
-                      color: '#e5d9c5',
-                      padding: '8px 12px',
-                      fontSize: '0.85rem',
-                      fontFamily: 'Inter, sans-serif',
-                      borderRadius: '4px',
-                      outline: 'none',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSaveProfile}
-                    disabled={profileSaving}
-                    style={{
-                      background: profileSaving ? 'rgba(138,3,3,0.3)' : '#8A0303',
-                      border: '1px solid rgba(218, 165, 32, 0.4)',
-                      color: '#e8dcc4',
-                      padding: '8px 14px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: profileSaving ? 'not-allowed' : 'pointer',
-                      borderRadius: '4px',
-                      transition: 'all 0.2s ease',
-                      fontFamily: 'Playfair Display, serif',
-                    }}
-                  >
-                    {profileSaving ? '...' : 'Kaydet'}
-                  </button>
-                </div>
-
-                {profileMsg && (
-                  <div
-                    style={{
-                      marginTop: '10px',
-                      padding: '6px 10px',
-                      borderRadius: '4px',
-                      fontSize: '0.78rem',
-                      fontFamily: 'Inter, sans-serif',
-                      background: profileMsg.type === 'success' ? 'rgba(0, 150, 0, 0.15)' : 'rgba(150, 0, 0, 0.2)',
-                      border: profileMsg.type === 'success' ? '1px solid rgba(0, 200, 0, 0.3)' : '1px solid rgba(200, 0, 0, 0.3)',
-                      color: profileMsg.type === 'success' ? '#8fdf8f' : '#f08080',
-                    }}
-                  >
-                    {profileMsg.type === 'success' ? '✓ ' : '⚠️ '}
-                    {profileMsg.text}
-                  </div>
-                )}
-              </div>
-
-              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(218, 165, 32, 0.08)', border: '1px solid rgba(218, 165, 32, 0.25)', borderRadius: '4px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8dcc4', fontSize: '0.88rem' }}>
-                  <Coins size={16} color="#daa520" /> Hazine: <strong style={{ color: '#daa520' }}>{tokenBalance} Token</strong>
-                </span>
-                <Link href="/market" style={{ color: '#daa520', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 600 }}>
-                  Markete Git →
-                </Link>
-              </div>
-
-              <div className={styles.quotaGrid}>
-                {[
-                  {
-                    label: 'Bugün kalan soruşturma',
-                    used: accountSummary?.dailySessionCount,
-                    max: accountSummary?.maxSessionsPerDay ?? fallbackMaxSessions,
-                  },
-                  {
-                    label: 'Bugün kalan diyalog',
-                    used: accountSummary?.dailyMessageCount,
-                    max: accountSummary?.maxMessagesPerDay ?? fallbackMaxMessages,
-                  },
-                ].map((quota) => {
-                  const unlimited = effectiveIsAdmin || quota.max === 999;
-                  const remaining = Math.max(0, quota.max - (quota.used ?? 0));
-                  return (
-                    <div key={quota.label} className={styles.quotaTile}>
-                      <span className={styles.quotaLabel}>{quota.label}</span>
-                      <span className={styles.quotaValue}>
-                        {unlimited ? 'Sınırsız' : (
-                          <>
-                            {remaining}
-                            <small> / {quota.max}</small>
-                          </>
-                        )}
-                      </span>
-                      {!unlimited && (
-                        <span className={styles.quotaBar}>
-                          <span style={{ width: `${(remaining / quota.max) * 100}%` }} />
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className={styles.settingsBlock}>
-              <h3 className={styles.blockLabel}>Ses Ayarları</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '12px' }}>
-                {/* Ana Menü Müziği */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Ana Menü Müziği</span>
-                    <span className={styles.volumeValue}>
-                      {isMuted ? 'Kapalı' : `%${Math.round(volume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleMuteToggle}
-                      title={isMuted ? 'Müziği aç' : 'Müziği kapat'}
-                      aria-label={isMuted ? 'Müziği aç' : 'Müziği kapat'}
-                    >
-                      {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={volume}
-                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
-                      aria-label="Müzik sesi"
-                    />
-                  </div>
-                </div>
-
-                {/* Yürüme Sesi */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Yürüme / Adım Sesi</span>
-                    <span className={styles.volumeValue}>
-                      {footstepMuted ? 'Kapalı' : `%${Math.round(footstepVolume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleFootstepMuteToggle}
-                      title={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
-                      aria-label={footstepMuted ? 'Yürüme sesini aç' : 'Yürüme sesini kapat'}
-                    >
-                      {footstepMuted || footstepVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={footstepVolume}
-                      onChange={(e) => handleFootstepVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(footstepMuted ? 0 : footstepVolume) * 100}%` } as React.CSSProperties}
-                      aria-label="Yürüme sesi"
-                    />
-                  </div>
-                </div>
-
-                {/* Kapı Sesi */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#e8dcc4', fontWeight: 500 }}>Kapı Sesi (Giriş & Çıkış)</span>
-                    <span className={styles.volumeValue}>
-                      {doorMuted ? 'Kapalı' : `%${Math.round(doorVolume * 100)}`}
-                    </span>
-                  </div>
-                  <div className={styles.soundRow}>
-                    <button
-                      type="button"
-                      className={styles.muteToggle}
-                      onClick={handleDoorMuteToggle}
-                      title={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                      aria-label={doorMuted ? 'Kapı sesini aç' : 'Kapı sesini kapat'}
-                    >
-                      {doorMuted || doorVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={doorVolume}
-                      onChange={(e) => handleDoorVolumeChange(parseFloat(e.target.value))}
-                      className={styles.volumeSlider}
-                      style={{ '--fill': `${(doorMuted ? 0 : doorVolume) * 100}%` } as React.CSSProperties}
-                      aria-label="Kapı sesi"
-                    />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <button
-              onClick={() => {
-                logout();
-                router.push('/');
-              }}
-              className={styles.logoutBtn}
-            >
-              <LogOut size={16} /> Çıkış Yap
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isConfigModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsConfigModalOpen(false)}>
-          <div
-            className={`${styles.sheet} ${styles.configSheet}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="config-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.sheetClose} onClick={() => setIsConfigModalOpen(false)} aria-label="Kapat">
-              <X size={18} />
-            </button>
-            <span className={styles.sheetSeal} aria-hidden><MapIcon size={20} /></span>
-            <span className={styles.sheetEyebrow}>Soruşturma Ayarları</span>
-            <h2 id="config-title" className={styles.sheetTitle}>Maceranı Şekillendir</h2>
-            <p className={styles.sheetLead}>
-              Hesabında açık olan evrenlerden ve zorluklardan birini seç. Kilitli olanları markette açabilirsin.
-            </p>
-
-            {/* EVRENLER */}
-            <section className={styles.configSection}>
-              <header className={styles.configHeader}>
-                <span className={styles.configNumeral}>I</span>
-                <h3>Evren</h3>
-                <span className={styles.configCount}>
-                  {UNIVERSE_IDS.filter(ownsUniverse).length} / {UNIVERSE_IDS.length} açık
-                </span>
-              </header>
-
-              <div className={styles.universeGrid}>
-                {UNIVERSE_IDS.map((id) => {
-                  const details = STORY_DETAILS[id];
-                  const owned = ownsUniverse(id);
-                  const selected = tempStory === id;
-                  const thumb = (
-                    <>
-                      <span className={styles.universeThumb} style={{ backgroundImage: `url('${getMapImage(id)}')` }} />
-                      <span className={styles.universeShade} />
-                      <span className={`${styles.cardStatus} ${selected ? styles.statusSelected : owned ? styles.statusOwned : styles.statusLocked}`}>
-                        {selected ? <><Check size={12} /> Seçili</> : owned ? 'Açık' : <><Lock size={12} /> Kilitli</>}
-                      </span>
-                      <span className={styles.universeBody}>
-                        <small>{details.era}</small>
-                        <strong>{details.title}</strong>
-                      </span>
-                    </>
-                  );
-
-                  return owned ? (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`${styles.universeCard} ${selected ? styles.cardSelected : ''}`}
-                      onClick={() => setTempStory(id)}
-                      aria-pressed={selected}
-                    >
-                      {thumb}
-                    </button>
-                  ) : (
-                    <div key={id} className={`${styles.universeCard} ${styles.cardLocked}`}>
-                      {thumb}
-                      <Link href="/market" className={styles.unlockLink}>
-                        <Coins size={13} /> {getUnlockPrice(`universe_${id}`)} · Markette aç
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className={styles.configHint}>{STORY_DETAILS[tempStory]?.desc}</p>
-            </section>
-
-            {/* ZORLUKLAR */}
-            <section className={styles.configSection}>
-              <header className={styles.configHeader}>
-                <span className={styles.configNumeral}>II</span>
-                <h3>Zorluk</h3>
-                <span className={styles.configCount}>
-                  {DIFFICULTY_IDS.filter(ownsDifficulty).length} / {DIFFICULTY_IDS.length} açık
-                </span>
-              </header>
-
-              <div className={styles.difficultyGrid}>
-                {DIFFICULTY_IDS.map((id) => {
-                  const details = DIFFICULTY_DETAILS[id];
-                  const owned = ownsDifficulty(id);
-                  const selected = tempDifficulty === id;
-                  const content = (
-                    <>
-                      <span className={`${styles.cardStatus} ${selected ? styles.statusSelected : owned ? styles.statusOwned : styles.statusLocked}`}>
-                        {selected ? <><Check size={12} /> Seçili</> : owned ? 'Açık' : <><Lock size={12} /> Kilitli</>}
-                      </span>
-                      <span className={styles.rankSeal}>{['I', 'II', 'III'][details.level - 1]}</span>
-                      <strong className={styles.difficultyName}>{details.label}</strong>
-                      <span className={styles.skullRow}>
-                        {[1, 2, 3].map((lvl) => (
-                          <Skull key={lvl} size={14} className={lvl <= details.level ? styles.skullOn : styles.skullOff} />
-                        ))}
-                      </span>
-                      <span className={styles.suspectCount}>
-                        <Users size={13} /> {details.suspects} şüpheli
-                      </span>
-                      <span className={styles.difficultyDesc}>{details.desc}</span>
-                    </>
-                  );
-
-                  return owned ? (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`${styles.difficultyCard} ${styles[`level${details.level}`]} ${selected ? styles.cardSelected : ''}`}
-                      onClick={() => setTempDifficulty(id)}
-                      aria-pressed={selected}
-                    >
-                      {content}
-                    </button>
-                  ) : (
-                    <div key={id} className={`${styles.difficultyCard} ${styles[`level${details.level}`]} ${styles.cardLocked}`}>
-                      {content}
-                      <Link href="/market" className={styles.unlockLink}>
-                        <Coins size={13} /> {getUnlockPrice(`difficulty_${id}`)} · Markette aç
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            <footer className={styles.configFooter}>
-              <div className={styles.configSummary}>
-                <span>Seçimin</span>
-                <strong>
-                  {STORY_DETAILS[tempStory]?.title} · {DIFFICULTY_DETAILS[tempDifficulty]?.label}
-                </strong>
-                <small>{DIFFICULTY_DETAILS[tempDifficulty]?.suspects} şüpheli</small>
-              </div>
-              <div className={styles.configActions}>
-                <button className={styles.btnGhost} onClick={() => setIsConfigModalOpen(false)}>
-                  Vazgeç
-                </button>
-                <button className={styles.sheetPrimary} onClick={handleConfigSave}>
-                  Seçimi Onayla
-                </button>
-              </div>
-            </footer>
-          </div>
-        </div>
-      )}
+      <ScenarioConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        tempDifficulty={tempDifficulty}
+        setTempDifficulty={setTempDifficulty}
+        tempStory={tempStory}
+        setTempStory={setTempStory}
+        onSave={handleConfigSave}
+        ownsUniverse={ownsUniverse}
+        ownsDifficulty={ownsDifficulty}
+        getUnlockPrice={getUnlockPrice}
+      />
     </main>
   );
 }

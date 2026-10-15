@@ -4,7 +4,7 @@
  * Aynı sesin ardışık iki kez çalmaması için anti-repetition mekanizması bulunur.
  */
 
-import { getAudioSettings } from '@/utils/audioSettings';
+import { getAudioSettings } from './audioSettings';
 
 const DOOR_SOUNDS = [
   '/sounds/door/wood1.wav',

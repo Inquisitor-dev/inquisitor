@@ -1,29 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { apiUrl } from '@/config/api';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '@/store/useGameStore';
 import styles from './CaseModals.module.scss';
 
 // Soruşturma notları: yazılanlar alandan çıkınca oturuma kaydedilir
 export default function NotebookModal({ onClose }: { onClose: () => void }) {
-  const { sessionId, authToken, notes, setNotes } = useGameStore();
+  const { sessionId, notes, setNotes } = useGameStore();
   const [localNotes, setLocalNotes] = useState(notes);
 
   const saveNotes = async () => {
     if (localNotes === notes || !sessionId) return;
     setNotes(localNotes);
     try {
-      await fetch(apiUrl(`/game-sessions/${sessionId}/notes`), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ notes: localNotes }),
-      });
+      await api.post(`/game-sessions/${sessionId}/notes`, { notes: localNotes });
     } catch (err) {
-      console.error('Failed to save notes', err);
+      logger.error('Failed to save notes', err);
     }
   };
 

@@ -3,7 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiUrl } from '@/config/api';
+import { api } from '@/shared/api/client';
+import { logger } from '@/shared/lib/logger';
 import { getPlayerHome, type HomeActionId, type HomeSpot, type PlayerHomeData } from '@/config/homeConfig';
 import { wearableOutfitId } from '@/config/outfits';
 import { useCharacterManifest } from '@/components/character/characterManifest';
@@ -13,11 +14,11 @@ import { revealScene, showScene } from '@/components/SceneTransition/sceneStore'
 import { homeScene, mapScene } from '@/components/SceneTransition/scenes';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
-import { useGameStore } from '@/store/useGameStore';
+import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { useMarketStore } from '@/store/useMarketStore';
 import sceneStyles from '@/components/InteriorViewer/InteriorViewer.module.scss';
 import styles from './PlayerHome.module.scss';
-import { playDoorSound } from '@/utils/doorSound';
+import { playDoorSound } from '@/features/audio/doorSound';
 
 // Ev görselleri iç mekânlarla aynı 21:9 oranında üretilir
 const HOME_ASPECT_RATIO = 3168 / 1344;
@@ -74,7 +75,6 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
   const router = useRouter();
   const {
     sessionId,
-    authToken,
     currentDay,
     timeOfDay,
     endDay,
@@ -112,25 +112,26 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
 
   // Haritadaki gibi arama izinleri ve kanıtlar sunucudan tazelenir
   useEffect(() => {
-    if (!sessionId || !authToken) return;
-    const headers = { Authorization: `Bearer ${authToken}` };
+    if (!sessionId) return;
     (async () => {
       try {
-        const res = await fetch(apiUrl(`/game-sessions/${sessionId}`), { headers });
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await api.get<{
+          scenarioType?: string;
+          activeWarrants?: string[];
+          usedWarrants?: string[];
+        }>(`/game-sessions/${sessionId}`);
         if (data.scenarioType) setScenarioType(data.scenarioType);
         setWarrants(data.activeWarrants || [], data.usedWarrants || []);
-        const evidenceRes = await fetch(apiUrl(`/game-sessions/${sessionId}/evidence`), { headers });
-        if (evidenceRes.ok) {
-          const evidenceData = await evidenceRes.json();
+
+        try {
+          const evidenceData = await api.get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`);
           setEvidence(Array.isArray(evidenceData.evidence) ? evidenceData.evidence : []);
-        }
+        } catch {}
       } catch (err) {
-        console.error('Failed to refresh session', err);
+        logger.error('Failed to refresh session', err);
       }
     })();
-  }, [sessionId, authToken, setScenarioType, setWarrants, setEvidence]);
+  }, [sessionId, setScenarioType, setWarrants, setEvidence]);
 
   useEffect(() => {
     if (dawnDay === null) return;
@@ -161,16 +162,12 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     }
     setEndingDay(true);
     try {
-      const res = await fetch(apiUrl(`/game-sessions/${sessionId}/end-day`), {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      if (!res.ok) throw new Error(`end-day ${res.status}`);
+      await api.post(`/game-sessions/${sessionId}/end-day`);
       endDay();
       setActiveSpot(null);
       setDawnDay(currentDay + 1);
     } catch (err) {
-      console.error('Failed to end day', err);
+      logger.error('Failed to end day', err);
     } finally {
       setEndingDay(false);
     }
