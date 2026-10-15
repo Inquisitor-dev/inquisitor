@@ -23,6 +23,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly evidence = prismaClient.evidence;
   readonly userPurchase = prismaClient.userPurchase;
   readonly tokenTransaction = prismaClient.tokenTransaction;
+  readonly llmUsage = prismaClient.llmUsage;
 
   get $transaction() {
     return prismaClient.$transaction.bind(prismaClient);

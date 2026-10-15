@@ -336,6 +336,7 @@ export class AbilitiesService {
               nameOf(npcId),
               replies,
               session.scenarioType,
+              session.id,
             );
         // Tarama yapılamadıysa hak harcanmaz
         if (!found) {

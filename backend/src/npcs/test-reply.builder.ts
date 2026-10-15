@@ -6,12 +6,17 @@ export function buildTestReply(
   npcName: string,
   isGreeting: boolean,
   userMessage: string,
-  locations: { id: string; localizedName: string }[],
   isNarrator = false,
-  confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
+  confrontation?: {
+    impact: EvidenceImpact;
+    fear: number;
+    forcedConfession: boolean;
+  },
+  // Arama izni kararını kod verir; test cevabına not olarak eklenir
+  warrantNote?: string,
   quietRoom = false,
 ): string {
-  const reply = buildReply(npcName, isGreeting, userMessage, locations, isNarrator, confrontation);
+  const reply = buildReply(npcName, isGreeting, userMessage, isNarrator, confrontation, warrantNote);
   // Sessiz Oda'nın etkisi test modunda görünsün
   return quietRoom ? reply.replace('[TEST MODU]', '[TEST MODU] [Sessiz Oda]') : reply;
 }
@@ -20,9 +25,13 @@ function buildReply(
   npcName: string,
   isGreeting: boolean,
   userMessage: string,
-  locations: { id: string; localizedName: string }[],
   isNarrator: boolean,
-  confrontation?: { impact: EvidenceImpact; fear: number; forcedConfession: boolean },
+  confrontation?: {
+    impact: EvidenceImpact;
+    fear: number;
+    forcedConfession: boolean;
+  },
+  warrantNote?: string,
 ): string {
   if (isGreeting) return `[TEST MODU] ${npcName} seni selamlıyor.`;
   if (confrontation) {
@@ -33,24 +42,15 @@ function buildReply(
   }
 
   // Kanıt Defteri yapay zekâ olmadan denenebilsin diye anahtar kelimelerle etiket eklenir:
-  // anlatıcıda "ara/incele", karakterde "itiraf" ve "kanıt"
+  // anlatıcıda "ara/incele", karakterde "kanıt" (tanıklık). İtiraf sadece korku eşiğiyle gelir.
   const folded = foldTurkish(userMessage);
   if (isNarrator) {
     const found = /\b(ara|incele)/.test(folded);
     return `[TEST MODU] Anlatıcı: ${found ? 'Gizli ipucunu buldun.' : 'Etrafta olağandışı bir şey yok.'}${found ? ` [${EVIDENCE_TAG.clue}]` : ''}`;
   }
-  const evidenceTags = [
-    /itiraf/.test(folded) ? ` [${EVIDENCE_TAG.confession}]` : '',
-    /kanit/.test(folded) ? ` [${EVIDENCE_TAG.verification}]` : '',
-  ].join('');
-
-  // "Değirmen" ile "degirmen" aynı sayılsın diye Türkçe karakterler sadeleştirilerek karşılaştırılır
-  const normalized = foldTurkish(userMessage);
-  const requested = locations.find(
-    (location) =>
-      location.id !== 'crime_scene' &&
-      normalized.includes(foldTurkish(location.localizedName)),
-  );
-  const warrantTag = requested ? ` [GRANT_WARRANT: ${requested.id}]` : '';
-  return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${warrantTag}${evidenceTags}`;
+  const evidenceTag = /kanit/.test(folded)
+    ? ` [${EVIDENCE_TAG.verification}]`
+    : '';
+  const note = warrantNote ? ` ${warrantNote}` : '';
+  return `[TEST MODU] ${npcName}: "${userMessage.slice(0, 80)}" sorusunu duydum. Bu bir yer tutucu cevaptır.${note}${evidenceTag}`;
 }

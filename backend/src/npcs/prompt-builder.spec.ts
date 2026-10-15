@@ -132,9 +132,9 @@ describe('prompt-builder domain', () => {
         hasConfessed: false,
       });
 
-      expect(prompt).toContain('[SYSTEM - SEARCH WARRANT STATUS]:');
-      expect(prompt).toContain('Total Warrants Issued in Session: 1/2');
-      expect(prompt).toContain('Remaining Warrants You Can Grant: 1');
+      expect(prompt).toContain('[SYSTEM - SEARCH WARRANTS]:');
+      expect(prompt).toContain('Warrants left in this case: 1/2');
+      expect(prompt).toContain('the decision is made by the system');
     });
 
     it('Sessiz Oda yalnızca istendiğinde eklenir, katil için de itiraf kuralı korunur', () => {

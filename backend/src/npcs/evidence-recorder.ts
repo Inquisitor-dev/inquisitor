@@ -28,23 +28,8 @@ export async function recordEvidence(
   return created;
 }
 
-export async function appendStatementsToNotes(
-  prisma: PrismaService,
-  sessionId: string,
-  statements: { sourceId: string; text: string; dayNumber: number }[],
-  nameOf: (npcId: string) => string,
-): Promise<string | undefined> {
-  if (statements.length === 0) return undefined;
-  return appendToNotes(
-    prisma,
-    sessionId,
-    statements.map(
-      (statement) => `[${statement.dayNumber}. gün · ${nameOf(statement.sourceId)}] ${statement.text}`,
-    ),
-  );
-}
-
-// Not defterinin sonuna paragraf paragraf ekler ve notların son hâlini döndürür
+// Hızlı notların (GameSession.notes) sonuna paragraf paragraf ekler ve son hâlini döndürür.
+// Yeteneklerin sonuçları (Arşiv Özeti, Muhbir, Çelişki Taraması) buraya yazılır.
 export async function appendToNotes(
   prisma: PrismaService,
   sessionId: string,

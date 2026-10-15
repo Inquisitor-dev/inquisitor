@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
@@ -46,9 +47,16 @@ export class GameSessionsService {
         `verification: ${plan.verification.kind}/${plan.verification.placement.type}`,
     );
 
+    // Kimlik önceden üretilir: senaryo çağrılarının token kullanımı da bu vakaya yazılsın
+    const sessionId = randomUUID();
     const draft: ScenarioDraft = testMode
       ? this.buildTestScenario(scenarioConfig, plan)
-      : await this.llm.generateSessionScenario(difficulty, scenarioType, plan);
+      : await this.llm.generateSessionScenario(
+          difficulty,
+          scenarioType,
+          plan,
+          sessionId,
+        );
     const { scenario, truthReveal, npcPrompts, locationClues } = draft;
     const caseFacts = this.buildCaseFacts(plan, draft);
 
@@ -66,6 +74,7 @@ export class GameSessionsService {
 
     const session = await this.prisma.gameSession.create({
       data: {
+        id: sessionId,
         userId,
         difficulty,
         scenarioType,

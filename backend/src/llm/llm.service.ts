@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { getScenarioConfig } from '../scenarios/scenario-config';
 import { CasePlan } from '../scenarios/case-setup';
 import type { ThoughtLine } from '../board/board';
-import { GeminiClient } from './client/gemini-client';
+import { CompletionRequest, GeminiClient } from './client/gemini-client';
+import { LlmUsageContext, LlmUsageRecorder } from './usage/llm-usage.recorder';
 import {
   buildNpcDialogueSystemPrompt,
   parseNpcReply,
@@ -29,12 +30,37 @@ export class LlmService {
   private readonly client = new GeminiClient();
   private readonly logger = new Logger(LlmService.name);
 
+  constructor(private readonly usage: LlmUsageRecorder) {}
+
+  // Her çağrının süresi ve token kullanımı ölçülüp kaydedilir (maliyet takibi)
+  private async complete(
+    params: CompletionRequest,
+    label: string,
+    timeoutMs: number,
+    usage: LlmUsageContext,
+  ) {
+    const startedAt = Date.now();
+    const response = await this.client.createCompletion(
+      params,
+      label,
+      timeoutMs,
+    );
+    await this.usage.record(
+      usage,
+      response?.model ?? 'unknown',
+      response?.usage,
+      Date.now() - startedAt,
+    );
+    return response;
+  }
+
   async generateNpcResponse(
     npcName: string,
     npcPrompt: string,
     chatHistory: { role: 'user' | 'assistant'; content: string }[],
     userMessage: string,
     isNewDay: boolean = false,
+    usage: LlmUsageContext = { kind: 'NPC_REPLY' },
   ): Promise<{ reply: string }> {
     try {
       const systemPrompt = buildNpcDialogueSystemPrompt(
@@ -52,10 +78,11 @@ export class LlmService {
       this.logger.log(
         `Calling Gemini API for NPC: ${npcName}, message: "${userMessage.slice(0, 50)}"`,
       );
-      const response = await this.client.createCompletion(
+      const response = await this.complete(
         { messages, temperature: 0.7 },
         `NPC ${npcName}`,
         30_000,
+        usage,
       );
 
       const responseText = response?.choices?.[0]?.message?.content || '';
@@ -84,6 +111,7 @@ export class LlmService {
     difficulty: string = 'easy',
     scenarioType: string = 'medieval',
     plan: CasePlan,
+    sessionId?: string,
   ): Promise<ScenarioDraft> {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
     const {
@@ -113,10 +141,11 @@ export class LlmService {
       `Calling Gemini API to generate dynamic scenario (difficulty: ${difficulty}, scenario: ${scenarioType})...`,
     );
 
-    const response = await this.client.createCompletion(
+    const response = await this.complete(
       { messages: [{ role: 'user', content: prompt }], temperature: 0.9 },
       'Scenario',
       90_000,
+      { kind: 'SCENARIO', sessionId },
     );
 
     const responseText = response?.choices?.[0]?.message?.content || '';
@@ -129,6 +158,7 @@ export class LlmService {
         locationDefinitions,
         culpritId,
         caseBrief,
+        sessionId,
       );
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
@@ -142,6 +172,7 @@ export class LlmService {
     locationDefinitions: Array<{ id: string; description: string }>,
     culpritId: string,
     caseBrief: string,
+    sessionId?: string,
   ): Promise<ScenarioDraft> {
     const reviewPrompt = buildReconciliationPrompt({
       draft,
@@ -152,10 +183,11 @@ export class LlmService {
     });
 
     try {
-      const response = await this.client.createCompletion(
+      const response = await this.complete(
         { messages: [{ role: 'user', content: reviewPrompt }], temperature: 0.2 },
         'Scenario review',
         90_000,
+        { kind: 'SCENARIO_REVIEW', sessionId },
       );
 
       const responseText = response?.choices?.[0]?.message?.content || '';
@@ -185,14 +217,16 @@ export class LlmService {
   async generateBoardThought(
     lines: ThoughtLine[],
     scenarioType: string,
+    sessionId?: string,
   ): Promise<string | null> {
     const prompt = buildBoardThoughtPrompt(lines, scenarioType);
 
     try {
-      const response = await this.client.createCompletion(
+      const response = await this.complete(
         { messages: [{ role: 'user', content: prompt }], temperature: 0.6 },
         'Board thought',
         30_000,
+        { kind: 'BOARD_THOUGHT', sessionId },
       );
       const text = (response?.choices?.[0]?.message?.content || '').trim();
       return text || null;
@@ -209,14 +243,16 @@ export class LlmService {
     npcName: string,
     replies: string[],
     scenarioType: string,
+    sessionId?: string,
   ): Promise<Contradiction[] | null> {
     const prompt = buildContradictionPrompt(npcName, replies, scenarioType);
 
     try {
-      const response = await this.client.createCompletion(
+      const response = await this.complete(
         { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
         'Contradiction scan',
         30_000,
+        { kind: 'CONTRADICTION_SCAN', sessionId },
       );
       const text = response?.choices?.[0]?.message?.content || '';
       return parseContradictions(text, replies);

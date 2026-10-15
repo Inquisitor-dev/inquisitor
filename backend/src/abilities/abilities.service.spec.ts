@@ -234,6 +234,7 @@ describe('AbilitiesService', () => {
         expect.any(String),
         ['Akşam evdeydim.', 'Akşam handaydım.'],
         'medieval',
+        'session-1',
       );
       expect(result.notes).toContain(
         '“evdeydim” / “handaydım”: Yeri tutmuyor.',

@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { EvidenceItem } from '@/store/useGameStore';
 import styles from '../../NpcDialogueScreen.module.scss';
+
+const MAX_REMARK_LENGTH = 500;
 
 interface ConfrontModalProps {
   isOpen: boolean;
@@ -9,12 +11,17 @@ interface ConfrontModalProps {
   evidence: EvidenceItem[];
   shownEvidenceIds: string[];
   loading: boolean;
-  onConfront: (item: EvidenceItem) => void;
+  onConfront: (item: EvidenceItem, remark: string) => void;
   evidenceSource: (item: EvidenceItem) => string;
 }
 
-export default function ConfrontModal({
-  isOpen,
+// Pencere her açılışta sıfırdan kurulsun (seçim ve yazılan söz kalmasın) diye içerik ayrı bileşende
+export default function ConfrontModal(props: ConfrontModalProps) {
+  if (!props.isOpen) return null;
+  return <ConfrontModalContent {...props} />;
+}
+
+function ConfrontModalContent({
   onClose,
   npcName,
   evidence,
@@ -23,7 +30,14 @@ export default function ConfrontModal({
   onConfront,
   evidenceSource,
 }: ConfrontModalProps) {
-  if (!isOpen) return null;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [remark, setRemark] = useState('');
+  const selected = evidence.find((item) => item.id === selectedId) ?? null;
+
+  const submit = () => {
+    if (!selected || loading) return;
+    onConfront(selected, remark.trim());
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -38,29 +52,62 @@ export default function ConfrontModal({
             ✕
           </button>
         </div>
-        <p style={{ color: '#cfc5b4', fontSize: '0.88rem', marginBottom: '14px' }}>
-          {npcName} karşısında hangi kanıtı ortaya koyacaksın?
+        <p className={styles.confrontIntro}>
+          {npcName} karşısında hangi kanıtı ortaya koyacaksın? Aynı kanıtı aynı kişiye bir kez gösterebilirsin.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {evidence.map((item) => (
-            <button
-              key={item.id}
-              className={styles.choiceBtn}
-              onClick={() => onConfront(item)}
-              disabled={loading}
-            >
-              <div>
-                <div style={{ fontWeight: 600, color: '#f7eedd' }}>
-                  {item.category === 'ITEM' ? '🔍' : '📜'} {item.text}
+        <div className={styles.choiceList}>
+          {evidence.map((item) => {
+            const alreadyShown = shownEvidenceIds.includes(item.id);
+            const isSelected = item.id === selectedId;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={`${styles.choiceBtn} ${isSelected ? styles.choiceBtnSelected : ''}`}
+                onClick={() => setSelectedId(item.id)}
+                disabled={loading || alreadyShown}
+                aria-pressed={isSelected}
+              >
+                <div>
+                  <div className={styles.choiceText}>
+                    {item.category === 'ITEM' ? '🔍' : '📜'} {item.text}
+                  </div>
+                  <div className={styles.choiceMeta}>
+                    {evidenceSource(item)}
+                    {alreadyShown ? ' · Ona zaten gösterdin' : ''}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.76rem', color: '#8c8376', marginTop: 2 }}>
-                  {evidenceSource(item)}
-                  {shownEvidenceIds.includes(item.id) ? ' (Zaten Gösterildi)' : ''}
-                </div>
-              </div>
-              <span className={styles.choiceIcon}>→</span>
-            </button>
-          ))}
+                <span className={styles.choiceIcon}>{isSelected ? '✓' : '→'}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <label className={styles.confrontRemarkLabel} htmlFor="confront-remark">
+          Kanıtı gösterirken ne söyleyeceksin? <span>(isteğe bağlı)</span>
+        </label>
+        <textarea
+          id="confront-remark"
+          className={styles.confrontRemark}
+          value={remark}
+          onChange={(e) => setRemark(e.target.value)}
+          maxLength={MAX_REMARK_LENGTH}
+          rows={2}
+          placeholder="Örneğin: Bu leke olay yerinde bulundu. Açıklayabilir misin?"
+          disabled={loading}
+        />
+        <div className={styles.confrontFooter}>
+          <span className={styles.charCount}>
+            {remark.length}/{MAX_REMARK_LENGTH}
+          </span>
+          <button
+            type="button"
+            className={styles.sendBtn}
+            onClick={submit}
+            disabled={!selected || loading}
+          >
+            Kanıtı Göster
+          </button>
         </div>
       </div>
     </div>
