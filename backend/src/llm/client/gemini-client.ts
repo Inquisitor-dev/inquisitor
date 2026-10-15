@@ -3,11 +3,11 @@ import OpenAI from 'openai';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// GEMINI_MODELS verilmezse kullanılan zincir. gemini-1.5-* ve gemini-pro kapatıldı (404),
+// 2.5 serisi yeni kullanıcılara kapalı; bu yüzden yalnızca güncel modeller var.
 const DEFAULT_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro',
-  'gemini-pro',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
   'gemini-flash-latest',
 ];
 
