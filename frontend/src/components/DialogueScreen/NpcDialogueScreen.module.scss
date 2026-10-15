@@ -242,7 +242,7 @@
 .dialogueCard {
   position: relative;
   z-index: 10;
-  width: min(840px, 92%);
+  width: min(1080px, 94%);
   margin-bottom: 12px;
   background: rgba(11, 12, 17, 0.82);
   backdrop-filter: blur(18px);
@@ -293,8 +293,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 40px;
-  max-height: 120px;
+  min-height: clamp(140px, 22vh, 200px);
+  max-height: clamp(200px, 38vh, 360px);
   overflow-y: auto;
   padding-right: 4px;
   margin-top: 2px;
@@ -344,8 +344,8 @@
 
 .speechText {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.04rem;
-  line-height: 1.52;
+  font-size: 1.08rem;
+  line-height: 1.55;
   color: #f2ede0;
   white-space: pre-wrap;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
@@ -823,4 +823,51 @@
   justify-content: space-between;
   gap: 12px;
   margin-top: 12px;
+}
+
+/* ─── HAZIR SORULAR ─── */
+.quickQuestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 2px;
+  animation: fadeIn 0.15s ease;
+}
+
+.quickQuestionBtn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  background: rgba(22, 23, 31, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 999px;
+  color: #e9e1cf;
+  font-family: inherit;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(212, 175, 55, 0.75);
+    background: rgba(64, 52, 22, 0.55);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+/* Telefonda hazır sorular tek satırda yana kayar; sohbet kartı ekranı kaplamasın */
+@media (max-width: 768px) {
+  .quickQuestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }

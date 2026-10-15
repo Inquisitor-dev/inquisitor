@@ -12,6 +12,7 @@ import {
 } from '@/config/dialogueConfig';
 import { getNpcProfile } from '@/config/npcProfiles';
 import { getLocationLabel } from '@/config/locationLabels';
+import { getQuickQuestions } from '@/config/quickQuestions';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
 import { api, ApiError } from '@/shared/api/client';
@@ -27,6 +28,7 @@ import {
   BookOpen,
   Briefcase,
   Scale,
+  ListChecks,
 } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
@@ -55,6 +57,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const router = useRouter();
   const {
     scenarioType,
+    username,
     isAdmin,
     dialoguesUsedToday,
     incrementDialogue,
@@ -114,6 +117,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isQuickQuestionsOpen, setIsQuickQuestionsOpen] = useState(false);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
@@ -140,6 +144,9 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const canInvestigate = isCrimeScene || inventory?.activeWarrants?.includes(actualNpcKey);
 
   const canConfront = !isInvestigating && !isCrimeScene && evidence.length > 0;
+  // Hazır sorular karakterlere sorulur; mekân araştırmasında ve olay yerinde gösterilmez
+  const canAskQuickQuestions = !isInvestigating && !isCrimeScene;
+  const quickQuestions = getQuickQuestions({ scenarioType: scenario, username });
 
   const evidenceSource = (item: EvidenceItem) =>
     item.category === 'ITEM'
@@ -299,7 +306,8 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
 
     const userMsg: Message = { role: 'player', text: trimmed, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    // Hazır soru gönderilince oyuncunun yarım kalmış yazısı silinmesin
+    setInput((current) => (current.trim() === trimmed ? '' : current));
     setLoading(true);
 
     try {
@@ -577,6 +585,24 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
               </div>
             </div>
 
+            {/* Hazır Sorular: genel sorgu cümleleri tek tıkla sorulur */}
+            {isQuickQuestionsOpen && canAskQuickQuestions && (
+              <div className={styles.quickQuestions} role="group" aria-label="Hazır sorular">
+                {quickQuestions.map((question) => (
+                  <button
+                    key={question.label}
+                    type="button"
+                    className={styles.quickQuestionBtn}
+                    onClick={() => sendMessageText(question.text)}
+                    disabled={loading}
+                    title={question.text}
+                  >
+                    {question.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Doğrudan Soru Yazma ve Gönderme Alanı */}
             <form
               className={styles.inputBar}
@@ -620,6 +646,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                   <MessageSquare size={13} />
                   <span>Chat Geçmişi ({messages.length})</span>
                 </button>
+
+                {canAskQuickQuestions && (
+                  <button
+                    className={`${styles.utilityBtn} ${isQuickQuestionsOpen ? styles.activeUtilityBtn : ''}`}
+                    onClick={() => setIsQuickQuestionsOpen((open) => !open)}
+                    aria-expanded={isQuickQuestionsOpen}
+                    title="Sık sorulan soruları tek tıkla sor"
+                  >
+                    <ListChecks size={13} />
+                    <span>Hazır Sorular</span>
+                  </button>
+                )}
 
                 {!isInvestigating && !isCrimeScene && (
                   <button
