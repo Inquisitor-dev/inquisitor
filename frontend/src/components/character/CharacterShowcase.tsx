@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { Outfit } from '@/config/outfits';
 import CharacterTurntable from './CharacterTurntable';
+import OutfitStory from './OutfitStory';
 import styles from './CharacterShowcase.module.scss';
 
 const RARITY_LABELS: Record<Outfit['rarity'], string> = {
@@ -64,6 +65,7 @@ export default function CharacterShowcase({ outfit, mode, actions, onClose }: Pr
             {outfit.name}
           </h2>
           <p className={styles.desc}>{outfit.description}</p>
+          <OutfitStory outfit={outfit} className={styles.story} />
           <p className={styles.lore}>{outfit.lore}</p>
           <blockquote className={styles.quote}>“{outfit.quote}”</blockquote>
           {actions && <div className={styles.actions}>{actions}</div>}

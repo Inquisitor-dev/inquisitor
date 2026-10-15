@@ -160,6 +160,10 @@ $gold: #e0bb5e;
   line-height: 1.65;
 }
 
+.story {
+  margin: 0 0 14px;
+}
+
 .lore {
   margin: 0 0 14px;
   padding-top: 12px;
@@ -188,10 +192,10 @@ $gold: #e0bb5e;
 
 .hint {
   margin-top: 16px;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(232, 220, 196, 0.35);
+  color: rgba(232, 220, 196, 0.6);
 }
 
 // ─── Tanıtım sahnesi: kamera yaklaşır, mühür basılır, yazılar sırayla belirir ───
@@ -212,6 +216,7 @@ $gold: #e0bb5e;
   .eyebrow,
   .name,
   .desc,
+  .story,
   .lore,
   .quote,
   .actions {
@@ -221,6 +226,7 @@ $gold: #e0bb5e;
   .eyebrow { animation-delay: 1.2s; }
   .name    { animation-delay: 1.35s; }
   .desc    { animation-delay: 1.55s; }
+  .story   { animation-delay: 1.62s; }
   .lore    { animation-delay: 1.7s; }
   .quote   { animation-delay: 1.85s; }
   .actions { animation-delay: 2s; }

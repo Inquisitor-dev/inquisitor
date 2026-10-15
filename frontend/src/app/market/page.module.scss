@@ -451,7 +451,7 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
 .cardEyebrow {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: $text-muted;
@@ -464,6 +464,18 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   font-weight: 700;
   line-height: 1.2;
   color: $text-parchment;
+}
+
+.outfitStoryBlock {
+  flex-grow: 1;
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+// Karakter kartında açıklama içeriğe göre yer kaplar; boşluk yetenek bloğunun altında kalır, altbilgiler hizalı durur
+.outfitCard .cardDesc {
+  flex-grow: 0;
+  margin-bottom: 14px;
 }
 
 .cardDesc {
@@ -881,7 +893,7 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  font-size: 0.66rem;
+  font-size: 0.74rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #e8dcc4;
@@ -894,6 +906,12 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
 
   .outfitCard:hover &,
   .outfitPortraitButton:focus-visible & {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  // Dokunmatik ekranda üzerine gelme yok; etiket hep görünür
+  @media (hover: none) {
     opacity: 1;
     transform: translate(-50%, 0);
   }
@@ -967,7 +985,7 @@ $corner-border: 1px solid rgba(138, 3, 3, 0.5);
   position: absolute;
   top: 12px;
   left: 12px;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--rarity);
