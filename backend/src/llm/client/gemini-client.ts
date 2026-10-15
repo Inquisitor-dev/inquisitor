@@ -3,11 +3,11 @@ import OpenAI from 'openai';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// GEMINI_MODELS tanımlı değilse kullanılır; yerelde ve canlıda kullanılan zincirle aynı tutulmalı.
+// Sadece ucuz Flash-Lite modelleri: bir hata pahalı bir modele sessizce düşmesin.
 const DEFAULT_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro',
-  'gemini-pro',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
   'gemini-flash-latest',
 ];
 

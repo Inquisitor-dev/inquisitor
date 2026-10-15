@@ -214,6 +214,14 @@ export class NpcsService {
           chatHistory,
           effectiveMessage,
           isNewDay,
+          {
+            kind: isNarrator
+              ? 'NARRATOR'
+              : confrontation
+                ? 'CONFRONT'
+                : 'NPC_REPLY',
+            sessionId,
+          },
         );
 
     // Cevapta prompt'un bölüm başlıkları görünüyorsa model gizli talimatları sızdırmıştır
