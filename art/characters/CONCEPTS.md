@@ -23,7 +23,11 @@ Yetenek ve hikâye tasarımı: yerel `KARAKTER_YETENEKLERI.md` (git dışı).
 
 ## Malzeme ayarı
 
-Görselden-3D araçları bazı karakterlerde fazla parlak lake/vinil üretir. `art/tools/render_character.py` içindeki `OUTFIT_TWEAKS` karakter başına pürüzlülük, metal ve taban rengini bellekte düzeltir; kaynak GLB'ye dokunmaz. `render_character.py`, `export_web_model.py` ve `render_preview.py` aynı ayarı kullanır. Şu an yalnızca `kara_yargic` tanımlı (mat, koyu kömür/kahve).
+Görselden-3D araçları bazı karakterlerde fazla parlak lake/vinil üretir. `art/tools/render_character.py` içindeki `OUTFIT_TWEAKS` karakter başına pürüzlülük, metal ve taban rengini bellekte düzeltir; kaynak GLB'ye dokunmaz. `render_character.py`, `export_web_model.py` ve `render_preview.py` aynı ayarı kullanır. Tanımlı olanlar: `kara_yargic` (mat, koyu kömür/kahve), `kul_avcisi`, `kizil_devre`, `engizitor_hanim` (hafif mat; renkler korunur), `mavi_rozet` (göğüs yamasındaki bozuk yazıyı dokudan siler, `erase`). `neon_kuzgun` parçalı modeldir ve pürüzlülüğü zaten sabit 0,9; parlaklığı dokuya pişmiş olduğundan bu yöntemle düzelmez.
+
+## Yeniden üretim
+
+`art/tools/rebuild_character.sh <id> [--pose] [--sprites]` bir karakterin web GLB'sini, thumb/portrait'ini ve (istenirse) sprite'larını baştan üretir. `--pose` gardırop duruşunu `art/characters/<id>/source/<id>_pose.fbx` klibinden alır; harita sprite'ları idle klibinden üretilmeye devam eder. Malzeme ayarı ya da yürüme/durma klibi değiştiyse `--sprites` gerekir.
 
 ## Tasarım kuralları
 

@@ -1,10 +1,11 @@
 # Menü ve gardıroptaki gerçek zamanlı 3D gösterim için karakteri tarayıcıya uygun GLB'ye çevirir:
-#   - Mixamo durma animasyonlu iskelet + gövde (<id>_idle.fbx)
+#   - Mixamo durma animasyonlu iskelet + gövde (varsayılan <id>_idle.fbx; --clip pose ile <id>_pose.fbx,
+#     yani gardırop duruşu harita durma sprite'larından ayrı seçilebilir)
 #   - malzemeler görselden-3D aracının orijinal modelinden (render_character.py ile aynı)
 #   - yalnızca dikişsiz döngü aralığı (best_idle_loop) dışa aktarılır
 #
 # Kullanım:
-#   blender -b -P art/tools/export_web_model.py -- --outfit engizitor
+#   blender -b -P art/tools/export_web_model.py -- --outfit engizitor [--clip pose]
 #   npx @gltf-transform/cli optimize art/characters/<id>/web/<id>.glb \
 #       frontend/public/characters/<id>/model.glb --compress meshopt --texture-compress webp --texture-size 2048
 #
@@ -29,6 +30,11 @@ from render_character import (  # noqa: E402
 argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 p = argparse.ArgumentParser()
 p.add_argument("--outfit", required=True)
+p.add_argument(
+    "--clip",
+    default="idle",
+    help="Kullanılacak Mixamo klibi: source/<id>_<clip>.fbx (varsayılan idle; gardırop duruşu için pose)",
+)
 args = p.parse_args(argv)
 
 src = os.path.join(ROOT, "art", "characters", args.outfit, "source")
@@ -39,7 +45,10 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
 scene.render.fps = 30
 
-arm, meshes = import_fbx(os.path.join(src, f"{args.outfit}_idle.fbx"))
+clip_path = os.path.join(src, f"{args.outfit}_{args.clip}.fbx")
+if not os.path.exists(clip_path):
+    sys.exit(f"Klip bulunamadı: {clip_path}")
+arm, meshes = import_fbx(clip_path)
 idle_action = take_action(arm)
 mats = glb_materials(os.path.join(src, f"{args.outfit}_model.glb"), args.outfit)
 for m in meshes:
