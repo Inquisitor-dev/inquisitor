@@ -228,7 +228,8 @@
 }
 
 /* Olay yeri: ceset karenin ortasındadır; sohbet penceresinin altında kalmasın diye görsel
-   yukarı kaydırılır (üstteki gökyüzü/tavan kırpılır) */
+   yukarı kaydırılır (üstteki gökyüzü/tavan kırpılır). Bedeni aşağıda kalan görsellerde kayma
+   daha büyüktür, satır içi stille verilir (config/crimeScenes.ts getCrimeSceneShift) */
 .crimeSceneImg {
   position: relative;
   top: -20%;
