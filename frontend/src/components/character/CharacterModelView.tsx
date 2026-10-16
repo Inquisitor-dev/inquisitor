@@ -6,15 +6,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import styles from './CharacterTurntable.module.scss';
+import { TurntableMotion, type MotionCommand } from './turntableMotion';
 
-// Bir tam tur süresi (sn), kendi kendine dönerken
-const AUTO_TURN_SECONDS = 14;
 // Sürüklerken bir piksel başına dönüş (radyan)
 const DRAG_RAD_PER_PX = 0.012;
-// Bırakıldıktan sonra kendi kendine dönmeye devam etmeden önce beklenen süre (ms)
-const RESUME_DELAY = 1800;
-// Bırakılan dönüşün saniyedeki sönümü (1'e yakın = uzun süzülme)
-const SPIN_DAMPING = 0.04;
+// Animasyona girerken ve dinlenme pozuna dönerken geçiş süresi (sn)
+const FADE_IN_SECONDS = 0.3;
+const FADE_OUT_SECONDS = 0.5;
 // Karakter boyu sahne biriminde; kamera buna göre kadrajlanır
 const MODEL_HEIGHT = 1.8;
 // Dar açılı (≈85 mm) kamera: perspektif bozulmadan derinlik verir
@@ -55,13 +53,15 @@ function setupLights(scene: THREE.Scene) {
   scene.add(rimGold);
 }
 
-// Menüdeki ve gardıroptaki gerçek zamanlı 3D karakter: durma animasyonuyla yavaşça döner,
-// sürüklenince elle çevrilir, bırakınca süzülerek yavaşlar.
+// Menüdeki ve gardıroptaki gerçek zamanlı 3D karakter: yüzü oyuncuya dönükken animasyonunu bir kez
+// oynatır, sonra animasyonsuz bir tur atar (turntableMotion.ts). Sürüklenince elle çevrilir.
 export default function CharacterModelView({ src, className = '', alt, onError }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const drag = useRef<{ x: number; t: number } | null>(null);
-  const spin = useRef({ yaw: 0, velocity: 0, resumeAt: 0 });
+  const motion = useRef<TurntableMotion | null>(null);
+  // Hareketin istediği animasyon komutunu uygular (yükleme sonrası kurulur)
+  const applyCommand = useRef<(command: MotionCommand) => void>(() => {});
   const onErrorRef = useRef(onError);
 
   useEffect(() => {
@@ -126,6 +126,8 @@ export default function CharacterModelView({ src, className = '', alt, onError }
     intersection.observe(container);
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const turntable = new TurntableMotion(reduceMotion);
+    motion.current = turntable;
     let mixer: THREE.AnimationMixer | null = null;
     const timer = new THREE.Timer();
     timer.connect(document);
@@ -152,9 +154,31 @@ export default function CharacterModelView({ src, className = '', alt, onError }
         });
 
         if (gltf.animations.length) {
-          mixer = new THREE.AnimationMixer(model);
-          mixer.clipAction(gltf.animations[0]).play();
-          mixer.update(0);
+          const clip = gltf.animations[0];
+          const animMixer = new THREE.AnimationMixer(model);
+          mixer = animMixer;
+          // Dinlenme pozu klibin ilk karesidir; tur bu pozla atılır
+          const rest = animMixer.clipAction(THREE.AnimationUtils.subclip(clip, 'rest', 0, 1));
+          const play = animMixer.clipAction(clip);
+          play.setLoop(THREE.LoopOnce, 1);
+          play.clampWhenFinished = true;
+          rest.play();
+          animMixer.update(0);
+
+          const fade = (from: THREE.AnimationAction, to: THREE.AnimationAction, seconds: number) => {
+            to.reset();
+            to.play();
+            from.crossFadeTo(to, seconds, false);
+          };
+          // Bitmiş (son karede duran) klip de geçişle dinlenme pozuna bırakılır
+          applyCommand.current = (command) => {
+            if (command === 'play') fade(rest, play, FADE_IN_SECONDS);
+            else if (command === 'rest') fade(play, rest, FADE_OUT_SECONDS);
+          };
+          animMixer.addEventListener('finished', (e) => {
+            if (e.action === play) applyCommand.current(turntable.clipFinished());
+          });
+          turntable.setClip(clip.duration);
         }
 
         // Ayaklar y=0'da, gövde ortada, boy MODEL_HEIGHT olacak şekilde ölçekle
@@ -182,18 +206,13 @@ export default function CharacterModelView({ src, className = '', alt, onError }
       timer.update(now);
       if (!visible) return;
       const dt = Math.min(timer.getDelta(), 0.1);
-      const s = spin.current;
-      if (!drag.current) {
-        if (Math.abs(s.velocity) > 0.01) {
-          // Bırakılan dönüş süzülerek yavaşlar
-          s.yaw += s.velocity * dt;
-          s.velocity *= Math.pow(SPIN_DAMPING, dt);
-        } else if (!reduceMotion && now >= s.resumeAt) {
-          s.yaw += (dt * Math.PI * 2) / AUTO_TURN_SECONDS;
-        }
-      }
-      pivot.rotation.y = s.yaw;
+      // Model yüklenmeden hareket başlamaz (önde bekleme yükleme sırasında tükenmesin)
+      if (!pivot.children.length) return;
+      applyCommand.current(turntable.update(dt));
+      pivot.rotation.y = turntable.yaw;
       if (mixer && !reduceMotion) mixer.update(dt);
+      // Uçtan uca testler ve hata ayıklama için o anki aşama
+      if (container.dataset.motion !== turntable.phase) container.dataset.motion = turntable.phase;
       renderer.render(scene, camera);
     };
     raf = requestAnimationFrame(tick);
@@ -205,6 +224,8 @@ export default function CharacterModelView({ src, className = '', alt, onError }
       intersection.disconnect();
       timer.dispose();
       mixer?.stopAllAction();
+      applyCommand.current = () => {};
+      motion.current = null;
       disposeObject(scene);
       envMap.dispose();
       renderer.dispose();
@@ -217,7 +238,8 @@ export default function CharacterModelView({ src, className = '', alt, onError }
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.current = { x: e.clientX, t: performance.now() };
-    spin.current.velocity = 0;
+    // Oynayan animasyon dinlenme pozuna döner
+    if (motion.current) applyCommand.current(motion.current.beginDrag());
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
@@ -226,17 +248,15 @@ export default function CharacterModelView({ src, className = '', alt, onError }
     const delta = (e.clientX - drag.current.x) * DRAG_RAD_PER_PX;
     const dt = Math.max((now - drag.current.t) / 1000, 1 / 240);
     // Sağa sürükleyince karakterin önü sağa döner
-    spin.current.yaw += delta;
-    spin.current.velocity = delta / dt;
+    motion.current?.dragBy(delta, delta / dt);
     drag.current = { x: e.clientX, t: now };
   };
 
   const endDrag = () => {
     if (!drag.current) return;
     // Parmak kalktıktan sonra bir süre hareket etmediyse savurma yok
-    if (performance.now() - drag.current.t > 80) spin.current.velocity = 0;
+    motion.current?.endDrag(performance.now() - drag.current.t <= 80);
     drag.current = null;
-    spin.current.resumeAt = performance.now() + RESUME_DELAY;
   };
 
   return (
