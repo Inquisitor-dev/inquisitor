@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { lastDayOf } from '../abilities/abilities';
 import type { CaseFacts } from '../scenarios/case-setup';
 
 // Oturumu sadece sahibine verir. Başkasının oturumu da "bulunamadı" döner;
@@ -20,6 +21,7 @@ export async function findOwnedSession(
 
 // Aktif oturumda suçlu, gerçek hikaye, mekan ipuçları ve vaka gerçekleri oyuncuya gönderilmez:
 // tarayıcının ağ sekmesinden okunup vakanın cevabını ele verirler. Oyun bitince açılırlar.
+// Vakanın son günü (lastDay) her cevapta gider: istemci "4. gün" varsaymaz (İkinci Nefes vakayı uzatabilir).
 export function toPublicSession<
   T extends {
     status: string;
@@ -27,14 +29,17 @@ export function toPublicSession<
     truthReveal?: unknown;
     locationClues?: unknown;
     caseFacts?: unknown;
+    abilityState?: unknown;
   },
 >(session: T) {
   const crimeScene = publicCrimeScene(session.caseFacts);
-  if (session.status !== 'ACTIVE') return { ...session, crimeScene };
+  // Vakanın son günü (lastDay) her cevapta gider: İkinci Nefes vakayı uzatabilir
+  const lastDay = lastDayOf(session.abilityState);
+  if (session.status !== 'ACTIVE') return { ...session, crimeScene, lastDay };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { culpritId, truthReveal, locationClues, caseFacts, ...publicSession } =
     session;
-  return { ...publicSession, crimeScene };
+  return { ...publicSession, crimeScene, lastDay };
 }
 
 // Olay yerinin hangi mekân olduğu ve görünüşü (dağınık/düzenli) cevabı ele vermez: oyuncu ikisini de

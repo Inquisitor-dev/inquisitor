@@ -24,9 +24,23 @@ import {
 } from './prompt-builder';
 import { buildTestReply } from './test-reply.builder';
 import { recordEvidence } from './evidence-recorder';
-import { parseAbilityState } from '../abilities/abilities';
-import { chargedMessages, isQuietRoom } from '../abilities/ability-effects';
+import { Prisma } from '@prisma/client';
+import {
+  availability,
+  findAbility,
+  parseAbilityState,
+  recordUse,
+} from '../abilities/abilities';
+import {
+  chargedMessages,
+  isDreamActive,
+  isQuietRoom,
+} from '../abilities/ability-effects';
+import type { VerifiedStatement } from './prompt-builder';
 
+
+// Teyit'te okunan sözün en fazla uzunluğu (karakter)
+const QUOTE_MAX_LENGTH = 300;
 
 @Injectable()
 export class NpcsService {
@@ -143,11 +157,104 @@ export class NpcsService {
     });
   }
 
+  // Teyit (Gece Muhabiri) için seçilebilecek sözler: oyuncunun duyduğu şüpheli cevapları
+  // (anlatıcı ve konuşulan kişinin kendi sözü hariç), en yeniden eskiye
+  async quoteCandidates(sessionId: string, listenerNpcId: string) {
+    const session = await this.prisma.gameSession.findUniqueOrThrow({
+      where: { id: sessionId },
+    });
+    const config = getScenarioConfig(session.scenarioType, session.difficulty);
+    const rows = await this.prisma.dialogueHistory.findMany({
+      where: {
+        sessionId,
+        speaker: 'NPC',
+        npcId: { not: listenerNpcId },
+        NOT: { npcId: { startsWith: 'narrator_' } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      select: { id: true, npcId: true, message: true, dayNumber: true },
+    });
+    return rows
+      .filter((row) => row.message.trim().length >= 15)
+      .map((row) => ({
+        id: row.id,
+        npcId: row.npcId,
+        name:
+          config.npcDefinitions.find((npc) => npc.id === row.npcId)?.name ??
+          row.npcId,
+        text: row.message.trim().slice(0, QUOTE_MAX_LENGTH),
+        day: row.dayNumber,
+      }));
+  }
+
+  // Teyit kullanılabilir mi (kota harcanmadan önce controller çağırır)
+  async assertVerifiable(sessionId: string, listenerNpcId: string, quoteId: string) {
+    if (listenerNpcId.startsWith('narrator_') || listenerNpcId === 'crime_scene') {
+      throw new BadRequestException('Söz sadece şüphelilere okunabilir.');
+    }
+    const session = await this.prisma.gameSession.findUniqueOrThrow({
+      where: { id: sessionId },
+    });
+    const ability = findAbility('verify_quote')!;
+    const check = availability(session, ability);
+    if (!check.available) throw new BadRequestException(check.reason);
+
+    const quote = await this.prisma.dialogueHistory.findFirst({
+      where: { id: quoteId, sessionId, speaker: 'NPC' },
+    });
+    if (
+      !quote ||
+      quote.npcId.startsWith('narrator_') ||
+      quote.npcId === listenerNpcId
+    ) {
+      throw new BadRequestException(
+        'Bu söz başka bir şüphelinin sana söylediği bir söz olmalı.',
+      );
+    }
+    return { session, quote };
+  }
+
+  // Teyit: bir şüphelinin gerçekten söylediği söz başka bir şüpheliye okunur; söz gerçek olduğu için
+  // karakter onu blöf diye geçiştiremez. Korkuyu değiştirmez.
+  async verifyQuote(sessionId: string, listenerNpcId: string, quoteId: string) {
+    const { session, quote } = await this.assertVerifiable(
+      sessionId,
+      listenerNpcId,
+      quoteId,
+    );
+    const config = getScenarioConfig(session.scenarioType, session.difficulty);
+    const speakerName =
+      config.npcDefinitions.find((npc) => npc.id === quote.npcId)?.name ??
+      quote.npcId;
+    const text = quote.message.trim().slice(0, QUOTE_MAX_LENGTH);
+
+    const result = await this.interact(
+      sessionId,
+      listenerNpcId,
+      `*${speakerName} bana şunu söyledi:* “${text}”`,
+      undefined,
+      { speakerName, text },
+    );
+
+    const state = recordUse(
+      parseAbilityState(session.abilityState),
+      'verify_quote',
+      session.currentDay,
+    );
+    await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: { abilityState: state as unknown as Prisma.InputJsonValue },
+    });
+    return result;
+  }
+
   async interact(
     sessionId: string,
     npcId: string,
     userMessage: string,
     confrontation?: NpcConfrontation,
+    verifiedStatement?: VerifiedStatement,
   ) {
     const state = await this.loadState(sessionId, npcId);
 
@@ -226,6 +333,14 @@ export class NpcsService {
         currentState.session.currentDay,
       );
 
+    // Rüya Tabiri (Kar Kâhini): o gün tanık sorulmasa da anlatır
+    const dreamActive =
+      !isNarrator &&
+      isDreamActive(
+        parseAbilityState(currentState.session.abilityState),
+        currentState.session.currentDay,
+      );
+
     const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
     // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
     const isInjectionAttempt =
@@ -277,6 +392,8 @@ export class NpcsService {
       confrontation,
       warrantDecision,
       quietRoom,
+      dreamActive,
+      verifiedStatement,
     });
 
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
@@ -316,7 +433,9 @@ export class NpcsService {
               ? 'NARRATOR'
               : confrontation
                 ? 'CONFRONT'
-                : 'NPC_REPLY',
+                : verifiedStatement
+                  ? 'VERIFY_QUOTE'
+                  : 'NPC_REPLY',
             sessionId,
           },
         );
@@ -349,6 +468,10 @@ export class NpcsService {
     // eşik aşıldığında ise itiraf her zaman kaydedilir (Not defterine de düşer)
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);
     else extracted.tags.delete(EVIDENCE_TAG.confession);
+    // Rüya Tabiri: tanık o gün konuştuysa tanıklık kaydedilir (metin yine vaka kaydından gelir)
+    if (dreamActive && !isGreetingSignal && !isInjectionAttempt) {
+      extracted.tags.add(EVIDENCE_TAG.verification);
+    }
     const newEvidence = await recordEvidence(
       this.prisma,
       sessionId,

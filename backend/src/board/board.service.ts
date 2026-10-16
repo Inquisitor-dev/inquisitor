@@ -25,6 +25,13 @@ const EMPTY_BOARD: BoardState = { cards: [], strings: [] };
 // Yapay zekâya giden kanıt alıntısının uzunluğu
 const EXCERPT_LENGTH = 90;
 
+import { parseAbilityState } from '../abilities/abilities';
+import {
+  canThinkAgain,
+  thoughtLimit,
+  thoughtsToday,
+} from '../abilities/ability-effects';
+
 type OwnedSession = Awaited<ReturnType<typeof findOwnedSession>>;
 
 @Injectable()
@@ -36,11 +43,16 @@ export class BoardService {
     private readonly llm: LlmService,
   ) {}
 
-  // Düşün günde bir kez: aynı gün tekrar düşünülemez, gece de olsa
+  // Düşün günde bir kez (Derin Tefekkür'lü Ak Turna günde iki kez); gece de olsa
   private canThink(session: OwnedSession) {
     return (
       session.status === 'ACTIVE' &&
-      session.boardThoughtDay !== session.currentDay
+      canThinkAgain(
+        session.characterId,
+        parseAbilityState(session.abilityState),
+        session.boardThoughtDay,
+        session.currentDay,
+      )
     );
   }
 
@@ -203,18 +215,31 @@ export class BoardService {
     }
 
     const judgedBoard = applyVerdicts(board, judged);
+    const abilityState = parseAbilityState(session.abilityState);
+    const thinkCount =
+      thoughtsToday(abilityState, session.boardThoughtDay, session.currentDay) +
+      1;
+    const nextState = {
+      ...abilityState,
+      thoughts: { day: session.currentDay, count: thinkCount },
+    };
     await this.prisma.gameSession.update({
       where: { id: sessionId },
       data: {
         boardState: judgedBoard as unknown as Prisma.InputJsonValue,
         boardThought: thought,
         boardThoughtDay: session.currentDay,
+        abilityState: nextState as unknown as Prisma.InputJsonValue,
       },
     });
     this.logger.log(
       `Board thought for ${sessionId}: ${judged.filter((j) => j.verdict === 'CORRECT').length}/${judged.length} correct`,
     );
 
-    return { board: judgedBoard, thought, canThink: false };
+    return {
+      board: judgedBoard,
+      thought,
+      canThink: thinkCount < thoughtLimit(session.characterId),
+    };
   }
 }

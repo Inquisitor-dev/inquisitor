@@ -30,11 +30,13 @@ import {
   Briefcase,
   Scale,
   ListChecks,
+  Quote,
 } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
 import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
 import ConfrontModal from './components/ConfrontModal/ConfrontModal';
+import QuoteModal, { type QuoteOption } from './components/QuoteModal/QuoteModal';
 import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
 import styles from './NpcDialogueScreen.module.scss';
 import { useAbilities } from '@/features/abilities/useAbilities';
@@ -78,6 +80,9 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     sessionId,
     setCurrentDay,
     currentDay,
+    lastDay,
+    applySecondBreath,
+    setTimeOfDay,
     timeOfDay,
     setNotes,
     authToken,
@@ -149,8 +154,10 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
+  const [isQuotePickerOpen, setIsQuotePickerOpen] = useState(false);
   const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
   const abilities = useAbilities(sessionId);
+  const teyit = abilities.abilities.find((a) => a.id === 'verify_quote');
   const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
@@ -441,6 +448,39 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   };
 
+  // Teyit (Gece Muhabiri): başka bir şüphelinin sözünü bu şüpheliye okur
+  const handleVerifyQuote = async (quote: QuoteOption) => {
+    if (loading || !sessionId) return;
+    setIsQuotePickerOpen(false);
+    setMessages((prev) => [
+      ...prev,
+      { role: 'player', text: `*${quote.name} bana şunu söyledi:* “${quote.text}”`, timestamp: new Date() },
+    ]);
+    setLoading(true);
+    try {
+      const data = await api.post<{
+        reply?: string;
+        newEvidence?: EvidenceItem[];
+        notes?: string;
+        fear?: { level: number; band: FearBand } | null;
+      }>('/npcs/verify-quote', { sessionId, npcId: npcKey, quoteId: quote.id });
+      if (data.reply) {
+        setMessages((prev) => [...prev, { role: 'npc', text: data.reply!, timestamp: new Date() }]);
+        incrementDialogue();
+        applyTurnResult(data);
+      }
+      abilities.refresh();
+    } catch (err) {
+      const text =
+        err instanceof ApiError
+          ? `*[${err.message}]*`
+          : '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*';
+      setMessages((prev) => [...prev, { role: 'npc', text, timestamp: new Date() }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCondemn = () => {
     if (!sessionId) return;
 
@@ -452,11 +492,22 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
           const data = await api.post<{
-            session?: { truthReveal?: string; locationClues?: Record<string, string> };
+            session?: { truthReveal?: string; locationClues?: Record<string, string>; lastDay?: number; timeOfDay?: number };
             reward?: { tokens?: number; score?: number };
             won?: boolean;
+            spared?: boolean;
+            clearedNpcId?: string;
             message?: string;
           }>(`/game-sessions/${sessionId}/condemn`, { npcId: actualNpcKey });
+
+          // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır, gün kapanır
+          if (data.spared && data.clearedNpcId) {
+            applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
+            if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
+            abilities.refresh();
+            router.push('/map');
+            return;
+          }
 
           if (data.session && data.session.truthReveal) {
             useGameStore.getState().setTruthReveal(data.session.truthReveal);
@@ -702,6 +753,18 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                   </button>
                 )}
 
+                {!isInvestigating && !isCrimeScene && teyit?.available && (
+                  <button
+                    className={styles.utilityBtn}
+                    onClick={() => setIsQuotePickerOpen(true)}
+                    disabled={loading}
+                    title="Bir şüphelinin sözünü bu kişiye oku"
+                  >
+                    <Quote size={13} />
+                    <span>Teyit</span>
+                  </button>
+                )}
+
                 {!isInvestigating && !isCrimeScene && (
                   <AbilityControls
                     abilities={abilities}
@@ -803,6 +866,16 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         loading={loading}
         onConfront={handleConfront}
         evidenceSource={evidenceSource}
+      />
+
+      <QuoteModal
+        isOpen={isQuotePickerOpen}
+        onClose={() => setIsQuotePickerOpen(false)}
+        sessionId={sessionId}
+        npcId={npcKey}
+        npcName={profile.name}
+        loading={loading}
+        onPick={handleVerifyQuote}
       />
 
       {/* ─── ONAY MODALI ─── */}

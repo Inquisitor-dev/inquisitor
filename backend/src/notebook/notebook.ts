@@ -74,7 +74,8 @@ export const MAX_STROKE_POINTS = 120;
 export const MAX_NOTEBOOK_TEXT = 600;
 export const MAX_PHOTO_CAPTION = 160;
 export const MAX_PHOTO_TILT = 8;
-export const NOTEBOOK_DAYS = 4;
+// En fazla gün: vaka 4 gündür, İkinci Nefes (Yeşim Hekim) bir gün uzatabilir
+export const NOTEBOOK_DAYS = 5;
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;
 

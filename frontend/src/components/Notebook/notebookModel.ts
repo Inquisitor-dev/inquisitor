@@ -75,7 +75,8 @@ export interface NotebookRecord {
   text: string;
 }
 
-export const NOTEBOOK_DAYS = 4;
+// En fazla gün: vaka 4 gündür, İkinci Nefes (Yeşim Hekim) bir gün uzatabilir
+export const NOTEBOOK_DAYS = 5;
 export const MAX_TEXT_LENGTH = 600;
 export const DEFAULT_TEXT_WIDTH = 55;
 export const MAX_CAPTION_LENGTH = 160;

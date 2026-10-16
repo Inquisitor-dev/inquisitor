@@ -57,6 +57,8 @@ interface ActiveSession {
   difficulty?: string;
   activeWarrants?: string[];
   usedWarrants?: string[];
+  lastDay?: number;
+  abilityState?: { secondBreath?: { clearedNpcId?: string } };
   crimeScene?: CrimeSceneInfo | null;
 }
 
@@ -66,6 +68,7 @@ export default function HomePage() {
     setSessionId,
     setScenario,
     setCurrentDay,
+    setCaseProgress,
     setTimeOfDay,
     setNotes,
     setWarrants,
@@ -346,6 +349,8 @@ export default function HomePage() {
       if (activeSession.scenarioType) setScenarioType(activeSession.scenarioType);
       if (activeSession.scenario) setScenario(activeSession.scenario);
       if (activeSession.currentDay) setCurrentDay(activeSession.currentDay);
+      const cleared = activeSession.abilityState?.secondBreath?.clearedNpcId;
+      setCaseProgress(activeSession.lastDay, cleared ? [cleared] : []);
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
       if (activeSession.notes) setNotes(activeSession.notes);
       if (activeSession.difficulty) setDifficulty(activeSession.difficulty);

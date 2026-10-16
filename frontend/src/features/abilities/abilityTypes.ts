@@ -12,7 +12,12 @@ export type AbilityId =
   | 'data_leak'
   | 'pulse'
   | 'visor_lock'
-  | 'rooftop';
+  | 'rooftop'
+  | 'second_breath'
+  | 'deep_reflection'
+  | 'dream_reading'
+  | 'keen_eye'
+  | 'verify_quote';
 
 export interface AbilityInfo {
   id: AbilityId;
@@ -45,6 +50,8 @@ export interface AbilityResult {
   fear?: { npcId: string; level: number; band: string };
   pulse?: PulseRow[];
   locationId?: string;
+  // Keskin Göz: bulunup deftere geçen ipucu
+  clue?: string;
   board?: unknown;
   verdict?: 'CORRECT' | 'WRONG';
 }

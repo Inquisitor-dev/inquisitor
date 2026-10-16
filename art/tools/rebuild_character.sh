@@ -14,12 +14,13 @@
 #              model, portre ve sprite'lar değişmez.
 #
 # source/<id>_pic.fbx varsa market/gardırop görseli (thumb) o pozdan render edilir; portre duruş modelinden.
-# Her çalıştırmada: web GLB → sıkıştırma (frontend/public/characters/<id>/model.glb) → thumb + portrait → paketleme.
+# Her çalıştırmada: web GLB → sıkıştırma (frontend/public/characters/<id>/model.glb) → thumb + portrait → paketleme
+# → istemcideki CHARACTER_ASSET_VERSION güncellenir (önbellekteki eski dosyalar yerine yenileri insin).
 # BLENDER ortam değişkeniyle Blender yolu verilebilir.
 set -euo pipefail
 
 ID="${1:-}"
-[ -n "$ID" ] || { sed -n 2,18p "$0"; exit 1; }
+[ -n "$ID" ] || { sed -n 2,19p "$0"; exit 1; }
 shift
 CLIP=idle
 SPRITES=0
@@ -40,6 +41,8 @@ PUBLIC="$ROOT/frontend/public/characters/$ID"
 HAS_PIC=0
 [ -f "$CHAR/source/${ID}_pic.fbx" ] && HAS_PIC=1
 [ -d "$CHAR/source" ] || { echo "Karakter klasörü yok: $CHAR/source"; exit 1; }
+# Yeni karakterde oyun klasörü henüz yok; sıkıştırma ve render çıktıları buraya yazılır
+mkdir -p "$PUBLIC"
 if [ "$PIC_ONLY" = 1 ]; then
   [ "$HAS_PIC" = 1 ] || { echo "Klip yok: $CHAR/source/${ID}_pic.fbx"; exit 1; }
 else
@@ -81,7 +84,8 @@ echo "[5/5] Paketleme"
 import json, subprocess, sys
 p = f"frontend/public/characters/{sys.argv[1]}/manifest.json"
 try:
-    old = json.loads(subprocess.check_output(["git", "show", f"HEAD:{p}"]))
+    # Yeni karakterin manifest'i henüz git'te yok; o durumda karşılaştırılacak bir şey yok
+    old = json.loads(subprocess.check_output(["git", "show", f"HEAD:{p}"], stderr=subprocess.DEVNULL))
 except Exception:
     sys.exit(0)
 if old == json.load(open(p, encoding="utf-8")):
@@ -89,4 +93,8 @@ if old == json.load(open(p, encoding="utf-8")):
     print("manifest.json değişmedi")
 PY
 )
+# Dosya adları sabit ve bir gün önbellekte kalıyor; istemcideki sürüm eki değişince yenileri hemen iner
+VERSION="$(date +%Y-%m-%d-%H%M)"
+sed -i -E "s/(CHARACTER_ASSET_VERSION = ')[^']*'/\1$VERSION'/" "$ROOT/frontend/src/config/outfits.ts"
+echo "CHARACTER_ASSET_VERSION = $VERSION (frontend/src/config/outfits.ts)"
 echo "Bitti: $PUBLIC"

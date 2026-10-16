@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { outfitBasePath } from '@/config/outfits';
+import { outfitAsset } from '@/config/outfits';
 
 // Ekran koordinatlarında 8 yön (y aşağı doğru artar, "south" kameraya bakar).
 // Sıra açıya göredir: 0 = doğu, saat yönünde 45'er derece.
@@ -73,10 +73,10 @@ const imageCache = new Map<string, Promise<void>>();
 function loadManifest(outfitId: string): Promise<CharacterManifest> {
   let promise = manifestCache.get(outfitId);
   if (!promise) {
-    const base = outfitBasePath(outfitId);
+    const asset = (file: string) => outfitAsset(outfitId, file);
     const absolute = (sheets: Record<Direction, string>) =>
-      Object.fromEntries(DIRECTIONS.map((d) => [d, `${base}/${sheets[d]}`])) as Record<Direction, string>;
-    promise = fetch(`${base}/manifest.json`)
+      Object.fromEntries(DIRECTIONS.map((d) => [d, asset(sheets[d])])) as Record<Direction, string>;
+    promise = fetch(asset('manifest.json'))
       .then((res) => {
         if (!res.ok) throw new Error(`Karakter manifest'i yüklenemedi: ${outfitId}`);
         return res.json() as Promise<CharacterManifest>;
@@ -85,9 +85,9 @@ function loadManifest(outfitId: string): Promise<CharacterManifest> {
         ...m,
         walk: { ...m.walk, sheets: absolute(m.walk.sheets) },
         idle: { ...m.idle, sheets: absolute(m.idle.sheets) },
-        turntable: m.turntable && { ...m.turntable, src: `${base}/${m.turntable.src}` },
-        thumb: m.thumb && `${base}/${m.thumb}`,
-        model: m.model && `${base}/${m.model}`,
+        turntable: m.turntable && { ...m.turntable, src: asset(m.turntable.src) },
+        thumb: m.thumb && asset(m.thumb),
+        model: m.model && asset(m.model),
       }));
     // Hata kalıcı önbelleğe girmesin, sonraki denemede yeniden istensin
     promise.catch(() => manifestCache.delete(outfitId));

@@ -10,6 +10,8 @@ interface CondemnModalProps {
   onClose: () => void;
   scenarioType: string;
   difficulty: string;
+  // İkinci Nefes ile masum olduğu açıklananlar listede görünmez
+  excludeIds?: string[];
   onConfirmCondemn: (npcId: string) => void | Promise<void>;
 }
 
@@ -18,6 +20,7 @@ export default function CondemnModal({
   onClose,
   scenarioType,
   difficulty,
+  excludeIds = [],
   onConfirmCondemn,
 }: CondemnModalProps) {
   const [pendingVillager, setPendingVillager] = useState<SuspectOption | null>(null);
@@ -43,7 +46,9 @@ export default function CondemnModal({
 
   if (!isOpen) return null;
 
-  const suspects = getSuspectsForScenario(scenarioType, difficulty);
+  const suspects = getSuspectsForScenario(scenarioType, difficulty).filter(
+    (suspect) => !excludeIds.includes(suspect.id),
+  );
 
   const handleConfirm = async () => {
     if (!pendingVillager) return;

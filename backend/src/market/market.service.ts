@@ -205,13 +205,20 @@ export class MarketService {
   /**
    * Vaka kazanıldığında (condemn) kullanıcıya token ve puan ödülü verir.
    */
-  async awardCaseReward(userId: string, sessionId: string, dayNumber: number) {
-    const baseReward = 100;
-    const fastBonus = dayNumber <= 2 ? 50 : 0;
+  async awardCaseReward(
+    userId: string,
+    sessionId: string,
+    dayNumber: number,
+    // İkinci Nefes (Yeşim Hekim) ile çözülen vakada ödül ve puan yarıya iner, hızlı bonus yok
+    options: { halved?: boolean } = {},
+  ) {
+    const halved = options.halved === true;
+    const baseReward = halved ? 50 : 100;
+    const fastBonus = !halved && dayNumber <= 2 ? 50 : 0;
     const totalReward = baseReward + fastBonus;
 
-    const baseScore = 100;
-    const fastScoreBonus = dayNumber <= 2 ? 50 : 10;
+    const baseScore = halved ? 50 : 100;
+    const fastScoreBonus = halved ? 0 : dayNumber <= 2 ? 50 : 10;
     const totalScore = baseScore + fastScoreBonus;
 
     return await this.prisma.$transaction(async (tx) => {
@@ -245,6 +252,7 @@ export class MarketService {
             baseReward,
             fastBonus,
             scoreAwarded: totalScore,
+            halved,
           },
         },
       });

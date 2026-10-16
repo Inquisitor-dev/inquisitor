@@ -13,9 +13,10 @@ const RARITY_LABELS: Record<Outfit['rarity'], string> = {
   legendary: 'Efsanevi',
 };
 
-// "Yakında aktif" rozeti bir blokta yalnızca bir kez gösterilir
-function SoonBadge() {
-  return ABILITIES_LIVE ? null : <span className={styles.soon}>Yakında aktif</span>;
+// "Yakında aktif" rozeti bir blokta yalnızca bir kez gösterilir. Tek tek karakterin yetenekleri de
+// henüz yazılmamışsa (pending) rozet görünür.
+function SoonBadge({ pending }: { pending?: boolean }) {
+  return ABILITIES_LIVE && !pending ? null : <span className={styles.soon}>Yakında aktif</span>;
 }
 
 function AbilityCard({
@@ -66,7 +67,7 @@ export default function OutfitStory({
     <div className={`${styles.block} ${className}`}>
       <div className={styles.blockHead}>
         <span className={styles.blockLabel}>{data.abilities.length > 1 ? 'Yetenekler' : 'Yetenek'}</span>
-        <SoonBadge />
+        <SoonBadge pending={data.pending} />
       </div>
       <div className={styles.abilities}>
         {compact ? (
@@ -138,7 +139,7 @@ function StoryModal({ outfit, onClose }: { outfit: Outfit; onClose: () => void }
         <section className={styles.section}>
           <div className={styles.sectionHead}>
             <h3 className={styles.sectionTitle}>{data.abilities.length > 1 ? 'Yetenekler' : 'Yetenek'}</h3>
-            <SoonBadge />
+            <SoonBadge pending={data.pending} />
           </div>
           {data.abilities.map((ability) => (
             <AbilityCard key={ability.name} ability={ability} detailed />

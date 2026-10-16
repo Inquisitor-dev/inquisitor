@@ -5,6 +5,7 @@ import {
   abilitiesFor,
   availability,
   findAbility,
+  lastDayOf,
   parseAbilityState,
   recordUse,
 } from './abilities';
@@ -40,6 +41,37 @@ describe('yetenek tanımları', () => {
 });
 
 describe('availability', () => {
+  it('Rüya Tabiri ve Keskin Göz gece kullanılamaz', () => {
+    expect(
+      availability(
+        session({ characterId: 'kar_kahini', timeOfDay: 4 }),
+        ability('dream_reading'),
+      ).available,
+    ).toBe(false);
+    expect(
+      availability(
+        session({ characterId: 'ayaz_izcisi', timeOfDay: 1 }),
+        ability('keen_eye'),
+      ).available,
+    ).toBe(true);
+  });
+
+  it('vaka 4 gündür; İkinci Nefes son günde uzatırsa 5', () => {
+    expect(lastDayOf(null)).toBe(4);
+    expect(
+      lastDayOf({
+        uses: {},
+        secondBreath: { clearedNpcId: 'x', extended: true },
+      }),
+    ).toBe(5);
+    expect(
+      lastDayOf({
+        uses: {},
+        secondBreath: { clearedNpcId: 'x', extended: false },
+      }),
+    ).toBe(4);
+  });
+
   it('günlük yetenek aynı gün ikinci kez kullanılamaz, ertesi gün kullanılır', () => {
     const used = recordUse({ uses: {} }, 'threat', 2);
     expect(

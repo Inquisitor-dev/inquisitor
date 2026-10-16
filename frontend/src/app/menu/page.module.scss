@@ -1140,6 +1140,20 @@ $panel-border: rgba(138, 3, 3, 0.28);
 }
 
 /* DUYARLI YERLEŞİM */
+// Kısa masaüstü ekranları (ör. 1440×900): karakter paneli en uzun sütun olduğu için üst boşluk ve
+// sahne küçülür; vaka panelinin düğmeleri kaydırmadan görünür. Üst boşluk sahnenin taşma payına
+// eşitlenir, böylece karakterin başı navbar'ın altında kalmaz.
+@media (min-width: 1181px) and (max-height: 960px) {
+  .lobby {
+    padding-top: calc(clamp(100px, 17vh, 200px) + 20px);
+  }
+
+  .characterPanel {
+    --stage-h: clamp(300px, 42vh, 480px);
+    --stage-rise: clamp(100px, 17vh, 200px);
+  }
+}
+
 @media (max-width: 1180px) {
   .lobby {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1203,6 +1217,17 @@ $panel-border: rgba(138, 3, 3, 0.28);
   }
 }
 
+// Telefonda başlık yazısı jeton rozetinin altına giriyordu; mühür logosu kalır
+@media (max-width: 480px) {
+  .navTitle {
+    display: none;
+  }
+
+  .navRight {
+    gap: 8px;
+  }
+}
+
 /* ===========================
    KILAVUZ VE AYARLAR PENCERELERİ
    =========================== */
@@ -1222,15 +1247,9 @@ $panel-border: rgba(138, 3, 3, 0.28);
   animation: sheetIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   scrollbar-width: thin;
   scrollbar-color: rgba(138, 3, 3, 0.5) transparent;
-
-  /* İç çerçeve */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 8px;
-    border: 1px solid rgba(232, 220, 196, 0.06);
-    pointer-events: none;
-  }
+  /* İç çerçeve: içerik kaydırılınca onunla kaymasın diye kutunun kenarına bağlı outline */
+  outline: 1px solid rgba(232, 220, 196, 0.06);
+  outline-offset: -9px;
 }
 
 @keyframes sheetIn {

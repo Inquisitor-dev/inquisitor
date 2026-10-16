@@ -13,7 +13,12 @@ export type AbilityId =
   | 'data_leak'
   | 'pulse'
   | 'visor_lock'
-  | 'rooftop';
+  | 'rooftop'
+  | 'second_breath'
+  | 'deep_reflection'
+  | 'dream_reading'
+  | 'keen_eye'
+  | 'verify_quote';
 
 // DAILY: oyun gününde bir kez, CASE: vakada bir kez, PASSIVE: kendiliğinden çalışır
 export type AbilityLimit = 'DAILY' | 'CASE' | 'PASSIVE';
@@ -30,7 +35,7 @@ export interface AbilityDef {
 
 export const DEFAULT_CHARACTER_ID = 'engizitor';
 
-// Gardıroptaki 11 karakter; id'ler frontend config/outfits.ts ve market-catalog.ts ile aynı
+// Gardıroptaki 16 karakter; id'ler frontend config/outfits.ts ve market-catalog.ts ile aynı
 export const CHARACTER_IDS = [
   'engizitor',
   'engizitor_hanim',
@@ -43,6 +48,11 @@ export const CHARACTER_IDS = [
   'kizil_devre',
   'mavi_rozet',
   'neon_kuzgun',
+  'yesim_hekim',
+  'ak_turna',
+  'kar_kahini',
+  'ayaz_izcisi',
+  'gece_muhabiri',
 ] as const;
 
 export const ABILITIES: AbilityDef[] = [
@@ -130,11 +140,48 @@ export const ABILITIES: AbilityDef[] = [
     limit: 'DAILY',
     target: 'location',
   },
+  // Hüküm anında kendiliğinden devreye girer (vakada bir kez); düğmesi yok
+  {
+    id: 'second_breath',
+    characterId: 'yesim_hekim',
+    name: 'İkinci Nefes',
+    limit: 'PASSIVE',
+    target: 'none',
+  },
+  {
+    id: 'deep_reflection',
+    characterId: 'ak_turna',
+    name: 'Derin Tefekkür',
+    limit: 'PASSIVE',
+    target: 'none',
+  },
+  {
+    id: 'dream_reading',
+    characterId: 'kar_kahini',
+    name: 'Rüya Tabiri',
+    limit: 'DAILY',
+    target: 'none',
+  },
+  {
+    id: 'keen_eye',
+    characterId: 'ayaz_izcisi',
+    name: 'Keskin Göz',
+    limit: 'DAILY',
+    target: 'location',
+  },
+  {
+    id: 'verify_quote',
+    characterId: 'gece_muhabiri',
+    name: 'Teyit',
+    limit: 'DAILY',
+    target: 'npc',
+  },
 ];
 
-// Günün son dilimi (gece) ve vakanın son günü
+// Günün son dilimi (gece) ve vakanın normal uzunluğu. İkinci Nefes son günde kullanılırsa vaka bir gün uzar.
 export const NIGHT = 4;
-export const LAST_DAY = 4;
+export const CASE_DAYS = 4;
+export const LAST_DAY = CASE_DAYS;
 
 // Oturumda saklanan yetenek durumu (GameSession.abilityState)
 export interface AbilityState {
@@ -148,7 +195,17 @@ export interface AbilityState {
   rooftop?: { locationId: string; day: number };
   // Çatı Geçişi'nin bedeli: bu günün sabahı kaybedilir
   lostMorningDay?: number;
+  // İkinci Nefes (Yeşim Hekim): yanlış hükümde aklanan şüpheli; vaka uzadıysa extended
+  secondBreath?: { clearedNpcId: string; extended: boolean };
+  // Derin Tefekkür (Ak Turna): o gün panoda kaç kez düşünüldü
+  thoughts?: { day: number; count: number };
+  // Rüya Tabiri (Kar Kâhini): etkinin geçerli olduğu gün
+  dreamDay?: number;
 }
+
+// Vakanın son günü; İkinci Nefes son günde kullanıldıysa 5
+export const lastDayOf = (abilityState: unknown): number =>
+  CASE_DAYS + (parseAbilityState(abilityState).secondBreath?.extended ? 1 : 0);
 
 export const findAbility = (id: string): AbilityDef | undefined =>
   ABILITIES.find((ability) => ability.id === id);
@@ -193,6 +250,18 @@ export function parseAbilityState(value: unknown): AbilityState {
   }
   if (Number.isInteger(raw.lostMorningDay))
     state.lostMorningDay = raw.lostMorningDay as number;
+  const breath = raw.secondBreath as AbilityState['secondBreath'];
+  if (typeof breath?.clearedNpcId === 'string') {
+    state.secondBreath = {
+      clearedNpcId: breath.clearedNpcId,
+      extended: breath.extended === true,
+    };
+  }
+  const thoughts = raw.thoughts as AbilityState['thoughts'];
+  if (Number.isInteger(thoughts?.day) && Number.isInteger(thoughts?.count)) {
+    state.thoughts = { day: thoughts!.day, count: thoughts!.count };
+  }
+  if (Number.isInteger(raw.dreamDay)) state.dreamDay = raw.dreamDay as number;
   return state;
 }
 
@@ -240,7 +309,13 @@ export function availability(
     return no('Bu yeteneği bu vakada zaten kullandın.');
 
   const isNight = session.timeOfDay >= NIGHT;
-  if (ability.id === 'backstage' && isNight) return no('Gece kullanılamaz.');
+  if (
+    (ability.id === 'backstage' ||
+      ability.id === 'dream_reading' ||
+      ability.id === 'keen_eye') &&
+    isNight
+  )
+    return no('Gece kullanılamaz.');
   if (ability.id === 'rooftop') {
     if (!isNight) return no('Yalnızca gece kullanılabilir.');
     if (session.currentDay >= LAST_DAY)

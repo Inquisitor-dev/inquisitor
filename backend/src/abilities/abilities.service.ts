@@ -11,7 +11,8 @@ import {
 } from '../scenarios/scenario-config';
 import { CaseFacts } from '../scenarios/case-setup';
 import { fearBand } from '../npcs/fear';
-import { appendToNotes } from '../npcs/evidence-recorder';
+import { appendToNotes, recordEvidence } from '../npcs/evidence-recorder';
+import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
 import {
   AbilityDef,
   AbilityState,
@@ -42,6 +43,8 @@ export interface AbilityResult {
   fear?: { npcId: string; level: number; band: string };
   pulse?: { npcId: string; name: string; level: number; toThreshold: number }[];
   locationId?: string;
+  // Keskin Göz: bulunup deftere geçen ipucu
+  clue?: string;
   board?: BoardState;
   verdict?: BoardVerdict;
 }
@@ -388,6 +391,87 @@ export class AbilitiesService {
           },
         };
       }
+
+      case 'dream_reading': {
+        const evidence = await this.prisma.evidence.findMany({
+          where: { sessionId: session.id },
+          select: { kind: true, category: true },
+        });
+        // Tanıklık zaten defterdeyse yetenek yeni bir şey vermez; hak harcanmaz
+        if (
+          evidence.some(
+            (e) => e.kind === 'VERIFICATION' && e.category === 'STATEMENT',
+          )
+        ) {
+          throw new BadRequestException(
+            'Tanığın anlattıkları zaten defterinde.',
+          );
+        }
+        // Sonuç tanık olsa da olmasa da aynıdır; kimse adlandırılmaz
+        return {
+          state: { ...state, dreamDay: day },
+          result: {
+            message:
+              'Rüyanda gölgeler kıpırdadı. Bugün konuşacağın birini dikkatle dinle; sormasan da anlatabilir.',
+          },
+        };
+      }
+
+      case 'keen_eye': {
+        const locationId = location();
+        if (!session.activeWarrants.includes(locationId)) {
+          throw new BadRequestException(
+            `${labelOf(locationId)} için arama iznin yok.`,
+          );
+        }
+        const existing = await this.prisma.evidence.findMany({
+          where: { sessionId: session.id },
+          select: { kind: true, sourceId: true },
+        });
+        const created = await recordEvidence(
+          this.prisma,
+          session.id,
+          day,
+          existing,
+          evidenceFromTags({
+            tags: new Set([EVIDENCE_TAG.clue]),
+            npcId: null,
+            locationId,
+            culpritId: session.culpritId,
+            caseFacts: (session.caseFacts ??
+              null) as unknown as CaseFacts | null,
+            locationClues: (session.locationClues ?? {}) as Record<
+              string,
+              string
+            >,
+          }),
+        );
+        if (created.length === 0) {
+          throw new BadRequestException(
+            `${labelOf(locationId)} mekânında aradığın ipucu zaten defterinde ya da bulunacak bir şey yok.`,
+          );
+        }
+        return {
+          state,
+          // Arama yapılmış sayılır: izin harcanır
+          data: {
+            activeWarrants: session.activeWarrants.filter(
+              (w) => w !== locationId,
+            ),
+            usedWarrants: [...session.usedWarrants, locationId],
+          },
+          result: {
+            message: `Keskin gözün ${labelOf(locationId)} mekânında yerinden oynamış bir şey buldu.`,
+            clue: created[0].text,
+            locationId,
+          },
+        };
+      }
+
+      case 'verify_quote':
+        throw new BadRequestException(
+          'Teyit, sorgu ekranından bir şüphelinin sözüyle kullanılır.',
+        );
 
       default:
         throw new BadRequestException('Bu yetenek henüz kullanılamıyor.');
