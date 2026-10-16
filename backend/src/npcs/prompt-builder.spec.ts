@@ -117,6 +117,44 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('Kırık bir kadeh.');
     });
 
+    it('olay yeri seçilmiş vakada karakter cesedin nerede bulunduğunu bilir, anlatıcı örtülü bedeni anlatır', () => {
+      const session = {
+        ...baseSession,
+        caseFacts: { ...baseSession.caseFacts, crimeSceneId: 'bridge' },
+      };
+      const sceneConfig = getScenarioConfig('medieval', 'easy', 'bridge');
+      const npcPrompt = buildNpcPrompt({
+        scenarioConfig: sceneConfig,
+        session,
+        npc: {
+          id: 'tavern',
+          name: 'Aldric',
+          description: 'Hancı',
+          basePrompt: '',
+        },
+        dynamicPrompt: '',
+        fearLevel: 0,
+        hasConfessed: false,
+      });
+      expect(npcPrompt).toContain('The body was found at "Taş Köprü"');
+
+      const narratorPrompt = buildNpcPrompt({
+        scenarioConfig: sceneConfig,
+        session,
+        npc: {
+          id: 'narrator_crime_scene',
+          name: 'Olay Yeri',
+          description: '',
+          basePrompt: '',
+        },
+        dynamicPrompt: '',
+        fearLevel: 0,
+        hasConfessed: false,
+      });
+      expect(narratorPrompt).toContain('environment narrator for Taş Köprü');
+      expect(narratorPrompt).toContain('covered with a coarse linen sheet');
+    });
+
     it('arama izni veren makam için sistem izin durumunu ekler', () => {
       const prompt = buildNpcPrompt({
         scenarioConfig: config,

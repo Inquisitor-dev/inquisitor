@@ -101,3 +101,36 @@ describe('planCase', () => {
     expect(placements).toEqual(new Set(['LOCATION', 'TESTIMONY']));
   });
 });
+
+describe('olay yeri seçimi', () => {
+  it.each(SCENARIOS)(
+    '%s: her evrende 5 olay yeri var ve hepsi seçilebiliyor',
+    (scenario) => {
+      const config = getScenarioConfig(scenario, 'easy');
+      const ids = config.crimeScenes.map((scene) => scene.id);
+      expect(new Set(ids).size).toBe(5);
+      const picked = new Set(
+        plansFor(scenario, 'easy').map((plan) => plan.crimeSceneId),
+      );
+      expect([...picked].sort()).toEqual([...ids].sort());
+    },
+  );
+
+  it('seçilen olay yeri, yapay zekâya giden crime_scene mekânının adı ve tarifi olur', () => {
+    const config = getScenarioConfig('medieval', 'easy', 'well');
+    const location = config.locationDefinitions.find(
+      (l) => l.id === 'crime_scene',
+    );
+    expect(config.crimeScene?.label).toBe('Köy Kuyusu');
+    expect(location?.name).toBe('Köy Kuyusu');
+    expect(location?.description).toContain('linen sheet');
+  });
+
+  it('olay yeri yoksa (eski vakalar) mekân değişmez', () => {
+    const config = getScenarioConfig('medieval', 'easy');
+    expect(config.crimeScene).toBeUndefined();
+    expect(
+      config.locationDefinitions.find((l) => l.id === 'crime_scene')?.name,
+    ).toBe('Ashenmoor crime scene');
+  });
+});

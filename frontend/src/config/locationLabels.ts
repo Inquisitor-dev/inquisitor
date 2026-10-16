@@ -40,7 +40,7 @@ export const SCENARIO_LOCATION_LABELS: Record<ScenarioType, Record<string, strin
     farm: 'Balıkçı İskelesi',
     clinic: 'Şifacı & Baharatçı',
     home: 'Evim',
-    crime_scene: 'Pazar Meydanı',
+    crime_scene: 'Olay Yeri',
   },
   winter: {
     tavern: 'Kış Hanı',
@@ -50,7 +50,7 @@ export const SCENARIO_LOCATION_LABELS: Record<ScenarioType, Record<string, strin
     farm: 'Sur',
     clinic: 'İnfaz Meydanı',
     home: 'Evim',
-    crime_scene: 'Buzlu Geçit',
+    crime_scene: 'Olay Yeri',
   },
 };
 

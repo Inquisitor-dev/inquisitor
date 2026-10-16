@@ -7,6 +7,38 @@ export const modernUniverse: UniverseDefinition = {
     'Set in the eerie, small American town of "Millfield, Kentucky" in 1994. The atmosphere is like a dark Stephen King or Twin Peaks story - friendly faces hiding terrible secrets.',
   styleInstruction:
     'It should read like a 90s true-crime thriller or a small-town mystery novel. Use authentic 90s American small-town terms, culture references (VHS tapes, drive-in theaters, gas stations, CB radios), and keep the atmosphere tense and suffocating.',
+  // Olay yerleri: her vakada biri rastgele seçilir (case-setup.ts); görseller frontend/public/crime-scenes/<evren>/
+  // Ceset her görselde örtülüdür; kurbanın cinsiyeti ve ölüm şekli görselden anlaşılmasın diye
+  crimeSceneBody:
+    'a plain white sheet, with numbered evidence markers and police tape around it',
+  crimeScenes: [
+    {
+      id: 'laundromat',
+      label: 'Çamaşırhane',
+      description: 'a small 24-hour laundromat with rows of washing machines',
+    },
+    {
+      id: 'bleachers',
+      label: 'Lise Tribünleri',
+      description:
+        'the space under the metal bleachers of the high school football field',
+    },
+    {
+      id: 'rail_crossing',
+      label: 'Tren Geçidi',
+      description: 'a rural railroad crossing on the edge of town',
+    },
+    {
+      id: 'lake_dock',
+      label: 'Göl İskelesi',
+      description: 'an old wooden boat dock on the lake outside town',
+    },
+    {
+      id: 'drive_in',
+      label: 'Kapanmış Açık Hava Sineması',
+      description: 'the lot of an abandoned drive-in movie theater',
+    },
+  ],
   locationLabels: {
     crime_scene: 'Olay Yeri',
     tavern: 'Karakol',

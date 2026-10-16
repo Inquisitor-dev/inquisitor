@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { findOwnedSession } from '../game-sessions/session-access';
-import { CaseFacts } from '../scenarios/case-setup';
+import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
 import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence';
 import {
   evidenceImpact,
@@ -136,6 +136,7 @@ export class NpcsService {
     const scenarioConfig = getScenarioConfig(
       state.session.scenarioType,
       state.session.difficulty,
+      crimeSceneIdOf(state.session.caseFacts),
     );
     const nameOf = (id: string) =>
       scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id;
@@ -289,6 +290,7 @@ export class NpcsService {
     const scenarioConfig = getScenarioConfig(
       currentState.session.scenarioType,
       currentState.session.difficulty,
+      crimeSceneIdOf(currentState.session.caseFacts),
     );
     const canonicalNpc = scenarioConfig.npcDefinitions.find((npc) => npc.id === currentState.npc.id);
     const canonicalLocations = scenarioConfig.locationDefinitions;

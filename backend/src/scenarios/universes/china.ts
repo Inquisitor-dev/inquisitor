@@ -7,8 +7,41 @@ export const chinaUniverse: UniverseDefinition = {
     'Set in the ancient Chinese city of Jinling during the Imperial Dynasty. The district is rich with ornate pavilions, tea houses, bamboo groves, and ancient shrines.',
   styleInstruction:
     'It should read like an atmospheric Chinese historical detective mystery or wuxia thriller (in the vein of Judge Dee). Use authentic period flavor, courtly etiquette, and references to tea ceremonies, dynasty magistrates, incense, jade, and martial honor.',
+  // Olay yerleri: her vakada biri rastgele seçilir (case-setup.ts); görseller frontend/public/crime-scenes/<evren>/
+  // Ceset her görselde örtülüdür; kurbanın cinsiyeti ve ölüm şekli görselden anlaşılmasın diye
+  crimeSceneBody: 'a plain white mourning cloth',
+  crimeScenes: [
+    {
+      id: 'market_square',
+      label: 'Pazar Meydanı',
+      description:
+        'the central market square with wooden stalls and paper lanterns',
+    },
+    {
+      id: 'canal_bridge',
+      label: 'Kanal Köprüsü',
+      description:
+        'a curved stone bridge over a narrow canal with moored boats',
+    },
+    {
+      id: 'bamboo_grove',
+      label: 'Bambu Korusu',
+      description: 'a dense bamboo grove with a narrow stone path',
+    },
+    {
+      id: 'dye_workshop',
+      label: 'İpek Boyahanesi',
+      description:
+        'the courtyard of a silk dyeing workshop with dye vats and hanging silk',
+    },
+    {
+      id: 'lotus_pavilion',
+      label: 'Lotus Köşkü',
+      description: 'a small wooden pavilion beside a lotus pond in a garden',
+    },
+  ],
   locationLabels: {
-    crime_scene: 'Pazar Meydanı',
+    crime_scene: 'Olay Yeri',
     tavern: 'Çay Evi & Han',
     church: 'Muhafız Karargahı',
     graveyard: 'Kadim Tapınak',
@@ -61,7 +94,11 @@ export const chinaUniverse: UniverseDefinition = {
     },
   ],
   locations: [
-    { id: 'crime_scene', name: 'Jinling Market Square', description: 'The central market square where the crime was committed.' },
+    {
+      id: 'crime_scene',
+      name: 'Jinling crime scene',
+      description: 'The primary murder site under investigation.',
+    },
     { id: 'tavern', name: 'Golden Lotus Tea House', description: "Lin Feng's bustling two-story tea house and restaurant." },
     { id: 'church', name: 'Imperial Garrison Gate', description: "Commander Zhao's fortified headquarters and weapons court." },
     { id: 'graveyard', name: 'Mountain Shrine of Ancestors', description: "Monk Huikang's tranquil stone shrine and incense court." },

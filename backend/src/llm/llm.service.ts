@@ -113,7 +113,11 @@ export class LlmService {
     plan: CasePlan,
     sessionId?: string,
   ): Promise<ScenarioDraft> {
-    const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
+    const scenarioConfig = getScenarioConfig(
+      scenarioType,
+      difficulty,
+      plan.crimeSceneId,
+    );
     const {
       worldDescription,
       styleInstruction,

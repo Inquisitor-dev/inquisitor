@@ -220,7 +220,7 @@ describe('NpcsService — Kanıt Defteri', () => {
     ]);
     expect(evidenceCreate).toHaveBeenCalledTimes(1);
     // Fiziksel nesne notlara yazılmaz, Envanter'de görünür
-    expect(result.notes).toBeUndefined();
+    expect((result as { notes?: string }).notes).toBeUndefined();
   });
 
   it('sohbetteki itiraf etiketi kanıt sayılmaz: itirafa korku eşiği karar verir', async () => {

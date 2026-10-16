@@ -12,7 +12,7 @@ export const NPC_PROFILES_BY_SCENARIO: Record<string, Record<string, NpcProfile>
     mill: { name: 'Usta Guan', title: 'Silah Ustası — Demirci Ocağı', icon: '⚒️' },
     farm: { name: 'Mei Teyze', title: 'Balıkçı ve İskele Gözcüsü', icon: '🎣' },
     clinic: { name: 'Bilgin Song', title: 'Saray Eczacısı ve Hekim', icon: '🌿' },
-    crime_scene: { name: 'Pazar Meydanı', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
   },
   cyberpunk: {
     tavern: { name: 'Officer Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
@@ -30,7 +30,7 @@ export const NPC_PROFILES_BY_SCENARIO: Record<string, Record<string, NpcProfile>
     mill: { name: 'Madenci Durn', title: 'Terk Edilmiş Madenin Ustabaşısı', icon: '⛏️' },
     farm: { name: 'Einar', title: 'Sur Nöbetçisi ve Okçu', icon: '🛡️' },
     clinic: { name: 'Muhafız Kenneth', title: 'İnfaz ve Yargı Meydanı Çavuşu', icon: '⚔️' },
-    crime_scene: { name: 'Buzlu Geçit', title: 'Sessiz Tanıklar...', icon: '🩸' },
+    crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
   },
   modern: {
     tavern: { name: 'Şerif Dale Cooper', title: 'Polis Amiri — Karakolun Tek Kanunu', icon: '🚔' },
