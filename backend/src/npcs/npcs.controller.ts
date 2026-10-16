@@ -10,7 +10,13 @@ import { NpcsService } from './npcs.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { InteractDto, ConfrontDto, HistoryDto } from './dto/npc-requests.dto';
+import {
+  InteractDto,
+  ConfrontDto,
+  HistoryDto,
+  QuotesDto,
+  VerifyQuoteDto,
+} from './dto/npc-requests.dto';
 import { isFreeMessage } from '../abilities/ability-effects';
 
 @Controller('npcs')
@@ -55,6 +61,28 @@ export class NpcsController {
       dto.evidenceId,
       dto.message,
     );
+  }
+
+  // Teyit (Gece Muhabiri): okunabilecek sözler
+  @Post('quotes')
+  @UseGuards(JwtAuthGuard)
+  async quotes(@CurrentUser('userId') userId: string, @Body() dto: QuotesDto) {
+    await this.npcsService.getOwnedSession(dto.sessionId, userId);
+    return { quotes: await this.npcsService.quoteCandidates(dto.sessionId, dto.npcId) };
+  }
+
+  // Teyit: bir şüphelinin sözünü başka bir şüpheliye oku. Bir sorgu hakkı harcar.
+  @Post('verify-quote')
+  @UseGuards(JwtAuthGuard)
+  async verifyQuote(
+    @CurrentUser('userId') userId: string,
+    @Body() dto: VerifyQuoteDto,
+  ) {
+    await this.npcsService.getOwnedSession(dto.sessionId, userId);
+    // Geçersiz ya da kullanılmış yetenek sorgu hakkı harcamasın
+    await this.npcsService.assertVerifiable(dto.sessionId, dto.npcId, dto.quoteId);
+    await this.checkSessionAndQuota(dto.sessionId, userId, true);
+    return await this.npcsService.verifyQuote(dto.sessionId, dto.npcId, dto.quoteId);
   }
 
   private async checkSessionAndQuota(sessionId: string, userId: string, usesQuota: boolean) {

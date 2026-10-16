@@ -8,7 +8,12 @@ import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { startingFear } from '../npcs/fear';
-import { DEFAULT_CHARACTER_ID, parseAbilityState } from '../abilities/abilities';
+import {
+  CASE_DAYS,
+  DEFAULT_CHARACTER_ID,
+  lastDayOf,
+  parseAbilityState,
+} from '../abilities/abilities';
 import { fearAfterNight, morningTimeOfDay } from '../abilities/ability-effects';
 
 import { MarketService } from '../market/market.service';
@@ -177,11 +182,21 @@ export class GameSessionsService {
       where: { id: sessionId },
       include: { npcStates: true },
     });
+    // Son günden sonra gün yoktur: hüküm verilir (vaka uzunluğu sunucuda, İkinci Nefes uzatabilir)
+    if (session.currentDay >= lastDayOf(session.abilityState)) {
+      throw new BadRequestException('Soruşturmanın son günündesin; hükmünü ver.');
+    }
+    return toPublicSession(await this.advanceDay(session));
+  }
 
+  // Günü kapatır: ertesi günün sabahı başlar, korku gece azalır (Vizör Kilidi hariç)
+  private async advanceDay(
+    session: Prisma.GameSessionGetPayload<{ include: { npcStates: true } }>,
+  ) {
     const abilityState = parseAbilityState(session.abilityState);
     const nextDay = session.currentDay + 1;
     const updatedSession = await this.prisma.gameSession.update({
-      where: { id: sessionId },
+      where: { id: session.id },
       data: {
         currentDay: nextDay,
         // Çatı Geçişi kullanıldıysa ertesi günün sabahı kaybedilir
@@ -197,8 +212,7 @@ export class GameSessionsService {
         data: { currentFear: newFear },
       });
     }
-
-    return toPublicSession(updatedSession);
+    return updatedSession;
   }
 
   async advanceTime(sessionId: string, userId: string) {
@@ -239,7 +253,51 @@ export class GameSessionsService {
       throw new BadRequestException('Bu soruşturma zaten sona erdi.');
     }
 
+    const abilityState = parseAbilityState(session.abilityState);
+    if (abilityState.secondBreath?.clearedNpcId === npcId) {
+      throw new BadRequestException('Bu kişinin masum olduğu zaten ortaya çıktı.');
+    }
+
     const won = session.culpritId === npcId;
+
+    // İkinci Nefes (Yeşim Hekim): vakadaki ilk yanlış hüküm vakayı bitirmez. Mahkûm edilen kişi
+    // aklanır ve gün kapanır; son günde verildiyse vaka bir gün uzar. Cevapta suçlu yoktur.
+    if (
+      !won &&
+      session.characterId === 'yesim_hekim' &&
+      !abilityState.secondBreath
+    ) {
+      const full = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: sessionId },
+        include: { npcStates: true },
+      });
+      const extended = session.currentDay >= CASE_DAYS;
+      await this.prisma.gameSession.update({
+        where: { id: sessionId },
+        data: {
+          abilityState: {
+            ...abilityState,
+            secondBreath: { clearedNpcId: npcId, extended },
+          } as unknown as Prisma.InputJsonValue,
+        },
+      });
+      const advanced = await this.advanceDay(full);
+      const next = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: advanced.id },
+      });
+      return {
+        success: true,
+        won: false,
+        spared: true,
+        clearedNpcId: npcId,
+        message: extended
+          ? 'Yanılmışsın: bu kişi masum. İkinci Nefes sana bir gün daha tanıdı.'
+          : 'Yanılmışsın: bu kişi masum. İkinci Nefes ile soruşturma sürüyor.',
+        session: toPublicSession(next),
+        reward: null,
+      };
+    }
+
     const newStatus = won ? 'WON' : 'LOST';
 
     const updatedSession = await this.prisma.gameSession.update({
@@ -254,6 +312,7 @@ export class GameSessionsService {
           userId,
           session.id,
           session.currentDay,
+          { halved: !!abilityState.secondBreath },
         );
       } catch (err: any) {
         this.logger.error(`Error awarding case reward: ${err.message}`);

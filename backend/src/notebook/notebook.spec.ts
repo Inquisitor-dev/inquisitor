@@ -141,7 +141,7 @@ describe('sanitizeNotebook', () => {
       },
       statements,
     ).items;
-    expect(item).toMatchObject({ day: 4, page: 'L', x: 0, y: 96, w: 12 });
+    expect(item).toMatchObject({ day: 5, page: 'L', x: 0, y: 96, w: 12 });
     expect((item as { text: string }).text).toHaveLength(MAX_NOTEBOOK_TEXT);
   });
 

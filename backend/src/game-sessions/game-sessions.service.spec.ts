@@ -144,6 +144,109 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
     ]);
   });
 
+  it('son günden sonra gün bitirilemez; hüküm verilir', async () => {
+    const { service, gameSession } = setup({ ...activeSession, currentDay: 4 });
+    await expect(service.endDay('session-1', 'owner')).rejects.toThrow(
+      'son günündesin',
+    );
+    expect(gameSession.update).not.toHaveBeenCalled();
+  });
+
+  it('herkese açık oturumda vakanın son günü (lastDay) yer alır', async () => {
+    const { service } = setup();
+    expect(await service.getSession('session-1', 'owner')).toMatchObject({
+      lastDay: 4,
+    });
+  });
+
+  describe('İkinci Nefes (Yeşim Hekim)', () => {
+    const hekim = { ...activeSession, characterId: 'yesim_hekim' };
+
+    it('ilk yanlış hüküm vakayı bitirmez: masum aklanır, gün kapanır, cevapta suçlu yok', async () => {
+      const { service, gameSession } = setup(hekim);
+      const result = await service.condemnNpc('session-1', 'owner', 'tavern');
+      expect(result).toMatchObject({
+        won: false,
+        spared: true,
+        clearedNpcId: 'tavern',
+        reward: null,
+      });
+      expectNoSecrets(result);
+      expectNoSecrets(result.session);
+      expect(result).not.toHaveProperty('culpritId');
+      // Hiçbir güncelleme oturumu LOST yapmaz
+      for (const [arg] of gameSession.update.mock.calls as [
+        { data: { status?: string } },
+      ][]) {
+        expect(arg.data.status).toBeUndefined();
+      }
+      expect(gameSession.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { currentDay: 2, timeOfDay: 0 } }),
+      );
+    });
+
+    it('son günde verilen yanlış hüküm vakayı bir gün uzatır', async () => {
+      const { service, gameSession } = setup({ ...hekim, currentDay: 4 });
+      await service.condemnNpc('session-1', 'owner', 'tavern');
+      expect(gameSession.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            abilityState: expect.objectContaining({
+              secondBreath: { clearedNpcId: 'tavern', extended: true },
+            }),
+          },
+        }),
+      );
+      expect(gameSession.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { currentDay: 5, timeOfDay: 0 } }),
+      );
+    });
+
+    it('ikinci yanlış hüküm vakayı kaybettirir', async () => {
+      const used = {
+        ...hekim,
+        abilityState: {
+          uses: {},
+          secondBreath: { clearedNpcId: 'tavern', extended: false },
+        },
+      };
+      const { service } = setup(used);
+      const result = await service.condemnNpc('session-1', 'owner', 'farm');
+      expect(result.won).toBe(false);
+      expect(result).not.toHaveProperty('spared');
+    });
+
+    it('aklanan kişi tekrar mahkûm edilemez', async () => {
+      const used = {
+        ...hekim,
+        abilityState: {
+          uses: {},
+          secondBreath: { clearedNpcId: 'tavern', extended: false },
+        },
+      };
+      const { service } = setup(used);
+      await expect(
+        service.condemnNpc('session-1', 'owner', 'tavern'),
+      ).rejects.toThrow('masum');
+    });
+
+    it('doğru hüküm normal biter; başka karakterde yanlış hüküm hemen kaybettirir', async () => {
+      const win = await setup(hekim).service.condemnNpc(
+        'session-1',
+        'owner',
+        'mill',
+      );
+      expect(win.won).toBe(true);
+      const lose = await setup(activeSession).service.condemnNpc(
+        'session-1',
+        'owner',
+        'tavern',
+      );
+      expect(lose).toMatchObject({ won: false });
+      expect(lose).not.toHaveProperty('spared');
+    });
+  });
+
   it('kazanılmış vaka süre dolunca kayba çevrilmez', async () => {
     const { service, gameSession } = setup({ ...activeSession, status: 'WON' });
     const result = await service.timeoutSession('session-1', 'owner');

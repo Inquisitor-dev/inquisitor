@@ -49,3 +49,28 @@ export class HistoryDto {
   @IsString()
   npcId: string;
 }
+
+export class QuotesDto {
+  @IsNotEmpty({ message: 'sessionId gereklidir' })
+  @IsString()
+  sessionId: string;
+
+  // Sözün okunacağı şüpheli; kendi sözü listeye girmez
+  @IsNotEmpty({ message: 'npcId gereklidir' })
+  @IsString()
+  npcId: string;
+}
+
+export class VerifyQuoteDto {
+  @IsNotEmpty({ message: 'sessionId gereklidir' })
+  @IsString()
+  sessionId: string;
+
+  @IsNotEmpty({ message: 'npcId gereklidir' })
+  @IsString()
+  npcId: string;
+
+  @IsNotEmpty({ message: 'quoteId gereklidir' })
+  @IsString()
+  quoteId: string;
+}

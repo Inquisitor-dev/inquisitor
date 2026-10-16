@@ -50,6 +50,8 @@ export interface AbilityResult {
   fear?: { npcId: string; level: number; band: string };
   pulse?: PulseRow[];
   locationId?: string;
+  // Keskin Göz: bulunup deftere geçen ipucu
+  clue?: string;
   board?: unknown;
   verdict?: 'CORRECT' | 'WRONG';
 }

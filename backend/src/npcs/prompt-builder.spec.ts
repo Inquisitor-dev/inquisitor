@@ -145,5 +145,32 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('PRIVATE ROOM:');
       expect(prompt).toContain('must NEVER openly confess');
     });
+
+    it('Rüya Tabiri yalnızca tanığın prompt’una girer, etiket kuralıyla', () => {
+      const witness = { id: 'tavern', name: 'Aldric', description: 'Hancı', basePrompt: '' };
+      const other = { id: 'church', name: 'Peder', description: 'Rahip', basePrompt: '' };
+      const params = { scenarioConfig: config, session: baseSession, fearLevel: 2, hasConfessed: false };
+      expect(buildNpcPrompt({ ...params, npc: witness })).not.toContain('DREAM VISION:');
+      const dreamt = buildNpcPrompt({ ...params, npc: witness, dreamActive: true });
+      expect(dreamt).toContain('DREAM VISION:');
+      expect(dreamt).toContain('[EVIDENCE_REVEALED]');
+      expect(buildNpcPrompt({ ...params, npc: other, dreamActive: true })).not.toContain('DREAM VISION:');
+    });
+
+    it('Teyit okunan sözü gerçek sayar ama sır vermeyi ve katili adlandırmayı yasaklar', () => {
+      const npc = { id: 'church', name: 'Peder', description: 'Rahip', basePrompt: '' };
+      const prompt = buildNpcPrompt({
+        scenarioConfig: config,
+        session: baseSession,
+        npc,
+        fearLevel: 2,
+        hasConfessed: false,
+        verifiedStatement: { speakerName: 'Aldric', text: 'Gece kiliseye gittim.' },
+      });
+      expect(prompt).toContain('VERIFIED STATEMENT:');
+      expect(prompt).toContain('Aldric');
+      expect(prompt).toContain('Gece kiliseye gittim.');
+      expect(prompt).toContain('never name the murderer');
+    });
   });
 });

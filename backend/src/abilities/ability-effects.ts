@@ -2,6 +2,35 @@ import { FEAR_BREAK_THRESHOLD } from '../npcs/fear';
 import { CaseFacts } from '../scenarios/case-setup';
 import { AbilityState } from './abilities';
 
+// Derin Tefekkür (Ak Turna): panoda günde 2 kez düşünülür, diğerlerinde 1
+export const DEEP_REFLECTION_THOUGHTS = 2;
+
+export const thoughtLimit = (characterId: string) =>
+  characterId === 'ak_turna' ? DEEP_REFLECTION_THOUGHTS : 1;
+
+// O gün panoda kaç kez düşünüldü
+export const thoughtsToday = (
+  state: AbilityState,
+  boardThoughtDay: number,
+  day: number,
+) =>
+  state.thoughts?.day === day
+    ? state.thoughts.count
+    : boardThoughtDay === day
+      ? 1
+      : 0;
+
+export const canThinkAgain = (
+  characterId: string,
+  state: AbilityState,
+  boardThoughtDay: number,
+  day: number,
+) => thoughtsToday(state, boardThoughtDay, day) < thoughtLimit(characterId);
+
+// Rüya Tabiri (Kar Kâhini): etki o gün sürer
+export const isDreamActive = (state: AbilityState, day: number) =>
+  state.dreamDay === day;
+
 // Yeteneklerin saf hesapları; veritabanına AbilitiesService ve ilgili servisler yazar.
 
 // Sabır (Engizitör): her oyun gününün ilk 3 mesajı günlük soru hakkından düşmez

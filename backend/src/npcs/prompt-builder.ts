@@ -64,6 +64,15 @@ export interface BuildNpcPromptParams {
   warrantDecision?: WarrantDecision | null;
   // Sessiz Oda (Gölge Ajan): o gün daha doğrudan konuşur; suçluya da masuma da aynı uygulanır
   quietRoom?: boolean;
+  // Rüya Tabiri (Kar Kâhini): o gün tanık, sorulmasa da gördüğünü anlatır
+  dreamActive?: boolean;
+  // Teyit (Gece Muhabiri): başka bir şüphelinin gerçekten söylediği söz bu karaktere okunur
+  verifiedStatement?: VerifiedStatement;
+}
+
+export interface VerifiedStatement {
+  speakerName: string;
+  text: string;
 }
 
 export interface NpcConfrontation {
@@ -85,6 +94,8 @@ export function buildNpcPrompt({
   confrontation,
   warrantDecision,
   quietRoom = false,
+  dreamActive = false,
+  verifiedStatement,
 }: BuildNpcPromptParams): string {
   const canonicalNpc = scenarioConfig.npcDefinitions.find((n) => n.id === npc.id);
   const canonicalLocations = scenarioConfig.locationDefinitions;
@@ -227,6 +238,13 @@ PRIVATE ROOM:
 The Inquisitor has taken you somewhere quiet where nobody else is listening. Today you speak more directly with them: give concrete answers about where you were, what you saw and who you saw, and avoid vague or evasive replies. Every rule above still applies; this does not make you confess anything you would not otherwise confess.`;
     }
 
+    if (verifiedStatement) {
+      combinedPrompt += `
+
+VERIFIED STATEMENT:
+The Inquisitor read you a statement that ${verifiedStatement.speakerName} really made to them: "${verifiedStatement.text}". It is real, so you cannot dismiss it as a bluff or a lie of the Inquisitor. React to it honestly in character: confirm, correct or deny only what you genuinely would. Do not reveal secrets you would not otherwise reveal, and never name the murderer.`;
+    }
+
     if (confrontation) {
       const impactText: Record<EvidenceImpact, string> = {
         DECISIVE: 'This evidence exposes your personal secret.',
@@ -272,6 +290,17 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
 VERIFYING EVIDENCE YOU KNOW:
 ${caseFacts.verificationText}
 Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
+    }
+    if (
+      dreamActive &&
+      placement?.type === 'TESTIMONY' &&
+      placement.npcId === npc.id &&
+      caseFacts?.verificationText
+    ) {
+      combinedPrompt += `
+
+DREAM VISION:
+Tonight a seer's dream pressed on your conscience. In this reply, even if the Inquisitor did not ask, you tell what you saw (the VERIFYING EVIDENCE above) in your own words, hesitantly but clearly, and end the reply with the tag [${EVIDENCE_TAG.verification}]. Every other rule still applies.`;
     }
   }
 

@@ -55,6 +55,8 @@ const MAP_ABILITIES: AbilityId[] = [
   'quiet_room',
   'archive_summary',
   'contradiction_scan',
+  'dream_reading',
+  'keen_eye',
 ];
 import {
   useMapWalking,
@@ -68,6 +70,10 @@ export default function MapPage() {
   const {
     sessionId,
     currentDay,
+    lastDay,
+    clearedNpcIds,
+    applySecondBreath,
+    consumeWarrant,
     timeOfDay,
     difficulty,
     scenarioType,
@@ -320,7 +326,7 @@ export default function MapPage() {
   const handleEndDay = async () => {
     if (!sessionId) return;
 
-    if (currentDay >= 4) {
+    if (currentDay >= lastDay) {
       setIsCondemnModalOpen(true);
       return;
     }
@@ -357,10 +363,26 @@ export default function MapPage() {
 
     try {
       const data = await api.post<{
-        session?: { truthReveal?: string; locationClues?: Record<string, string> };
+        session?: { truthReveal?: string; locationClues?: Record<string, string>; lastDay?: number; timeOfDay?: number };
         won?: boolean;
+        spared?: boolean;
+        clearedNpcId?: string;
         message?: string;
       }>(`/game-sessions/${sessionId}/condemn`, { npcId });
+
+      // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır ve gün kapanır
+      if (data.spared && data.clearedNpcId) {
+        applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
+        if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
+        setArmedAbility(null);
+        abilities.refresh();
+        setAbilityOutcome({
+          ability: { name: 'İkinci Nefes' },
+          result: { message: data.message ?? 'Yanılmışsın: bu kişi masum. Soruşturma sürüyor.' },
+          onClose: () => setAbilityOutcome(null),
+        });
+        return;
+      }
 
       if (data.session?.truthReveal) {
         useGameStore.getState().setTruthReveal(data.session.truthReveal);
@@ -407,6 +429,11 @@ export default function MapPage() {
 
   // Yetenek hedefleri: vakadaki şüpheliler ve İz Sürme için henüz izni olmayan mekânlar
   const suspectOptions = getSuspectsForScenario(scenarioType, difficulty).map((s) => ({ id: s.id, label: s.name }));
+  // Keskin Göz: arama izni elinde olan mekânlar
+  const warrantOptions = inventory.activeWarrants.map((id) => ({
+    id,
+    label: getLocationLabel(id, scenarioType),
+  }));
   const trackingOptions = visibleLocations
     .filter(
       (loc) =>
@@ -529,11 +556,20 @@ export default function MapPage() {
         only={MAP_ABILITIES}
         suspects={suspectOptions}
         locations={trackingOptions}
+        warrantLocations={warrantOptions}
         armedId={armedAbility?.id ?? null}
         onArm={setArmedAbility}
         onResult={(ability, result) => {
           if (result.notes !== undefined) setNotes(result.notes);
           if (ability.id === 'tracking' && result.locationId) addWarrant(result.locationId);
+          if (ability.id === 'keen_eye' && result.locationId) {
+            // Arama yapılmış sayılır: izin harcanır, ipucu defterde görünür
+            consumeWarrant(result.locationId);
+            void api
+              .get<{ evidence?: EvidenceItem[] }>(`/game-sessions/${sessionId}/evidence`)
+              .then((data) => setEvidence(Array.isArray(data.evidence) ? data.evidence : []))
+              .catch((err) => logger.error('Failed to refresh evidence', err));
+          }
         }}
       />
 
@@ -576,6 +612,7 @@ export default function MapPage() {
         onClose={() => setIsCondemnModalOpen(false)}
         scenarioType={scenarioType}
         difficulty={difficulty}
+        excludeIds={clearedNpcIds}
         onConfirmCondemn={handleCondemn}
       />
 

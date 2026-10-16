@@ -9,13 +9,17 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
   dialoguesUsedToday: 0,
   maxDailyDialogues: 100,
   currentDay: 1,
+  lastDay: 4,
+  clearedNpcIds: [],
   timeOfDay: 0,
   notes: '',
   scenario: null,
 
   setSessionId: (id) =>
     set((state) =>
-      state.sessionId === id ? { sessionId: id } : { sessionId: id, lastLocationId: null, evidence: [] }
+      state.sessionId === id
+        ? { sessionId: id }
+        : { sessionId: id, lastLocationId: null, evidence: [], lastDay: 4, clearedNpcIds: [] }
     ),
   setDifficulty: (d) => set({ difficulty: d }),
   setScenarioType: (s) => set({ scenarioType: s }),
@@ -43,6 +47,25 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
     set({
       currentDay: day,
     }),
+
+  setCaseProgress: (lastDay, clearedNpcIds) =>
+    set((state) => ({ lastDay: lastDay ?? state.lastDay, clearedNpcIds })),
+
+  // İkinci Nefes: yanlış hükümde şüpheli aklanır ve gün kapanır (sunucuyla aynı: korku -1, sabah)
+  applySecondBreath: (clearedNpcId, lastDay) =>
+    set((state) => ({
+      currentDay: state.currentDay + 1,
+      lastDay,
+      clearedNpcIds: [...state.clearedNpcIds, clearedNpcId],
+      timeOfDay: 0,
+      dialoguesUsedToday: 0,
+      npcStates: Object.fromEntries(
+        Object.entries(state.npcStates).map(([id, st]) => [
+          id,
+          { ...st, fear: Math.max(0, st.fear - 1) },
+        ])
+      ),
+    })),
 
   setTimeOfDay: (time) =>
     set({
@@ -84,6 +107,8 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
       npcStates: {},
       dialoguesUsedToday: 0,
       currentDay: 1,
+      lastDay: 4,
+      clearedNpcIds: [],
       timeOfDay: 0,
       notes: '',
       scenario: null,

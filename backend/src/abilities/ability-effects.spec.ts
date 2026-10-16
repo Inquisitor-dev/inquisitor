@@ -1,5 +1,9 @@
 import {
   archiveQuotes,
+  canThinkAgain,
+  isDreamActive,
+  thoughtLimit,
+  thoughtsToday,
   chargedMessages,
   fearAfterNight,
   informantLocation,
@@ -108,5 +112,39 @@ describe('Muhbir', () => {
     expect(pick([], true)).toBe('tavern');
     expect(pick(['mill', 'tavern'], false)).toBe('church');
     expect(pick(['mill', 'tavern', 'church'], false)).toBeNull();
+  });
+});
+
+describe('Derin Tefekkür', () => {
+  it('Ak Turna günde iki kez, diğer karakterler bir kez düşünür', () => {
+    expect(thoughtLimit('ak_turna')).toBe(2);
+    expect(thoughtLimit('kara_yargic')).toBe(1);
+  });
+
+  it('düşünme sayısı günlük sayaçtan ya da eski boardThoughtDay kaydından okunur', () => {
+    expect(thoughtsToday({ uses: {} }, 0, 2)).toBe(0);
+    expect(thoughtsToday({ uses: {} }, 2, 2)).toBe(1);
+    expect(
+      thoughtsToday({ uses: {}, thoughts: { day: 2, count: 2 } }, 2, 2),
+    ).toBe(2);
+    expect(
+      thoughtsToday({ uses: {}, thoughts: { day: 1, count: 2 } }, 1, 2),
+    ).toBe(0);
+  });
+
+  it('ikinci düşünmeye izin verir, üçüncüye vermez', () => {
+    const once = { uses: {}, thoughts: { day: 2, count: 1 } };
+    const twice = { uses: {}, thoughts: { day: 2, count: 2 } };
+    expect(canThinkAgain('ak_turna', once, 2, 2)).toBe(true);
+    expect(canThinkAgain('ak_turna', twice, 2, 2)).toBe(false);
+    expect(canThinkAgain('kara_yargic', once, 2, 2)).toBe(false);
+  });
+});
+
+describe('Rüya Tabiri', () => {
+  it('etki yalnızca kullanıldığı gün sürer', () => {
+    expect(isDreamActive({ uses: {}, dreamDay: 2 }, 2)).toBe(true);
+    expect(isDreamActive({ uses: {}, dreamDay: 2 }, 3)).toBe(false);
+    expect(isDreamActive({ uses: {} }, 2)).toBe(false);
   });
 });

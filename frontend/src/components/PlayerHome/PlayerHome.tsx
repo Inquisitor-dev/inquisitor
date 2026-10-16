@@ -27,9 +27,8 @@ const CHARACTER_FRAME = 4;
 // Ayakların, 360° karesinin yüksekliğine oranla bastığı nokta
 const FEET_ANCHOR = 0.94;
 const TIME_LABELS = ['Sabah', 'Öğlen', 'İkindi', 'Akşam', 'Gece'];
-const ROMAN = ['I', 'II', 'III', 'IV'];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 // Son gün bitince oyun biter; yatak hüküm ekranına götürür
-const LAST_DAY = 4;
 // İşlev düğmesinin ekran kenarlarından uzak durduğu pay (yarım genişlik / üst-alt çubuklar)
 const ACTION_HALF_WIDTH = 160;
 const ACTION_TOP_MARGIN = 110;
@@ -76,6 +75,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
   const {
     sessionId,
     currentDay,
+    lastDay,
     timeOfDay,
     endDay,
     setTimeOfDay,
@@ -149,7 +149,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const isLastDay = currentDay >= LAST_DAY;
+  const isLastDay = currentDay >= lastDay;
   const isNight = timeOfDay >= 4;
 
   const handleSleep = async () => {

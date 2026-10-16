@@ -256,7 +256,6 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   },
 
   yesim_hekim: {
-    pending: true,
     abilities: [
       {
         name: 'İkinci Nefes',
@@ -277,7 +276,6 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   },
 
   kar_kahini: {
-    pending: true,
     abilities: [
       {
         name: 'Rüya Tabiri',
@@ -287,6 +285,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
           'Etki gün sonuna kadar sürer; tanığın kim olduğunu söylemez.',
           'Vakada tanık yoksa ya da onunla konuşmazsan hiçbir şey olmaz.',
           'Tanığın anlattıkları defterine kayıt kartı olarak eklenir. Gece kullanılamaz.',
+          'Tanığın anlattıkları zaten defterindeyse kullanılamaz; hakkın harcanmaz.',
         ],
       },
     ],
@@ -298,16 +297,15 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   },
 
   ayaz_izcisi: {
-    pending: true,
     abilities: [
       {
         name: 'Keskin Göz',
-        summary: 'Arama yetkin olan bir mekânda, gizli ipucu ilk aramanda bulunur.',
+        summary: 'Arama iznin olan bir mekânı seç; oradaki gizli ipucu aramana gerek kalmadan defterine geçer.',
         usage: 'Günde 1 kez',
         rules: [
-          'Yalnızca arama izni olan ya da başka bir yolla aranabilen mekânlarda kullanılır.',
-          'Doğru yeri tahmin etmen gerekmez; ipucu ilk mesajında ortaya çıkar ve defterine eklenir.',
-          'Arama izni vermez; o mekânda zaten bulunacak ipucundan fazlasını göstermez.',
+          'Yalnızca arama iznin olan mekânlarda kullanılır; izin bu kullanımla harcanır. Gece kullanılamaz.',
+          'Doğru noktayı tahmin etmen ya da mesaj yazman gerekmez; ipucu defterine kanıt olarak eklenir.',
+          'Arama izni vermez; o mekânda normal aramanın vereceğinden fazlasını göstermez.',
         ],
       },
     ],
@@ -319,7 +317,6 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   },
 
   gece_muhabiri: {
-    pending: true,
     abilities: [
       {
         name: 'Teyit',
@@ -340,7 +337,6 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   },
 
   ak_turna: {
-    pending: true,
     abilities: [
       {
         name: 'Derin Tefekkür',

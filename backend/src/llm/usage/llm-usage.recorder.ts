@@ -9,6 +9,7 @@ export type LlmCallKind =
   | 'CONFRONT'
   | 'NARRATOR'
   | 'BOARD_THOUGHT'
+  | 'VERIFY_QUOTE'
   | 'CONTRADICTION_SCAN';
 
 export interface LlmUsageContext {

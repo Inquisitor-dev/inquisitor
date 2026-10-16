@@ -178,18 +178,10 @@ export const ABILITIES: AbilityDef[] = [
   },
 ];
 
-// Tanımı yapılmış ama etkisi henüz yazılmamış yetenekler: kullanılamaz, kendiliğinden de çalışmaz
-export const PENDING_ABILITIES: ReadonlySet<AbilityId> = new Set<AbilityId>([
-  'second_breath',
-  'deep_reflection',
-  'dream_reading',
-  'keen_eye',
-  'verify_quote',
-]);
-
-// Günün son dilimi (gece) ve vakanın son günü
+// Günün son dilimi (gece) ve vakanın normal uzunluğu. İkinci Nefes son günde kullanılırsa vaka bir gün uzar.
 export const NIGHT = 4;
-export const LAST_DAY = 4;
+export const CASE_DAYS = 4;
+export const LAST_DAY = CASE_DAYS;
 
 // Oturumda saklanan yetenek durumu (GameSession.abilityState)
 export interface AbilityState {
@@ -203,7 +195,17 @@ export interface AbilityState {
   rooftop?: { locationId: string; day: number };
   // Çatı Geçişi'nin bedeli: bu günün sabahı kaybedilir
   lostMorningDay?: number;
+  // İkinci Nefes (Yeşim Hekim): yanlış hükümde aklanan şüpheli; vaka uzadıysa extended
+  secondBreath?: { clearedNpcId: string; extended: boolean };
+  // Derin Tefekkür (Ak Turna): o gün panoda kaç kez düşünüldü
+  thoughts?: { day: number; count: number };
+  // Rüya Tabiri (Kar Kâhini): etkinin geçerli olduğu gün
+  dreamDay?: number;
 }
+
+// Vakanın son günü; İkinci Nefes son günde kullanıldıysa 5
+export const lastDayOf = (abilityState: unknown): number =>
+  CASE_DAYS + (parseAbilityState(abilityState).secondBreath?.extended ? 1 : 0);
 
 export const findAbility = (id: string): AbilityDef | undefined =>
   ABILITIES.find((ability) => ability.id === id);
@@ -248,6 +250,18 @@ export function parseAbilityState(value: unknown): AbilityState {
   }
   if (Number.isInteger(raw.lostMorningDay))
     state.lostMorningDay = raw.lostMorningDay as number;
+  const breath = raw.secondBreath as AbilityState['secondBreath'];
+  if (typeof breath?.clearedNpcId === 'string') {
+    state.secondBreath = {
+      clearedNpcId: breath.clearedNpcId,
+      extended: breath.extended === true,
+    };
+  }
+  const thoughts = raw.thoughts as AbilityState['thoughts'];
+  if (Number.isInteger(thoughts?.day) && Number.isInteger(thoughts?.count)) {
+    state.thoughts = { day: thoughts!.day, count: thoughts!.count };
+  }
+  if (Number.isInteger(raw.dreamDay)) state.dreamDay = raw.dreamDay as number;
   return state;
 }
 
@@ -284,8 +298,6 @@ export function availability(
   if (session.status !== 'ACTIVE') return no('Bu soruşturma sona erdi.');
   if (session.characterId !== ability.characterId)
     return no('Bu yetenek bu vakadaki karakterine ait değil.');
-  if (PENDING_ABILITIES.has(ability.id))
-    return no('Bu yetenek yakında aktif olacak.');
   if (ability.limit === 'PASSIVE')
     return no('Bu yetenek kendiliğinden çalışır.');
 
@@ -297,7 +309,13 @@ export function availability(
     return no('Bu yeteneği bu vakada zaten kullandın.');
 
   const isNight = session.timeOfDay >= NIGHT;
-  if (ability.id === 'backstage' && isNight) return no('Gece kullanılamaz.');
+  if (
+    (ability.id === 'backstage' ||
+      ability.id === 'dream_reading' ||
+      ability.id === 'keen_eye') &&
+    isNight
+  )
+    return no('Gece kullanılamaz.');
   if (ability.id === 'rooftop') {
     if (!isNight) return no('Yalnızca gece kullanılabilir.');
     if (session.currentDay >= LAST_DAY)

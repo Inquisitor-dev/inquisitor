@@ -71,6 +71,9 @@ function setup(
   };
   const evidence = {
     findMany: jest.fn().mockResolvedValue(extra.evidence ?? []),
+    create: jest.fn(({ data }: { data: Record<string, unknown> }) =>
+      Promise.resolve({ id: 'e-new', ...data }),
+    ),
   };
   const prisma = {
     gameSession,
@@ -88,6 +91,7 @@ function setup(
     gameSession,
     sessionNpcState,
     session,
+    evidence,
     findContradictions,
   };
 }
@@ -347,5 +351,82 @@ describe('AbilitiesService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(gameSession.update).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('AbilitiesService — Aşama 4 yetenekleri', () => {
+  it('Rüya Tabiri o günü işaretler ve kimseyi adlandırmaz', async () => {
+    const { service, session } = setup({ characterId: 'kar_kahini' });
+    const { result } = await use(service, { abilityId: 'dream_reading' });
+    expect(result.message).toContain('Rüyanda');
+    expect(JSON.stringify(result)).not.toContain('mill');
+    expect(session.abilityState).toMatchObject({
+      dreamDay: 2,
+      uses: { dream_reading: [2] },
+    });
+  });
+
+  it('Rüya Tabiri tanıklık defterdeyse hak harcamadan reddedilir', async () => {
+    const { service, gameSession } = setup(
+      { characterId: 'kar_kahini' },
+      { evidence: [{ kind: 'VERIFICATION', category: 'STATEMENT' }] },
+    );
+    await expect(
+      use(service, { abilityId: 'dream_reading' }),
+    ).rejects.toThrow('zaten defterinde');
+    expect(gameSession.update).not.toHaveBeenCalled();
+  });
+
+  it('Keskin Göz arama izni olan mekânın ipucunu deftere yazar ve izni harcar', async () => {
+    const { service, session, evidence } = setup({
+      characterId: 'ayaz_izcisi',
+      activeWarrants: ['church'],
+      locationClues: { church: 'Kanlı mendil' },
+    });
+    const { result } = await use(service, {
+      abilityId: 'keen_eye',
+      locationId: 'church',
+    });
+    expect(result.clue).toBe('Kanlı mendil');
+    expect(evidence.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kind: 'VERIFICATION',
+          sourceId: 'church',
+        }),
+      }),
+    );
+    expect(session.activeWarrants).toEqual([]);
+    expect(session.usedWarrants).toEqual(['church']);
+  });
+
+  it('Keskin Göz izinsiz mekânda ve zaten bulunmuş ipucunda hak harcamaz', async () => {
+    const noWarrant = setup({
+      characterId: 'ayaz_izcisi',
+      locationClues: { church: 'Kanlı mendil' },
+    });
+    await expect(
+      use(noWarrant.service, { abilityId: 'keen_eye', locationId: 'church' }),
+    ).rejects.toThrow('arama iznin yok');
+
+    const found = setup(
+      {
+        characterId: 'ayaz_izcisi',
+        activeWarrants: ['church'],
+        locationClues: { church: 'Kanlı mendil' },
+      },
+      { evidence: [{ kind: 'VERIFICATION', sourceId: 'church' }] },
+    );
+    await expect(
+      use(found.service, { abilityId: 'keen_eye', locationId: 'church' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(found.gameSession.update).not.toHaveBeenCalled();
+  });
+
+  it('Teyit genel yetenek yolundan kullanılamaz', async () => {
+    const { service } = setup({ characterId: 'gece_muhabiri' });
+    await expect(
+      use(service, { abilityId: 'verify_quote', npcId: 'mill' }),
+    ).rejects.toThrow('sorgu ekranından');
   });
 });

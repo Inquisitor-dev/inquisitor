@@ -45,6 +45,10 @@ export interface SessionSlice {
   dialoguesUsedToday: number;
   maxDailyDialogues: number;
   currentDay: number;
+  // Vakanın son günü: sunucudan gelir (normalde 4; İkinci Nefes son günde kullanılırsa 5)
+  lastDay: number;
+  // İkinci Nefes ile masum olduğu açıklanan şüpheliler (hüküm listesinden çıkar)
+  clearedNpcIds: string[];
   timeOfDay: number;
   notes: string;
   scenario: string | null;
@@ -57,6 +61,8 @@ export interface SessionSlice {
   incrementDialogue: () => void;
   setDialoguesUsed: (count: number) => void;
   setCurrentDay: (day: number) => void;
+  setCaseProgress: (lastDay: number | undefined, clearedNpcIds: string[]) => void;
+  applySecondBreath: (clearedNpcId: string, lastDay: number) => void;
   setTimeOfDay: (time: number) => void;
   setNotes: (notes: string) => void;
   setScenario: (scenario: string) => void;

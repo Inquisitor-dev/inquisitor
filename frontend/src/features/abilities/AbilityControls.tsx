@@ -63,6 +63,8 @@ interface AbilityControlsProps {
   // Hedef seçimi için şüpheliler ve mekânlar
   suspects?: AbilityOption[];
   locations?: AbilityOption[];
+  // Keskin Göz için: arama izni elinde olan mekânlar
+  warrantLocations?: AbilityOption[];
   // Oyun içinde bir seçim isteyen yetenekler (Kulis, Çatı Geçişi, Veri Sızdırma) "kurulur";
   // asıl kullanım bir mekâna ya da ipe tıklanınca sahibinde olur
   armedId?: AbilityId | null;
@@ -82,6 +84,7 @@ export default function AbilityControls({
   npcName,
   suspects = [],
   locations = [],
+  warrantLocations,
   armedId = null,
   onArm,
   onResult,
@@ -133,7 +136,10 @@ export default function AbilityControls({
         ? [{ label: `${npcName ?? 'Bu kişi'} üzerinde kullan`, target: { npcId } }]
         : suspects.map((s) => ({ label: s.label, target: { npcId: s.id } }))
       : pending.target === 'location'
-        ? locations.map((l) => ({ label: l.label, target: { locationId: l.id } }))
+        ? (pending.id === 'keen_eye' ? (warrantLocations ?? []) : locations).map((l) => ({
+            label: l.label,
+            target: { locationId: l.id },
+          }))
         : [{ label: 'Kullan', target: {} }];
 
   return (
@@ -247,6 +253,7 @@ export function AbilityOutcome({ ability, result, error, onClose }: AbilityOutco
                 ))}
               </ul>
             )}
+            {result?.clue && <p className={styles.hint}>“{result.clue}”</p>}
             {result?.notes && <p className={styles.hint}>Sonuç not defterine eklendi.</p>}
           </>
         )}
