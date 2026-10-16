@@ -319,7 +319,7 @@ function crimeSceneNarratorRule(
   const scene = scenarioConfig.crimeScene;
   if (narratedLocationId !== 'crime_scene' || !scene) return '';
   return `
-11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}. Keep every description consistent with this picture. If the player lifts the cover, describe the body only in line with the absolute truth above, and never state the victim's name.`;
+11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit. Keep every description consistent with this picture. If the player lifts the cover, describe the body only in line with the absolute truth above, and never state the victim's name.`;
 }
 
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında

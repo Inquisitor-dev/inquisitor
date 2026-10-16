@@ -30,7 +30,7 @@ export function buildCaseBrief(
   const { crimeSceneClue, verification } = plan;
 
   const clueLine = crimeSceneClue.authentic
-    ? `- CRIME SCENE CLUE (GENUINE): The culprit accidentally left this real trace. You MUST use exactly this text inside the 'crime_scene' clue: "${crimeSceneClue.poolClueText}"`
+    ? `- CRIME SCENE CLUE (GENUINE): The culprit accidentally left this real trace. The 'crime_scene' clue MUST describe exactly this trace: "${crimeSceneClue.poolClueText}". Keep the same object, smell or mark and its meaning, but write the clue as one natural Turkish sentence together with its exact position at the scene. Do not paste the text in mid-sentence and do not repeat words such as "olay yerinde".`
     : `- CRIME SCENE CLUE (PLANTED): The culprit deliberately planted a fake clue to frame ${crimeSceneClue.implicatedNpcIds.map(who).join(' and ')}. Invent ONE concrete object or trace that is clearly linked to ${crimeSceneClue.implicatedNpcIds.length > 1 ? 'these people' : 'this person'} (something they own, make or use) and to nobody else, and put it in the 'crime_scene' clue.`;
 
   const { placement } = verification;
@@ -68,7 +68,7 @@ function crimeSceneLine(plan: CasePlan, scenarioType: string): string {
   const scene = config.crimeScene;
   if (!scene) return '';
   return `- MURDER LOCATION: The murder happened and the body was found at "${scene.label}" (${scene.description}). This place is NOT any suspect's home or workplace. Set the crime there in truthReveal and in every clue about the crime scene. The 'scenario' hook may say where the body was found.
-- THE BODY: When the Inquisitor arrives, the body lies on the ground, covered with ${config.crimeSceneBody}. Do not describe the body in a way that contradicts this (no hanging, sitting or standing body). Convey how the victim died through the clues, the testimony and truthReveal.`;
+- THE BODY: When the Inquisitor arrives, the body lies on the ground, covered with ${config.crimeSceneBody}. The people who found the body covered it; the culprit did not. Never write that the culprit covered, wrapped or hid the body with it. Do not describe the body in a way that contradicts this (no hanging, sitting or standing body). Convey how the victim died through the clues, the testimony and truthReveal.`;
 }
 
 export function buildScenarioPrompt(params: {
