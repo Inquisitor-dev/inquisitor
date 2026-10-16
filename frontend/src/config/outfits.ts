@@ -219,7 +219,7 @@ export const OUTFITS: Outfit[] = [
 // Karakter dosyaları bir gün önbellekte kalır (next.config.ts) ve adları sabittir. Adreslere eklenen
 // sürüm değişince tarayıcılar yeni dosyaları hemen indirir. art/tools/rebuild_character.sh her
 // üretimde bu değeri günceller; dosyalar elle değiştirildiyse burada elle artır.
-export const CHARACTER_ASSET_VERSION = '2026-10-16-2104';
+export const CHARACTER_ASSET_VERSION = '2026-10-16-2326';
 
 export const outfitBasePath = (id: string) => `/characters/${id}`;
 

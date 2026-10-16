@@ -45,6 +45,10 @@ CLIP_TRIM = {
     ("mavi_rozet", "pose"): (1, 185),
     # Şapkayı indirip başını eğme; sonraki bacak savurma ve öne eğilme atılır (kaynak 1-318)
     ("sis_dedektifi", "pose"): (1, 73),
+    # Kollarını açıp T-poza yakın esneme; öncesindeki uzun bekleme ve sonrası atılır (kaynak 1-345)
+    ("ayaz_izcisi", "pose"): (109, 235),
+    # Dönüp savuran poz; başlangıç duruşuna dönen son kısım korunur, sondaki bekleme atılır (kaynak 1-276)
+    ("gece_muhabiri", "pose"): (1, 241),
 }
 
 argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
@@ -104,6 +108,8 @@ bpy.ops.export_scene.gltf(
     export_animations=True,
     export_animation_mode="ACTIVE_ACTIONS",
     export_frame_range=True,
+    # Kırpılan klibin anahtarları 0. saniyeden başlasın (yoksa ilk kare başlangıç ofseti kadar bekler)
+    export_anim_slide_to_zero=True,
     export_force_sampling=True,
     export_image_format="WEBP",
     export_cameras=False,
