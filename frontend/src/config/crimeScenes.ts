@@ -58,3 +58,28 @@ export function getCrimeSceneImage(
   const state = crimeScene!.appearance === 'MESSY' ? 'messy' : 'tidy';
   return `/crime-scenes/${scenarioType}/${crimeScene!.id}_${state}.webp`;
 }
+
+// Bedenin görseldeki dikey yeri (0 üst, 1 alt), sadece beden karede aşağıda kalan görseller için.
+// Sohbet penceresi ekranın alt kısmını kapattığından bu görseller daha fazla yukarı kaydırılır.
+const CRIME_SCENE_FOCUS: Record<string, Record<string, number>> = {
+  cyberpunk: { back_alley: 0.72, data_center: 0.66 },
+  china: { dye_workshop: 0.72, bamboo_grove: 0.65, canal_bridge: 0.62 },
+};
+
+// Bedenin ekranda durması istenen yükseklik (sohbet penceresinin üstü)
+const FOCUS_TARGET = 0.42;
+const DEFAULT_SHIFT = 0.2;
+// Daha fazlası görseli fazla büyütür ve bulanıklaştırır
+const MAX_SHIFT = 0.6;
+
+// Görselin ne kadar yukarı kaydırılacağı (çerçeve yüksekliğinin oranı). Görsel çerçeveden bu oran kadar
+// uzun çizilir ve üstü kırpılır: görseldeki y noktası ekranda (1 + kayma) * y - kayma yüksekliğine düşer.
+export function getCrimeSceneShift(
+  scenarioType: string,
+  crimeScene: CrimeSceneInfo | null | undefined,
+): number {
+  const focus = crimeScene ? CRIME_SCENE_FOCUS[scenarioType]?.[crimeScene.id] : undefined;
+  if (focus === undefined) return DEFAULT_SHIFT;
+  const shift = (focus - FOCUS_TARGET) / (1 - focus);
+  return Math.min(MAX_SHIFT, Math.max(DEFAULT_SHIFT, shift));
+}

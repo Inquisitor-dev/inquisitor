@@ -11,7 +11,7 @@ import {
   getNpcDialogueGreeting,
 } from '@/config/dialogueConfig';
 import { getNpcProfile } from '@/config/npcProfiles';
-import { getCrimeSceneImage, getCrimeSceneLabel } from '@/config/crimeScenes';
+import { getCrimeSceneImage, getCrimeSceneLabel, getCrimeSceneShift } from '@/config/crimeScenes';
 import { getLocationLabel } from '@/config/locationLabels';
 import { getQuickQuestions } from '@/config/quickQuestions';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
@@ -607,6 +607,14 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
               src={portraitUrl}
               alt={profile.name}
               className={`${styles.characterImg} ${portraitUrl === crimeSceneImage ? styles.crimeSceneImg : ''}`}
+              style={
+                portraitUrl === crimeSceneImage
+                  ? (() => {
+                      const shift = getCrimeSceneShift(scenario, crimeScene);
+                      return { top: `${-shift * 100}%`, height: `${(1 + shift) * 100}%` };
+                    })()
+                  : undefined
+              }
               onError={() => {
                 if (portraitUrl === crimeSceneImage) setMissingImage(crimeSceneImage);
               }}
