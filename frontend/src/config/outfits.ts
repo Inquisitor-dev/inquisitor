@@ -161,12 +161,21 @@ export const OUTFITS: Outfit[] = [
   },
 ];
 
+// Karakter dosyaları bir gün önbellekte kalır (next.config.ts) ve adları sabittir. Adreslere eklenen
+// sürüm değişince tarayıcılar yeni dosyaları hemen indirir. art/tools/rebuild_character.sh her
+// üretimde bu değeri günceller; dosyalar elle değiştirildiyse burada elle artır.
+export const CHARACTER_ASSET_VERSION = '2026-10-16';
+
 export const outfitBasePath = (id: string) => `/characters/${id}`;
 
-export const outfitThumb = (id: string) => `${outfitBasePath(id)}/thumb.webp`;
+// Karakter klasöründeki bir dosyanın sürüm ekli adresi (ör. 'walk/east.webp')
+export const outfitAsset = (id: string, file: string) =>
+  `${outfitBasePath(id)}/${file}?v=${CHARACTER_ASSET_VERSION}`;
+
+export const outfitThumb = (id: string) => outfitAsset(id, 'thumb.webp');
 
 // Baş-omuz portresi (diyalog ekranı, menü)
-export const outfitPortrait = (id: string) => `${outfitBasePath(id)}/portrait.webp`;
+export const outfitPortrait = (id: string) => outfitAsset(id, 'portrait.webp');
 
 // Backend market eşyası id'si
 export const outfitMarketId = (id: string) => `outfit_${id}`;
