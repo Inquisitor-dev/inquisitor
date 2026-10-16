@@ -21,6 +21,7 @@ import {
 import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '@/store/useGameStore';
+import type { CrimeSceneInfo } from '@/store/slices/types';
 import { useMarketStore } from '@/store/useMarketStore';
 import { MARKET_ITEMS } from '../market/marketItems';
 import CharacterTurntable from '@/components/character/CharacterTurntable';
@@ -56,6 +57,7 @@ interface ActiveSession {
   difficulty?: string;
   activeWarrants?: string[];
   usedWarrants?: string[];
+  crimeScene?: CrimeSceneInfo | null;
 }
 
 export default function HomePage() {
@@ -69,6 +71,7 @@ export default function HomePage() {
     setWarrants,
     setDifficulty,
     setScenarioType,
+    setCrimeScene,
     setTruthReveal,
     setLocationClues,
     authToken,
@@ -346,6 +349,7 @@ export default function HomePage() {
       if (activeSession.timeOfDay !== undefined) setTimeOfDay(activeSession.timeOfDay);
       if (activeSession.notes) setNotes(activeSession.notes);
       if (activeSession.difficulty) setDifficulty(activeSession.difficulty);
+      setCrimeScene(activeSession.crimeScene ?? null);
       setTruthReveal(null);
       setLocationClues(null);
       setWarrants(activeSession.activeWarrants || [], activeSession.usedWarrants || []);
@@ -374,6 +378,7 @@ export default function HomePage() {
         id: string;
         scenario?: string;
         message?: string;
+        crimeScene?: CrimeSceneInfo | null;
       }>('/game-sessions', {
         difficulty,
         scenarioType,
@@ -386,6 +391,7 @@ export default function HomePage() {
         setSessionId(data.id);
         setDifficulty(difficulty);
         setScenarioType(scenarioType);
+        setCrimeScene(data.crimeScene ?? null);
         if (data.scenario) {
           setScenario(data.scenario);
         }

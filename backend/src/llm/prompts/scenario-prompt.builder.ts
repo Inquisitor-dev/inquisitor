@@ -1,5 +1,6 @@
 import {
   getLocalizedLocationLabel,
+  getScenarioConfig,
   type ScenarioLocationDefinition,
   type ScenarioNpcDefinition,
 } from '../../scenarios/scenario-config';
@@ -51,12 +52,23 @@ export function buildCaseBrief(
   return `CASE FACTS (decided by the game engine; do NOT change them):
 - CULPRIT: ${who(plan.culpritId)}. Innocent suspects: ${plan.innocentIds.map(who).join(', ')}.
 - MURDER STYLE: ${plan.murderStyle === 'HURRIED' ? 'HURRIED (unplanned, the culprit panicked)' : 'PLANNED (premeditated, the culprit staged the scene)'}.
+${crimeSceneLine(plan, scenarioType)}
 - CRIME SCENE APPEARANCE: ${plan.sceneState === 'MESSY' ? 'MESSY (disorder, signs of struggle)' : 'TIDY (orderly, almost nothing out of place)'}. The 'crime_scene' clue MUST describe the scene this way. The appearance does NOT tell whether the clue is genuine or planted; explain the appearance naturally in truthReveal.
 ${clueLine}
 ${verificationLine}
 - Return "verificationText": one Turkish sentence that states the verifying evidence above as a fact.
 - VICTIM: Invent the victim's full name and profession and return them in "victim". The 'scenario' text must NOT reveal the name, but the NPCs knew the victim and may talk about them.
 - ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.`;
+}
+
+// Cinayetin işlendiği yer ve cesedin görünüşü: oyundaki görsel her vakada aynı örtülü bedeni gösterir,
+// metin onunla çelişmesin diye ölüm şekli bedenin görünüşüyle değil, ipuçları ve tanıklarla anlatılır
+function crimeSceneLine(plan: CasePlan, scenarioType: string): string {
+  const config = getScenarioConfig(scenarioType, undefined, plan.crimeSceneId);
+  const scene = config.crimeScene;
+  if (!scene) return '';
+  return `- MURDER LOCATION: The murder happened and the body was found at "${scene.label}" (${scene.description}). This place is NOT any suspect's home or workplace. Set the crime there in truthReveal and in every clue about the crime scene. The 'scenario' hook may say where the body was found.
+- THE BODY: When the Inquisitor arrives, the body lies on the ground, covered with ${config.crimeSceneBody}. Do not describe the body in a way that contradicts this (no hanging, sitting or standing body). Convey how the victim died through the clues, the testimony and truthReveal.`;
 }
 
 export function buildScenarioPrompt(params: {

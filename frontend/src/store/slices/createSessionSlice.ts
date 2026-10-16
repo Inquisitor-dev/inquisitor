@@ -12,6 +12,7 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
   timeOfDay: 0,
   notes: '',
   scenario: null,
+  crimeScene: null,
 
   setSessionId: (id) =>
     set((state) =>
@@ -59,6 +60,8 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
       scenario,
     }),
 
+  setCrimeScene: (crimeScene) => set({ crimeScene }),
+
   advanceTime: () =>
     set((state) => ({
       timeOfDay: Math.min(4, state.timeOfDay + 1),
@@ -87,6 +90,7 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
       timeOfDay: 0,
       notes: '',
       scenario: null,
+      crimeScene: null,
       inventory: { activeWarrants: [], usedWarrants: [] },
       evidence: [],
       truthReveal: null,

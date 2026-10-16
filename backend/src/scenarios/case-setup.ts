@@ -25,6 +25,8 @@ export interface CasePlan {
   murderStyle: MurderStyle;
   // Olay yerinin görünüşü ipucunun gerçekliğinden bağımsızdır; ezberlenecek bir işaret olmasın diye
   sceneState: SceneState;
+  // Cinayetin işlendiği yer: evrenin olay yerlerinden biri (universes/*.ts crimeScenes)
+  crimeSceneId: string;
   crimeSceneClue: {
     authentic: boolean;
     // Gerçek izde havuzdan seçilen sabit metin; tuzakta metni yapay zekâ yazar
@@ -146,11 +148,15 @@ export function planCase(
     verification = { kind: 'FLAW', placement: pick(options, rng) };
   }
 
+  // En sonda seçilir: önceki kararların rastgele sırası değişmesin
+  const crimeSceneId = pick(scenarioConfig.crimeScenes, rng).id;
+
   return {
     culpritId,
     innocentIds,
     murderStyle,
     sceneState,
+    crimeSceneId,
     crimeSceneClue,
     verification,
   };
@@ -164,4 +170,10 @@ export interface CaseFacts extends CasePlan {
   victim: { name: string; profession: string };
   // Her masumun temize çıkma yolu: itiraf ettiği sır aynı zamanda mazeretidir
   alibis: Record<string, string>;
+}
+
+// Oturumun olay yeri id'si; olay yeri seçimi eklenmeden önce açılan vakalarda yoktur
+export function crimeSceneIdOf(caseFacts: unknown): string | undefined {
+  const id = (caseFacts as Partial<CaseFacts> | null)?.crimeSceneId;
+  return typeof id === 'string' ? id : undefined;
 }

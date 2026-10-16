@@ -6,6 +6,38 @@ export const cyberpunkUniverse: UniverseDefinition = {
   worldDescription: 'Set in a neon-lit, dystopian cyberpunk megacity named "Neon Prime".',
   styleInstruction:
     'It should read like a grim, tech-noir cyberpunk thriller. Use cyberpunk terminology such as cyberware, credits, neon, synths, black clinics, data brokers, and mega-corps.',
+  // Olay yerleri: her vakada biri rastgele seçilir (case-setup.ts); görseller frontend/public/crime-scenes/<evren>/
+  // Ceset her görselde örtülüdür; kurbanın cinsiyeti ve ölüm şekli görselden anlaşılmasın diye
+  crimeSceneBody:
+    'a sealed black body bag, behind a holographic police barrier',
+  crimeScenes: [
+    {
+      id: 'rooftop',
+      label: 'Çatı Katı',
+      description:
+        'a high-rise rooftop among neon billboards and air conditioning units',
+    },
+    {
+      id: 'metro',
+      label: 'Metro Peronu',
+      description: 'an empty maglev metro platform',
+    },
+    {
+      id: 'back_alley',
+      label: 'Neon Arka Sokak',
+      description: 'a narrow back alley with dumpsters and steaming vents',
+    },
+    {
+      id: 'data_center',
+      label: 'Terk Edilmiş Veri Merkezi',
+      description: 'an abandoned data center with rows of dark server racks',
+    },
+    {
+      id: 'capsule_hotel',
+      label: 'Kapsül Otel Koridoru',
+      description: 'a narrow capsule hotel corridor lined with sleeping pods',
+    },
+  ],
   locationLabels: {
     crime_scene: 'Olay Yeri',
     tavern: 'Karakol',

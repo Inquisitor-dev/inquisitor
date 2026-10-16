@@ -7,10 +7,12 @@ import { getInterior } from '@/config/interiorConfig';
 import { getLocationLabel } from '@/config/locationLabels';
 import { getPlayerHome } from '@/config/homeConfig';
 import { getNpcDialoguePortrait, DIALOGUE_CONFIG } from '@/config/dialogueConfig';
+import { getCrimeSceneImage, getCrimeSceneLabel } from '@/config/crimeScenes';
 import { getMapBackground, getMapName, TIME_LABELS } from '@/config/mapBackgrounds';
 import { hideScene, revealScene, showScene } from '@/components/SceneTransition/sceneStore';
 import { homeScene, interiorScene } from '@/components/SceneTransition/scenes';
 import { useGameStore, type EvidenceItem } from '../../store/useGameStore';
+import type { CrimeSceneInfo } from '@/store/slices/types';
 import { useMarketStore } from '@/store/useMarketStore';
 import { findOutfit, wearableOutfitId } from '@/config/outfits';
 import { useCharacterManifest } from '@/components/character/characterManifest';
@@ -86,6 +88,8 @@ export default function MapPage() {
     lastLocationId,
     setLastLocationId,
     inventory,
+    crimeScene,
+    setCrimeScene,
   } = useGameStore();
 
   // Zorluk seviyesine göre lokasyonları filtrele
@@ -146,8 +150,12 @@ export default function MapPage() {
           ? interiorScene(interior)
           : {
               kicker: 'Giriyorsun',
-              title: getLocationLabel(locId, scenarioType),
-              image: getNpcDialoguePortrait(scenarioType, locId),
+              title:
+                (locId === 'crime_scene' && getCrimeSceneLabel(scenarioType, crimeScene)) ||
+                getLocationLabel(locId, scenarioType),
+              image:
+                (locId === 'crime_scene' && getCrimeSceneImage(scenarioType, crimeScene)) ||
+                getNpcDialoguePortrait(scenarioType, locId),
             },
       );
       try {
@@ -178,7 +186,7 @@ export default function MapPage() {
         }
       }
     },
-    [sessionId, timeOfDay, scenarioType, advanceTime, router, armedAbility, rooftopLocationId, activateAbility, setArmedAbility]
+    [sessionId, timeOfDay, scenarioType, crimeScene, advanceTime, router, armedAbility, rooftopLocationId, activateAbility, setArmedAbility]
   );
 
   const handleArrive = useCallback(
@@ -268,11 +276,13 @@ export default function MapPage() {
             scenarioType?: string;
             activeWarrants?: string[];
             usedWarrants?: string[];
+            crimeScene?: CrimeSceneInfo | null;
           }>(`/game-sessions/${sessionId}`);
 
           if (data.scenarioType) {
             setScenarioType(data.scenarioType);
           }
+          setCrimeScene(data.crimeScene ?? null);
           setWarrants(data.activeWarrants || [], data.usedWarrants || []);
 
           try {
@@ -291,7 +301,7 @@ export default function MapPage() {
       }
     };
     if (hasHydrated) fetchSession();
-  }, [authToken, router, sessionId, setScenarioType, setWarrants, setEvidence, hasHydrated]);
+  }, [authToken, router, sessionId, setScenarioType, setCrimeScene, setWarrants, setEvidence, hasHydrated]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {

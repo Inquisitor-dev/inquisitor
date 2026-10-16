@@ -14,6 +14,15 @@ export interface ScenarioLocationDefinition {
   description: string;
 }
 
+// Cinayetin işlendiği yer: haritada görünmez, "Olay Yeri" düğmesiyle açılır
+export interface CrimeSceneDefinition {
+  id: string;
+  // Oyuncuya gösterilen Türkçe ad
+  label: string;
+  // Yapay zekâya verilen İngilizce tarif
+  description: string;
+}
+
 export interface ScenarioConfig {
   scenarioType: ScenarioType;
   settingLabel: string;
@@ -21,6 +30,11 @@ export interface ScenarioConfig {
   styleInstruction: string;
   npcDefinitions: ScenarioNpcDefinition[];
   locationDefinitions: ScenarioLocationDefinition[];
+  crimeScenes: CrimeSceneDefinition[];
+  // Cesedin üzerindeki örtü (görsellerle aynı); yapay zekâ cesedi buna göre anlatır
+  crimeSceneBody: string;
+  // Bu vakanın olay yeri; vaka planlanmadan önce ve eski vakalarda yok
+  crimeScene?: CrimeSceneDefinition;
 }
 
 export interface UniverseDefinition {
@@ -30,5 +44,7 @@ export interface UniverseDefinition {
   styleInstruction: string;
   npcs: ScenarioNpcDefinition[];
   locations: ScenarioLocationDefinition[];
+  crimeScenes: CrimeSceneDefinition[];
+  crimeSceneBody: string;
   locationLabels: Record<string, string>;
 }

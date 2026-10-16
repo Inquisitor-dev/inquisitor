@@ -93,7 +93,8 @@ Run each in its own directory.
   - Generates both NPC replies and the per-session scenario (story, truth reveal, per-NPC secret prompts, per-location clues), then runs a consistency-reconciliation pass.
   - The NPC system prompt ends with SECURITY RULES that treat player messages as in-world speech, never as instructions.
 - `scenarios/` — static game content.
-  - Each universe (`medieval`, `modern`, `cyberpunk`, `china`, `winter`) is one file in `scenarios/universes/` holding its NPC personas, locations and localized location labels, registered in `UNIVERSE_REGISTRY`.
+  - Each universe (`medieval`, `modern`, `cyberpunk`, `china`, `winter`) is one file in `scenarios/universes/` holding its NPC personas, locations, localized location labels and its 5 crime scenes (`crimeScenes`, plus `crimeSceneBody`, the cover over the body), registered in `UNIVERSE_REGISTRY`.
+  - `getScenarioConfig(type, difficulty, crimeSceneId)`: with the case's crime scene id (`crimeSceneIdOf(caseFacts)`), the `crime_scene` location is described to the LLM as that place, with the covered body. Pass it wherever NPC or narrator prompts are built.
   - `scenario-config.ts` is the facade (`getScenarioConfig`, `getLocalizedLocationLabel`, `normalizeScenarioType`). Difficulty `easy|medium|hard` picks the first 4/5/6 NPCs of the universe.
   - `clues-config.ts` holds clues tagged with the NPC ids they implicate.
 - A global `ThrottlerGuard` limits every route to 20 req/min.
@@ -103,6 +104,7 @@ Run each in its own directory.
 - **Location display names** come from each universe's `locationLabels` in `scenarios/universes/`. The frontend keeps its own copies (`config/locationLabels.ts`, `components/TruthRevealPanel.tsx`) that must stay identical.
 - **The case is planned in code, not by the LLM** (`planCase` in `scenarios/case-setup.ts`, called from `GameSessionsService.createSession`). The plan is stored as `GameSession.caseFacts`; the LLM only writes narrative around it.
   - A random culprit and a HURRIED (genuine clue) / PLANNED (planted clue) murder style.
+  - The crime scene (`crimeSceneId`): one of the universe's 5 places, picked last so earlier random choices keep their order. It is nobody's home or workplace and does not appear on the map. The story is written around it, and every character knows where the body was found (`publicCaseFacts`).
   - An information budget: the crime-scene clue eliminates exactly `ELIMINATION_TARGET[difficulty]` suspects.
   - A MESSY/TIDY scene appearance that is independent of the clue (deliberately hidden from players).
   - A verifying evidence item (CORROBORATION or FLAW) placed at a location or in one NPC's testimony, an alibi for each innocent, and the victim's name and profession.
@@ -111,6 +113,7 @@ Run each in its own directory.
 - **`GameSession.notes`** is the free-text "quick notes" (Hızlı Notlar). The crime-scene page sidebar and interior clue snippets still write to it, and the notebook shows it on its first spread.
 - **The case answer must never reach the client while a session is `ACTIVE`.**
   - Every response containing a session goes through `toPublicSession`, which strips `culpritId`, `truthReveal`, `locationClues` and `caseFacts` until the session is `WON`/`LOST`. Any new endpoint returning a session must do the same.
+  - It adds `crimeScene: { id, appearance }` (`MESSY`/`TIDY`, null for older cases), so the client can pick the scene's picture. The player sees both at the crime scene anyway.
   - Only the culprit's prompt contains the full truth. Innocent NPCs get only their own secret and alibi, and the testimony witness gets the verifying evidence text.
 - **Test mode (no AI):** with `ALLOW_TEST_MODE=true` on the backend, `POST /game-sessions` with `testMode: true` builds a canned scenario and NPCs answer with stock replies — no Gemini quota used, no quota counters touched. Use this for exercising game flow locally. Must stay off in production.
 
@@ -121,6 +124,7 @@ Run each in its own directory.
   - Per-universe frontend config folders each have an `index.ts` registry; `interiorConfig.ts` / `dialogueConfig.ts` only re-export them. `config/scenarioRegistry.ts` + `shared/types/scenario.ts` hold the universe list (names, map backgrounds, footsteps). A new universe needs an entry in each.
   - **Character stories and abilities:** `config/outfits.ts` holds each character's short `lore` and `quote`; `config/outfitStories.ts` holds the long story (paragraphs) and the abilities (name, summary, usage, rules). `components/character/OutfitStory.tsx` renders the ability cards and the "Detaylı Bak" modal in the market (cards and preview), wardrobe and lobby. Ability texts must never reveal the case answer and must match the server rules in `backend/src/abilities/`.
   - **Abilities in play** (`features/abilities/`): `useAbilities` reads the session's abilities; `AbilityControls` renders the ability chips, the target picker and the result sheet. The map shows most abilities (Kulis and Çatı Geçişi are armed, then used when entering a location), the dialogue screen shows the ones aimed at that suspect, and the board has Veri Sızdırma (click a string's knot).
+  - **Crime scene:** the bottom bar's "Olay Yeri" button opens `/interact/crime_scene`, the narrator in the dialogue screen. Its name and background come from the session's `crimeScene` (store, `config/crimeScenes.ts`): `public/crime-scenes/<universe>/<id>_tidy.webp` or `_messy.webp`, following the scene's appearance. A picture that does not exist yet falls back to the old background. The body is always covered so the picture fits every victim and way of death; the image prompts are in `docs/olay-yeri-gorselleri.md`. The labels in `config/crimeScenes.ts` must match the backend.
   - The dialogue screen (`interact/[npcId]`, `components/DialogueScreen`) has the "Kanıt Göster" picker (`components/ConfrontModal`, calls `/npcs/confront`) and a fear indicator under the NPC name.
     - "Hazır Sorular" toggles a row of preset questions (`config/quickQuestions.ts`, `getQuickQuestions`) that are sent with one click; the introduction uses the player's username and the town name. Sending one keeps the player's half-typed draft. Hidden while searching a location and at the crime scene.
   - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiors/<universe>.ts`, looked up with `getInterior`) are defined per universe; `medieval`, `cyberpunk`, `china`, `winter` and `modern` have them; other universes show a "henüz hazır değil" screen.

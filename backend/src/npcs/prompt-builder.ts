@@ -10,7 +10,7 @@ import {
   getLocalizedLocationLabel,
   ScenarioConfig,
 } from '../scenarios/scenario-config';
-import { CaseFacts } from '../scenarios/case-setup';
+import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
 import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 
 export interface ForcedConfessionCheckParams {
@@ -177,7 +177,7 @@ INVESTIGATION RULES FOR NARRATOR:
 7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
 8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.
 9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.
-10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.`;
+10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.${crimeSceneNarratorRule(scenarioConfig, narratedLocationId)}`;
   } else {
     combinedPrompt += `
 PUBLIC IDENTITY:
@@ -282,6 +282,17 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
   return combinedPrompt;
 }
 
+// Olay yerinin anlatıcısı oyuncunun ekranda gördüğü sahneyle çelişmesin: ceset yerde ve örtülü
+function crimeSceneNarratorRule(
+  scenarioConfig: ScenarioConfig,
+  narratedLocationId: string | null,
+): string {
+  const scene = scenarioConfig.crimeScene;
+  if (narratedLocationId !== 'crime_scene' || !scene) return '';
+  return `
+11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}. Keep every description consistent with this picture. If the player lifts the cover, describe the body only in line with the absolute truth above, and never state the victim's name.`;
+}
+
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında
 // işlendiğini sanmasın diye kurbanı ve cesedin bulunduğu yeri bilir
 function publicCaseFacts(
@@ -295,9 +306,16 @@ function publicCaseFacts(
       `- The victim is ${victim.name}${victim.profession ? `, ${victim.profession}` : ''}.`,
     );
   }
+  const scene = getScenarioConfig(
+    scenarioType,
+    undefined,
+    crimeSceneIdOf(caseFacts),
+  ).crimeScene;
   const sceneLabel = getLocalizedLocationLabel(scenarioType, 'crime_scene');
   lines.push(
-    `- The body was found at the crime scene (shown on the town map as "${sceneLabel}"). The murder did not happen at any other place in town, including yours.`,
+    scene
+      ? `- The body was found at "${scene.label}" (${scene.description}). Nobody lives or works there. The murder did not happen at any other place in town, including yours.`
+      : `- The body was found at the crime scene (shown on the town map as "${sceneLabel}"). The murder did not happen at any other place in town, including yours.`,
   );
   return lines.join('\n');
 }
