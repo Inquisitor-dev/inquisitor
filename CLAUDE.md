@@ -106,7 +106,7 @@ Run each in its own directory.
 - **Location display names** come from each universe's `locationLabels` in `scenarios/universes/`. The frontend keeps its own copies (`config/locationLabels.ts`, `components/TruthRevealPanel.tsx`) that must stay identical.
 - **The case is planned in code, not by the LLM** (`planCase` in `scenarios/case-setup.ts`, called from `GameSessionsService.createSession`). The plan is stored as `GameSession.caseFacts`; the LLM only writes narrative around it.
   - A random culprit and a HURRIED (genuine clue) / PLANNED (planted clue) murder style.
-  - The crime scene (`crimeSceneId`): one of the universe's 5 places, picked last so earlier random choices keep their order. It is nobody's home or workplace and does not appear on the map. The story is written around it, and every character knows where the body was found (`publicCaseFacts`).
+  - The crime scene (`crimeSceneId`): one of the universe's 5 places, picked last so earlier random choices keep their order. It is nobody's home or workplace and does not appear on the map. The story is written around it, and every character knows where the body was found (`publicCaseFacts`). The crime scene narrator gets the scene's appearance (`sceneState`) straight from `caseFacts`, so it matches the picture even when the generated clue leaves it out.
   - An information budget: the crime-scene clue eliminates exactly `ELIMINATION_TARGET[difficulty]` suspects.
   - A MESSY/TIDY scene appearance that is independent of the clue (deliberately hidden from players).
   - A verifying evidence item (CORROBORATION or FLAW) placed at a location or in one NPC's testimony, an alibi for each innocent, and the victim's name and profession.

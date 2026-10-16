@@ -155,6 +155,37 @@ describe('prompt-builder domain', () => {
       expect(narratorPrompt).toContain('covered with a coarse linen sheet');
     });
 
+    it.each([
+      ['TIDY', 'The scene is TIDY', 'The scene is MESSY'],
+      ['MESSY', 'The scene is MESSY', 'The scene is TIDY'],
+    ] as const)(
+      'olay yeri anlatıcısı görünüşü (%s) koddan alır',
+      (sceneState, expected, unexpected) => {
+        const prompt = buildNpcPrompt({
+          scenarioConfig: getScenarioConfig('medieval', 'easy', 'forest_path'),
+          session: {
+            ...baseSession,
+            caseFacts: {
+              ...baseSession.caseFacts,
+              crimeSceneId: 'forest_path',
+              sceneState,
+            },
+          },
+          npc: {
+            id: 'narrator_crime_scene',
+            name: 'Olay Yeri',
+            description: '',
+            basePrompt: '',
+          },
+          dynamicPrompt: '',
+          fearLevel: 0,
+          hasConfessed: false,
+        });
+        expect(prompt).toContain(expected);
+        expect(prompt).not.toContain(unexpected);
+      },
+    );
+
     it('arama izni veren makam için sistem izin durumunu ekler', () => {
       const prompt = buildNpcPrompt({
         scenarioConfig: config,
