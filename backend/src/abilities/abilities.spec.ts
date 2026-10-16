@@ -40,6 +40,17 @@ describe('yetenek tanımları', () => {
 });
 
 describe('availability', () => {
+  it('etkisi henüz yazılmamış yetenekler kendi karakterinde de kullanılamaz', () => {
+    const check = availability(
+      session({ characterId: 'kar_kahini' }),
+      ability('dream_reading'),
+    );
+    expect(check).toEqual({
+      available: false,
+      reason: 'Bu yetenek yakında aktif olacak.',
+    });
+  });
+
   it('günlük yetenek aynı gün ikinci kez kullanılamaz, ertesi gün kullanılır', () => {
     const used = recordUse({ uses: {} }, 'threat', 2);
     expect(

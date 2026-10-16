@@ -50,6 +50,12 @@ export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
   { id: 'outfit_kul_avcisi', category: 'outfit', title: 'Kül Avcısı', price: 900 },
   { id: 'outfit_kizil_devre', category: 'outfit', title: 'Kızıl Devre', price: 1200 },
   { id: 'outfit_mavi_rozet', category: 'outfit', title: 'Mavi Rozet', price: 1200 },
+  // Aşama 4 karakterleri: Jinling, Frosthold ve Millfield
+  { id: 'outfit_yesim_hekim', category: 'outfit', title: 'Yeşim Hekim', price: 1200 },
+  { id: 'outfit_kar_kahini', category: 'outfit', title: 'Kar Kâhini', price: 1200 },
+  { id: 'outfit_ayaz_izcisi', category: 'outfit', title: 'Ayaz İzcisi', price: 900 },
+  { id: 'outfit_gece_muhabiri', category: 'outfit', title: 'Gece Muhabiri', price: 700 },
+  { id: 'outfit_ak_turna', category: 'outfit', title: 'Ak Turna', price: 500 },
 ];
 
 // Karakter id'leri gardıroptaki adlarla değiştirildi. Eski id'yle yapılmış satın almalar yeni id'ye sayılır.

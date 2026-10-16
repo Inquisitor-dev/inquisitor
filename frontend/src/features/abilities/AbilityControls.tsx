@@ -7,13 +7,18 @@ import {
   Compass,
   DoorClosed,
   Ear,
+  Eye,
+  Feather,
   Footprints,
   Gavel,
+  HeartPulse,
   Hourglass,
   Lock,
   MoonStar,
   Network,
+  Quote,
   ScanSearch,
+  Snowflake,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -36,6 +41,11 @@ const ICONS: Record<AbilityId, LucideIcon> = {
   pulse: Activity,
   visor_lock: Lock,
   rooftop: MoonStar,
+  second_breath: HeartPulse,
+  deep_reflection: Feather,
+  dream_reading: Snowflake,
+  keen_eye: Eye,
+  verify_quote: Quote,
 };
 
 export interface AbilityOption {

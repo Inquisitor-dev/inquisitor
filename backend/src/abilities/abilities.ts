@@ -13,7 +13,12 @@ export type AbilityId =
   | 'data_leak'
   | 'pulse'
   | 'visor_lock'
-  | 'rooftop';
+  | 'rooftop'
+  | 'second_breath'
+  | 'deep_reflection'
+  | 'dream_reading'
+  | 'keen_eye'
+  | 'verify_quote';
 
 // DAILY: oyun gününde bir kez, CASE: vakada bir kez, PASSIVE: kendiliğinden çalışır
 export type AbilityLimit = 'DAILY' | 'CASE' | 'PASSIVE';
@@ -30,7 +35,7 @@ export interface AbilityDef {
 
 export const DEFAULT_CHARACTER_ID = 'engizitor';
 
-// Gardıroptaki 11 karakter; id'ler frontend config/outfits.ts ve market-catalog.ts ile aynı
+// Gardıroptaki 16 karakter; id'ler frontend config/outfits.ts ve market-catalog.ts ile aynı
 export const CHARACTER_IDS = [
   'engizitor',
   'engizitor_hanim',
@@ -43,6 +48,11 @@ export const CHARACTER_IDS = [
   'kizil_devre',
   'mavi_rozet',
   'neon_kuzgun',
+  'yesim_hekim',
+  'ak_turna',
+  'kar_kahini',
+  'ayaz_izcisi',
+  'gece_muhabiri',
 ] as const;
 
 export const ABILITIES: AbilityDef[] = [
@@ -130,7 +140,52 @@ export const ABILITIES: AbilityDef[] = [
     limit: 'DAILY',
     target: 'location',
   },
+  // Hüküm anında kendiliğinden devreye girer (vakada bir kez); düğmesi yok
+  {
+    id: 'second_breath',
+    characterId: 'yesim_hekim',
+    name: 'İkinci Nefes',
+    limit: 'PASSIVE',
+    target: 'none',
+  },
+  {
+    id: 'deep_reflection',
+    characterId: 'ak_turna',
+    name: 'Derin Tefekkür',
+    limit: 'PASSIVE',
+    target: 'none',
+  },
+  {
+    id: 'dream_reading',
+    characterId: 'kar_kahini',
+    name: 'Rüya Tabiri',
+    limit: 'DAILY',
+    target: 'none',
+  },
+  {
+    id: 'keen_eye',
+    characterId: 'ayaz_izcisi',
+    name: 'Keskin Göz',
+    limit: 'DAILY',
+    target: 'location',
+  },
+  {
+    id: 'verify_quote',
+    characterId: 'gece_muhabiri',
+    name: 'Teyit',
+    limit: 'DAILY',
+    target: 'npc',
+  },
 ];
+
+// Tanımı yapılmış ama etkisi henüz yazılmamış yetenekler: kullanılamaz, kendiliğinden de çalışmaz
+export const PENDING_ABILITIES: ReadonlySet<AbilityId> = new Set<AbilityId>([
+  'second_breath',
+  'deep_reflection',
+  'dream_reading',
+  'keen_eye',
+  'verify_quote',
+]);
 
 // Günün son dilimi (gece) ve vakanın son günü
 export const NIGHT = 4;
@@ -229,6 +284,8 @@ export function availability(
   if (session.status !== 'ACTIVE') return no('Bu soruşturma sona erdi.');
   if (session.characterId !== ability.characterId)
     return no('Bu yetenek bu vakadaki karakterine ait değil.');
+  if (PENDING_ABILITIES.has(ability.id))
+    return no('Bu yetenek yakında aktif olacak.');
   if (ability.limit === 'PASSIVE')
     return no('Bu yetenek kendiliğinden çalışır.');
 

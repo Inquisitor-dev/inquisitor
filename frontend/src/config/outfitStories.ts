@@ -15,6 +15,8 @@ export type OutfitStory = {
   abilities: OutfitAbility[];
   // Uzun hikâye, paragraf paragraf
   story: string[];
+  // Yetenekleri henüz oyunda çalışmıyorsa true: kartlarda "Yakında aktif" rozeti görünür
+  pending?: boolean;
 };
 
 // Yetenek sistemi oyunda çalışmaya başlayınca true yap. Kapalıyken kartlarda "Yakında" rozeti görünür.
@@ -250,6 +252,111 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
       'Bölge 13’ün çatılarında yaşar, şehre yukarıdan bakar. Neon tabelaların arasında dolaşan bir gölgedir; hiçbir kapıdan girmez, hiçbir ekranda görünmez. Kuzgunlar gibi parlayan her şeyi toplar, özellikle de sırları.',
       'Topladığı sırların bir kısmı onu avlayanlara ait. Hangisinin kime ait olduğunu kendisi de bilir ama bedelini ertelemeyi tercih ediyor. Her sır bir koz, her koz bir borç; hesabın bir gün çatıdan kendisini bulacağını biliyor.',
       'Kızıl ışıklı zırhlı derisi, kemerleri ve kayışlarıyla geceleri çalışır. Gündüz kapalı olan kapılar ona gece açılır, ama her gece bir sabahı götürür. “Bu şehirde ışık yalan söyler. Gölge söylemez.”',
+    ],
+  },
+
+  yesim_hekim: {
+    pending: true,
+    abilities: [
+      {
+        name: 'İkinci Nefes',
+        summary: 'Vakadaki ilk yanlış hükmün seni kaybettirmez; mahkûm ettiğin kişinin masum olduğu anlaşılır ve soruşturma sürer.',
+        usage: 'Vaka başına 1 kez',
+        rules: [
+          'Yanlış kişiyi mahkûm edersen vaka bitmez; o kişinin masum olduğu açıklanır ve gün kapanır.',
+          'Hüküm son günde verildiyse sana bir gün daha tanınır.',
+          'İkinci hükümle çözülen vakanın ödülü ve puanı yarıya iner, hızlı çözüm bonusu verilmez.',
+        ],
+      },
+    ],
+    story: [
+      'Jinling sarayının en genç başhekimiydi. Bir bahar sabahı imparatorun çayındaki acı kokuyu herkesten önce fark etti; üç gün üç gece başında bekledi ve onu ölümden döndürdü. Saray onu ödüllendirdi, ama zehri kimin koyduğunu sormayı unuttu.',
+      'O soruyu kendisi hiç unutmadı. Şüphelendiği kişiyi bir kez suçladı ve yanıldı; masum bir hizmetkâr sürgüne gönderildi. Bu yüzden artık hiçbir hükmü tek bakışta vermez. Ona göre ilk teşhis bir tahmindir; gerçek, ikinci bakışta görünür.',
+      'Şimdi yaşlı elleriyle saraydan uzakta, sıradan cinayetlerin peşinde. Nabız tutar, göz bebeklerine bakar, susan ağızların ardındaki korkuyu okur. Yanılırsa durmaz; nefesini toplar ve yeniden başlar. “Ceset bir kez susar. Ben ikinci kez dinlerim.”',
+    ],
+  },
+
+  kar_kahini: {
+    pending: true,
+    abilities: [
+      {
+        name: 'Rüya Tabiri',
+        summary: 'O gün tanıklık edebilecek biri varsa, onunla konuştuğunda kimse sormadan gördüğünü anlatır.',
+        usage: 'Günde 1 kez',
+        rules: [
+          'Etki gün sonuna kadar sürer; tanığın kim olduğunu söylemez.',
+          'Vakada tanık yoksa ya da onunla konuşmazsan hiçbir şey olmaz.',
+          'Tanığın anlattıkları defterine kayıt kartı olarak eklenir. Gece kullanılamaz.',
+        ],
+      },
+    ],
+    story: [
+      'Frosthold’un ak ağaç korusunda, buz tutmuş havuzun başında büyüdü. Kâhinler ona rüyaları yorumlamayı öğretti; kale komutanı bile sefere çıkmadan önce onun kapısını çalardı.',
+      'Bir gece rüyasında surun dibinde yatan bir adam gördü. Sabah koştuğunda adam oradaydı, buzun içinde. Kimse ona inanmadı; bazıları onu cadılıkla suçladı. O ise rüyanın bir uyarı değil, bir tanıklık olduğunu anladı: ölüleri herkes görür, ama gördüklerini anlatmaya cesaret edenler azdır.',
+      'Şimdi suskun tanıkların peşinde. Ona göre her cinayetin bir de gören gözü vardır; o göz susar, çünkü korkar. Kâhin o korkuyu rüyada çözer ve sabah olunca tanık, kimse sormadan konuşur. “Gözünü kapat. Tanık, uyuyanlara konuşur.”',
+    ],
+  },
+
+  ayaz_izcisi: {
+    pending: true,
+    abilities: [
+      {
+        name: 'Keskin Göz',
+        summary: 'Arama yetkin olan bir mekânda, gizli ipucu ilk aramanda bulunur.',
+        usage: 'Günde 1 kez',
+        rules: [
+          'Yalnızca arama izni olan ya da başka bir yolla aranabilen mekânlarda kullanılır.',
+          'Doğru yeri tahmin etmen gerekmez; ipucu ilk mesajında ortaya çıkar ve defterine eklenir.',
+          'Arama izni vermez; o mekânda zaten bulunacak ipucundan fazlasını göstermez.',
+        ],
+      },
+    ],
+    story: [
+      'Güneyden, sıcak bir liman şehrinden geldi; Frosthold’a ilk vardığında karı hiç görmemişti. Kale onu gülerek karşıladı. Bir kış sonra surun en dış nöbetini ondan başka kimse tutamıyordu.',
+      'Kar fırtınasında kaybolan bir devriyeyi tek başına buldu; izleri rüzgâr silmeden okumuştu. Ama devriyenin komutanı geri dönmedi ve gözcü, kardaki izlerin bir değil iki kişiye ait olduğunu hâlâ kimseye anlatamadı.',
+      'Şimdi suskunluğunu soruşturmaya taşıyor. Bir odaya girdiğinde konuşmaz; yerinden oynamış bir tabure, tozu silinmiş bir raf, yeni çakılmış bir çivi ona her şeyi anlatır. Aradığını bulmak için iki kez bakmasına gerek yok. “Kar her şeyi örter. Ama hiçbir şeyi silmez.”',
+    ],
+  },
+
+  gece_muhabiri: {
+    pending: true,
+    abilities: [
+      {
+        name: 'Teyit',
+        summary: 'Bir şüphelinin sana söylediği bir sözü başka bir şüpheliye okursun; söz gerçek olduğu için geçiştiremez, karşılık vermek zorundadır.',
+        usage: 'Günde 1 kez',
+        rules: [
+          'Yalnızca bir şüphelinin sana gerçekten söylediği cevaplardan seçebilirsin.',
+          'Sözü sahibine değil, başka bir şüpheliye okursun; bu bir soru hakkı harcar.',
+          'Korkuyu değiştirmez; cevap senin duyduğun konuşmalara dayanır.',
+        ],
+      },
+    ],
+    story: [
+      'Millfield Gazetesi’nin gece vardiyasına staj için girdi ve bir daha çıkmadı. Kasabada herkesin uyuduğu saatlerde polis telsizini dinler, karakolun önünde sabahlar, kimsenin sormadığı soruları sorar.',
+      'İlk büyük haberi bir yangındı. Polis dosyayı kaza diye kapattı; o ise üç tanığın birbirini yalanlayan ifadelerini yan yana koyup manşete taşıdı. Kovuldu. Bir hafta sonra kundakçı yakalandı ve geri çağrıldı. O günden beri kural tek: söylenen her söz kayda geçer, kayda geçen her söz sahibine geri okunur.',
+      'Şimdi Millfield’da yeni bir cinayet var ve o, not defteriyle yine en önde. Kimseyi suçlamaz; yalnızca birinin söylediğini ötekine okur ve yüzlerindeki değişimi fotoğraflar. “Kim ne dedi, bende kayıtlı. İnkâr etmek istersen buyur.”',
+    ],
+  },
+
+  ak_turna: {
+    pending: true,
+    abilities: [
+      {
+        name: 'Derin Tefekkür',
+        summary: 'Panoda Düşün’ü günde bir yerine iki kez kullanabilirsin.',
+        usage: 'Pasif · her gün',
+        rules: [
+          'Her oyun günü iki kez düşünebilirsin.',
+          'Değerlendirilecek ip yoksa hakkın harcanmaz.',
+          'Düşünmek ipleri değerlendirir, suçlunun adını asla söylemez.',
+        ],
+      },
+    ],
+    story: [
+      'Jinling’in dağ tapınağına bebekken bırakıldı. Keşişler ona yürümeden önce okumayı öğretti; çocukluğu kütüphanenin serin taşları arasında, turnaların her yıl aynı gün dönüşünü kayda geçirerek geçti.',
+      'Bir kış turnalar dönmedi. Herkes kötü bir alamet dedi; o ise kayıtları baştan okudu ve göç yolundaki bataklığın kurutulduğunu buldu. O günden beri bir soruya cevap aramadan önce soruyu tartar: acele eden akıl, çoğu zaman yanlış kapıyı çalar.',
+      'Tapınaktan ilk kez bir cinayet için indi. Kimseyi suçlamaz, kimseyi aklamaz; önce ipleri tek tek tartar, sonra bir kez daha. Onun için düşünmek bir mola değil, yürümenin ta kendisi. “Su durulunca dibi görünür.”',
     ],
   },
 };

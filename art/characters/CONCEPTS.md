@@ -1,6 +1,6 @@
 # Karakter Konseptleri
 
-Gardıropta 11 tam karakter var. Her karakter baştan sona tek bir görsel setidir; parça parça giydirme yok. Karakter listesi, adlar, nadirlikler ve fiyatlar `frontend/src/config/outfits.ts` ile aynıdır (id = klasör adı).
+Gardıropta 16 tam karakter var. Her karakter baştan sona tek bir görsel setidir; parça parça giydirme yok. Karakter listesi, adlar, nadirlikler ve fiyatlar `frontend/src/config/outfits.ts` ile aynıdır (id = klasör adı).
 Akış: Gemini referans görseli → görselden 3D → Mixamo (iskelet + yürüme/durma) → Blender render → `frontend/public/characters/<id>/`.
 
 | id | Ad | Nadirlik | Fiyat | Tema |
@@ -16,6 +16,11 @@ Akış: Gemini referans görseli → görselden 3D → Mixamo (iskelet + yürüm
 | `kizil_devre` | Kızıl Devre | efsanevi | 1200 | Neon Prime, paralı asker |
 | `mavi_rozet` | Mavi Rozet | efsanevi | 1200 | Neon Prime, polis |
 | `neon_kuzgun` | Neon Kuzgun | efsanevi | 1200 | Neon Prime, Bölge 13 |
+| `yesim_hekim` | Yeşim Hekim | efsanevi | 1200 | Jinling, saray hekimi |
+| `kar_kahini` | Kar Kâhini | efsanevi | 1200 | Frosthold, kuzey kâhini |
+| `ayaz_izcisi` | Ayaz İzcisi | nadir | 900 | Frosthold, sur gözcüsü |
+| `gece_muhabiri` | Gece Muhabiri | nadir | 700 | Millfield, 90'lar muhabiri |
+| `ak_turna` | Ak Turna | yaygın | 500 | Jinling, tapınak bilgini |
 
 Oyundan çıkarılan 4 karakterin (`kizil_yemin`, `jinling_golgesi`, `krom_serif`, `kizil_lotus`) görsel dosyaları `art/` ve `frontend/public/` altında yerinde duruyor, kodda kullanılmıyor.
 
@@ -41,7 +46,8 @@ Görselden-3D araçları bazı karakterlerde fazla parlak lake/vinil üretir. `a
 
 - Her karakter için 3 görsel: `<id>_front.png`, `<id>_back.png`, `<id>_side.png` (sol profil). Klasör: `art/characters/<id>/ref/`.
 - En-boy oranı 2:3 dikey (en az 1024×1536). Tam boy, ortalanmış; karakter yüksekliğin ~%85'ini kaplar.
-- A-poz (kollar gövdeden 30–40° açık), düz açık gri arka plan (`#D9D9D9`), düz ve gölgesiz ışık.
+- A-poz (kollar gövdeden 30–40° açık) ya da T-poz, düz açık gri arka plan (`#D9D9D9`), düz ve gölgesiz ışık. Model T-poz görselden üretilirse Mixamo eklemleri daha kolay yerleştirir; arka/yan görünüm de aynı pozda olmalı.
+- Kollar gövdeden ve paltodan net ayrılsın; kalçada çanta gibi kolla bacak arasında kalan eşya olmasın (görselden-3D aracı birleştirir).
 
 ## Oyun içi çıktı (Blender render)
 

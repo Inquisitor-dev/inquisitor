@@ -12,7 +12,12 @@ export type AbilityId =
   | 'data_leak'
   | 'pulse'
   | 'visor_lock'
-  | 'rooftop';
+  | 'rooftop'
+  | 'second_breath'
+  | 'deep_reflection'
+  | 'dream_reading'
+  | 'keen_eye'
+  | 'verify_quote';
 
 export interface AbilityInfo {
   id: AbilityId;
