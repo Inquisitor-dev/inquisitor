@@ -36,7 +36,7 @@ const locationNamesByScenario: Record<string, Record<string, string>> = {
     clinic: 'Bar',
   },
   china: {
-    crime_scene: 'Pazar Meydanı',
+    crime_scene: 'Olay Yeri',
     tavern: 'Çay Evi & Han',
     church: 'Muhafız Karargahı',
     graveyard: 'Kadim Tapınak',
@@ -45,7 +45,7 @@ const locationNamesByScenario: Record<string, Record<string, string>> = {
     clinic: 'Şifacı & Baharatçı',
   },
   winter: {
-    crime_scene: 'Buzlu Geçit',
+    crime_scene: 'Olay Yeri',
     tavern: 'Kış Hanı',
     church: 'Kutsal Yürek Ağacı',
     graveyard: 'Gözcü Kalesi',

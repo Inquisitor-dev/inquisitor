@@ -136,7 +136,13 @@ export class GameSessionsService {
   ): ScenarioDraft {
     const name = (id: string) =>
       scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id;
-    const sceneText = plan.sceneState === 'MESSY' ? 'Olay yeri dağınık.' : 'Olay yeri düzenli.';
+    const sceneLabel =
+      getScenarioConfig(
+        scenarioConfig.scenarioType,
+        undefined,
+        plan.crimeSceneId,
+      ).crimeScene?.label ?? 'Olay yeri';
+    const sceneText = `${sceneLabel} ${plan.sceneState === 'MESSY' ? 'dağınık' : 'düzenli'}.`;
     const clueText = plan.crimeSceneClue.authentic
       ? plan.crimeSceneClue.poolClueText
       : `${plan.crimeSceneClue.implicatedNpcIds.map(name).join(' ve ')} ile bağlantılı bir eşya (tuzak).`;
@@ -156,7 +162,7 @@ export class GameSessionsService {
     }
 
     return {
-      scenario: '[TEST MODU] Bu oturum yapay zekâ kullanılmadan oluşturuldu; hikâye üretilmedi.',
+      scenario: `[TEST MODU] Bu oturum yapay zekâ kullanılmadan oluşturuldu; hikâye üretilmedi. Ceset ${sceneLabel} mekânında bulundu.`,
       truthReveal: `[TEST MODU] Katil ${name(plan.culpritId)}. ${verificationText}`,
       culpritId: plan.culpritId,
       npcPrompts: {},

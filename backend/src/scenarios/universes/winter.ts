@@ -7,8 +7,39 @@ export const winterUniverse: UniverseDefinition = {
     'Set in the freezing, snow-covered northern stronghold of Frosthold, surrounded by ice cliffs and frozen forests.',
   styleInstruction:
     'It should read like a grim, frostbitten northern survival mystery or dark gothic fantasy. Emphasize the bitter freezing cold, wolf pelts, hearth fires, snowstorms, frozen tracks, and isolated paranoia.',
+  // Olay yerleri: her vakada biri rastgele seçilir (case-setup.ts); görseller frontend/public/crime-scenes/<evren>/
+  // Ceset her görselde örtülüdür; kurbanın cinsiyeti ve ölüm şekli görselden anlaşılmasın diye
+  crimeSceneBody: 'a heavy grey fur blanket dusted with snow',
+  crimeScenes: [
+    {
+      id: 'frozen_pass',
+      label: 'Donmuş Geçit',
+      description: 'a narrow windswept mountain pass between icy cliffs',
+    },
+    {
+      id: 'frozen_lake',
+      label: 'Buzlu Göl',
+      description: 'the edge of a frozen lake surrounded by dark pines',
+    },
+    {
+      id: 'hunter_hut',
+      label: 'Avcı Kulübesi',
+      description: "a small log hunter's hut outside the walls",
+    },
+    {
+      id: 'standing_stones',
+      label: 'Taş Dikitler',
+      description: 'a circle of ancient standing stones on a snowy hilltop',
+    },
+    {
+      id: 'storehouse',
+      label: 'Erzak Ambarı',
+      description:
+        'a timber storehouse full of barrels, grain sacks and dried meat',
+    },
+  ],
   locationLabels: {
-    crime_scene: 'Buzlu Geçit',
+    crime_scene: 'Olay Yeri',
     tavern: 'Kış Hanı',
     church: 'Kutsal Yürek Ağacı',
     graveyard: 'Gözcü Kalesi',
@@ -61,7 +92,11 @@ export const winterUniverse: UniverseDefinition = {
     },
   ],
   locations: [
-    { id: 'crime_scene', name: 'Frosthold Frozen Pass', description: 'The windswept snowfield and frozen pass where the victim was discovered.' },
+    {
+      id: 'crime_scene',
+      name: 'Frosthold crime scene',
+      description: 'The primary murder site under investigation.',
+    },
     { id: 'tavern', name: 'Hearthfire Tavern', description: "Torstein's warm timber tavern and stables." },
     { id: 'church', name: 'Ancient Heart Tree Grove', description: "Seer Valda's mystical weirwood shrine and frozen pool." },
     { id: 'graveyard', name: 'Frosthold Watchtower Keep', description: "Commander Bjorn's stone fortress and ramparts." },

@@ -10,6 +10,8 @@ export * from './universes';
 export function getScenarioConfig(
   scenarioType: string = 'medieval',
   difficulty: string = 'easy',
+  // Vakanın olay yeri (caseFacts.crimeSceneId); verilince 'crime_scene' mekânı o yer olarak anlatılır
+  crimeSceneId?: string | null,
 ): ScenarioConfig {
   const normalizedScenario = normalizeScenarioType(scenarioType);
   const normalizedDifficulty = normalizeDifficulty(difficulty);
@@ -18,9 +20,24 @@ export function getScenarioConfig(
 
   const npcCount = normalizedDifficulty === 'easy' ? 4 : normalizedDifficulty === 'medium' ? 5 : 6;
   const npcDefinitions = universe.npcs.slice(0, npcCount);
-  const locationDefinitions = universe.locations.filter(
-    (location) => location.id === 'crime_scene' || npcDefinitions.some((npc) => npc.id === location.id),
+  const crimeScene = universe.crimeScenes.find(
+    (scene) => scene.id === crimeSceneId,
   );
+  const locationDefinitions = universe.locations
+    .filter(
+      (location) =>
+        location.id === 'crime_scene' ||
+        npcDefinitions.some((npc) => npc.id === location.id),
+    )
+    .map((location) =>
+      location.id === 'crime_scene' && crimeScene
+        ? {
+            ...location,
+            name: crimeScene.label,
+            description: `The murder site: ${crimeScene.label}, ${crimeScene.description}. The body lies on the ground, covered with ${universe.crimeSceneBody}.`,
+          }
+        : location,
+    );
 
   return {
     scenarioType: normalizedScenario,
@@ -29,6 +46,9 @@ export function getScenarioConfig(
     styleInstruction: universe.styleInstruction,
     npcDefinitions,
     locationDefinitions,
+    crimeScenes: universe.crimeScenes,
+    crimeSceneBody: universe.crimeSceneBody,
+    crimeScene,
   };
 }
 

@@ -15,6 +15,7 @@ const genuineFacts = {
   innocentIds: ['tavern', 'church'],
   murderStyle: 'HURRIED',
   sceneState: 'MESSY',
+  crimeSceneId: 'well',
   crimeSceneClue: {
     authentic: true,
     poolClueId: 'x',

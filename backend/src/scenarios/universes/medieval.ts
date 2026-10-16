@@ -5,6 +5,41 @@ export const medievalUniverse: UniverseDefinition = {
   settingLabel: 'Ashenmoor',
   worldDescription: 'Set in the dark, medieval village of Ashenmoor.',
   styleInstruction: 'It should read like a grimdark medieval fantasy or historical detective novel.',
+  // Olay yerleri: her vakada biri rastgele seçilir (case-setup.ts); görseller frontend/public/crime-scenes/<evren>/
+  // Ceset her görselde örtülüdür; kurbanın cinsiyeti ve ölüm şekli görselden anlaşılmasın diye
+  crimeSceneBody: 'a coarse linen sheet',
+  crimeScenes: [
+    {
+      id: 'well',
+      label: 'Köy Kuyusu',
+      description:
+        'a small cobbled square around the old stone village well with a wooden winch',
+    },
+    {
+      id: 'bridge',
+      label: 'Taş Köprü',
+      description:
+        'an old moss-covered stone arch bridge over the dark river at the edge of the village',
+    },
+    {
+      id: 'forest_path',
+      label: 'Orman Patikası',
+      description:
+        'a narrow muddy path through the dark pine forest outside the village',
+    },
+    {
+      id: 'watchtower',
+      label: 'Yıkık Gözcü Kulesi',
+      description:
+        'the ruined ground floor of an abandoned stone watchtower with a collapsed roof',
+    },
+    {
+      id: 'stable',
+      label: 'Terk Edilmiş Ahır',
+      description:
+        'an abandoned wooden stable with empty stalls and old tools on the walls',
+    },
+  ],
   locationLabels: {
     crime_scene: 'Cinayet Mahalli',
     tavern: 'Taverna',

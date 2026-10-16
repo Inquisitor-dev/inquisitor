@@ -11,6 +11,7 @@ import {
   getNpcDialogueGreeting,
 } from '@/config/dialogueConfig';
 import { getNpcProfile } from '@/config/npcProfiles';
+import { getCrimeSceneImage, getCrimeSceneLabel } from '@/config/crimeScenes';
 import { getLocationLabel } from '@/config/locationLabels';
 import { getQuickQuestions } from '@/config/quickQuestions';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
@@ -87,6 +88,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     setEvidence,
     addEvidence,
     hasHydrated,
+    crimeScene,
   } = useGameStore();
 
   const { actualNpcKey, inferredScenario } = resolveNpcAlias(npcKey);
@@ -101,13 +103,26 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   }, []);
 
   const scenario = inferredScenario || urlScenario || scenarioType || 'medieval';
-  const profile = getNpcProfile(actualNpcKey, scenario) ?? {
+  const baseProfile = getNpcProfile(actualNpcKey, scenario) ?? {
     name: 'Meçhul Köylü',
     title: 'Gölgelerin arasından bir yabancı',
     icon: '👤',
   };
+  // Olay yeri her vakada evrenin 5 yerinden biridir: adı ve görseli o yerin
+  const crimeSceneLabel =
+    actualNpcKey === 'crime_scene' ? getCrimeSceneLabel(scenario, crimeScene) : null;
+  const profile = crimeSceneLabel
+    ? { ...baseProfile, name: crimeSceneLabel, title: 'Cinayet mahalli' }
+    : baseProfile;
 
-  const portraitUrl = getNpcDialoguePortrait(scenario, actualNpcKey);
+  const crimeSceneImage =
+    actualNpcKey === 'crime_scene' ? getCrimeSceneImage(scenario, crimeScene) : null;
+  // Görseli henüz çizilmemiş olay yerinde eski arka plan gösterilir
+  const [missingImage, setMissingImage] = useState<string | null>(null);
+  const portraitUrl =
+    crimeSceneImage && missingImage !== crimeSceneImage
+      ? crimeSceneImage
+      : getNpcDialoguePortrait(scenario, actualNpcKey);
   const interior = getInterior(scenario, actualNpcKey);
   const hasInterior = Boolean(interior);
 
@@ -540,7 +555,10 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
             <img
               src={portraitUrl}
               alt={profile.name}
-              className={styles.characterImg}
+              className={`${styles.characterImg} ${portraitUrl === crimeSceneImage ? styles.crimeSceneImg : ''}`}
+              onError={() => {
+                if (portraitUrl === crimeSceneImage) setMissingImage(crimeSceneImage);
+              }}
             />
             <div className={styles.portraitVignette} />
           </div>
@@ -550,10 +568,10 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
             {/* NPC İsim Rozeti (Sol Üstte Asılı) */}
             <div className={styles.nameBadge}>
               <span className={styles.nameBadgeText}>
-                {isInvestigating ? 'Fiziksel Çevre' : profile.name}
+                {isInvestigating && !crimeSceneLabel ? 'Fiziksel Çevre' : profile.name}
               </span>
               <span className={styles.nameBadgeTitle}>
-                {isInvestigating ? 'Mekân Araştırması' : profile.title}
+                {isInvestigating && !crimeSceneLabel ? 'Mekân Araştırması' : profile.title}
               </span>
             </div>
 
@@ -629,7 +647,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                 className={styles.textInput}
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
-                placeholder={`${profile.name}'e sorunu sor...`}
+                placeholder={isInvestigating ? 'Neyi incelemek istiyorsun?' : `${profile.name}'e sorunu sor...`}
                 disabled={loading}
                 maxLength={MAX_CHARS}
                 autoFocus

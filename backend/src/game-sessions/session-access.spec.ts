@@ -31,6 +31,23 @@ describe('toPublicSession', () => {
     expect(result).toMatchObject({ id: 'session-1', currentDay: 2 });
   });
 
+  it('olay yerinin mekânını ve görünüşünü aktif oturumda da verir, başka vaka gerçeğini vermez', () => {
+    const result = toPublicSession({
+      ...baseSession,
+      caseFacts: {
+        culpritId: 'mill',
+        crimeSceneId: 'well',
+        sceneState: 'MESSY',
+      },
+    });
+    expect(result.crimeScene).toEqual({ id: 'well', appearance: 'MESSY' });
+    expect(JSON.stringify(result)).not.toContain('mill');
+  });
+
+  it('olay yeri seçilmemiş eski vakada crimeScene boştur', () => {
+    expect(toPublicSession(baseSession).crimeScene).toBeNull();
+  });
+
   it.each(['WON', 'LOST'])('%s oturumda her şeyi gösterir', (status) => {
     const result = toPublicSession({ ...baseSession, status });
     expect(result).toHaveProperty('culpritId', 'mill');

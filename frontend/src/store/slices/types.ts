@@ -36,6 +36,12 @@ export interface AuthSlice {
   logout: () => void;
 }
 
+// Vakanın olay yeri (evrenin 5 olay yerinden biri) ve görünüşü; görseli seçmek için
+export interface CrimeSceneInfo {
+  id: string;
+  appearance: 'MESSY' | 'TIDY';
+}
+
 export interface SessionSlice {
   sessionId: string | null;
   difficulty: string;
@@ -48,6 +54,8 @@ export interface SessionSlice {
   timeOfDay: number;
   notes: string;
   scenario: string | null;
+  // Olay yeri seçimi eklenmeden önce açılan vakalarda null
+  crimeScene: CrimeSceneInfo | null;
 
   setSessionId: (id: string) => void;
   setDifficulty: (d: string) => void;
@@ -60,6 +68,7 @@ export interface SessionSlice {
   setTimeOfDay: (time: number) => void;
   setNotes: (notes: string) => void;
   setScenario: (scenario: string) => void;
+  setCrimeScene: (crimeScene: CrimeSceneInfo | null) => void;
   advanceTime: () => void;
   endDay: () => void;
   reset: () => void;
