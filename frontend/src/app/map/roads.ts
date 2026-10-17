@@ -28,52 +28,65 @@ const village: RoadNetwork = {
   // Karakter kapılar kadar uzun, fıçılar bel hizasında
   characterScale: 1.05,
   nodes: {
-    square: { x: 1285, y: 945 },
-    plaza: { x: 1440, y: 930 },
+    square: { x: 1336, y: 967 },
+    southFork: { x: 1336, y: 1050 },
+    clinicFork: { x: 1200, y: 1060 },
+    clinicDoor: { x: 1076, y: 1081 },
+    swFork: { x: 860, y: 1260 },
+    homeDoor: { x: 616, y: 1303 },
+    farmDoor: { x: 1595, y: 1349 },
+    churchDoor: { x: 800, y: 660 },
+    tavernDoor: { x: 1217, y: 858 },
+    millDoor: { x: 1863, y: 1048 },
+    graveyardDoor: { x: 2103, y: 414 },
     ne: { x: 1620, y: 835 },
-    se: { x: 1585, y: 945 },
-    millFork: { x: 1755, y: 1068 },
-    forkWest: { x: 1160, y: 990 },
-    churchDoor: { x: 800, y: 645 },
-    tavernDoor: { x: 1255, y: 840 },
-    graveyardDoor: { x: 2030, y: 375 },
-    millDoor: { x: 1868, y: 1022 },
-    clinicDoor: { x: 1120, y: 1030 },
-    farmDoor: { x: 1560, y: 1240 },
-    homeDoor: { x: 610, y: 1200 },
   },
   edges: [
     // Meydandan kuzeybatıya, iki taş direğin arasındaki kapıdan kilise avlusuna
     ['square', 'churchDoor', [
       { x: 1200, y: 880 }, { x: 1100, y: 820 }, { x: 1020, y: 775 }, { x: 965, y: 740 },
-      { x: 955, y: 690 }, { x: 920, y: 660 }, { x: 870, y: 655 }, { x: 825, y: 650 },
+      { x: 955, y: 690 }, { x: 920, y: 660 }, { x: 860, y: 660 },
     ]],
-    // Tavernaya her zaman meydandan, toprak alandan yaklaşılır (önündeki çimenli şeritten geçmez)
-    ['square', 'tavernDoor', [{ x: 1270, y: 885 }]],
-    ['square', 'plaza', [{ x: 1360, y: 940 }]],
-    ['plaza', 'ne', [{ x: 1580, y: 890 }]],
-    ['plaza', 'se', [{ x: 1530, y: 930 }]],
-    ['se', 'ne', [{ x: 1600, y: 890 }]],
+    // Tavernaya her zaman meydandan, toprak alandan yaklaşılır (önündeki basamakların dibine)
+    ['square', 'tavernDoor', [{ x: 1270, y: 890 }]],
+    // Meydandan düz aşağıya (güneye) ana yol ayrımına
+    ['square', 'southFork', []],
+    // Yol ayrımından sola (batıya) dönüp tabelanın yanından geçer
+    ['southFork', 'clinicFork', []],
+    // Yol ayrımından Revir basamakları önüne
+    ['clinicFork', 'clinicDoor', []],
+    // Güneybatı ana toprak yolu boyunca (Revir ile bostan arasından iner)
+    ['clinicFork', 'swFork', [
+      { x: 1120, y: 1090 }, { x: 1040, y: 1150 }, { x: 950, y: 1210 },
+    ]],
+    // Güneybatı yol ayrımından Evim kapısının basamakları önüne (batıya döner)
+    ['swFork', 'homeDoor', [
+      { x: 740, y: 1290 },
+    ]],
+    // Güneybatı yol ayrımından bostan çiti altındaki açık toprak yolla Çiftlik kapısına
+    ['swFork', 'farmDoor', [
+      { x: 950, y: 1270 }, { x: 1040, y: 1340 },
+      { x: 1140, y: 1410 }, { x: 1280, y: 1420 }, { x: 1400, y: 1400 },
+      { x: 1500, y: 1380 },
+    ]],
+    // Meydandan Değirmene (düz doğu-batı ekseninde, tabela altından ve değirmen taşının yanından)
+    ['square', 'millDoor', [
+      { x: 1480, y: 980 }, { x: 1630, y: 1020 }, { x: 1750, y: 1045 },
+    ]],
+    // Değirmen doğu yolundan aşağı kıvrılıp Çiftlik kapısının önündeki yola
+    ['millDoor', 'farmDoor', [
+      { x: 1880, y: 1150 }, { x: 1910, y: 1250 }, { x: 1870, y: 1340 },
+      { x: 1780, y: 1380 }, { x: 1690, y: 1370 },
+    ]],
+    // Meydandan kuzeydoğu mezarlık yoluna
+    ['square', 'ne', [
+      { x: 1480, y: 930 }, { x: 1580, y: 880 },
+    ]],
     // Kıvrılan kuzeydoğu yolu kuyunun batısından geçip çitin bittiği yerden mezarlığa girer
     ['ne', 'graveyardDoor', [
       { x: 1720, y: 815 }, { x: 1790, y: 772 }, { x: 1830, y: 715 }, { x: 1848, y: 662 },
       { x: 1854, y: 618 }, { x: 1866, y: 572 }, { x: 1897, y: 538 }, { x: 1945, y: 508 },
-      { x: 1995, y: 488 }, { x: 2045, y: 462 }, { x: 2072, y: 430 }, { x: 2060, y: 395 },
-    ]],
-    // Güneydoğu yolu tabelanın solundan geçer, değirmen önünde ikiye ayrılır
-    ['se', 'millFork', [{ x: 1640, y: 1000 }, { x: 1700, y: 1043 }]],
-    ['millFork', 'millDoor', [{ x: 1800, y: 1060 }, { x: 1840, y: 1040 }]],
-    // Meydandan batı yol ayrımına
-    ['square', 'forkWest', [{ x: 1230, y: 960 }]],
-    // Batı yol ayrımından Revir basamakları önüne
-    ['forkWest', 'clinicDoor', [{ x: 1140, y: 1010 }]],
-    // Revir kapısından açık toprak yol boyunca, iki evin arasından geçip Evim kapısına
-    ['clinicDoor', 'homeDoor', [
-      { x: 1050, y: 1100 }, { x: 950, y: 1180 }, { x: 830, y: 1240 }, { x: 700, y: 1240 },
-    ]],
-    // Güneydoğu meydanından açık toprak yolla bostan çitinin yanından Çiftlik kapısına
-    ['se', 'farmDoor', [
-      { x: 1630, y: 1020 }, { x: 1640, y: 1110 }, { x: 1600, y: 1190 },
+      { x: 1995, y: 488 }, { x: 2045, y: 462 }, { x: 2072, y: 430 },
     ]],
   ],
   doors: {

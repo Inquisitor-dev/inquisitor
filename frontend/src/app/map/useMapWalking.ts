@@ -19,7 +19,7 @@ const WALK_MAX_SPEED = 90;
 const WALK_MAX_DURATION = 9;
 const WALK_ACCEL_TIME = 0.25;
 const WALK_DECEL_DISTANCE = 30;
-const WALK_LOOKAHEAD = 24;
+const WALK_LOOKAHEAD = 12;
 
 export const depthScaleAt = (y: number, imageHeight: number) => 0.82 + 0.2 * (y / imageHeight);
 

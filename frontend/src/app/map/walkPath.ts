@@ -80,6 +80,6 @@ export function directionWithHysteresis(dx: number, dy: number, current: Directi
   const slice = Math.PI / 4;
   const currentAngle = DIRECTIONS.indexOf(current) * slice;
   const diff = Math.abs(Math.atan2(Math.sin(angle - currentAngle), Math.cos(angle - currentAngle)));
-  if (diff <= slice / 2 + (12 * Math.PI) / 180) return current;
+  if (diff <= slice / 2 + (4 * Math.PI) / 180) return current;
   return DIRECTIONS[(Math.round(angle / slice) + 8) % 8];
 }
