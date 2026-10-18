@@ -10,6 +10,12 @@ import {
 } from './prompts/npc-prompt.builder';
 import { buildBoardThoughtPrompt } from './prompts/board-prompt.builder';
 import {
+  buildVerdictJudgePrompt,
+  parseVerdictJudgement,
+  VerdictJudgeCase,
+  VerdictJudgement,
+} from './prompts/verdict-judge-prompt.builder';
+import {
   type Contradiction,
   buildContradictionPrompt,
   parseContradictions,
@@ -238,6 +244,30 @@ export class LlmService {
       this.logger.warn(
         `Board thought failed, falling back to template. ${error}`,
       );
+      return null;
+    }
+  }
+
+  // Hüküm Dosyası hakemi: oyuncunun olay anlatımını gerçekle karşılaştırır; başarısızlıkta null
+  async judgeVerdictNarrative(
+    judgeCase: VerdictJudgeCase,
+    narrative: string,
+    sessionId?: string,
+  ): Promise<VerdictJudgement | null> {
+    const prompt = buildVerdictJudgePrompt(judgeCase, narrative);
+
+    try {
+      const response = await this.complete(
+        { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
+        'Verdict judge',
+        30_000,
+        { kind: 'VERDICT_JUDGE', sessionId },
+      );
+      return parseVerdictJudgement(
+        response?.choices?.[0]?.message?.content || '',
+      );
+    } catch (error) {
+      this.logger.warn(`Verdict judge failed. ${error}`);
       return null;
     }
   }

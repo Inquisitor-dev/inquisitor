@@ -3,7 +3,10 @@ import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
-import { getScenarioConfig } from '../scenarios/scenario-config';
+import {
+  getScenarioConfig,
+  normalizeScenarioType,
+} from '../scenarios/scenario-config';
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
@@ -17,6 +20,25 @@ import {
 import { fearAfterNight, morningTimeOfDay } from '../abilities/ability-effects';
 
 import { MarketService } from '../market/market.service';
+import {
+  INVOLVEMENT_LABELS,
+  InvolvementKind,
+  MOTIVE_LABELS,
+  MOTIVES,
+  TIME_OF_DEATH_LABELS,
+  TIMES_OF_DEATH,
+  WEAPONS,
+} from '../scenarios/case-catalog';
+import {
+  MAX_NARRATIVE_LENGTH,
+  MAX_REPORT_EVIDENCE,
+  rewardMultiplier,
+  ScoredVerdict,
+  scoreVerdict,
+  templateJudgement,
+  VerdictReport,
+  verdictFactLines,
+} from './verdict/verdict-report';
 
 @Injectable()
 export class GameSessionsService {
@@ -256,7 +278,12 @@ export class GameSessionsService {
     return toPublicSession(updatedSession);
   }
 
-  async condemnNpc(sessionId: string, userId: string, npcId: string) {
+  async condemnNpc(
+    sessionId: string,
+    userId: string,
+    npcId: string,
+    report?: VerdictReport,
+  ) {
     this.logger.log(`Condemning NPC: ${npcId} for session: ${sessionId}`);
 
     const session = await findOwnedSession(this.prisma, sessionId, userId);
@@ -311,9 +338,25 @@ export class GameSessionsService {
 
     const newStatus = won ? 'WON' : 'LOST';
 
+    // Hüküm Dosyası: rapor gelmişse puanlanır (eski istemciler yalnızca katili gönderir)
+    const verdict = report
+      ? await this.scoreVerdictReport(session, report)
+      : null;
+
     const updatedSession = await this.prisma.gameSession.update({
       where: { id: sessionId },
-      data: { status: newStatus },
+      data: {
+        status: newStatus,
+        ...(verdict
+          ? {
+              verdictReport: {
+                condemnedNpcId: npcId,
+                report,
+                verdict,
+              } as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
+      },
     });
 
     let reward = null;
@@ -323,7 +366,10 @@ export class GameSessionsService {
           userId,
           session.id,
           session.currentDay,
-          { halved: !!abilityState.secondBreath },
+          {
+            halved: !!abilityState.secondBreath,
+            multiplier: verdict ? rewardMultiplier(verdict.total) : 1,
+          },
         );
       } catch (err: any) {
         this.logger.error(`Error awarding case reward: ${err.message}`);
@@ -337,7 +383,65 @@ export class GameSessionsService {
       message: won ? 'Doğru kişiyi buldun! Adalet yerini buldu.' : 'Masum birini mahkûm ettin.',
       session: updatedSession,
       reward,
+      verdict,
     };
+  }
+
+  // Raporu vaka gerçekleriyle puanlar; olay anlatımını yapay zekâ hakem değerlendirir.
+  // Gerçekleri olmayan çok eski vakalarda null döner.
+  private async scoreVerdictReport(
+    session: {
+      id: string;
+      scenarioType: string;
+      difficulty: string;
+      caseFacts: Prisma.JsonValue;
+      truthReveal: string | null;
+      isTestMode: boolean;
+    },
+    report: VerdictReport,
+  ): Promise<ScoredVerdict | null> {
+    const facts = session.caseFacts as unknown as CaseFacts | null;
+    if (!facts?.culpritId) return null;
+
+    const config = getScenarioConfig(session.scenarioType, session.difficulty);
+    const nameOf = (id: string) =>
+      config.npcDefinitions.find((n) => n.id === id)?.name ?? id;
+    const evidence = await this.prisma.evidence.findMany({
+      where: { sessionId: session.id },
+      select: {
+        id: true,
+        kind: true,
+        category: true,
+        sourceId: true,
+        text: true,
+      },
+    });
+
+    const narrative = report.narrative?.trim() ?? '';
+    let judgement: { score: number; comment: string } | null = null;
+    if (narrative) {
+      judgement = session.isTestMode
+        ? templateJudgement(facts, session.scenarioType, nameOf, narrative)
+        : await this.llm.judgeVerdictNarrative(
+            {
+              scenarioType: session.scenarioType,
+              truthReveal: session.truthReveal ?? '',
+              factLines: verdictFactLines(facts, session.scenarioType, nameOf),
+            },
+            narrative,
+            session.id,
+          );
+    }
+
+    return scoreVerdict({
+      facts,
+      scenarioType: session.scenarioType,
+      report,
+      evidence,
+      nameOf,
+      narrativeScore: judgement?.score ?? null,
+      judgeComment: judgement?.comment || undefined,
+    });
   }
 
   async consumeWarrant(sessionId: string, userId: string, location: string) {
@@ -381,6 +485,43 @@ export class GameSessionsService {
   }
 
   // Kanıt Defteri: oyuncunun bu vakada bulduğu kanıtlar (sadece oturumun sahibine)
+  // Hüküm Dosyası formunun seçenekleri. Hiçbiri vakanın cevabını söylemez: silahlar evrenin bütün
+  // listesidir, alanların varlığı yalnızca vakanın v2 olup olmadığını gösterir.
+  async getVerdictOptions(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    const facts = session.caseFacts as unknown as Partial<CaseFacts> | null;
+    const config = getScenarioConfig(session.scenarioType, session.difficulty);
+    return {
+      suspects: config.npcDefinitions.map((n) => ({
+        id: n.id,
+        name: n.name,
+        role: n.role,
+      })),
+      weapons: facts?.weaponId
+        ? WEAPONS[normalizeScenarioType(session.scenarioType)].map((w) => ({
+            id: w.id,
+            label: w.label,
+          }))
+        : [],
+      motives: facts?.motive
+        ? MOTIVES.map((id) => ({ id, label: MOTIVE_LABELS[id] }))
+        : [],
+      timesOfDeath: facts?.timeOfDeath
+        ? TIMES_OF_DEATH.map((id) => ({ id, label: TIME_OF_DEATH_LABELS[id] }))
+        : [],
+      involvementKinds: facts?.involvements?.length
+        ? (Object.keys(INVOLVEMENT_LABELS) as InvolvementKind[]).map((id) => ({
+            id,
+            label: INVOLVEMENT_LABELS[id],
+          }))
+        : [],
+      limits: {
+        evidence: MAX_REPORT_EVIDENCE,
+        narrative: MAX_NARRATIVE_LENGTH,
+      },
+    };
+  }
+
   async getEvidence(sessionId: string, userId: string) {
     await findOwnedSession(this.prisma, sessionId, userId);
     return this.prisma.evidence.findMany({
