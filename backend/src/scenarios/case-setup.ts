@@ -54,6 +54,9 @@ export interface CasePlan {
   verification: {
     kind: 'CORROBORATION' | 'FLAW';
     placement: EvidencePlacement;
+    // Yanılabilen tanıklık: tanık katili adıyla değil bir eşkâlle anlatır (ör. "deri önlüklü, aksayan biri").
+    // Tarif bu şüphelilerin hepsine uyar; katil içlerindedir. Eski vakalarda yoktur (tanık katili adıyla söyler).
+    witnessDescriptionFits?: string[];
   };
 
   // --- Vaka Motoru v2 (eski vakalarda yok) ---
@@ -80,6 +83,23 @@ export const FULLY_INNOCENT_COUNT: Record<string, number> = {
   easy: 1,
   medium: 1,
   hard: 2,
+};
+
+// Tanığın tarifinin uyduğu şüpheli sayısı (katil dahil)
+export const WITNESS_DESCRIPTION_FITS: Record<string, number> = {
+  easy: 2,
+  medium: 3,
+  hard: 3,
+};
+
+// Zorluğa göre en az emek: en ucuz çözüm en az bu kadar arama izni istemeli. Çözücü hangi mekânın
+// aranacağını bilerek seçtiği için bu, oyuncunun gerçek emeğinin alt sınırıdır. Zorda 2 izin şartını
+// hiçbir plan karşılayamıyor (her zaman tek izinlik bir yol kalıyor); zoru daha çok şüpheli, daha geniş
+// eşkâl ve iki tamamen masum NPC ayırır.
+export const MIN_WARRANTS: Record<string, number> = {
+  easy: 0,
+  medium: 1,
+  hard: 1,
 };
 
 // Kodla seçilen planın çözülebilir ve tek kanıta bağlı olmaması için en çok kaç kez yeniden çekileceği
@@ -133,7 +153,7 @@ export function planCase(
     const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
     for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
       plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
-      if (isPlanSound(plan)) return plan;
+      if (isPlanSound(plan, difficulty)) return plan;
     }
   }
   return plan!;
@@ -145,9 +165,13 @@ const DETAIL_ATTEMPTS = 8;
 // vakayı taşımamalı (en az iki bağımsız yol)
 const ALWAYS_AVAILABLE = new Set(['crime_scene', 'body']);
 
-export function isPlanSound(plan: CasePlan): boolean {
+// Sağlam plan: çözülebilir, zorluğa yetecek kadar emek ister ve tek bir kanıta bağlı değildir
+export function isPlanSound(plan: CasePlan, difficulty?: string): boolean {
   const graph = buildCaseGraph(plan);
-  if (!solveCase(graph).solvable) return false;
+  const solution = solveCase(graph);
+  if (!solution.solvable) return false;
+  const minWarrants = difficulty ? (MIN_WARRANTS[difficulty] ?? 0) : 0;
+  if (solution.warrantsUsed.length < minWarrants) return false;
   return criticalPoints(graph).every((id) => ALWAYS_AVAILABLE.has(id));
 }
 
@@ -305,14 +329,28 @@ function planBaseCase(
       implicatedNpcIds: implicated,
       eliminatedNpcIds: activeIds.filter((id) => !implicated.includes(id)),
     };
-    // Gerçek iz, ya katilin kendi mekânında ya da bir masumun tanıklığında doğrulanır
-    verification = {
-      kind: 'CORROBORATION',
-      placement:
-        rng() < 0.5
-          ? { type: 'LOCATION', locationId: culpritId }
-          : { type: 'TESTIMONY', npcId: pick(innocentIds, rng) },
-    };
+    // Gerçek iz, ya katilin kendi mekânında ya da bir masumun tanıklığında doğrulanır.
+    // Tanık katili adıyla değil bir eşkâlle anlatır; tarif katille birlikte birkaç kişiye uyar.
+    if (rng() < 0.5) {
+      verification = {
+        kind: 'CORROBORATION',
+        placement: { type: 'LOCATION', locationId: culpritId },
+      };
+    } else {
+      const witnessId = pick(innocentIds, rng);
+      const fitsCount =
+        WITNESS_DESCRIPTION_FITS[difficulty] ?? WITNESS_DESCRIPTION_FITS.easy;
+      const lookalikes = sample(
+        innocentIds.filter((id) => id !== witnessId),
+        fitsCount - 1,
+        rng,
+      );
+      verification = {
+        kind: 'CORROBORATION',
+        placement: { type: 'TESTIMONY', npcId: witnessId },
+        witnessDescriptionFits: [culpritId, ...lookalikes],
+      };
+    }
   } else {
     // Tuzak, katilin suçlu göstermeye çalıştığı belirli kişileri işaret eder
     const framed = sample(innocentIds, target, rng);

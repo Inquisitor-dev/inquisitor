@@ -5,9 +5,13 @@ import {
   findAuthenticClues,
   FULLY_INNOCENT_COUNT,
   isPlanSound,
+  MIN_WARRANTS,
   planCase,
+  WITNESS_DESCRIPTION_FITS,
 } from './case-setup';
 import { WEAPONS } from './case-catalog';
+import { buildCaseGraph } from './case-graph';
+import { solveCase } from './case-solver';
 
 const SCENARIOS = [
   'medieval',
@@ -181,7 +185,36 @@ describe('Vaka Motoru v2 planı', () => {
     (scenario, difficulty) => {
       const config = getScenarioConfig(scenario, difficulty);
       for (let i = 1; i <= 120; i++) {
-        expect(isPlanSound(planCase(config, difficulty, spread(i)))).toBe(true);
+        expect(
+          isPlanSound(planCase(config, difficulty, spread(i)), difficulty),
+        ).toBe(true);
+      }
+    },
+  );
+
+  it.each(DIFFICULTIES)(
+    '%s: tanık katili adıyla değil eşkâlle anlatır; en ucuz çözüm zorluğa yeten emeği ister',
+    (difficulty) => {
+      const config = getScenarioConfig('china', difficulty);
+      for (let i = 1; i <= 150; i++) {
+        const plan = planCase(config, difficulty, spread(i));
+        const { placement, witnessDescriptionFits } = plan.verification;
+        if (
+          plan.verification.kind === 'CORROBORATION' &&
+          placement.type === 'TESTIMONY'
+        ) {
+          expect(witnessDescriptionFits).toContain(plan.culpritId);
+          expect(witnessDescriptionFits).not.toContain(placement.npcId);
+          expect(witnessDescriptionFits).toHaveLength(
+            WITNESS_DESCRIPTION_FITS[difficulty],
+          );
+        } else {
+          expect(witnessDescriptionFits).toBeUndefined();
+        }
+        const solution = solveCase(buildCaseGraph(plan));
+        expect(solution.warrantsUsed.length).toBeGreaterThanOrEqual(
+          MIN_WARRANTS[difficulty],
+        );
       }
     },
   );

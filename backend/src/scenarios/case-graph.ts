@@ -121,16 +121,26 @@ export function buildCaseGraph(
       requires: [CRIME_SCENE_CLUE_ID, VERIFICATION_CLUE_ID],
       eliminates: crimeSceneClue.eliminatedNpcIds,
     });
-    // Katilin mekânında izle eşleşen kanıt ya da katili gören tanık katili doğrudan gösterir
-    deductions.push({
-      id: 'verification-points-at-culprit',
-      requires:
-        placement.type === 'LOCATION'
-          ? [CRIME_SCENE_CLUE_ID, VERIFICATION_CLUE_ID]
-          : [VERIFICATION_CLUE_ID],
-      eliminates: [],
-      identifies: culpritId,
-    });
+    const fits = verification.witnessDescriptionFits;
+    if (placement.type === 'TESTIMONY' && fits) {
+      // Yanılabilen tanıklık: tanığın tarifi uymayanları eler, katili adıyla göstermez
+      deductions.push({
+        id: 'witness-description',
+        requires: [VERIFICATION_CLUE_ID],
+        eliminates: suspects.filter((id) => !fits.includes(id)),
+      });
+    } else {
+      // Katilin mekânında izle eşleşen kanıt (ya da eski vakalarda katili adıyla anlatan tanık) katili gösterir
+      deductions.push({
+        id: 'verification-points-at-culprit',
+        requires:
+          placement.type === 'LOCATION'
+            ? [CRIME_SCENE_CLUE_ID, VERIFICATION_CLUE_ID]
+            : [VERIFICATION_CLUE_ID],
+        eliminates: [],
+        identifies: culpritId,
+      });
+    }
   } else {
     // Tuzak ortaya çıkınca suçlanmaya çalışılanlar temize çıkar
     deductions.push({
