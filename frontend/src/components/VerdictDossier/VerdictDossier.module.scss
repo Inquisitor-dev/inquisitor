@@ -1,0 +1,469 @@
+// Hüküm Dosyası: mühürlü bir mahkeme dosyası. Menü ve marketle aynı dil: koyu zemin, kan kırmızısı,
+// altın vurgular, Playfair başlıklar, roma rakamları.
+$blood: #8a0303;
+$gold: #e0bb5e;
+$paper: #e8dcc4;
+$muted: #8a7f72;
+$line: #3d342d;
+$card: #251f1b;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  // Haritanın alt çubuğunun (1000) ve yetenek penceresinin (1200) üstünde
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+}
+
+.dossier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 680px;
+  max-height: calc(100dvh - 48px);
+  background: #1a1512;
+  border: 1px solid $line;
+  border-top: 3px solid $blood;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  color: $paper;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: $muted;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.header {
+  padding: 22px 24px 14px;
+  border-bottom: 1px solid $line;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  color: $blood;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 4px 0 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: $paper;
+}
+
+.steps {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepDot {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid $line;
+  border-radius: 50%;
+  color: $muted;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.78rem;
+}
+
+.stepDone {
+  border-color: rgba($gold, 0.5);
+  color: $gold;
+}
+
+.stepCurrent {
+  border-color: $blood;
+  background: $blood;
+  color: #fff;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.hint {
+  margin: 0 0 16px;
+  color: $muted;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.empty {
+  color: $muted;
+  text-align: center;
+}
+
+.error {
+  margin: 12px 0 0;
+  color: #e57373;
+  font-size: 0.9rem;
+}
+
+// Katil seçimi
+.suspectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.suspect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: $card;
+  border: 1px solid $line;
+  border-radius: 6px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    border-color: rgba($blood, 0.7);
+    background: #332924;
+  }
+}
+
+.suspectActive {
+  border-color: $blood;
+  background: rgba($blood, 0.18);
+  box-shadow: inset 0 0 0 1px $blood;
+}
+
+.portrait,
+.portraitIcon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid $line;
+  object-fit: cover;
+  object-position: top;
+}
+
+.portraitIcon {
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+}
+
+.suspectText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.suspectName {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.02rem;
+  color: $paper;
+}
+
+.suspectRole {
+  color: $muted;
+  font-size: 0.8rem;
+}
+
+// Dayanak kanıtlar
+.evidenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidence {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: $card;
+  border: 1px solid $line;
+  border-radius: 6px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: rgba($gold, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.evidenceActive {
+  border-color: $gold;
+  background: rgba($gold, 0.08);
+}
+
+.checkbox {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border: 1px solid $muted;
+  border-radius: 3px;
+  color: #1a1512;
+
+  .evidenceActive & {
+    background: $gold;
+    border-color: $gold;
+  }
+}
+
+.evidenceText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evidenceTitle {
+  color: $gold;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.evidenceBody {
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+// Seçenek düğmeleri (silah, motif, saat, bağ)
+.group {
+  margin-bottom: 18px;
+}
+
+.groupTitle {
+  margin: 0 0 8px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $paper;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice {
+  padding: 7px 12px;
+  background: $card;
+  border: 1px solid $line;
+  border-radius: 999px;
+  color: $paper;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($gold, 0.6);
+  }
+}
+
+.choiceActive {
+  background: $blood;
+  border-color: $blood;
+  color: #fff;
+}
+
+// Olay anlatımı
+.narrative {
+  width: 100%;
+  padding: 12px;
+  background: $card;
+  border: 1px solid $line;
+  border-radius: 6px;
+  color: $paper;
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: $gold;
+  }
+}
+
+.counter {
+  margin: 6px 0 0;
+  color: $muted;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+// Mühür özeti
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 18px;
+  margin: 0 0 18px;
+
+  dt {
+    color: $muted;
+    font-size: 0.85rem;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.summaryCulprit {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  color: $blood;
+  font-weight: 700;
+}
+
+.warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid $blood;
+  background: rgba($blood, 0.1);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid $line;
+}
+
+.navBtn,
+.sealBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.navBtn {
+  background: transparent;
+  border: 1px solid $line;
+  color: $paper;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    color: $gold;
+  }
+}
+
+.sealBtn {
+  background: $blood;
+  border: 1px solid $blood;
+  color: #fff;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #a50505;
+  }
+}
+
+@media (max-width: 560px) {
+  .header,
+  .body,
+  .footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .suspectGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .navBtn,
+  .sealBtn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+// Kısa ekranlarda (yatay telefon) başlık küçülür, form alanına yer kalır
+@media (max-height: 560px) {
+  .overlay {
+    padding: 8px;
+  }
+
+  .dossier {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .header {
+    padding-top: 10px;
+    padding-bottom: 8px;
+  }
+
+  .title {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+  }
+
+  .stepDot {
+    width: 24px;
+    height: 24px;
+    font-size: 0.68rem;
+  }
+}

@@ -4,10 +4,15 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { TruthRevealPanel } from '../../components/TruthRevealPanel';
+import { getSuspectsForScenario } from '@/config/npcProfiles';
+import VerdictReportCard from './components/VerdictReportCard';
 
 function ResultContent() {
   const searchParams = useSearchParams();
-  const { reset, truthReveal, locationClues, scenarioType } = useGameStore();
+  const { reset, truthReveal, locationClues, scenarioType, difficulty, caseOutcome } = useGameStore();
+  // Hüküm Dosyası ile biten vakada raporun puanı; süre dolunca ya da eski istemcide yok
+  const suspects = getSuspectsForScenario(scenarioType, difficulty);
+  const nameOf = (id: string) => suspects.find((s) => s.id === id)?.name ?? id;
 
   const won = searchParams.get('won') === 'true';
   const message = searchParams.get('message') || '';
@@ -86,6 +91,10 @@ function ResultContent() {
             </span>
           )}
         </div>
+      )}
+
+      {caseOutcome && searchParams.get('reason') !== 'timeout' && (
+        <VerdictReportCard outcome={caseOutcome} nameOf={nameOf} />
       )}
 
       {(truthReveal || (locationClues && Object.keys(locationClues).length > 0)) && (

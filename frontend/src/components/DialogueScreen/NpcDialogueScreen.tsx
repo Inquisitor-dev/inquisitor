@@ -38,6 +38,9 @@ import DialogueHistoryDrawer, { type DialogueMessage } from './components/Dialog
 import ConfrontModal from './components/ConfrontModal/ConfrontModal';
 import QuoteModal, { type QuoteOption } from './components/QuoteModal/QuoteModal';
 import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
+import VerdictDossier from '@/components/VerdictDossier/VerdictDossier';
+import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
+import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
 import styles from './NpcDialogueScreen.module.scss';
 import { useAbilities } from '@/features/abilities/useAbilities';
 import AbilityControls from '@/features/abilities/AbilityControls';
@@ -82,6 +85,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     currentDay,
     lastDay,
     applySecondBreath,
+    clearedNpcIds,
     setTimeOfDay,
     timeOfDay,
     setNotes,
@@ -160,6 +164,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const teyit = abilities.abilities.find((a) => a.id === 'verify_quote');
   const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [isVerdictOpen, setIsVerdictOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -481,48 +486,22 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   };
 
-  const handleCondemn = () => {
+  // Hüküm Dosyası mühürlenince: hata dosyaya geri döner, orada gösterilir
+  const handleCondemn = async (npcId: string, report: VerdictReportInput) => {
     if (!sessionId) return;
+    const data = await condemnCase(sessionId, npcId, report);
+    setIsVerdictOpen(false);
 
-    setConfirmModal({
-      isOpen: true,
-      title: 'Nihai Hüküm',
-      message: `${profile.name} adlı kişiyi mahkûm etmek istediğine emin misin? Bu karar geri alınamaz.`,
-      onConfirm: async () => {
-        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
-        try {
-          const data = await api.post<{
-            session?: { truthReveal?: string; locationClues?: Record<string, string>; lastDay?: number; timeOfDay?: number };
-            reward?: { tokens?: number; score?: number };
-            won?: boolean;
-            spared?: boolean;
-            clearedNpcId?: string;
-            message?: string;
-          }>(`/game-sessions/${sessionId}/condemn`, { npcId: actualNpcKey });
+    // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır, gün kapanır
+    if (data.spared && data.clearedNpcId) {
+      applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
+      if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
+      abilities.refresh();
+      router.push('/map');
+      return;
+    }
 
-          // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır, gün kapanır
-          if (data.spared && data.clearedNpcId) {
-            applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
-            if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
-            abilities.refresh();
-            router.push('/map');
-            return;
-          }
-
-          if (data.session && data.session.truthReveal) {
-            useGameStore.getState().setTruthReveal(data.session.truthReveal);
-          }
-          if (data.session && data.session.locationClues) {
-            useGameStore.getState().setLocationClues(data.session.locationClues);
-          }
-          const rewardTokens = data.reward?.tokens ? `&rewardTokens=${data.reward.tokens}` : '';
-          const scoreEarned = data.reward?.score ? `&scoreEarned=${data.reward.score}` : '';
-          router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message ?? '')}${rewardTokens}${scoreEarned}`);
-        } catch (err) {
-          logger.error('Failed to condemn', err);
-        }
-      },
-    });
+    router.push(finishCase(data, npcId));
   };
 
   // Anlık soru ve cevap: son oyuncu sorusu ve son NPC cevabı
@@ -837,7 +816,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                 {!isInvestigating && !isCrimeScene && (
                   <button
                     className={`${styles.utilityBtn} ${styles.condemnUtilityBtn}`}
-                    onClick={handleCondemn}
+                    onClick={() => setIsVerdictOpen(true)}
                     title="Şüpheliyi doğrudan suçlu ilan et ve yargıla"
                   >
                     <Scale size={13} />
@@ -893,6 +872,15 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         message={confirmModal.message}
         onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
         onConfirm={confirmModal.onConfirm}
+      />
+
+      {/* ─── HÜKÜM DOSYASI ─── */}
+      <VerdictDossier
+        isOpen={isVerdictOpen}
+        onClose={() => setIsVerdictOpen(false)}
+        initialCulpritId={actualNpcKey}
+        excludeIds={clearedNpcIds}
+        onSubmit={handleCondemn}
       />
 
       {/* ─── BİLDİRİM TOAST ─── */}

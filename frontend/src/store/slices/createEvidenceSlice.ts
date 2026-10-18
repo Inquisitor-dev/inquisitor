@@ -5,6 +5,7 @@ export const createEvidenceSlice: GameSliceCreator<EvidenceSlice> = (set) => ({
   truthReveal: null,
   locationClues: null,
   lastLocationId: null,
+  caseOutcome: null,
 
   setEvidence: (items) => set({ evidence: items }),
 
@@ -21,4 +22,6 @@ export const createEvidenceSlice: GameSliceCreator<EvidenceSlice> = (set) => ({
   setLocationClues: (clues) => set({ locationClues: clues }),
 
   setLastLocationId: (id) => set({ lastLocationId: id }),
+
+  setCaseOutcome: (outcome) => set({ caseOutcome: outcome }),
 });

@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand';
+import type { CaseOutcome } from '@/features/verdict/verdictTypes';
 
 // Kanıt Defteri kaydı. ITEM: mekânda bulunan fiziksel nesne (Envanter),
 // STATEMENT: bir karakterin ifadesi (Not defterine otomatik yazılır)
@@ -97,12 +98,15 @@ export interface EvidenceSlice {
   truthReveal: string | null;
   locationClues: Record<string, string> | null;
   lastLocationId: string | null;
+  // Hüküm Dosyası'nın sonucu: sonuç ekranı raporun puanını buradan okur
+  caseOutcome: CaseOutcome | null;
 
   setEvidence: (items: EvidenceItem[]) => void;
   addEvidence: (items: EvidenceItem[]) => void;
   setTruthReveal: (truth: string | null) => void;
   setLocationClues: (clues: Record<string, string> | null) => void;
   setLastLocationId: (id: string | null) => void;
+  setCaseOutcome: (outcome: CaseOutcome | null) => void;
 }
 
 export type GameState = AuthSlice & SessionSlice & InventorySlice & EvidenceSlice;
