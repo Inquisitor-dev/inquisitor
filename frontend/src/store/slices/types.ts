@@ -4,7 +4,8 @@ import type { StateCreator } from 'zustand';
 // STATEMENT: bir karakterin ifadesi (Not defterine otomatik yazılır)
 export interface EvidenceItem {
   id: string;
-  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION';
+  // BODY: örtü altındaki yara; TESTIMONY: cinayete bağlı sırrın ifadesi; ALIBI: mazeret doğrulaması (Vaka Motoru v2)
+  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION' | 'BODY' | 'TESTIMONY' | 'ALIBI';
   category: 'ITEM' | 'STATEMENT';
   sourceId: string;
   text: string;

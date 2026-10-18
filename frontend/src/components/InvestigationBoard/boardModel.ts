@@ -86,6 +86,8 @@ export function evidencePhoto(scenarioType: string, item: EvidenceItem): string 
 
 export function evidenceTitle(scenarioType: string, item: EvidenceItem): string {
   if (item.kind === 'CONFESSION') return 'İtiraf';
+  if (item.kind === 'ALIBI') return 'Mazeret';
+  if (item.kind === 'BODY') return 'Beden İncelemesi';
   if (item.category === 'STATEMENT') return 'Tanıklık';
   if (item.sourceId === 'crime_scene') return 'Olay Yeri İzi';
   return `Kanıt · ${getLocationLabel(item.sourceId, scenarioType)}`;

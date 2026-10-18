@@ -6,6 +6,7 @@ import {
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
+import { linkPromptLines } from './case-statements';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
@@ -213,7 +214,14 @@ Your public role is ${canonicalNpc?.role ?? npc.description}.
 ${canonicalNpc?.personaPrompt ?? npc.basePrompt}
 
 YOUR PERSONAL SECRET/ROLE IN THIS:
-${dynamicPromptText}
+${dynamicPromptText}${linkPromptLines(
+      caseFacts,
+      npc.id,
+      (id) =>
+        scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+      session.scenarioType,
+      EVIDENCE_TAG.statement,
+    )}
 `;
 
     combinedPrompt += `
@@ -352,7 +360,7 @@ function crimeSceneNarratorRule(
         ? ' The scene is TIDY: everything around the body is orderly, nothing is knocked over and there are no signs of a struggle. Never describe trampled ground, scattered objects or other disorder.'
         : '';
   return `
-11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.`;
+11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
 }
 
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında

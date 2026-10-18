@@ -493,6 +493,8 @@ export class NpcsService {
         locationClues: sessionLocationClues,
         reply: finalReply,
         nameOf: (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
+        playerMessage: userMessage,
+        scenarioType: currentState.session.scenarioType,
       }),
     );
 

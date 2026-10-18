@@ -66,6 +66,22 @@ export function evidenceImpact(params: {
   if (evidence.kind === 'VERIFICATION') {
     return targetNpcId === culpritId ? 'IMPLICATING' : 'IRRELEVANT';
   }
+  // Yara, aleti bilmeden veren kişiyi tedirgin eder: aletin onun elinden çıktığını anlar
+  if (evidence.kind === 'BODY') {
+    const helper = caseFacts?.involvements?.find(
+      (i) => i.kind === 'UNWITTING_HELP' && i.npcId === targetNpcId,
+    );
+    return helper ? 'IMPLICATING' : 'IRRELEVANT';
+  }
+  // Kurbanın son konuşmada anlattığı dert katili sıkıştırır
+  if (evidence.kind === 'TESTIMONY') {
+    const lastWords = caseFacts?.involvements?.some(
+      (i) => i.kind === 'LAST_CONVERSATION' && i.npcId === evidence.sourceId,
+    );
+    return lastWords && targetNpcId === culpritId
+      ? 'IMPLICATING'
+      : 'IRRELEVANT';
+  }
   if (evidence.kind === 'CLUE') {
     if (evidence.sourceId === 'crime_scene') {
       const implicated = caseFacts?.crimeSceneClue.implicatedNpcIds ?? [];
