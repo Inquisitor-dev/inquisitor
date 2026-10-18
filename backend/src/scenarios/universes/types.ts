@@ -1,3 +1,5 @@
+import type { Temperament } from '../case-catalog';
+
 export type ScenarioType = 'medieval' | 'modern' | 'cyberpunk' | 'china' | 'winter';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -6,6 +8,8 @@ export interface ScenarioNpcDefinition {
   name: string;
   role: string;
   personaPrompt: string;
+  // Mizaç: itiraf eşiğini belirler (case-catalog.ts TEMPERAMENT_THRESHOLD); yoksa NORMAL
+  temperament?: Temperament;
 }
 
 export interface ScenarioLocationDefinition {

@@ -60,7 +60,7 @@ describe('prompt-builder domain', () => {
       caseFacts: {
         victim: { name: 'Lord Aldous', profession: 'Lord' },
         weapon: 'Zehir',
-        motive: 'İntikam',
+        motive: 'REVENGE' as const,
         alibis: {
           tavern: 'Gece boyu bardaydı.',
         },

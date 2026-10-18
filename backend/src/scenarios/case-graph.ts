@@ -22,7 +22,11 @@ export interface ClueNode {
   pressures: { npcId: string; amount: number }[];
   // Tek başına elediği şüpheliler (ör. bir masumun mazeret kanıtı)
   eliminates: string[];
+  // Oyun sonu raporunda kanıtladığı gerçekler (silah, motif, ölüm saati)
+  proves?: CaseFactKey[];
 }
+
+export type CaseFactKey = 'WEAPON' | 'MOTIVE' | 'TIME_OF_DEATH';
 
 // Birden çok kanıtın birlikte söylediği şey (ör. iz + doğrulayan kanıt = iz gerçektir)
 export interface Deduction {
@@ -51,15 +55,24 @@ const PRESSURE_DECISIVE = 7;
 
 export const CRIME_SCENE_CLUE_ID = 'crime_scene';
 export const VERIFICATION_CLUE_ID = 'verification';
+export const BODY_CLUE_ID = 'body';
 export const locationClueId = (locationId: string) => `location:${locationId}`;
 export const confessionClueId = (npcId: string) => `confession:${npcId}`;
+export const testimonyClueId = (npcId: string) => `testimony:${npcId}`;
+export const alibiClueId = (npcId: string) => `alibi:${npcId}`;
 
-// Bugünkü (v1) vaka planından grafik: olay yeri izi, doğrulayan kanıt, mekân ipuçları ve itiraflar.
-// v2'de cinayete bağlı sırlar bu grafiğe yeni kanıtlar olarak eklenecek.
+// Vaka planından grafik: olay yeri izi, doğrulayan kanıt, mekân ipuçları ve itiraflar; v2 planlarında
+// bunlara beden ve cinayete bağlı sırların getirdiği kanıtlar eklenir.
 export function buildCaseGraph(
   plan: Pick<
     CasePlan,
-    'culpritId' | 'innocentIds' | 'crimeSceneClue' | 'verification'
+    | 'culpritId'
+    | 'innocentIds'
+    | 'crimeSceneClue'
+    | 'verification'
+    | 'weaponId'
+    | 'involvements'
+    | 'fearThresholds'
   >,
   options: {
     startFear?: Record<string, number>;
@@ -127,19 +140,43 @@ export function buildCaseGraph(
     });
   }
 
-  // Her mekânın gizli ipucu orada yaşayanın sırrını anlatır. Masumun sırrı aynı zamanda mazeretidir.
-  // Doğrulayan kanıtın konduğu mekânda sır ipucu yoktur.
+  const involvements = plan.involvements ?? [];
+  const kindOf = (npcId: string) =>
+    involvements.find((i) => i.npcId === npcId)?.kind;
+  const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+
+  // Beden: örtü kaldırılınca yaranın türü görülür (silahın ilk ipucu). Silahı bilmeden veren kişiyi
+  // tedirgin eder, çünkü aletin ya da zehrin onun elinden çıktığını anlar.
+  if (plan.weaponId) {
+    clues.push({
+      id: BODY_CLUE_ID,
+      source: { kind: 'CRIME_SCENE' },
+      requires: [],
+      pressures: involvements
+        .filter((i) => i.kind === 'UNWITTING_HELP')
+        .map((i) => ({ npcId: i.npcId, amount: PRESSURE_IMPLICATING })),
+      eliminates: [],
+      proves: ['WEAPON'],
+    });
+  }
+
+  // Her mekânın gizli ipucu orada yaşayanın sırrını anlatır. Masumun sırrı çoğunlukla mazeretidir; ama
+  // cesetten eşya alanın ya da katile bilmeden alet verenin mekânındaki ipucu onu temize çıkarmaz,
+  // tersine şüpheli gösterir. Doğrulayan kanıtın konduğu mekânda sır ipucu yoktur.
   const verificationLocation =
     placement.type === 'LOCATION' ? placement.locationId : null;
   for (const npcId of suspects) {
     if (npcId === verificationLocation) continue;
-    const innocent = npcId !== culpritId;
+    const kind = kindOf(npcId);
+    const clearsOwner =
+      npcId !== culpritId && kind !== 'SCAVENGER' && kind !== 'UNWITTING_HELP';
     clues.push({
       id: locationClueId(npcId),
       source: { kind: 'LOCATION', locationId: npcId },
       requires: [],
       pressures: [{ npcId, amount: PRESSURE_DECISIVE }],
-      eliminates: innocent ? [npcId] : [],
+      eliminates: clearsOwner ? [npcId] : [],
+      proves: npcId === culpritId ? ['MOTIVE'] : undefined,
     });
   }
 
@@ -151,7 +188,66 @@ export function buildCaseGraph(
       requires: [],
       pressures: [],
       eliminates: [npcId],
+      // Cesedi bulup eşya alan, ölümün ne zaman olduğunu bilir
+      proves: kindOf(npcId) === 'SCAVENGER' ? ['TIME_OF_DEATH'] : undefined,
     });
+  }
+
+  // Cinayete bağlı sırların getirdiği kanıtlar (doğrulayan kanıtın tanığı kendi kanıtını zaten taşır)
+  for (const inv of involvements) {
+    if (inv.npcId === witnessId) continue;
+    switch (inv.kind) {
+      case 'WITNESS':
+        // O saatte başka bir masumu başka yerde görmüştür; olay yeri sorulunca anlatır
+        if (inv.aboutNpcId) {
+          clues.push({
+            id: testimonyClueId(inv.npcId),
+            source: { kind: 'TESTIMONY', npcId: inv.npcId },
+            requires: [CRIME_SCENE_CLUE_ID],
+            pressures: [],
+            eliminates: [inv.aboutNpcId],
+            proves: ['TIME_OF_DEATH'],
+          });
+        }
+        break;
+      case 'LAST_CONVERSATION':
+        // Kurbanın son konuşmada kimden korktuğunu söyler: motifi gösterir, katili sıkıştırır
+        clues.push({
+          id: testimonyClueId(inv.npcId),
+          source: { kind: 'TESTIMONY', npcId: inv.npcId },
+          requires: [],
+          pressures: [{ npcId: culpritId, amount: PRESSURE_IMPLICATING }],
+          eliminates: [],
+          proves: ['MOTIVE'],
+        });
+        break;
+      case 'UNWITTING_HELP':
+        // İtiraf eden, aleti ya da zehri kime verdiğini söyler; yara türüyle birleşince katili gösterir
+        if (plan.weaponId) {
+          deductions.push({
+            id: `weapon-chain:${inv.npcId}`,
+            requires: [confessionClueId(inv.npcId), BODY_CLUE_ID],
+            eliminates: [],
+            identifies: culpritId,
+          });
+        }
+        break;
+      case 'NONE':
+        // Tamamen masumun mazeretini başka biri doğrular; sorulunca rahatça anlatır
+        if (inv.aboutNpcId) {
+          clues.push({
+            id: alibiClueId(inv.npcId),
+            source: { kind: 'TESTIMONY', npcId: inv.aboutNpcId },
+            requires: [],
+            pressures: [],
+            eliminates: [inv.npcId],
+          });
+        }
+        break;
+      default:
+        // SHARED_MOTIVE ve SCAVENGER mekân ipucu ve itirafla işler (yukarıda)
+        break;
+    }
   }
 
   return {
@@ -162,7 +258,12 @@ export function buildCaseGraph(
     startFear: options.startFear ?? {},
     fearThreshold:
       options.fearThreshold ??
-      Object.fromEntries(suspects.map((id) => [id, DEFAULT_FEAR_THRESHOLD])),
+      Object.fromEntries(
+        suspects.map((id) => [
+          id,
+          plan.fearThresholds?.[id] ?? DEFAULT_FEAR_THRESHOLD,
+        ]),
+      ),
     warrantLimit: options.warrantLimit ?? MAX_WARRANTS_PER_CASE,
   };
 }

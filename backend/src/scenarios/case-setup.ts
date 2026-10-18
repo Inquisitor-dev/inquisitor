@@ -1,5 +1,17 @@
 import { ClueDefinition, SCENARIO_CLUES } from './clues-config';
 import { ScenarioConfig } from './scenario-config';
+import {
+  DEFAULT_FEAR_THRESHOLD,
+  InvolvementKind,
+  MOTIVES,
+  MotiveId,
+  TEMPERAMENT_THRESHOLD,
+  TIMES_OF_DEATH,
+  TimeOfDeath,
+  WEAPONS,
+} from './case-catalog';
+import { buildCaseGraph } from './case-graph';
+import { criticalPoints, solveCase } from './case-solver';
 
 // Vakanın kodla belirlenen gerçekleri. Yapay zekâ bu kararları değiştirmez, sadece etraflarına
 // hikâye yazar. Hüküm Dosyası ve Kanıt Defteri bu kayda göre puanlayacak/eşleştirecek.
@@ -43,7 +55,35 @@ export interface CasePlan {
     kind: 'CORROBORATION' | 'FLAW';
     placement: EvidencePlacement;
   };
+
+  // --- Vaka Motoru v2 (eski vakalarda yok) ---
+  // Cinayet aleti (case-catalog.ts WEAPONS), motif ve ölüm saati: oyun sonu raporunda bu kimliklerle puanlanır
+  weaponId?: string;
+  motive?: MotiveId;
+  timeOfDeath?: TimeOfDeath;
+  // Her masumun cinayetle bağı: sırlar soruşturmaya bir parça ekler
+  involvements?: Involvement[];
+  // Kişiliğe göre itiraf eşiği
+  fearThresholds?: Record<string, number>;
 }
+
+export interface Involvement {
+  npcId: string;
+  kind: InvolvementKind;
+  // Bağın ilgili olduğu kişi: tanığın o saatte başka yerde gördüğü masum, bilmeden yardım edilen katil,
+  // kurbanın son konuşmada korktuğunu söylediği kişi, tamamen masumun mazeretini doğrulayan kişi
+  aboutNpcId?: string;
+}
+
+// Masumların kaçı tamamen masum (cinayetle hiç bağı yok)
+export const FULLY_INNOCENT_COUNT: Record<string, number> = {
+  easy: 1,
+  medium: 1,
+  hard: 2,
+};
+
+// Kodla seçilen planın çözülebilir ve tek kanıta bağlı olmaması için en çok kaç kez yeniden çekileceği
+export const MAX_PLAN_ATTEMPTS = 60;
 
 type Rng = () => number;
 
@@ -78,16 +118,164 @@ export function findAuthenticClues(
   });
 }
 
+// Vakayı kodla planlar ve çözücüden geçirir: plan çözülemiyorsa ya da tek bir kanıta bağlıysa
+// yapay zekâ çağrılmadan yeniden çekilir. Hiçbiri geçemezse en son plan döner (testler bunun olmadığını garanti eder).
 export function planCase(
   scenarioConfig: ScenarioConfig,
   difficulty: string,
   rng: Rng = Math.random,
 ): CasePlan {
+  // Cinayet tarzı bir kez seçilir ve sabit kalır: yeniden çekme, sağlam çıkması kolay olan tarzı kayırmasın
+  const murderStyle: MurderStyle = rng() < 0.6 ? 'HURRIED' : 'PLANNED';
+  let plan: CasePlan | null = null;
+  for (let attempt = 0; attempt < MAX_PLAN_ATTEMPTS; attempt++) {
+    // Önce aynı temel vaka için sırlar ve ayrıntılar yeniden çekilir, olmazsa temel vaka da yenilenir
+    const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
+    for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
+      plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
+      if (isPlanSound(plan)) return plan;
+    }
+  }
+  return plan!;
+}
+
+const DETAIL_ATTEMPTS = 8;
+
+// Olay yeri izi ve beden her zaman elde olduğu için kritik sayılmaz; geri kalan hiçbir kanıt tek başına
+// vakayı taşımamalı (en az iki bağımsız yol)
+const ALWAYS_AVAILABLE = new Set(['crime_scene', 'body']);
+
+export function isPlanSound(plan: CasePlan): boolean {
+  const graph = buildCaseGraph(plan);
+  if (!solveCase(graph).solvable) return false;
+  return criticalPoints(graph).every((id) => ALWAYS_AVAILABLE.has(id));
+}
+
+// Çözücüden geçmemiş tek bir plan taslağı (tanı ve testler için)
+export function planCaseDraft(
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng = Math.random,
+): CasePlan {
+  const murderStyle: MurderStyle = rng() < 0.6 ? 'HURRIED' : 'PLANNED';
+  const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
+  return withCaseDetails(base, scenarioConfig, difficulty, rng);
+}
+
+// Temel vakaya v2 ayrıntılarını ekler: silah, motif, ölüm saati, sırlar ve kişiliğe göre eşik
+function withCaseDetails(
+  base: CasePlan,
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng,
+): CasePlan {
+  const weapons = WEAPONS[scenarioConfig.scenarioType];
+  // Aceleyle işlenen cinayette katil elinin altındakini kullanır; zehir gibi hazırlık isteyenler planlıdır
+  const weaponPool =
+    base.murderStyle === 'HURRIED'
+      ? weapons.filter((w) => w.improvised)
+      : weapons;
+  return {
+    ...base,
+    weaponId: pick(weaponPool, rng).id,
+    motive: pick(MOTIVES, rng),
+    timeOfDeath: pick(TIMES_OF_DEATH, rng),
+    involvements: planInvolvements(base, difficulty, rng),
+    fearThresholds: Object.fromEntries(
+      scenarioConfig.npcDefinitions.map((npc) => [
+        npc.id,
+        npc.temperament
+          ? TEMPERAMENT_THRESHOLD[npc.temperament]
+          : DEFAULT_FEAR_THRESHOLD,
+      ]),
+    ),
+  };
+}
+
+// Mekâna bağlı sırlar (ipucu o kişinin mekânında durur); doğrulayan kanıtın konduğu mekânda olamazlar
+const LOCATION_BOUND: InvolvementKind[] = [
+  'SHARED_MOTIVE',
+  'UNWITTING_HELP',
+  'SCAVENGER',
+];
+const LINKED_KINDS: InvolvementKind[] = [
+  'WITNESS',
+  'SHARED_MOTIVE',
+  'UNWITTING_HELP',
+  'SCAVENGER',
+  'LAST_CONVERSATION',
+];
+
+// Masumlara cinayetle bağlı sırlar dağıtır. Doğrulayan kanıtın tanığı kendi rolünü taşır;
+// kalanlardan bazıları tamamen masumdur, diğerleri birbirinden farklı birer bağ alır.
+export function planInvolvements(
+  plan: Pick<CasePlan, 'culpritId' | 'innocentIds' | 'verification'>,
+  difficulty: string,
+  rng: Rng,
+): Involvement[] {
+  const { culpritId, innocentIds, verification } = plan;
+  const { placement } = verification;
+  const result: Involvement[] = [];
+
+  const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+  if (witnessId) {
+    result.push({
+      npcId: witnessId,
+      kind: 'WITNESS',
+      aboutNpcId: verification.kind === 'CORROBORATION' ? culpritId : undefined,
+    });
+  }
+
+  const rest = sample(
+    innocentIds.filter((id) => id !== witnessId),
+    innocentIds.length,
+    rng,
+  );
+  const noneCount = Math.min(
+    FULLY_INNOCENT_COUNT[difficulty] ?? FULLY_INNOCENT_COUNT.easy,
+    rest.length,
+  );
+  const others = (id: string) => innocentIds.filter((other) => other !== id);
+  let kinds = sample(LINKED_KINDS, LINKED_KINDS.length, rng);
+
+  rest.forEach((npcId, i) => {
+    if (i < noneCount) {
+      // Tamamen masumun mazeretini başka bir masum doğrular ("o gece benimleydi")
+      result.push({
+        npcId,
+        kind: 'NONE',
+        aboutNpcId: pick(others(npcId), rng),
+      });
+      return;
+    }
+    const verificationHere =
+      placement.type === 'LOCATION' && placement.locationId === npcId;
+    const kind =
+      kinds.find((k) => !(verificationHere && LOCATION_BOUND.includes(k))) ??
+      'LAST_CONVERSATION';
+    kinds = kinds.filter((k) => k !== kind);
+    const aboutNpcId =
+      kind === 'WITNESS'
+        ? pick(others(npcId), rng)
+        : kind === 'UNWITTING_HELP' || kind === 'LAST_CONVERSATION'
+          ? culpritId
+          : undefined;
+    result.push({ npcId, kind, aboutNpcId });
+  });
+
+  return result;
+}
+
+function planBaseCase(
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng,
+  murderStyle: MurderStyle,
+): CasePlan {
   const activeIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
   const target = ELIMINATION_TARGET[difficulty] ?? ELIMINATION_TARGET.easy;
   const culpritId = pick(activeIds, rng);
   const innocentIds = activeIds.filter((id) => id !== culpritId);
-  const murderStyle: MurderStyle = rng() < 0.6 ? 'HURRIED' : 'PLANNED';
   const sceneState: SceneState = rng() < 0.5 ? 'MESSY' : 'TIDY';
 
   let crimeSceneClue: CasePlan['crimeSceneClue'];

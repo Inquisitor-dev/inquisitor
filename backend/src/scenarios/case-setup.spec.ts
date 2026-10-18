@@ -1,8 +1,21 @@
 import { SCENARIO_CLUES } from './clues-config';
 import { getScenarioConfig } from './scenario-config';
-import { ELIMINATION_TARGET, findAuthenticClues, planCase } from './case-setup';
+import {
+  ELIMINATION_TARGET,
+  findAuthenticClues,
+  FULLY_INNOCENT_COUNT,
+  isPlanSound,
+  planCase,
+} from './case-setup';
+import { WEAPONS } from './case-catalog';
 
-const SCENARIOS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'] as const;
+const SCENARIOS = [
+  'medieval',
+  'modern',
+  'cyberpunk',
+  'china',
+  'winter',
+] as const;
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 // Tekrarlanabilir rastgelelik: aynı tohumla aynı vakalar üretilir
@@ -14,7 +27,7 @@ const seeded = (seed: number) => () => {
 const plansFor = (scenario: string, difficulty: string, count = 400) => {
   const config = getScenarioConfig(scenario, difficulty);
   return Array.from({ length: count }, (_, i) =>
-    planCase(config, difficulty, seeded(i + 1)),
+    planCase(config, difficulty, seeded(((i + 1) * 2654435761) % 4294967296)),
   );
 };
 
@@ -156,5 +169,68 @@ describe('olay yeri seçimi', () => {
     expect(
       config.locationDefinitions.find((l) => l.id === 'crime_scene')?.name,
     ).toBe('Ashenmoor crime scene');
+  });
+});
+
+describe('Vaka Motoru v2 planı', () => {
+  // Küçük tohumlarda ilk sayı hep aynı bölgeye düşmesin diye tohum dağıtılır
+  const spread = (i: number) => seeded((i * 2654435761) % 4294967296);
+
+  it.each(SCENARIOS.flatMap((s) => DIFFICULTIES.map((d) => [s, d] as const)))(
+    '%s / %s: her plan çözülebilir ve tek bir kanıta bağlı değil',
+    (scenario, difficulty) => {
+      const config = getScenarioConfig(scenario, difficulty);
+      for (let i = 1; i <= 120; i++) {
+        expect(isPlanSound(planCase(config, difficulty, spread(i)))).toBe(true);
+      }
+    },
+  );
+
+  it('yeniden çekme cinayet tarzının oranını bozmaz', () => {
+    const config = getScenarioConfig('medieval', 'hard');
+    const plans = Array.from({ length: 300 }, (_, i) =>
+      planCase(config, 'hard', spread(i + 1)),
+    );
+    const planned =
+      plans.filter((p) => p.murderStyle === 'PLANNED').length / plans.length;
+    expect(planned).toBeGreaterThan(0.25);
+    expect(planned).toBeLessThan(0.55);
+  });
+
+  it.each(DIFFICULTIES)('%s: sırlar kurallara uyar', (difficulty) => {
+    const config = getScenarioConfig('modern', difficulty);
+    for (let i = 1; i <= 200; i++) {
+      const plan = planCase(config, difficulty, spread(i));
+      const involvements = plan.involvements!;
+      // Her masumun tek bir bağı var, katilin yok
+      expect(involvements.map((x) => x.npcId).sort()).toEqual(
+        [...plan.innocentIds].sort(),
+      );
+      const none = involvements.filter((x) => x.kind === 'NONE');
+      expect(none.length).toBe(
+        Math.min(FULLY_INNOCENT_COUNT[difficulty], plan.innocentIds.length),
+      );
+      // Tamamen masum dışındaki bağlar birbirinden farklı (doğrulayan tanık hariç)
+      const { placement } = plan.verification;
+      const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+      const linked = involvements
+        .filter((x) => x.kind !== 'NONE' && x.npcId !== witnessId)
+        .map((x) => x.kind);
+      expect(new Set(linked).size).toBe(linked.length);
+      // Doğrulayan kanıtın konduğu mekânda mekâna bağlı sır olamaz
+      if (placement.type === 'LOCATION') {
+        const here = involvements.find((x) => x.npcId === placement.locationId);
+        expect(['SHARED_MOTIVE', 'UNWITTING_HELP', 'SCAVENGER']).not.toContain(
+          here?.kind,
+        );
+      }
+      // Bağın ilgili olduğu kişi kendisi değil
+      for (const x of involvements) expect(x.aboutNpcId).not.toBe(x.npcId);
+      // Silah evrenin kataloğundan; aceleyle işlenen cinayette hazırlık isteyen silah yok
+      const weapon = WEAPONS.modern.find((w) => w.id === plan.weaponId)!;
+      expect(weapon).toBeDefined();
+      if (plan.murderStyle === 'HURRIED') expect(weapon.improvised).toBe(true);
+      expect(plan.fearThresholds![plan.culpritId]).toBeGreaterThan(0);
+    }
   });
 });
