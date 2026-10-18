@@ -196,14 +196,19 @@ export function buildCaseGraph(
     });
   }
 
-  // Masum, korkusu eşiğe varınca sırrını itiraf eder; itirafı mazeretidir
+  // Masum, korkusu eşiğe varınca sırrını itiraf eder; itirafı mazeretidir. Tamamen masumun itirafı
+  // birlikte olduğu kişiyi de temize çıkarır (board-judge.ts ile aynı)
   for (const npcId of innocentIds) {
+    const own = involvements.find((i) => i.npcId === npcId);
     clues.push({
       id: confessionClueId(npcId),
       source: { kind: 'CONFESSION', npcId },
       requires: [],
       pressures: [],
-      eliminates: [npcId],
+      eliminates:
+        own?.kind === 'NONE' && own.aboutNpcId
+          ? [npcId, own.aboutNpcId]
+          : [npcId],
       // Cesedi bulup eşya alan, ölümün ne zaman olduğunu bilir
       proves: kindOf(npcId) === 'SCAVENGER' ? ['TIME_OF_DEATH'] : undefined,
     });

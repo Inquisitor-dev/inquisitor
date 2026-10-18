@@ -278,5 +278,61 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('Gece kiliseye gittim.');
       expect(prompt).toContain('never name the murderer');
     });
+
+    it('sırrı olmayan masum kırılınca kayıtlı itiraf metnini anlatır, kanıtla bağ uydurmaz', () => {
+      const tavern = {
+        id: 'tavern',
+        name: 'Aldric',
+        description: 'Hancı',
+        basePrompt: '',
+      };
+      const prompt = buildNpcPrompt({
+        scenarioConfig: config,
+        session: baseSession,
+        npc: tavern,
+        fearLevel: 7,
+        hasConfessed: false,
+        confrontation: {
+          evidenceText: 'Yanmış bir disk.',
+          impact: 'IMPLICATING',
+        },
+      });
+      expect(prompt).toContain('FEAR BREAK:');
+      expect(prompt).toContain(
+        'exactly this, in your own words and nothing more: "Gece boyu bardaydı."',
+      );
+      expect(prompt).toContain(
+        'Never invent a theft, a link to the evidence shown',
+      );
+      // Masuma "seni gösteriyor" denmez; kanıtla bağ kurması yasaklanır
+      expect(prompt).not.toContain('This evidence points at you');
+      expect(prompt).toContain('never invent a link between yourself and it');
+      // Korku, oyuncunun uydurduğu olayı doğrulatmaz
+      expect(prompt).toContain(
+        'Fear changes how you speak, never what you know.',
+      );
+    });
+
+    it('katile kanıt yine onu gösteren kanıt olarak sunulur', () => {
+      const church = {
+        id: 'church',
+        name: 'Peder',
+        description: 'Rahip',
+        basePrompt: '',
+      };
+      const prompt = buildNpcPrompt({
+        scenarioConfig: config,
+        session: baseSession,
+        npc: church,
+        fearLevel: 9,
+        hasConfessed: false,
+        confrontation: {
+          evidenceText: 'Yanmış bir disk.',
+          impact: 'IMPLICATING',
+        },
+      });
+      expect(prompt).toContain('This evidence points at you');
+      expect(prompt).not.toContain('FEAR BREAK:');
+    });
   });
 });

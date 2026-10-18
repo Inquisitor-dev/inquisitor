@@ -20,6 +20,8 @@ export interface ThoughtLine {
   type: Exclude<BoardStringType, 'LINK'>;
   relation: string;
   verdict: BoardVerdict;
+  // Kanıt bu kişiyi dışarıda bırakmıyor ama birkaç kişiye uyuyor
+  shared?: boolean;
 }
 
 export function describeJudged(
@@ -37,6 +39,7 @@ export function describeJudged(
       type,
       relation: STRING_TYPE_LABEL[type],
       verdict: j.verdict,
+      ...(j.shared ? { shared: true } : {}),
     };
   });
 }
@@ -73,6 +76,10 @@ const THOUGHT_TEMPLATES: Record<
 export function templateThought(lines: ThoughtLine[]): string {
   if (lines.length === 0) return EMPTY_BOARD_THOUGHT;
   return lines
-    .map((l) => THOUGHT_TEMPLATES[l.type][l.verdict](l.a, l.b))
+    .map((l) =>
+      l.shared
+        ? `${l.a} ${l.b} üzerindeki şüpheyi kaldırmıyor; ama yalnız onu da göstermiyor, birkaç kişiye uyuyor galiba.`
+        : THOUGHT_TEMPLATES[l.type][l.verdict](l.a, l.b),
+    )
     .join(' ');
 }

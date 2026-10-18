@@ -2,6 +2,7 @@ import { CaseFacts } from '../scenarios/case-setup';
 import {
   applyVerdicts,
   BoardEvidence,
+  describeJudged,
   BoardState,
   judgeBoard,
   sanitizeBoard,
@@ -398,6 +399,13 @@ describe('judgeBoard: Vaka Motoru v2 kanıtları', () => {
       sourceId: 'tavern',
       text: 'çekici verdim',
     },
+    {
+      id: 'g',
+      kind: 'CONFESSION',
+      category: 'STATEMENT',
+      sourceId: 'graveyard',
+      text: 'çiftçiyle birlikteydim',
+    },
   ];
   const v2Cards = [
     ...['mill', 'tavern', 'church', 'farm', 'graveyard'].map((id, i) => ({
@@ -447,5 +455,31 @@ describe('judgeBoard: Vaka Motoru v2 kanıtları', () => {
     // Silahı verenin itirafı, aleti alan katili gösterir ve itiraf edeni aklar
     expect(judge('s-mill', 'c-h', 'IMPLICATES')).toBe('CORRECT');
     expect(judge('s-tavern', 'c-h', 'CLEARS')).toBe('CORRECT');
+  });
+
+  it('tamamen masumun itirafı birlikte olduğu kişiyi de aklar', () => {
+    expect(judge('s-graveyard', 'c-g', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-farm', 'c-g', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-tavern', 'c-g', 'CLEARS')).toBe('WRONG');
+    // Silahı verenin itirafı yalnız kendini aklar
+    expect(judge('s-mill', 'c-h', 'CLEARS')).toBe('WRONG');
+  });
+
+  it('birkaç kişiye uyan kanıtın doğru "işaret eder" ipi paylaşılan olarak işaretlenir', () => {
+    const judgedOf = (from: string, to: string) =>
+      judgeBoard(
+        {
+          cards: v2Cards,
+          strings: [{ id: 'x', from, to, type: 'IMPLICATES' }],
+        },
+        v2Facts,
+        v2Evidence,
+      )[0];
+    // Eşkâl iki kişiye uyuyor: iç ses "yalnız onu gösteriyor" demesin
+    expect(judgedOf('s-mill', 'c-w')?.shared).toBe(true);
+    // Silahı verenin itirafı yalnız katili gösterir
+    expect(judgedOf('s-mill', 'c-h')?.shared).toBeUndefined();
+    const lines = describeJudged([judgedOf('s-tavern', 'c-w')], (c) => c.id);
+    expect(templateThought(lines)).toContain('yalnız onu da göstermiyor');
   });
 });
