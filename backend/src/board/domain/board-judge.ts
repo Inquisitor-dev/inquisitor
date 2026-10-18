@@ -17,6 +17,16 @@ export interface JudgedString {
 const isCrimeSceneClue = (e: BoardEvidence) =>
   e.kind === 'CLUE' && e.sourceId === 'crime_scene';
 
+// Vaka Motoru v2: masumun cinayetle bağı (eski vakalarda yok)
+const involvementOf = (facts: CaseFacts, npcId: string) =>
+  facts.involvements?.find((i) => i.npcId === npcId);
+
+// Mazeret ifadesini veren kişinin doğruladığı tamamen masumlar
+const vouchedBy = (facts: CaseFacts, npcId: string) =>
+  (facts.involvements ?? [])
+    .filter((i) => i.kind === 'NONE' && i.aboutNpcId === npcId)
+    .map((i) => i.npcId);
+
 // Şüpheli ↔ kanıt ipinin kararı
 function judgeSuspectLink(
   type: 'CLEARS' | 'IMPLICATES',
@@ -34,7 +44,13 @@ function judgeSuspectLink(
     implicates = implicated.includes(suspectId);
     clears = !implicated.includes(suspectId);
   } else if (e.kind === 'VERIFICATION') {
-    if (facts.verification.kind === 'CORROBORATION') {
+    const fits = facts.verification.witnessDescriptionFits;
+    if (facts.verification.kind === 'CORROBORATION' && fits) {
+      // Yanılabilen tanıklık katili adıyla göstermez: eşkâle uyan herkesi işaret eder, uymayanları aklar.
+      // Yalnızca katile "doğru" deseydi pano, tanığın söylemediği adı söylemiş olurdu.
+      implicates = fits.includes(suspectId);
+      clears = !fits.includes(suspectId);
+    } else if (facts.verification.kind === 'CORROBORATION') {
       // İzi doğrulayan kanıt katili gösterir
       implicates = isCulprit;
     } else {
@@ -42,8 +58,18 @@ function judgeSuspectLink(
       clears = implicated.includes(suspectId);
     }
   } else if (e.kind === 'CONFESSION') {
-    // İtiraf, itiraf edenin mazeretidir
+    // İtiraf, itiraf edenin mazeretidir. Silahı bilmeden verenin itirafı aleti kime verdiğini de söyler.
     clears = e.sourceId === suspectId;
+    implicates =
+      isCulprit && involvementOf(facts, e.sourceId)?.kind === 'UNWITTING_HELP';
+  } else if (e.kind === 'TESTIMONY') {
+    // Kısmi tanık o saatte birini başka yerde görmüştür: o kişiyi aklar. Son konuşanın ifadesi kimseyi
+    // adıyla söylemez, hiçbir şüpheliyi aklamaz ya da işaret etmez.
+    const own = involvementOf(facts, e.sourceId);
+    clears = own?.kind === 'WITNESS' && own.aboutNpcId === suspectId;
+  } else if (e.kind === 'ALIBI') {
+    // Mazeret doğrulaması, doğrulanan tamamen masumu aklar
+    clears = vouchedBy(facts, e.sourceId).includes(suspectId);
   } else if (e.kind === 'CLUE') {
     // Mekân ipucu orada yaşayanın sırrını anlatır: masumda mazeret, katilde kapanmayan bir açık
     if (e.sourceId === suspectId) {
@@ -98,6 +124,26 @@ function judgeEvidenceLink(
     )
   ) {
     // Tuzağın kusuru, suçlanan kişinin mazeretini destekler
+    relation = 'SUPPORTS';
+  } else if (
+    pair(
+      (x, y) =>
+        x.kind === 'BODY' &&
+        y.kind === 'CONFESSION' &&
+        involvementOf(facts, y.sourceId)?.kind === 'UNWITTING_HELP',
+    )
+  ) {
+    // Yara, bilmeden verilen aletle uyuşur: silah zinciri
+    relation = 'SUPPORTS';
+  } else if (
+    pair(
+      (x, y) =>
+        x.kind === 'ALIBI' &&
+        y.kind === 'CONFESSION' &&
+        vouchedBy(facts, x.sourceId).includes(y.sourceId),
+    )
+  ) {
+    // Doğrulanan masumun kendi anlattığıyla doğrulama aynı şeyi söyler
     relation = 'SUPPORTS';
   }
 

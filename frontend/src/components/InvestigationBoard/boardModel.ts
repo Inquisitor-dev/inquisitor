@@ -2,6 +2,8 @@ import { getInterior } from '@/config/interiorConfig';
 import { DIALOGUE_CONFIG } from '@/config/dialogueConfig';
 import { getLocationLabel } from '@/config/locationLabels';
 import type { EvidenceItem } from '@/store/useGameStore';
+import type { CrimeSceneInfo } from '@/store/slices/types';
+import { getCrimeSceneImage } from '@/config/crimeScenes';
 
 // Sunucudaki pano modeliyle aynı (backend/src/board/board.ts)
 export type BoardCardKind = 'suspect' | 'evidence' | 'note' | 'scene';
@@ -76,10 +78,18 @@ export function suspectInfo(scenarioType: string, npcId: string): SuspectInfo {
   };
 }
 
-// Kanıtın fotoğrafı: bulunduğu mekânın görselinden bir kesit
-export function evidencePhoto(scenarioType: string, item: EvidenceItem): string | null {
+// Kanıtın fotoğrafı: bulunduğu mekânın görselinden bir kesit. Olay yerinden gelenler (iz, beden)
+// vakanın kendi olay yeri görselini kullanır; eski vakalarda eski arka plana düşer.
+export function evidencePhoto(
+  scenarioType: string,
+  item: EvidenceItem,
+  crimeScene?: CrimeSceneInfo | null,
+): string | null {
   if (item.sourceId === 'crime_scene') {
-    return scenarioType === 'medieval' ? '/backgrounds/bg_crime_scene.webp' : null;
+    return (
+      getCrimeSceneImage(scenarioType, crimeScene) ??
+      (scenarioType === 'medieval' ? '/backgrounds/bg_crime_scene.webp' : null)
+    );
   }
   return getInterior(scenarioType, item.sourceId)?.backgroundImage ?? null;
 }

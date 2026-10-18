@@ -138,7 +138,8 @@ function AutoTextarea({
 // sonrakiler her oyun günü için birer sayfa çifti. Yazılar sayfaya serbestçe yerleştirilir,
 // itiraf ve tanıklıklar alındıkları günün sayfasına damgalı kayıt kartı olarak düşer.
 export default function Notebook({ onClose }: { onClose: () => void }) {
-  const { sessionId, scenarioType, scenario, notes, setNotes, evidence, setEvidence } = useGameStore();
+  const { sessionId, scenarioType, scenario, notes, setNotes, evidence, setEvidence, crimeScene } =
+    useGameStore();
   const theme = scenarioType || 'medieval';
   const isNarrow = useMediaQuery('(max-width: 820px)');
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -637,7 +638,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   const renderPhotoItem = (item: NotebookPhotoItem) => {
     const source = evidenceById.get(item.evidenceId);
     if (!source) return null;
-    const photo = evidencePhoto(theme, source);
+    const photo = evidencePhoto(theme, source, crimeScene);
     return (
       <div
         key={item.id}
@@ -895,7 +896,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
                 <EvidencePolaroid
                   key={item.id}
                   compact
-                  photo={evidencePhoto(theme, item)}
+                  photo={evidencePhoto(theme, item, crimeScene)}
                   title={evidenceTitle(theme, item)}
                   text={item.text}
                   selected={placingId === item.id}
