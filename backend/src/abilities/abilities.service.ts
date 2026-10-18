@@ -10,7 +10,10 @@ import {
   getScenarioConfig,
 } from '../scenarios/scenario-config';
 import { CaseFacts } from '../scenarios/case-setup';
-import { fearBand } from '../npcs/fear';
+import { fearBand, fearThresholdOf } from '../npcs/fear';
+
+const caseFactsOf = (session: { caseFacts: unknown }) =>
+  session.caseFacts as Partial<CaseFacts> | null;
 import { appendToNotes, recordEvidence } from '../npcs/evidence-recorder';
 import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
 import {
@@ -158,7 +161,8 @@ export class AbilitiesService {
       case 'threat': {
         const npcId = suspect();
         const npcState = await this.npcState(session.id, npcId);
-        const level = threatenedFear(npcState.currentFear);
+        const threshold = fearThresholdOf(caseFactsOf(session), npcId);
+        const level = threatenedFear(npcState.currentFear, threshold);
         if (level === npcState.currentFear) {
           throw new BadRequestException(
             `${nameOf(npcId)} zaten tehditle varılabilecek en yüksek korkuda. Bir kanıt göstermen gerek.`,
@@ -172,7 +176,7 @@ export class AbilitiesService {
           state,
           result: {
             message: `${nameOf(npcId)} tehdidini duydu; gözlerini kaçırıyor.`,
-            fear: { npcId, level, band: fearBand(level) },
+            fear: { npcId, level, band: fearBand(level, threshold) },
           },
         };
       }
@@ -187,7 +191,16 @@ export class AbilitiesService {
           state,
           result: {
             message: 'Vizör tüm şüphelilerin nabzını ölçtü.',
-            pulse: pulseReport(suspectIds, fears).map((row) => ({
+            pulse: pulseReport(
+              suspectIds,
+              fears,
+              Object.fromEntries(
+                suspectIds.map((id) => [
+                  id,
+                  fearThresholdOf(caseFactsOf(session), id),
+                ]),
+              ),
+            ).map((row) => ({
               ...row,
               name: nameOf(row.npcId),
             })),

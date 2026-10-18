@@ -2,6 +2,7 @@ import {
   FEAR_GAIN,
   FEAR_BREAK_THRESHOLD,
   fearPrompt,
+  fearThresholdOf,
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
@@ -19,6 +20,8 @@ export interface ForcedConfessionCheckParams {
   hasConfessed: boolean;
   confrontation?: { impact: EvidenceImpact };
   fearLevel: number;
+  // Karakterin mizaca göre itiraf eşiği (fearThresholdOf)
+  fearThreshold?: number;
 }
 
 export function isForcedConfession({
@@ -27,6 +30,7 @@ export function isForcedConfession({
   hasConfessed,
   confrontation,
   fearLevel,
+  fearThreshold = FEAR_BREAK_THRESHOLD,
 }: ForcedConfessionCheckParams): boolean {
   return (
     !isNarrator &&
@@ -34,7 +38,7 @@ export function isForcedConfession({
     !hasConfessed &&
     !!confrontation &&
     FEAR_GAIN[confrontation.impact] > 0 &&
-    fearLevel >= FEAR_BREAK_THRESHOLD
+    fearLevel >= fearThreshold
   );
 }
 
@@ -154,6 +158,7 @@ STRICT CANON RULES:
   const isNarrator = npc.id.startsWith('narrator_');
   const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
   const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
+  const fearThreshold = fearThresholdOf(caseFacts, npc.id);
 
   const forcedConfession = isForcedConfession({
     isNarrator,
@@ -161,6 +166,7 @@ STRICT CANON RULES:
     hasConfessed,
     confrontation,
     fearLevel,
+    fearThreshold,
   });
 
   if (isNarrator) {
@@ -224,7 +230,7 @@ ${confrontationRules}`;
     combinedPrompt += `
 
 EMOTIONAL STATE:
-${fearPrompt(fearLevel, isCulprit)}`;
+${fearPrompt(fearLevel, isCulprit, fearThreshold)}`;
 
     if (hasConfessed) {
       combinedPrompt += `

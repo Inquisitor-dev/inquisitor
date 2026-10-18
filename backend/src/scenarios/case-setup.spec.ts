@@ -9,7 +9,7 @@ import {
   planCase,
   WITNESS_DESCRIPTION_FITS,
 } from './case-setup';
-import { WEAPONS } from './case-catalog';
+import { TEMPERAMENT_THRESHOLD, WEAPONS } from './case-catalog';
 import { buildCaseGraph } from './case-graph';
 import { solveCase } from './case-solver';
 
@@ -264,6 +264,27 @@ describe('Vaka Motoru v2 planı', () => {
       expect(weapon).toBeDefined();
       if (plan.murderStyle === 'HURRIED') expect(weapon.improvised).toBe(true);
       expect(plan.fearThresholds![plan.culpritId]).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('mizaç', () => {
+  it.each(SCENARIOS)(
+    '%s: her karakterin mizacı var ve evrende üç mizaç da bulunur',
+    (scenario) => {
+      const npcs = getScenarioConfig(scenario, 'hard').npcDefinitions;
+      expect(npcs.every((npc) => npc.temperament)).toBe(true);
+      expect(new Set(npcs.map((npc) => npc.temperament)).size).toBe(3);
+    },
+  );
+
+  it('planın eşikleri karakterlerin mizacından gelir', () => {
+    const config = getScenarioConfig('winter', 'hard');
+    const plan = planCase(config, 'hard', seeded(7));
+    for (const npc of config.npcDefinitions) {
+      expect(plan.fearThresholds![npc.id]).toBe(
+        TEMPERAMENT_THRESHOLD[npc.temperament!],
+      );
     }
   });
 });

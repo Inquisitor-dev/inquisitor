@@ -33,10 +33,22 @@ export function startingFear(baseFear: number): number {
   return Math.min(STARTING_FEAR_MAX, Math.max(0, Math.round(baseFear / 2)));
 }
 
-export function fearBand(level: number): FearBand {
-  if (level >= FEAR_BREAK_THRESHOLD) return 'PANIC';
-  if (level >= 5) return 'NERVOUS';
-  if (level >= 3) return 'UNEASY';
+// Karakterin itiraf eşiği: v2 vakalarında mizaca göre (soğukkanlı 8, normal 7, kırılgan 6), eskilerde 7
+export function fearThresholdOf(
+  caseFacts: Pick<Partial<CaseFacts>, 'fearThresholds'> | null | undefined,
+  npcId: string,
+): number {
+  return caseFacts?.fearThresholds?.[npcId] ?? FEAR_BREAK_THRESHOLD;
+}
+
+// Bantlar eşiğe göredir: kırılgan biri daha erken terler, soğukkanlı biri daha geç
+export function fearBand(
+  level: number,
+  threshold: number = FEAR_BREAK_THRESHOLD,
+): FearBand {
+  if (level >= threshold) return 'PANIC';
+  if (level >= threshold - 2) return 'NERVOUS';
+  if (level >= threshold - 4) return 'UNEASY';
   return 'CALM';
 }
 
@@ -71,8 +83,12 @@ export function raiseFear(current: number, impact: EvidenceImpact): number {
 }
 
 // Korku seviyesinin karakterin konuşmasına yansıması (yapay zekâya giden talimat)
-export function fearPrompt(level: number, isCulprit: boolean): string {
-  const band = fearBand(level);
+export function fearPrompt(
+  level: number,
+  isCulprit: boolean,
+  threshold: number = FEAR_BREAK_THRESHOLD,
+): string {
+  const band = fearBand(level, threshold);
   const behaviour: Record<FearBand, string> = {
     CALM: 'You feel calm and in control. Answer steadily.',
     UNEASY:

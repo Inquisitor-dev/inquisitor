@@ -46,12 +46,15 @@ export const chargedMessages = (characterId: string, sentToday: number) =>
     ? Math.max(0, sentToday - PATIENCE_FREE_MESSAGES)
     : sentToday;
 
-// Tehdit (Kara Yargıç): korku 2 artar ama tek başına itiraf eşiğine ulaşamaz
+// Tehdit (Kara Yargıç): korku 2 artar ama tek başına itiraf eşiğine ulaşamaz. Eşik karakterin
+// mizacına göre değişir (npcs/fear.ts fearThresholdOf); tavan her zaman eşiğin bir altıdır.
 export const THREAT_GAIN = 2;
 export const THREAT_CAP = FEAR_BREAK_THRESHOLD - 1;
 
-export const threatenedFear = (current: number) =>
-  Math.max(current, Math.min(THREAT_CAP, current + THREAT_GAIN));
+export const threatenedFear = (
+  current: number,
+  threshold: number = FEAR_BREAK_THRESHOLD,
+) => Math.max(current, Math.min(threshold - 1, current + THREAT_GAIN));
 
 // Vizör Kilidi (Mavi Rozet): kilitli şüphelinin korkusu gece azalmaz
 export const fearAfterNight = (
@@ -73,16 +76,19 @@ export const rooftopLocation = (state: AbilityState, day: number) =>
   state.rooftop?.day === day ? state.rooftop.locationId : null;
 
 // Nabız (Mavi Rozet): şüphelilerin korkusu ve itiraf eşiğine kalan puan
+// thresholds: şüphelilerin mizaca göre itiraf eşikleri (verilmeyen 7 sayılır)
 export function pulseReport(
   suspectIds: string[],
   fears: { npcId: string; currentFear: number }[],
+  thresholds: Record<string, number> = {},
 ) {
   return suspectIds.map((npcId) => {
     const level = fears.find((f) => f.npcId === npcId)?.currentFear ?? 0;
+    const threshold = thresholds[npcId] ?? FEAR_BREAK_THRESHOLD;
     return {
       npcId,
       level,
-      toThreshold: Math.max(0, FEAR_BREAK_THRESHOLD - level),
+      toThreshold: Math.max(0, threshold - level),
     };
   });
 }

@@ -36,6 +36,18 @@ describe('prompt-builder domain', () => {
       expect(result).toBe(false);
     });
 
+    it('kırılgan karakter eşiği 6 olduğu için 6 korkuda itiraf eder; soğukkanlı etmez', () => {
+      const base = {
+        isNarrator: false,
+        isCulprit: false,
+        hasConfessed: false,
+        confrontation: { impact: 'IMPLICATING' as const },
+        fearLevel: 6,
+      };
+      expect(isForcedConfession({ ...base, fearThreshold: 6 })).toBe(true);
+      expect(isForcedConfession({ ...base, fearThreshold: 8 })).toBe(false);
+    });
+
     it('korku eşiğinin altındaysa zorla itiraf dönmez', () => {
       const result = isForcedConfession({
         isNarrator: false,
