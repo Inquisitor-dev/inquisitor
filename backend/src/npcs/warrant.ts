@@ -57,7 +57,7 @@ export interface WarrantLocation {
 }
 
 // Unvanlar isim sayılmaz: "Brother Aldric" için "brother" her kardeşle eşleşirdi
-const NAME_TITLES = new Set([
+export const NAME_TITLES = new Set([
   'brother',
   'sister',
   'father',
@@ -73,6 +73,26 @@ const NAME_TITLES = new Set([
   'lord',
   'master',
   'usta',
+  'ihtiyar',
+  'degirmenci',
+  'ciftci',
+  'memur',
+  'officer',
+  'komutan',
+  'commander',
+  'kesis',
+  'monk',
+  'teyze',
+  'auntie',
+  'bilgin',
+  'scholar',
+  'kahin',
+  'seer',
+  'madenci',
+  'miner',
+  'muhafiz',
+  'warden',
+  'the',
 ]);
 
 // Oyuncunun mesajında adı geçen mekânlar: mekânın adı ya da sahibinin adı (ilk adı yeterli)
@@ -87,7 +107,7 @@ export function findRequestedLocations(
       const owner = location.ownerName ? foldTurkish(location.ownerName) : '';
       return owner
         .split(/[^a-z0-9]+/)
-        .filter((word) => word.length >= 4 && !NAME_TITLES.has(word))
+        .filter((word) => word.length >= 3 && !NAME_TITLES.has(word))
         .some((word) => new RegExp(`\\b${word}`).test(normalized));
     })
     .map((location) => location.id);

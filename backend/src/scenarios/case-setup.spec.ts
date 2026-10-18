@@ -35,6 +35,30 @@ describe('ipucu havuzu', () => {
       }
     },
   );
+
+  it.each(SCENARIOS)(
+    '%s: havuzdaki hiçbir ipucu ölü (hiçbir zorlukta seçilemez) değildir',
+    (scenario) => {
+      const reachableIds = new Set<string>();
+      for (const difficulty of DIFFICULTIES) {
+        const config = getScenarioConfig(scenario, difficulty);
+        const activeIds = config.npcDefinitions.map((npc) => npc.id);
+        for (const culpritId of activeIds) {
+          for (const clue of findAuthenticClues(
+            SCENARIO_CLUES[scenario],
+            activeIds,
+            culpritId,
+            ELIMINATION_TARGET[difficulty],
+          )) {
+            reachableIds.add(clue.id);
+          }
+        }
+      }
+      expect([...reachableIds].sort()).toEqual(
+        SCENARIO_CLUES[scenario].map((c) => c.id).sort(),
+      );
+    },
+  );
 });
 
 describe('planCase', () => {

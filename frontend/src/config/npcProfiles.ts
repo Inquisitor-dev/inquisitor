@@ -15,7 +15,7 @@ export const NPC_PROFILES_BY_SCENARIO: Record<string, Record<string, NpcProfile>
     crime_scene: { name: 'Olay Yeri', title: 'Sessiz Tanıklar...', icon: '🩸' },
   },
   cyberpunk: {
-    tavern: { name: 'Officer Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
+    tavern: { name: 'Memur Kael Voss', title: 'Memur — Neon Prime Karakolu', icon: '👮' },
     church: { name: 'Mirel Sato', title: 'Lokanta Sahibi — Static Spoon', icon: '🍜' },
     graveyard: { name: 'Brakk Coil', title: 'Siber Cerrah — Neon Prime Kliniği', icon: '🏥' },
     mill: { name: 'AURA-9', title: 'Usta Android — AURA Tamirhanesi', icon: '🛠️' },
@@ -68,19 +68,19 @@ const SCENARIO_SUSPECTS: Record<string, { base: SuspectOption[]; medium?: Suspec
   modern: {
     base: [
       { id: 'tavern', name: 'Şerif Dale Cooper', icon: '🚔', role: 'Şerif' },
-      { id: 'farm', name: 'Earl Hutchins', icon: '⛽', role: 'Pompacı' },
-      { id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' },
       { id: 'church', name: 'Gerald', icon: '🏨', role: 'Otel Sahibi' },
+      { id: 'graveyard', name: 'Randy Kowalski', icon: '🎮', role: 'Video Oyuncusu' },
+      { id: 'mill', name: 'Donna Perkins', icon: '🍽️', role: 'Lokantacı' },
     ],
-    medium: { id: 'graveyard', name: 'Randy Kowalski', icon: '🎮', role: 'Video Oyuncusu' },
-    hard: { id: 'mill', name: 'Donna Perkins', icon: '🍽️', role: 'Lokantacı' },
+    medium: { id: 'farm', name: 'Earl Hutchins', icon: '⛽', role: 'Pompacı' },
+    hard: { id: 'clinic', name: 'David', icon: '🍺', role: 'Barmen' },
   },
   cyberpunk: {
     base: [
-      { id: 'tavern', name: 'Officer Kael Voss', icon: '👮', role: 'Polis Memuru' },
+      { id: 'tavern', name: 'Memur Kael Voss', icon: '👮', role: 'Polis Memuru' },
       { id: 'church', name: 'Mirel Sato', icon: '🍜', role: 'Lokantacı' },
-      { id: 'mill', name: 'AURA-9', icon: '🛠️', role: 'Tamirci Android' },
       { id: 'graveyard', name: 'Brakk Coil', icon: '🏥', role: 'Klinik Hekimi' },
+      { id: 'mill', name: 'AURA-9', icon: '🛠️', role: 'Tamirci Android' },
     ],
     medium: { id: 'farm', name: 'Ash', icon: '🏮', role: 'Pazar Satıcısı' },
     hard: { id: 'clinic', name: 'Vera Nyx', icon: '🍸', role: 'Barmen' },
@@ -109,8 +109,8 @@ const SCENARIO_SUSPECTS: Record<string, { base: SuspectOption[]; medium?: Suspec
     base: [
       { id: 'tavern', name: 'Kardeş Aldric', icon: '🍺', role: 'Hancı' },
       { id: 'church', name: 'Peder Malachar', icon: '⛪', role: 'Rahip' },
-      { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
       { id: 'graveyard', name: 'İhtiyar Silas', icon: '🪦', role: 'Mezarcı' },
+      { id: 'mill', name: 'Değirmenci Giles', icon: '⚙️', role: 'Değirmenci' },
     ],
     medium: { id: 'farm', name: 'Çiftçi Edmund', icon: '🌾', role: 'Çiftçi' },
     hard: { id: 'clinic', name: 'Doktor Harland', icon: '🏥', role: 'Doktor' },

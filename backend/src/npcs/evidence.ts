@@ -54,8 +54,10 @@ const stems = (text: string) =>
 // Tanığın cevabı kayıtlı tanıklıkla örtüşüyorsa en az bu kadar ortak kelime kökü olmalı (adlar hariç)
 const TESTIMONY_MIN_SHARED_STEMS = 4;
 
+import { NAME_TITLES } from './warrant';
+
 // Yapay zekâ tanıklığı anlatıp etiketi unutabiliyor (gerçek Gemini denemesinde görüldü). Bu yüzden
-// tanığın cevabı katilin adını ve kayıtlı tanıklığın somut ayrıntılarını içeriyorsa da kanıt sayılır.
+// tanığın cevabı kayıtlı tanıklığın somut ayrıntılarını (ve doğrulama tanıklığında katilin adını) içeriyorsa da kanıt sayılır.
 export function sharesTestimony(params: {
   reply: string;
   verificationText: string;
@@ -63,11 +65,27 @@ export function sharesTestimony(params: {
   culpritName: string;
 }): boolean {
   const { reply, verificationText, witnessName, culpritName } = params;
-  const culpritToken = foldTurkish(culpritName)
+  const foldedReply = foldTurkish(reply);
+  const foldedVerification = foldTurkish(verificationText);
+
+  const culpritTokens = foldTurkish(culpritName)
     .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .pop();
-  if (!culpritToken || !foldTurkish(reply).includes(culpritToken)) return false;
+    .filter((w) => w.length >= 3 && !NAME_TITLES.has(w));
+
+  // Eğer resmi verificationText katilin adını içeriyorsa (CORROBORATION), cevabın da katilin adını anması şarttır.
+  // Tuzak kusuru (FLAW) tanıklığında ise tanık katili bilmez; eşyanın çalındığını anlatır.
+  const verificationMentionsCulprit =
+    culpritTokens.length === 0 ||
+    culpritTokens.some((token) => foldedVerification.includes(token));
+
+  if (verificationMentionsCulprit) {
+    if (
+      culpritTokens.length === 0 ||
+      !culpritTokens.some((token) => foldedReply.includes(token))
+    ) {
+      return false;
+    }
+  }
 
   const nameStems = stems(`${witnessName} ${culpritName}`);
   const expected = [...stems(verificationText)].filter(

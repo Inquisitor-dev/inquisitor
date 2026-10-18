@@ -16,7 +16,7 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
     {
       id: 'murekkep_lekesi',
       clueText: 'Yerde kurumuş birkaç damla siyah mürekkep lekesi.',
-      associatedNpcIds: ['church', 'clinic', 'mill'],
+      associatedNpcIds: ['church', 'clinic', 'mill', 'tavern'],
     },
     {
       id: 'kuvvetli_bitki_kokusu',
@@ -36,12 +36,12 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
     {
       id: 'pazarlik_sikkesi',
       clueText: 'Cesedin altında yuvarlanmış, üstünde tuhaf diş izleri olan aşınmış bir bakır sikke.',
-      associatedNpcIds: ['tavern', 'mill', 'clinic'],
+      associatedNpcIds: ['tavern', 'mill', 'clinic', 'farm'],
     },
     {
       id: 'mum_lekesi',
       clueText: 'Yere damlamış, karanlıkta çalışan birine ait olduğu belli olan eritilmiş sarı mum damlaları.',
-      associatedNpcIds: ['church', 'clinic', 'graveyard'],
+      associatedNpcIds: ['church', 'clinic', 'graveyard', 'mill'],
     },
     {
       // Bilgi bütçesi: Orta zorlukta suçlu kilise olduğunda da 4 kişiyi gösteren bir iz olsun
@@ -69,17 +69,17 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
     {
       id: 'seker_ambalaji',
       clueText: 'Yerde buruşturulup atılmış, kasaba bakkalında satılan ucuz bir şekerleme ambalajı.',
-      associatedNpcIds: ['graveyard', 'mill', 'farm'],
+      associatedNpcIds: ['graveyard', 'mill', 'farm', 'church'],
     },
     {
       id: 'kedi_kopek_tuyu',
       clueText: 'Kurbanın parmaklarına takılmış, kısa ve sert hayvan tüyleri.',
-      associatedNpcIds: ['tavern', 'graveyard', 'clinic'],
+      associatedNpcIds: ['tavern', 'graveyard', 'clinic', 'church'],
     },
     {
       id: 'ucuz_parfum',
       clueText: 'Odaya sinmiş, ter kokusunu bastırmak için bolca sıkılmış ucuz, geniz yakan bir kolonya/parfüm kokusu.',
-      associatedNpcIds: ['church', 'mill', 'clinic'],
+      associatedNpcIds: ['church', 'mill', 'clinic', 'graveyard'],
     },
     {
       // Bilgi bütçesi: Kolay ve Orta zorlukta suçlu kaset dükkânı olduğunda da hedefe uyan bir iz olsun

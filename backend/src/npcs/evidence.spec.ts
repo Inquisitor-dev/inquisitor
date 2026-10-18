@@ -221,4 +221,29 @@ describe('sharesTestimony', () => {
       { kind: 'VERIFICATION', category: 'STATEMENT', sourceId: 'tavern' },
     ]);
   });
+
+  it('sonda unvan olan isimlerde (Mei Teyze) ve tuzak kusuru (FLAW) tanıklıklarında da çalışır', () => {
+    expect(
+      sharesTestimony({
+        verificationText:
+          'Lin Feng, cinayet gecesi Mei Teyze’nin elinde ıslak balık ağıyla kanaldan döndüğünü görmüştür.',
+        witnessName: 'Lin Feng',
+        culpritName: 'Mei Teyze',
+        reply:
+          'Gece yarısı Mei’nin elinde ıslak balık ağıyla kanaldan koşarak döndüğünü gördüm.',
+      }),
+    ).toBe(true);
+
+    // FLAW tanıklığı: tanık katili bilmez, sadece eşyanın çalındığını anlatır
+    expect(
+      sharesTestimony({
+        verificationText:
+          'Kardeş Aldric, cinayetten kısa süre önce mahzendeki özel mühürlü şarap şişesinin çalındığını fark etmiştir.',
+        witnessName: 'Kardeş Aldric',
+        culpritName: 'Değirmenci Giles',
+        reply:
+          'Cinayetten kısa süre önce mahzene indiğimde özel mühürlü şarap şişesinin yerinde olmadığını ve çalındığını fark ettim.',
+      }),
+    ).toBe(true);
+  });
 });

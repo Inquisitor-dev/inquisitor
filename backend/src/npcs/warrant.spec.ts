@@ -76,6 +76,21 @@ describe('arama izni kararı (kod)', () => {
       'mill',
     ]);
     expect(findRequestedLocations('brother ne dedi', locations)).toEqual([]);
+
+    const multiUniverseLocations = [
+      { id: 'farm_cp', localizedName: 'Sokak Pazarı', ownerName: 'Ash' },
+      { id: 'farm_cn', localizedName: 'Balıkçı İskelesi', ownerName: 'Mei Teyze' },
+      { id: 'mill_wi', localizedName: 'Terk Edilmiş Maden', ownerName: 'Madenci Durn' },
+    ];
+    expect(
+      findRequestedLocations("Ash'in tezgahını aramak istiyorum", multiUniverseLocations),
+    ).toEqual(['farm_cp']);
+    expect(
+      findRequestedLocations("Mei'nin yerini arayabilir miyim", multiUniverseLocations),
+    ).toEqual(['farm_cn']);
+    expect(
+      findRequestedLocations('teyze veya madenci ne dedi', multiUniverseLocations),
+    ).toEqual([]);
   });
 
   it('açık istek ve mekân varsa izin verir', () => {

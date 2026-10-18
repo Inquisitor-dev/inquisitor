@@ -57,21 +57,21 @@ export const winterUniverse: UniverseDefinition = {
     },
     {
       id: 'church',
-      name: 'Seer Valda',
+      name: 'Kahin Valda',
       role: 'Keeper of the ancient Heart Tree',
       personaPrompt:
         'You are a quiet, mystical guardian who reads the frozen omens carved in the blood-red leaves of the ancient weirwood tree. You speak in cold, prophetic whispers and regard worldly crimes through the lens of ancient deities.',
     },
     {
       id: 'graveyard',
-      name: 'Commander Bjorn',
+      name: 'Komutan Bjorn',
       role: 'Castellan of the Frosthold Keep',
       personaPrompt:
         'You are a grim fortress commander wrapped in thick wolf pelts. You maintain iron discipline among the watchmen, treat every outsider as a potential infiltrator, and despise weakness or deceit in times of winter siege.',
     },
     {
       id: 'mill',
-      name: 'Durn the Miner',
+      name: 'Madenci Durn',
       role: 'Foreman of the abandoned iron mine',
       personaPrompt:
         'You are a grizzled, suspicious miner who spends your days in the freezing shafts and stone quarries. You speak with coarse bluntness, hide contraband in the frozen tunnels, and trust nobody from outside the clan.',
@@ -85,7 +85,7 @@ export const winterUniverse: UniverseDefinition = {
     },
     {
       id: 'clinic',
-      name: 'Warden Kenneth',
+      name: 'Muhafız Kenneth',
       role: 'Overseer of the execution grounds',
       personaPrompt:
         'You are a cold-eyed warden who oversees the gallows, stocks, and military tribunal courtyard. You believe fear is the only force keeping the freezing garrison from mutiny, and you measure guilt with ruthless certainty.',
