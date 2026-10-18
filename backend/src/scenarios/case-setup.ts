@@ -396,6 +396,8 @@ export interface CaseFacts extends CasePlan {
   victim: { name: string; profession: string };
   // Her masumun temize çıkma yolu: itiraf ettiği sır aynı zamanda mazeretidir
   alibis: Record<string, string>;
+  // Yanılabilen tanıklık: tanığın gördüğü kişinin eşkâli (yapay zekâ yazar, kod uyduğu şüphelileri seçer)
+  witnessDescription?: string;
 }
 
 // Oturumun olay yeri id'si; olay yeri seçimi eklenmeden önce açılan vakalarda yoktur

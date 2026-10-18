@@ -5,6 +5,13 @@ import {
   type ScenarioNpcDefinition,
 } from '../../scenarios/scenario-config';
 import type { CasePlan } from '../../scenarios/case-setup';
+import {
+  MOTIVE_LABELS,
+  TIME_OF_DEATH_LABELS,
+  WEAPON_METHOD_LABELS,
+  WEAPONS,
+} from '../../scenarios/case-catalog';
+import { normalizeScenarioType } from '../../scenarios/scenario-config';
 
 export type ScenarioDraft = {
   scenario: string;
@@ -16,6 +23,8 @@ export type ScenarioDraft = {
   victim?: { name: string; profession: string };
   verificationText?: string;
   alibis?: Record<string, string>;
+  // Yanılabilen tanıklık: tanığın gördüğü kişinin eşkâli (adı değil)
+  witnessDescription?: string;
 };
 
 // Kodun belirlediği vaka gerçeklerini yapay zekâya talimat olarak anlatır
@@ -39,7 +48,9 @@ export function buildCaseBrief(
     verificationLine =
       placement.type === 'LOCATION'
         ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST be physical evidence at the culprit's own place that matches the crime scene trace (for example the same material, the same item, or the rest of it). This replaces the usual secret clue of that location.`
-        : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder.`;
+        : verification.witnessDescriptionFits
+          ? `- VERIFYING EVIDENCE (A WITNESS WHO DOES NOT KNOW WHO IT WAS): The innocent ${who(placement.npcId)} saw a figure at the murder location around the time of death, connected to the crime scene trace, but could NOT see the face. Invent ONE visible detail (clothing, build, gait, something carried, a smell) that honestly fits ALL of these suspects and nobody else in the cast: ${verification.witnessDescriptionFits.map(who).join(', ')}. Return it in "witnessDescription" as a short Turkish phrase (for example "uzun boylu, deri önlüklü biri"). The witness never names or guesses anyone. Their npcPrompt MUST describe what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder. "verificationText" states this sighting WITHOUT any suspect's name.`
+          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder.`;
   } else {
     verificationLine =
       placement.type === 'LOCATION'
@@ -58,7 +69,66 @@ ${clueLine}
 ${verificationLine}
 - Return "verificationText": one Turkish sentence that states the verifying evidence above as a fact.
 - VICTIM: Invent the victim's full name and profession and return them in "victim". The 'scenario' text must NOT reveal the name, but the NPCs knew the victim and may talk about them.
-- ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.`;
+- ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.${caseDetailsLines(plan, scenarioType, who)}`;
+}
+
+// Vaka Motoru v2: silah, motif, ölüm saati ve masumların cinayete bağlı sırları. Kod seçer, yapay zekâ
+// yalnızca etrafına hikâye yazar. Eski planlarda bu alanlar yoktur ve satırlar eklenmez.
+function caseDetailsLines(
+  plan: CasePlan,
+  scenarioType: string,
+  who: (id: string) => string,
+): string {
+  const lines: string[] = [];
+  const weapon = WEAPONS[normalizeScenarioType(scenarioType)].find(
+    (w) => w.id === plan.weaponId,
+  );
+  if (weapon) {
+    lines.push(
+      `- MURDER WEAPON: ${weapon.label} (cause of death: ${WEAPON_METHOD_LABELS[weapon.method]}). truthReveal MUST say the victim was killed with it. Under the cover, the body shows wounds of exactly this kind.`,
+    );
+  }
+  if (plan.motive) {
+    lines.push(
+      `- MOTIVE: ${MOTIVE_LABELS[plan.motive]}. This is why the culprit killed. truthReveal explains it. When the verifying evidence is not at the culprit's place, the culprit's location clue shows this motive.`,
+    );
+  }
+  if (plan.timeOfDeath) {
+    lines.push(
+      `- TIME OF DEATH: ${TIME_OF_DEATH_LABELS[plan.timeOfDeath]}. Every alibi covers exactly this time, and every witness saw what they saw around this time.`,
+    );
+  }
+  const placement = plan.verification.placement;
+  const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+  const secretLines = (plan.involvements ?? [])
+    .filter((inv) => inv.npcId !== witnessId)
+    .map((inv) => {
+      const npc = who(inv.npcId);
+      const about = inv.aboutNpcId ? who(inv.aboutNpcId) : '';
+      switch (inv.kind) {
+        case 'WITNESS':
+          return `  - ${npc} WITNESS: around the time of death they clearly saw ${about} somewhere else, far from the murder location. Their npcPrompt says this, and that they tell it when the Inquisitor asks about the murder location or that night. Their own secret and alibi stay as usual.`;
+        case 'SHARED_MOTIVE':
+          return `  - ${npc} HAD THEIR OWN MOTIVE: they also had a reason to resent the victim (a different reason than the culprit's), which makes them look guilty. Their secret and alibi still clear them. Their npcPrompt mentions the grudge; they deny caring about it.`;
+        case 'UNWITTING_HELP':
+          return `  - ${npc} HELPED WITHOUT KNOWING: shortly before the murder they gave, lent or sold the murder weapon (${weapon?.label ?? 'the weapon'}) to ${about}, with no idea what it was for. Their location clue shows where the weapon used to be or a record of the deal (it does NOT clear them). When they confess, they say whom they gave it to. Their alibi still covers the time of death.`;
+        case 'SCAVENGER':
+          return `  - ${npc} SCAVENGER: they found the body before anyone else, took a small valuable belonging of the victim and told no one. Their location clue is that belonging, hidden at their place (it does NOT clear them). When they confess, they tell when they found the body, which fixes the time of death. They did not kill.`;
+        case 'LAST_CONVERSATION':
+          return `  - ${npc} LAST CONVERSATION: they were the last to speak with the victim, who was troubled about the matter behind the motive (without naming who was behind it). Their npcPrompt says this, and that they share it when asked about the victim. Their own secret and alibi stay as usual.`;
+        case 'NONE':
+          return `  - ${npc} FULLY INNOCENT: no link to the murder and no shameful secret about that night. They were with ${about} at the time of death and say so openly. ${about}'s npcPrompt MUST confirm it ("${npc} was with me"). Their location clue is an ordinary sign of their alibi.`;
+        default:
+          return '';
+      }
+    })
+    .filter(Boolean);
+  if (secretLines.length > 0) {
+    lines.push(
+      `- INNOCENTS' LINKS TO THE MURDER (each innocent's npcPrompt MUST include their link; these override the usual location clue rule where they say so):\n${secretLines.join('\n')}`,
+    );
+  }
+  return lines.length > 0 ? `\n${lines.join('\n')}` : '';
 }
 
 // Cinayetin işlendiği yer ve cesedin görünüşü: oyundaki görsel her vakada aynı örtülü bedeni gösterir,
@@ -155,7 +225,7 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 CLUE & MYSTERY RULES:
 1. The 'scenario' text MUST be a general mystery hook. It MUST NOT reveal the crime scene appearance (orderly or messy, signs of struggle or none), how the murder seems to have happened (in panic or planned), the crime scene clue, or whether anything is genuine or planted. The player discovers those at the crime scene.
 2. For all OTHER locations (non-crime-scene), the hidden clue belongs to the NPC who lives/works there, unless the VERIFYING EVIDENCE is placed at that location:
-   - An INNOCENT's location clue MUST be physical proof of that innocent's own secret, the same activity as their alibi in 'alibis' (for example the smuggled goods or the stolen money). It MUST NOT involve the victim's belongings, blood, the murder weapon, or anything that points at the culprit or at another NPC.
+   - An INNOCENT's location clue MUST be physical proof of that innocent's own secret, the same activity as their alibi in 'alibis' (for example the smuggled goods or the stolen money). It MUST NOT involve the victim's belongings, blood, the murder weapon, or anything that points at the culprit or at another NPC, unless INNOCENTS' LINKS TO THE MURDER above says otherwise for that innocent.
    - The CULPRIT's location clue (when the verifying evidence is not there) shows the culprit's motive or suspicious activity, not a direct proof of the murder.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': exactly one hidden physical clue per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
@@ -172,7 +242,11 @@ Return a valid JSON object ONLY, in exactly this format:
   "truthReveal": "Dark, atmospheric Turkish paragraph revealing the ENTIRE truth and behind-the-scenes of this mystery...",
   "culpritId": ${npcIds},
   "victim": { "name": "Full name", "profession": "Turkish profession" },
-  "verificationText": "One Turkish sentence stating the verifying evidence...",
+  "verificationText": "One Turkish sentence stating the verifying evidence...",${
+    plan.verification.witnessDescriptionFits
+      ? '\n  "witnessDescription": "Short Turkish phrase: the visible detail the witness saw",'
+      : ''
+  }
   "alibis": {
 ${alibisTemplate}
   },
@@ -233,6 +307,7 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
   "culpritId": "...",
   "victim": { "name": "...", "profession": "..." },
   "verificationText": "...",
+  "witnessDescription": "... (only if the draft has it)",
   "alibis": { ... },
   "npcPrompts": { ... },
   "locationClues": {
@@ -281,5 +356,6 @@ export function mergeScenarioDraftWithFallback(
     victim: reviewed.victim?.name ? reviewed.victim : draft.victim,
     verificationText: reviewed.verificationText || draft.verificationText,
     alibis: { ...(draft.alibis ?? {}), ...(reviewed.alibis ?? {}) },
+    witnessDescription: reviewed.witnessDescription || draft.witnessDescription,
   };
 }

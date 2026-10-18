@@ -198,6 +198,31 @@ describe('prompt-builder domain', () => {
       },
     );
 
+    it('olay yeri anlatıcısı yara türünü koddan anlatır, silahın adını söylemez', () => {
+      const prompt = buildNpcPrompt({
+        scenarioConfig: getScenarioConfig('medieval', 'easy', 'well'),
+        session: {
+          ...baseSession,
+          caseFacts: {
+            ...baseSession.caseFacts,
+            crimeSceneId: 'well',
+            weaponId: 'rope',
+          },
+        },
+        npc: {
+          id: 'narrator_crime_scene',
+          name: 'Olay Yeri',
+          description: '',
+          basePrompt: '',
+        },
+        dynamicPrompt: '',
+        fearLevel: 0,
+        hasConfessed: false,
+      });
+      expect(prompt).toContain('dark marks around the neck');
+      expect(prompt).toContain('never name the exact weapon');
+    });
+
     it('arama izni veren makam için sistem izin durumunu ekler', () => {
       const prompt = buildNpcPrompt({
         scenarioConfig: config,

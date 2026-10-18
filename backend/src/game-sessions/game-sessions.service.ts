@@ -131,6 +131,7 @@ export class GameSessionsService {
       verificationText: draft.verificationText ?? '',
       victim: draft.victim ?? { name: '', profession: '' },
       alibis: Object.fromEntries(plan.innocentIds.map((id) => [id, draft.alibis?.[id] ?? ''])),
+      witnessDescription: draft.witnessDescription,
     };
   }
 
@@ -177,6 +178,10 @@ export class GameSessionsService {
       alibis: Object.fromEntries(
         plan.innocentIds.map((id) => [id, `[TEST MODU] ${name(id)} cinayet saatinde başka yerdeydi.`]),
       ),
+      // Yanılabilen tanıklık: tarifin uyduğu şüpheliler test modunda açıkça yazılır
+      witnessDescription: plan.verification.witnessDescriptionFits
+        ? `[TEST MODU] eşkâl: ${plan.verification.witnessDescriptionFits.map(name).join(' ya da ')}`
+        : undefined,
     };
   }
 
