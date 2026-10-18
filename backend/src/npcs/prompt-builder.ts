@@ -6,7 +6,7 @@ import {
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
-import { linkPromptLines } from './case-statements';
+import { confessionText, linkPromptLines } from './case-statements';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
@@ -170,6 +170,8 @@ STRICT CANON RULES:
   const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
   const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
   const fearThreshold = fearThresholdOf(caseFacts, npc.id);
+  const nameOf = (id: string) =>
+    scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id;
 
   const forcedConfession = isForcedConfession({
     isNarrator,
@@ -217,8 +219,7 @@ YOUR PERSONAL SECRET/ROLE IN THIS:
 ${dynamicPromptText}${linkPromptLines(
       caseFacts,
       npc.id,
-      (id) =>
-        scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+      nameOf,
       session.scenarioType,
       EVIDENCE_TAG.statement,
     )}
@@ -228,6 +229,7 @@ ${dynamicPromptText}${linkPromptLines(
 WHAT EVERYONE IN TOWN KNOWS:
 ${publicCaseFacts(session.scenarioType, caseFacts)}
 - Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
+- Fear changes how you speak, never what you know. However scared you are, never confirm an event, a sighting, an object or something another person supposedly said that is not in your own knowledge above. If the Inquisitor claims someone said something about you that is not true, deny it.
 `;
 
     if (isCulprit) {
@@ -252,7 +254,7 @@ ${fearPrompt(fearLevel, isCulprit, fearThreshold)}`;
 
     if (hasConfessed) {
       combinedPrompt += `
-You have already confessed your personal secret to the Inquisitor. Do not deny it again.`;
+You have already confessed your personal secret to the Inquisitor. Do not deny it again, and do not add new admissions: you have nothing more to confess.`;
     }
 
     if (quietRoom) {
@@ -272,7 +274,9 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
     if (confrontation) {
       const impactText: Record<EvidenceImpact, string> = {
         DECISIVE: 'This evidence exposes your personal secret.',
-        IMPLICATING: 'This evidence points at you and makes you look guilty.',
+        IMPLICATING: isCulprit
+          ? 'This evidence points at you and makes you look guilty.'
+          : 'This evidence makes you look suspicious (it may fit other people too). You had nothing to do with it unless YOUR PERSONAL SECRET/ROLE above says so: never invent a link between yourself and it (that you found, took, hid, moved or placed it).',
         IRRELEVANT:
           'This evidence has nothing to do with you: you were not involved with it and you were not where it was found. Do NOT invent a connection to yourself, your work or your place. React with puzzlement or dismissal (for example ask why you are being shown it). It does not frighten you.',
         REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
@@ -303,7 +307,16 @@ This evidence alone does NOT break you. Do NOT confess your personal secret in t
     }
 
     if (forcedConfession) {
-      combinedPrompt += `
+      // Sırrı olmayan (tanık, tamamen masum) biri "sırrını itiraf et" denince gösterilen kanıtla ilgili bir suç
+      // uyduruyordu (oyun testinde görüldü). İtiraf, Not Defteri'ne kaydedilen metinle aynı olsun.
+      const confession = caseFacts?.alibis?.[npc.id]
+        ? confessionText(caseFacts, npc.id, nameOf, session.scenarioType)
+        : null;
+      combinedPrompt += confession
+        ? `
+FEAR BREAK: You can no longer hold out. In this reply you break down and tell the truth you have been holding back, following the emotional sequence of the confession rules. What you confess is exactly this, in your own words and nothing more: "${confession}"
+If that is nothing shameful (you had nothing to hide), you break by nervously telling exactly that plain truth. Never invent a theft, a link to the evidence shown, or any other act or fact that is not written there. You still NEVER confess to the murder.`
+        : `
 FEAR BREAK: You can no longer hold out. In this reply you break down and confess your personal secret, following the emotional sequence of the confession rules. You still NEVER confess to the murder.`;
     }
 

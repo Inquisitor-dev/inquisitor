@@ -117,7 +117,7 @@ function caseDetailsLines(
         case 'LAST_CONVERSATION':
           return `  - ${npc} LAST CONVERSATION: they were the last to speak with the victim, who was troubled about the matter behind the motive (without naming who was behind it). Their npcPrompt says this, and that they share it when asked about the victim. Their own secret and alibi stay as usual.`;
         case 'NONE':
-          return `  - ${npc} FULLY INNOCENT: no link to the murder and no shameful secret at all (no smuggling, theft, affair or anything else to hide). They were with ${about} at the time of death doing something ordinary and say so openly. ${about}'s npcPrompt MUST confirm it ("${npc} was with me"). Their location clue is an ordinary sign of their alibi.`;
+          return `  - ${npc} FULLY INNOCENT: no link to the murder and no shameful secret at all (no smuggling, theft, affair or anything else to hide). They were with ${about} at the time of death doing something ordinary and say so openly. ${about}'s npcPrompt MUST confirm it ("${npc} was with me"), and the two alibis in 'alibis' name the same place and the same activity. Their location clue is an ordinary sign that they were at that place with ${about} (for example a note, a receipt or a log entry about it); it must never show them working at their own place or anywhere else at the time of death.`;
         default:
           return '';
       }
@@ -225,7 +225,7 @@ The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and nat
 CLUE & MYSTERY RULES:
 1. The 'scenario' text MUST be a general mystery hook. It MUST NOT reveal the crime scene appearance (orderly or messy, signs of struggle or none), how the murder seems to have happened (in panic or planned), the crime scene clue, or whether anything is genuine or planted. The player discovers those at the crime scene.
 2. For all OTHER locations (non-crime-scene), the hidden clue belongs to the NPC who lives/works there, unless the VERIFYING EVIDENCE is placed at that location:
-   - An INNOCENT's location clue MUST be physical proof of that innocent's own secret, the same activity as their alibi in 'alibis' (for example the smuggled goods or the stolen money). It MUST NOT involve the victim's belongings, blood, the murder weapon, or anything that points at the culprit or at another NPC, unless INNOCENTS' LINKS TO THE MURDER above says otherwise for that innocent.
+   - An INNOCENT's location clue MUST be physical proof of that innocent's own secret, the same activity, place and time as their alibi in 'alibis' (for example the smuggled goods or the stolen money). It must never place them somewhere else or doing something else at the time of death. It MUST NOT involve the victim's belongings, blood, the murder weapon, or anything that points at the culprit or at another NPC, unless INNOCENTS' LINKS TO THE MURDER above says otherwise for that innocent.
    - The CULPRIT's location clue (when the verifying evidence is not there) shows the culprit's motive or suspicious activity, not a direct proof of the murder.
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': exactly one hidden physical clue per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
@@ -293,7 +293,7 @@ CONTINUITY RULES:
 4. Ensure every canonical location has exactly one location clue.
 5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
 6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense.
-6a. Each INNOCENT's location clue must prove that innocent's own alibi secret. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
+6a. Each INNOCENT's location clue must prove that innocent's own alibi secret, at the same place and time as the alibi. If a clue places them somewhere else or doing something else at the time of death, rewrite the clue to match the alibi. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
 6b. The 'scenario' hook must not reveal how orderly or messy the crime scene is, or whether the murder looks panicked or planned. Remove such sentences.
 6c. No English words or game terms (tidy, messy, hurried, planned) in Turkish text.
 7. Do NOT invent alternate clues for the same location.

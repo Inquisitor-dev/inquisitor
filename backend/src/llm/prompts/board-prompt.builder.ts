@@ -9,7 +9,9 @@ export function buildBoardThoughtPrompt(
   const facts = lines
     .map(
       (l, i) =>
-        `${i + 1}. "${l.a}" → "${l.b}": ${l.type === 'CLEARS' || l.type === 'IMPLICATES' ? `bu kanıt bu kişiyi ${l.relation}` : `bu iki kanıt birbiriyle ${l.relation}`}. ${l.verdict === 'CORRECT' ? 'Tutuyor.' : 'Tutmuyor.'}`,
+      l.shared
+        ? `${i + 1}. "${l.a}" → "${l.b}": bu kanıt bu kişiyi dışarıda bırakmıyor, ama yalnız onu göstermiyor; birkaç kişiye uyuyor. Kısmen tutuyor.`
+        : `${i + 1}. "${l.a}" → "${l.b}": ${l.type === 'CLEARS' || l.type === 'IMPLICATES' ? `bu kanıt bu kişiyi ${l.relation}` : `bu iki kanıt birbiriyle ${l.relation}`}. ${l.verdict === 'CORRECT' ? 'Tutuyor.' : 'Tutmuyor.'}`,
     )
     .join('\n');
 
@@ -23,6 +25,8 @@ Write what goes through the detective's head, in Turkish.
 - Never use words of certainty or verdict: "kesin", "kesinlikle", "tamamen", "tamamıyla", "mutlaka", "doğru çıktı", "doğruydu", "yanlıştı", "hata yaptım", "büyük bir hata", "hamle", "iddia".
 - Do not talk about a board, strings, links, claims, a game or an engine. Refer to people by name and to evidence by what it is (her itirafı, olay yerindeki iz, değirmende bulduğum şey).
 - Cover every hunch above: for the ones that hold up, say it seems to fit; for the ones that do not, show doubt. You may add a vague musing about a PERSON, such as "belki başka bir şey saklıyor", but never invent a concrete new fact, never name or hint at who the murderer is, and never say what the right connection would be.
+- A hunch that holds up must not sound doubtful about that connection (no "emin olamıyorum", "kurtarıyor mu"): hedge softly but lean towards it fitting.
+- For a hunch that only partly holds (the evidence fits several people), say it does not rule the person out but does not point at them alone. Never say it points directly or only at them.
 - Never question whether a piece of evidence is genuine, fake, planted or from another time. Doubt only the connection, not the evidence itself.
 - Use correct Turkish spelling with all special characters.
 

@@ -12,6 +12,8 @@ export interface JudgedString {
   from: BoardCard;
   to: BoardCard;
   verdict: BoardVerdict;
+  // "İşaret eder" ipi doğru ama kanıt birden çok şüpheliye uyuyor: iç ses "yalnız onu gösteriyor" demesin
+  shared?: boolean;
 }
 
 const isCrimeSceneClue = (e: BoardEvidence) =>
@@ -58,10 +60,13 @@ function judgeSuspectLink(
       clears = implicated.includes(suspectId);
     }
   } else if (e.kind === 'CONFESSION') {
-    // İtiraf, itiraf edenin mazeretidir. Silahı bilmeden verenin itirafı aleti kime verdiğini de söyler.
-    clears = e.sourceId === suspectId;
-    implicates =
-      isCulprit && involvementOf(facts, e.sourceId)?.kind === 'UNWITTING_HELP';
+    // İtiraf, itiraf edenin mazeretidir. Tamamen masum o saatte kiminle birlikte olduğunu söyler: o kişiyi de
+    // aklar. Silahı bilmeden verenin itirafı aleti kime verdiğini de söyler.
+    const own = involvementOf(facts, e.sourceId);
+    clears =
+      e.sourceId === suspectId ||
+      (own?.kind === 'NONE' && own.aboutNpcId === suspectId);
+    implicates = isCulprit && own?.kind === 'UNWITTING_HELP';
   } else if (e.kind === 'TESTIMONY') {
     // Kısmi tanık o saatte birini başka yerde görmüştür: o kişiyi aklar. Son konuşanın ifadesi kimseyi
     // adıyla söylemez, hiçbir şüpheliyi aklamaz ya da işaret etmez.
@@ -159,6 +164,7 @@ export function judgeBoard(
   const cards = new Map(board.cards.map((card) => [card.id, card]));
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
   const judged: JudgedString[] = [];
+  const suspects = [facts.culpritId, ...facts.innocentIds];
 
   for (const string of board.strings) {
     const from = cards.get(string.from);
@@ -172,11 +178,19 @@ export function judgeBoard(
         from.kind === 'evidence' ? from : to.kind === 'evidence' ? to : null;
       const e = evCard?.refId ? evidenceById.get(evCard.refId) : undefined;
       if (!suspect?.refId || !e) continue;
+      const verdict = judgeSuspectLink(string.type, suspect.refId, e, facts);
+      const shared =
+        string.type === 'IMPLICATES' &&
+        verdict === 'CORRECT' &&
+        suspects.filter(
+          (id) => judgeSuspectLink('IMPLICATES', id, e, facts) === 'CORRECT',
+        ).length > 1;
       judged.push({
         string,
         from,
         to,
-        verdict: judgeSuspectLink(string.type, suspect.refId, e, facts),
+        verdict,
+        ...(shared ? { shared } : {}),
       });
     } else {
       const a = from.refId ? evidenceById.get(from.refId) : undefined;
