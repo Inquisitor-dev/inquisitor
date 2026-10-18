@@ -5,6 +5,8 @@ import {
   describeJudged,
   BoardState,
   judgeBoard,
+  judgePending,
+  MAX_STRINGS_PER_THOUGHT,
   sanitizeBoard,
   templateThought,
 } from './board';
@@ -88,6 +90,13 @@ const evidence: BoardEvidence[] = [
     sourceId: 'church',
     text: 'kilise ipucu',
   },
+  {
+    id: 'e-clue-mill',
+    kind: 'CLUE',
+    category: 'ITEM',
+    sourceId: 'mill',
+    text: 'değirmen ipucu',
+  },
 ];
 
 const cards = [
@@ -149,6 +158,15 @@ describe('judgeBoard: şüpheli ↔ kanıt', () => {
     ).toBe('CORRECT');
     expect(
       verdictOf(genuineFacts, 's-tavern', 'c-e-clue-church', 'CLEARS'),
+    ).toBe('WRONG');
+  });
+
+  it('katilin kendi mekânındaki ipucu onu suçlamaz: aranan mekân tek iple katili söylemez', () => {
+    expect(
+      verdictOf(genuineFacts, 's-mill', 'c-e-clue-mill', 'IMPLICATES'),
+    ).toBe('WRONG');
+    expect(
+      verdictOf(genuineFacts, 's-church', 'c-e-clue-church', 'IMPLICATES'),
     ).toBe('WRONG');
   });
 
@@ -291,6 +309,62 @@ describe('sanitizeBoard', () => {
     expect(
       sanitizeBoard(changed, { ...ctx, previous }).strings[0].verdict,
     ).toBeUndefined();
+  });
+});
+
+describe('judgePending: bir düşünüşte en fazla 3 yeni ip', () => {
+  it('yalnızca karar almamış ipler, önce kurulanlar önce değerlendirilir; kalanlar sırada bekler', () => {
+    const strings = [
+      // Mühürlü ip yeniden değerlendirilmez
+      {
+        id: 'sealed',
+        from: 's-church',
+        to: 'c-e-scene',
+        type: 'CLEARS' as const,
+        verdict: 'CORRECT' as const,
+      },
+      ...['s-tavern', 's-mill', 's-church'].map((from, i) => ({
+        id: `n${i}`,
+        from,
+        to: 'c-e-scene',
+        type: 'IMPLICATES' as const,
+      })),
+      {
+        id: 'n3',
+        from: 's-tavern',
+        to: 'c-e-verif',
+        type: 'IMPLICATES' as const,
+      },
+      {
+        id: 'n4',
+        from: 's-mill',
+        to: 'c-e-verif',
+        type: 'IMPLICATES' as const,
+      },
+      // Değerlendirilemeyen bağ sıraya girmez
+      { id: 'link', from: 'n-1', to: 's-mill', type: 'LINK' as const },
+    ];
+    const { judged, waiting } = judgePending(
+      { cards, strings },
+      genuineFacts,
+      evidence,
+    );
+    expect(judged.map((j) => j.string.id)).toEqual(['n0', 'n1', 'n2']);
+    expect(judged).toHaveLength(MAX_STRINGS_PER_THOUGHT);
+    expect(waiting).toBe(2);
+
+    // Kararlar işlenince mühürlü ipin kararı korunur, sıradakiler kararsız kalır
+    const after = applyVerdicts({ cards, strings }, judged);
+    const verdictOf = (id: string) =>
+      after.strings.find((s) => s.id === id)?.verdict;
+    expect(verdictOf('sealed')).toBe('CORRECT');
+    expect(verdictOf('n0')).toBe('CORRECT');
+    expect(verdictOf('n3')).toBeUndefined();
+
+    // Sonraki düşünüş sıradakileri değerlendirir
+    const next = judgePending(after, genuineFacts, evidence);
+    expect(next.judged.map((j) => j.string.id)).toEqual(['n3', 'n4']);
+    expect(next.waiting).toBe(0);
   });
 });
 

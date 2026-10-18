@@ -78,15 +78,9 @@ export function evidenceImpact(params: {
     );
     return helper ? 'IMPLICATING' : 'IRRELEVANT';
   }
-  // Kurbanın son konuşmada anlattığı dert katili sıkıştırır
-  if (evidence.kind === 'TESTIMONY') {
-    const lastWords = caseFacts?.involvements?.some(
-      (i) => i.kind === 'LAST_CONVERSATION' && i.npcId === evidence.sourceId,
-    );
-    return lastWords && targetNpcId === culpritId
-      ? 'IMPLICATING'
-      : 'IRRELEVANT';
-  }
+  // Kurbanın son konuşmada anlattığı dert motifi gösterir ama kimseyi adıyla söylemez: kimseyi korkutmaz.
+  // Yalnızca katili korkutsaydı, ifadeyi herkese sırayla göstermek korku göstergesinden katili söylerdi.
+  if (evidence.kind === 'TESTIMONY') return 'IRRELEVANT';
   if (evidence.kind === 'CLUE') {
     if (evidence.sourceId === 'crime_scene') {
       const implicated = caseFacts?.crimeSceneClue.implicatedNpcIds ?? [];

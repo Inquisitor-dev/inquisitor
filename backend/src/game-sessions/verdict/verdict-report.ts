@@ -99,6 +99,8 @@ export function isSupportingEvidence(
     )
   )
     return true;
+  // Katilin mekân ipucu motifini gösterir (panoda kimseyi suçlamasa da hükmün dayanağıdır)
+  if (e.kind === 'CLUE' && e.sourceId === facts.culpritId) return true;
   const involvements = facts.involvements ?? [];
   if (e.kind === 'BODY')
     return involvements.some((i) => i.kind === 'UNWITTING_HELP');

@@ -26,8 +26,10 @@ export default function BoardHelpModal({ isOpen, onClose }: BoardHelpModalProps)
             değiştirebilir ya da ipi koparabilirsin.
           </li>
           <li>
-            <strong>Düşün.</strong> Günde bir kez panona bakıp düşünebilirsin. İç sesin hangi iplerin
-            tuttuğunu söyler: doğru ipler mühürlenir, aklanan şüpheliye damga basılır.
+            <strong>Düşün.</strong> Günde bir kez panona bakıp düşünebilirsin. Her seferinde henüz
+            tartmadığın en fazla üç ipe bakarsın; önce kurduğun ipler önce gelir, kalanlar sonraki düşünüşe
+            kalır. İç sesin hangi iplerin tuttuğunu söyler: tartılan ipler mühürlenir, aklanan şüpheliye damga
+            basılır. Hangi bağları tartacağını iyi seç.
           </li>
         </ol>
         <button type="button" className={styles.thinkBtn} onClick={onClose}>

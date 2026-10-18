@@ -44,6 +44,14 @@ export function describeJudged(
   });
 }
 
+export const NOTHING_NEW_THOUGHT =
+  'Panodaki bağların hepsini zaten tarttım. Yeni bir şey düşünmek için yeni bir bağ kurmalıyım.';
+
+// Bu düşünüşte tartılamayan ipler için iç sese eklenen cümle
+export function waitingThought(waiting: number): string {
+  return `Aklımda ${waiting} bağ daha var ama bir seferde ancak bu kadarını tartabiliyorum; onlara sonra dönerim.`;
+}
+
 export const EMPTY_BOARD_THOUGHT =
   'Panoya bakıyorum ama elimde birbirine bağladığım bir şey yok. Önce kanıtları şüphelilerle ya da birbiriyle eşleştirmeliyim sanırım.';
 

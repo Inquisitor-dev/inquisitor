@@ -159,7 +159,7 @@ describe('Vaka Motoru v2 ifadeleri', () => {
     expect(linkPromptLines(facts, 'mill', nameOf, 'medieval', 'X')).toBe('');
   });
 
-  it('beden aleti verenin, son konuşmanın ifadesi katilin korkusunu artırır', () => {
+  it('beden aleti vereni korkutur; son konuşmanın ifadesi kimseyi korkutmaz (katili ele vermesin)', () => {
     const impact = (kind: string, sourceId: string, targetNpcId: string) =>
       evidenceImpact({
         evidence: { kind, sourceId },
@@ -170,7 +170,7 @@ describe('Vaka Motoru v2 ifadeleri', () => {
       });
     expect(impact('BODY', 'crime_scene', 'tavern')).toBe('IMPLICATING');
     expect(impact('BODY', 'crime_scene', 'church')).toBe('IRRELEVANT');
-    expect(impact('TESTIMONY', 'graveyard', 'mill')).toBe('IMPLICATING');
+    expect(impact('TESTIMONY', 'graveyard', 'mill')).toBe('IRRELEVANT');
     expect(impact('TESTIMONY', 'church', 'mill')).toBe('IRRELEVANT');
     expect(impact('ALIBI', 'tavern', 'farm')).toBe('IRRELEVANT');
   });

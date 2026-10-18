@@ -1,5 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getScenarioConfig } from '../scenarios/scenario-config';
+import {
+  getLocalizedLocationLabel,
+  getScenarioConfig,
+  normalizeScenarioType,
+} from '../scenarios/scenario-config';
+import { MOTIVE_LABELS, WEAPONS } from '../scenarios/case-catalog';
+import {
+  buildClueRepairPrompt,
+  culpritClueGivesAway,
+  parseClueRepair,
+} from './prompts/clue-repair-prompt.builder';
 import { CasePlan } from '../scenarios/case-setup';
 import type { ThoughtLine } from '../board/board';
 import { CompletionRequest, GeminiClient } from './client/gemini-client';
@@ -162,7 +172,7 @@ export class LlmService {
 
     try {
       const draft = parseScenarioDraft(responseText);
-      return await this.reconcileScenarioConsistency(
+      const reconciled = await this.reconcileScenarioConsistency(
         draft,
         scenarioType,
         locationDefinitions,
@@ -170,10 +180,93 @@ export class LlmService {
         caseBrief,
         sessionId,
       );
+      return await this.repairCulpritClue(
+        reconciled,
+        plan,
+        scenarioType,
+        sessionId,
+      );
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
     }
+  }
+
+  // Katilin mekân ipucu cinayeti doğrudan ele veriyorsa (kan, cinayet aleti) ipucu ve gerçek metni
+  // motifi gösterecek şekilde onarılır. Doğrulayan kanıt katilin mekânındaysa ipucu zaten izin eşidir.
+  private async repairCulpritClue(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const { culpritId, verification } = plan;
+    if (
+      verification.placement.type === 'LOCATION' &&
+      verification.placement.locationId === culpritId
+    ) {
+      return draft;
+    }
+    const clue = draft.locationClues?.[culpritId];
+    const weaponLabel = WEAPONS[normalizeScenarioType(scenarioType)].find(
+      (w) => w.id === plan.weaponId,
+    )?.label;
+    if (!clue || !culpritClueGivesAway(clue, weaponLabel)) return draft;
+
+    this.logger.warn(
+      `Culprit clue gives the murder away, repairing: ${clue.slice(0, 120)}`,
+    );
+    const place = getLocalizedLocationLabel(scenarioType, culpritId);
+    let repaired: { clue: string; truthReveal: string } | null = null;
+    try {
+      const response = await this.complete(
+        {
+          messages: [
+            {
+              role: 'user',
+              content: buildClueRepairPrompt({
+                scenarioType,
+                place,
+                clue,
+                truthReveal: draft.truthReveal,
+                motiveLabel: plan.motive
+                  ? MOTIVE_LABELS[plan.motive]
+                  : undefined,
+                weaponLabel,
+              }),
+            },
+          ],
+          temperature: 0.4,
+        },
+        'Culprit clue repair',
+        30_000,
+        { kind: 'CLUE_REPAIR', sessionId },
+      );
+      repaired = parseClueRepair(
+        response?.choices?.[0]?.message?.content || '',
+      );
+    } catch (error) {
+      this.logger.warn(`Culprit clue repair failed. ${error}`);
+    }
+
+    if (repaired && !culpritClueGivesAway(repaired.clue, weaponLabel)) {
+      return {
+        ...draft,
+        truthReveal: repaired.truthReveal,
+        locationClues: { ...draft.locationClues, [culpritId]: repaired.clue },
+      };
+    }
+    // Onarım da ele veriyorsa ipucu koddan, motifi gösteren sade bir nota döner
+    this.logger.warn(
+      'Culprit clue repair rejected; using a plain motive clue.',
+    );
+    return {
+      ...draft,
+      locationClues: {
+        ...draft.locationClues,
+        [culpritId]: `${place} içinde, gözden uzak bir köşeye sıkıştırılmış, kurbanla aradaki meseleyi ima eden katlanmış bir not duruyor.`,
+      },
+    };
   }
 
   private async reconcileScenarioConsistency(
