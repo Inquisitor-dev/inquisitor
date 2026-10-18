@@ -62,6 +62,7 @@ model GameSession {
   boardThoughtDay Int              @default(0)  // Son "Düşün"ün günü; günde bir kez düşünülür
   characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
   abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
+  verdictReport  Json?                          // Hüküm Dosyası: oyuncunun raporu ve puanı (src/game-sessions/verdict/verdict-report.ts)
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]
@@ -123,7 +124,7 @@ model Evidence {
 model LlmUsage {
   id               String   @id @default(uuid())
   sessionId        String?  // Çağrının ait olduğu vaka (yabancı anahtar yok; vaka silinse de kayıt kalır)
-  kind             String   // SCENARIO | SCENARIO_REVIEW | NPC_REPLY | CONFRONT | NARRATOR | BOARD_THOUGHT | CONTRADICTION_SCAN
+  kind             String   // SCENARIO | SCENARIO_REVIEW | NPC_REPLY | CONFRONT | NARRATOR | BOARD_THOUGHT | CONTRADICTION_SCAN | VERDICT_JUDGE
   model            String
   promptTokens     Int
   completionTokens Int

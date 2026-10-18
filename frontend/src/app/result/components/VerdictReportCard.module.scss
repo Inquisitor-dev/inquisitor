@@ -1,0 +1,231 @@
+$blood: #8a0303;
+$gold: #e0bb5e;
+$paper: #e5d9c5;
+$muted: #8a7f72;
+$line: #3d342d;
+
+.card {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 24px;
+  padding: 20px 22px;
+  background: rgba(26, 21, 18, 0.92);
+  border: 1px solid $line;
+  border-top: 3px solid $blood;
+  border-radius: 6px;
+  text-align: left;
+  font-family: system-ui, sans-serif;
+  color: $paper;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.kicker {
+  margin: 0;
+  color: $blood;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 2px 0 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  padding: 6px 14px;
+  border: 2px solid $gold;
+  border-radius: 6px;
+  color: $gold;
+  font-family: 'Playfair Display', serif;
+}
+
+.scoreValue {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.scoreMax {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.row {
+  padding: 14px 0;
+  border-top: 1px solid $line;
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.fieldName {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+}
+
+.points {
+  color: $gold;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid $line;
+  border-radius: 4px;
+}
+
+.answerTruth {
+  border-color: rgba($gold, 0.4);
+  background: rgba($gold, 0.06);
+}
+
+.answerLabel {
+  color: $muted;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.answerValue {
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.narrative {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-left: 3px solid $line;
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.judge {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.judgeLabel {
+  color: $gold;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.detailLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.detailCompare {
+  flex-shrink: 0;
+  max-width: 50%;
+  color: $muted;
+  text-align: right;
+}
+
+.detailTruth {
+  color: $gold;
+}
+
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+}
+
+.stampSmall {
+  padding: 1px;
+  border-width: 1px;
+  border-radius: 50%;
+  transform: none;
+}
+
+.stampOk {
+  color: #7fb069;
+}
+
+.stampBad {
+  color: #d9534f;
+}
+
+.empty {
+  margin: 12px 0 0;
+  color: $muted;
+  font-style: italic;
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 16px;
+  }
+
+  .compare {
+    grid-template-columns: 1fr;
+  }
+
+  .detail {
+    flex-wrap: wrap;
+  }
+
+  .detailCompare {
+    max-width: none;
+    width: 100%;
+    padding-left: 22px;
+    text-align: left;
+  }
+}

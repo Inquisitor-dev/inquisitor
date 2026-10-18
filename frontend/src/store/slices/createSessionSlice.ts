@@ -121,5 +121,6 @@ export const createSessionSlice: GameSliceCreator<SessionSlice> = (set) => ({
       truthReveal: null,
       locationClues: null,
       lastLocationId: null,
+      caseOutcome: null,
     }),
 });

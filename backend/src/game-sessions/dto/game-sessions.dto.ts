@@ -1,5 +1,21 @@
-import { IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { CHARACTER_IDS } from '../../abilities/abilities';
+import { MOTIVES, TIMES_OF_DEATH } from '../../scenarios/case-catalog';
+import {
+  MAX_NARRATIVE_LENGTH,
+  MAX_REPORT_EVIDENCE,
+} from '../verdict/verdict-report';
 
 export class CreateSessionDto {
   @IsOptional()
@@ -31,9 +47,46 @@ export class UpdateNotesDto {
   notes?: string;
 }
 
+// Hüküm Dosyası: katilin yanında oyuncunun olay raporu (eski istemciler göndermez)
+export class VerdictReportDto {
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_REPORT_EVIDENCE)
+  @IsString({ each: true })
+  evidenceIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  weaponId?: string;
+
+  @IsOptional()
+  @IsIn(MOTIVES)
+  motive?: (typeof MOTIVES)[number];
+
+  @IsOptional()
+  @IsIn(TIMES_OF_DEATH)
+  timeOfDeath?: (typeof TIMES_OF_DEATH)[number];
+
+  // { npcId: InvolvementKind }; değerler serviste katalogla karşılaştırılır
+  @IsOptional()
+  @IsObject()
+  involvements?: Record<string, string>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_NARRATIVE_LENGTH)
+  narrative?: string;
+}
+
 export class CondemnNpcDto {
   @IsString()
   npcId: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => VerdictReportDto)
+  report?: VerdictReportDto;
 }
 
 export class ConsumeWarrantDto {

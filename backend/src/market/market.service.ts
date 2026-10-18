@@ -210,16 +210,18 @@ export class MarketService {
     sessionId: string,
     dayNumber: number,
     // İkinci Nefes (Yeşim Hekim) ile çözülen vakada ödül ve puan yarıya iner, hızlı bonus yok
-    options: { halved?: boolean } = {},
+    // Hüküm Dosyası: raporun puanı ödülü ve sıralama puanını ölçekler (0.5–1; rapor yoksa 1)
+    options: { halved?: boolean; multiplier?: number } = {},
   ) {
     const halved = options.halved === true;
+    const multiplier = Math.max(0, Math.min(1, options.multiplier ?? 1));
     const baseReward = halved ? 50 : 100;
     const fastBonus = !halved && dayNumber <= 2 ? 50 : 0;
-    const totalReward = baseReward + fastBonus;
+    const totalReward = Math.round((baseReward + fastBonus) * multiplier);
 
     const baseScore = halved ? 50 : 100;
     const fastScoreBonus = halved ? 0 : dayNumber <= 2 ? 50 : 10;
-    const totalScore = baseScore + fastScoreBonus;
+    const totalScore = Math.round((baseScore + fastScoreBonus) * multiplier);
 
     return await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
@@ -253,6 +255,7 @@ export class MarketService {
             fastBonus,
             scoreAwarded: totalScore,
             halved,
+            reportMultiplier: multiplier,
           },
         },
       });

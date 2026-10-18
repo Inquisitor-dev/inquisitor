@@ -24,7 +24,9 @@ import { useFootsteps } from './useFootsteps';
 import { playDoorSound } from '@/features/audio/doorSound';
 import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
-import CondemnModal from '@/components/CaseModals/CondemnModal';
+import VerdictDossier from '@/components/VerdictDossier/VerdictDossier';
+import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
+import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
 import MapActionBar from './components/MapActionBar/MapActionBar';
 import HomeModal from './components/HomeModal/HomeModal';
 import AudioSettingsModal from './components/AudioSettingsModal/AudioSettingsModal';
@@ -368,44 +370,28 @@ export default function MapPage() {
     }
   };
 
-  const handleCondemn = async (npcId: string) => {
+  // Hüküm Dosyası mühürlenince: hata dosyaya geri döner, orada gösterilir
+  const handleCondemn = async (npcId: string, report: VerdictReportInput) => {
     if (!sessionId) return;
 
-    try {
-      const data = await api.post<{
-        session?: { truthReveal?: string; locationClues?: Record<string, string>; lastDay?: number; timeOfDay?: number };
-        won?: boolean;
-        spared?: boolean;
-        clearedNpcId?: string;
-        message?: string;
-      }>(`/game-sessions/${sessionId}/condemn`, { npcId });
+    const data = await condemnCase(sessionId, npcId, report);
+    setIsCondemnModalOpen(false);
 
-      // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır ve gün kapanır
-      if (data.spared && data.clearedNpcId) {
-        applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
-        if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
-        setArmedAbility(null);
-        abilities.refresh();
-        setAbilityOutcome({
-          ability: { name: 'İkinci Nefes' },
-          result: { message: data.message ?? 'Yanılmışsın: bu kişi masum. Soruşturma sürüyor.' },
-          onClose: () => setAbilityOutcome(null),
-        });
-        return;
-      }
-
-      if (data.session?.truthReveal) {
-        useGameStore.getState().setTruthReveal(data.session.truthReveal);
-      }
-      if (data.session?.locationClues) {
-        useGameStore.getState().setLocationClues(data.session.locationClues);
-      }
-      if (data.won !== undefined) {
-        router.push(`/result?won=${data.won}&message=${encodeURIComponent(data.message ?? '')}`);
-      }
-    } catch (err) {
-      logger.error('Failed to condemn', err);
+    // İkinci Nefes (Yeşim Hekim): yanlış hüküm vakayı bitirmez; kişi aklanır ve gün kapanır
+    if (data.spared && data.clearedNpcId) {
+      applySecondBreath(data.clearedNpcId, data.session?.lastDay ?? lastDay);
+      if (typeof data.session?.timeOfDay === 'number') setTimeOfDay(data.session.timeOfDay);
+      setArmedAbility(null);
+      abilities.refresh();
+      setAbilityOutcome({
+        ability: { name: 'İkinci Nefes' },
+        result: { message: data.message ?? 'Yanılmışsın: bu kişi masum. Soruşturma sürüyor.' },
+        onClose: () => setAbilityOutcome(null),
+      });
+      return;
     }
+
+    if (data.won !== undefined) router.push(finishCase(data, npcId));
   };
 
   const isNight = timeOfDay >= 4;
@@ -616,14 +602,12 @@ export default function MapPage() {
       {/* Inventory Modal */}
       {isInventoryOpen && <InventoryModal onClose={() => setIsInventoryOpen(false)} />}
 
-      {/* Condemn Selection Modal */}
-      <CondemnModal
+      {/* Hüküm Dosyası */}
+      <VerdictDossier
         isOpen={isCondemnModalOpen}
         onClose={() => setIsCondemnModalOpen(false)}
-        scenarioType={scenarioType}
-        difficulty={difficulty}
         excludeIds={clearedNpcIds}
-        onConfirmCondemn={handleCondemn}
+        onSubmit={handleCondemn}
       />
 
       <AudioSettingsModal

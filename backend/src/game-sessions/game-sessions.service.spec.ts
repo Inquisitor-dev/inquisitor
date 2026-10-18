@@ -118,6 +118,77 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
     expect(result.session).toHaveProperty('truthReveal');
   });
 
+  it('Hüküm Dosyası puanlanır, kaydedilir ve ödülü ölçekler (test modunda hakem şablondur)', async () => {
+    const facts = {
+      culpritId: 'mill',
+      innocentIds: ['tavern'],
+      crimeSceneClue: {
+        implicatedNpcIds: ['mill'],
+        eliminatedNpcIds: ['tavern'],
+      },
+      verification: {
+        kind: 'CORROBORATION',
+        placement: { type: 'LOCATION', locationId: 'mill' },
+      },
+      victim: { name: 'Lord', profession: 'Lord' },
+      alibis: { tavern: 'barda' },
+      weaponId: 'sickle',
+      motive: 'DEBT',
+      timeOfDeath: 'MIDNIGHT',
+      involvements: [{ npcId: 'tavern', kind: 'NONE', aboutNpcId: 'mill' }],
+    };
+    const session = {
+      ...activeSession,
+      scenarioType: 'medieval',
+      difficulty: 'easy',
+      isTestMode: true,
+      caseFacts: facts,
+    };
+    const { gameSession, prisma } = setup(session);
+    (prisma as unknown as { evidence: object }).evidence = {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'e1',
+          kind: 'CLUE',
+          category: 'ITEM',
+          sourceId: 'crime_scene',
+          text: 'iz',
+        },
+      ]),
+    };
+    const market = {
+      awardCaseReward: jest.fn().mockResolvedValue({ rewardTokens: 75 }),
+    };
+    const service = new GameSessionsService(
+      prisma,
+      {} as LlmService,
+      market as never,
+    );
+    const result = await service.condemnNpc('session-1', 'owner', 'mill', {
+      evidenceIds: ['e1'],
+      weaponId: 'dagger',
+      motive: 'DEBT',
+      timeOfDeath: 'MIDNIGHT',
+      involvements: { tavern: 'NONE' },
+    });
+    // Kanıt 20 + motif 15 + saat 10 + bağ 20 = 65; silah yanlış, anlatım boş
+    expect(result.verdict?.total).toBe(65);
+    const [saved] = gameSession.update.mock.calls.at(-1) as [
+      { data: { status: string; verdictReport: { condemnedNpcId: string } } },
+    ];
+    expect(saved.data.status).toBe('WON');
+    expect(saved.data.verdictReport.condemnedNpcId).toBe('mill');
+    expect(market.awardCaseReward).toHaveBeenCalledWith(
+      'owner',
+      'session-1',
+      1,
+      {
+        halved: false,
+        multiplier: 0.825,
+      },
+    );
+  });
+
   it('gün sonunda korku azalır; Vizör Kilidi ve Çatı Geçişi bedeli uygulanır', async () => {
     const session = {
       ...activeSession,

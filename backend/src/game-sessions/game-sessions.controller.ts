@@ -136,6 +136,16 @@ export class GameSessionsController {
     };
   }
 
+  // Hüküm Dosyası formunun seçenekleri (şüpheliler, evrenin silahları, motifler, saatler, bağ türleri)
+  @Get(':id/verdict-options')
+  @UseGuards(JwtAuthGuard)
+  async getVerdictOptions(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getVerdictOptions(sessionId, userId);
+  }
+
   @Post(':id/notes')
   @UseGuards(JwtAuthGuard)
   async updateNotes(
@@ -161,6 +171,7 @@ export class GameSessionsController {
       sessionId,
       userId,
       dto.npcId,
+      dto.report,
     );
   }
 

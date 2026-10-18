@@ -10,7 +10,8 @@ export type LlmCallKind =
   | 'NARRATOR'
   | 'BOARD_THOUGHT'
   | 'VERIFY_QUOTE'
-  | 'CONTRADICTION_SCAN';
+  | 'CONTRADICTION_SCAN'
+  | 'VERDICT_JUDGE';
 
 export interface LlmUsageContext {
   kind: LlmCallKind;

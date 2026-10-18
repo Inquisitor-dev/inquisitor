@@ -30,7 +30,7 @@ const vouchedBy = (facts: CaseFacts, npcId: string) =>
     .map((i) => i.npcId);
 
 // Şüpheli ↔ kanıt ipinin kararı
-function judgeSuspectLink(
+export function judgeSuspectLink(
   type: 'CLEARS' | 'IMPLICATES',
   suspectId: string,
   e: BoardEvidence,
