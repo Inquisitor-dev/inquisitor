@@ -175,3 +175,51 @@ describe('Vaka Motoru v2 ifadeleri', () => {
     expect(impact('ALIBI', 'tavern', 'farm')).toBe('IRRELEVANT');
   });
 });
+
+describe('yakalama kuralları sıradan cümleleri ifade saymaz', () => {
+  it('son konuşan: "son kez söylüyorum" sayılmaz, "en son ben konuştum" sayılır', () => {
+    expect(
+      draftsFor('graveyard', 'Sana son kez söylüyorum, bir şey bilmiyorum.'),
+    ).toEqual([]);
+    expect(
+      draftsFor('graveyard', 'Onunla en son ben konuştum, çok huzursuzdu.'),
+    ).toHaveLength(1);
+  });
+
+  it('kısmi tanık: adın geçmesi yetmez, onu başka yerde gördüğünü anlatmalı', () => {
+    expect(draftsFor('church', "Git Kardeş Aldric'e sor.")).toEqual([]);
+    expect(
+      draftsFor('church', 'O saatte Kardeş Aldric uzaktaydı, gördüm.'),
+    ).toHaveLength(1);
+  });
+
+  it('beden: "yarasa" ya da "yaramaz" beden incelemesi sayılmaz', () => {
+    expect(asksAboutBody('Yarasa var mı diye tavana bakıyorum')).toBe(false);
+    expect(asksAboutBody('Yaramaz çocuklara bakıyorum')).toBe(false);
+    expect(asksAboutBody('Yarasına yakından bakıyorum')).toBe(true);
+  });
+});
+
+describe('eşkâl tanıklığı korkuyu adı ele vermeden etkiler', () => {
+  it('tarife uyan herkesin korkusu artar, yalnızca katilinki değil', () => {
+    const witnessFacts = {
+      ...facts,
+      verification: {
+        kind: 'CORROBORATION',
+        placement: { type: 'TESTIMONY', npcId: 'church' },
+        witnessDescriptionFits: ['mill', 'tavern'],
+      },
+    } as unknown as CaseFacts;
+    const impact = (targetNpcId: string) =>
+      evidenceImpact({
+        evidence: { kind: 'VERIFICATION', sourceId: 'church' },
+        targetNpcId,
+        culpritId: 'mill',
+        caseFacts: witnessFacts,
+        alreadyShown: false,
+      });
+    expect(impact('mill')).toBe('IMPLICATING');
+    expect(impact('tavern')).toBe('IMPLICATING');
+    expect(impact('farm')).toBe('IRRELEVANT');
+  });
+});

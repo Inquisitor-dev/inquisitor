@@ -62,7 +62,11 @@ export function bodyFindingText(
 // Oyuncu cesedi inceliyor mu? (anlatıcı etiketi unutursa)
 export function asksAboutBody(playerMessage: string): boolean {
   const text = foldTurkish(playerMessage);
-  const target = /(ortu|cesed|ceset|beden|govde|yara|boyn|boyun)/.test(text);
+  // "yarasa", "yaramaz" gibi kelimeler sayılmasın: yara yalnızca kendi başına ya da ekleriyle
+  const target =
+    /(\bortu|\bcesed|\bceset|\bbeden|\bgovde|\byara(\b|si|yi|lar)|\bboyn|\bboyun)/.test(
+      text,
+    );
   const action = /(kaldir|acip|acar|\bac|cek|incel|bak|muayene|kontrol)/.test(
     text,
   );
@@ -107,7 +111,12 @@ export function linkStatements(
         kind: 'TESTIMONY',
         npcId,
         text: `"Cinayet saatinde (${timeLabel(caseFacts)}) ${about} olay yerinden uzaktaydı; onu kendi gözlerimle gördüm."`,
-        matches: (reply) => mentions(reply, about),
+        // Adın geçmesi yetmez ("git ona sor"); o saatte onu başka yerde gördüğünü anlatmalı
+        matches: (reply) =>
+          mentions(reply, about) &&
+          /(gord|gormus|uzak|baska (bir )?yer|disarida|oradaydi|yanimdaydi)/.test(
+            foldTurkish(reply),
+          ),
       });
     }
     if (own.kind === 'LAST_CONVERSATION' && caseFacts?.motive) {
@@ -117,8 +126,9 @@ export function linkStatements(
         text: `"Kurbanla son konuşan bendim. ${LAST_WORDS[caseFacts.motive]}"`,
         matches: (reply) => {
           const folded = foldTurkish(reply);
-          return (
-            /\bson\b|en son/.test(folded) && /(konus|gorus|soyle)/.test(folded)
+          // "Sana son kez söylüyorum" sayılmaz; kurbanla son konuştuğunu ya da görüştüğünü söylemeli
+          return /(en son|son kez|son defa|\bson)\s+(\w+\s+)?(konus|gorus)/.test(
+            folded,
           );
         },
       });
@@ -177,11 +187,18 @@ export function linkPromptLines(
   scenarioType: string,
   statementTag: string,
 ): string {
+  // Hazır cümle kelimesi kelimesine kopyalanıp alakasız bir soruya eklenebiliyor (Gemini testinde görüldü):
+  // ne zaman söyleneceği ve kendi sözleriyle söyleneceği açıkça yazılır
   const lines = linkStatements(caseFacts, npcId, nameOf).map((s) =>
     s.kind === 'ALIBI'
-      ? `- When asked where people were that night, you confirm in your own words: ${s.text}`
-      : `- When the Inquisitor asks about the murder location, the victim or that night, you tell in your own words: ${s.text}`,
+      ? `- ONLY when the Inquisitor asks where someone was that night, you confirm it in your own words (meaning: ${s.text}).`
+      : `- ONLY when the Inquisitor asks about that night, the murder location or the victim, you tell this in your own words (meaning: ${s.text}).`,
   );
+  if (lines.length > 0) {
+    lines.push(
+      '- Never bring these up on your own or in answer to an unrelated question, and never repeat the sentence in brackets word for word.',
+    );
+  }
   const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
   // Tamamen masum ve onu doğrulayan aynı yeri ve aynı işi anlatsın; yoksa ikisi farklı yer uydurur
   // ve oyuncu bunu yalan sanır (Gemini testinde görüldü)

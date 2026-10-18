@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ClueDefinition, SCENARIO_CLUES } from './clues-config';
 import { ScenarioConfig } from './scenario-config';
 import {
@@ -107,6 +108,8 @@ export const MAX_PLAN_ATTEMPTS = 60;
 
 type Rng = () => number;
 
+const logger = new Logger('CasePlanner');
+
 const pick = <T>(items: T[], rng: Rng): T =>
   items[Math.floor(rng() * items.length)];
 
@@ -156,6 +159,10 @@ export function planCase(
       if (isPlanSound(plan, difficulty)) return plan;
     }
   }
+  // Olmamalı (testler her evren ve zorlukta sağlam plan bulunduğunu garanti eder); olursa görünür olsun
+  logger.warn(
+    `Sağlam plan bulunamadı (${scenarioConfig.scenarioType}/${difficulty}/${murderStyle}); son taslak kullanılıyor.`,
+  );
   return plan!;
 }
 

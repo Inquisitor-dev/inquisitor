@@ -170,5 +170,12 @@ export function criticalPoints(graph: CaseGraph): string[] {
     ...graph.clues.map((c) => c.id),
     ...graph.deductions.map((d) => d.id),
   ];
-  return ids.filter((id) => !solveCase(graph, { removed: [id] }).solvable);
+  const base = solveCase(graph);
+  if (!base.solvable) return ids;
+  // Bulunan çözümün hiç ulaşmadığı bir kanıt çıkarılsa o çözüm yine geçerlidir; yalnızca
+  // çözümde elde edilenler denenir (her biri için grafiği baştan çözmek yerine)
+  const used = new Set([...base.clues, ...base.deductions]);
+  return ids.filter(
+    (id) => used.has(id) && !solveCase(graph, { removed: [id] }).solvable,
+  );
 }

@@ -1,5 +1,7 @@
 import type { CasePlan } from './case-setup';
 import { DEFAULT_FEAR_THRESHOLD } from './case-catalog';
+import { FEAR_GAIN } from '../npcs/fear';
+import { MAX_WARRANTS } from '../npcs/warrant';
 
 // Vakanın kanıt grafiği: oyuncunun bulabileceği her kanıt, ona nasıl ulaşıldığı ve neyi kanıtladığı.
 // Çözücü (case-solver.ts) bu grafik üzerinde oyuncuyu taklit eder; metin değil yapı denetlenir.
@@ -48,10 +50,10 @@ export interface CaseGraph {
   warrantLimit: number;
 }
 
-export const MAX_WARRANTS_PER_CASE = 2;
-// Kanıt gösterince korku artışı (npcs/fear.ts ile aynı)
-const PRESSURE_IMPLICATING = 3;
-const PRESSURE_DECISIVE = 7;
+// Oyunun kendi sayıları: korku artışı ve izin sınırı değişirse çözücü de aynısını kullanır
+export const MAX_WARRANTS_PER_CASE = MAX_WARRANTS;
+const PRESSURE_IMPLICATING = FEAR_GAIN.IMPLICATING;
+const PRESSURE_DECISIVE = FEAR_GAIN.DECISIVE;
 
 export const CRIME_SCENE_CLUE_ID = 'crime_scene';
 export const VERIFICATION_CLUE_ID = 'verification';
@@ -109,8 +111,12 @@ export function buildCaseGraph(
       verification.kind === 'FLAW' && placement.type === 'TESTIMONY'
         ? [CRIME_SCENE_CLUE_ID]
         : [],
-    // Doğrulayan kanıt yalnızca katili sıkıştırır
-    pressures: [{ npcId: culpritId, amount: PRESSURE_IMPLICATING }],
+    // Doğrulayan kanıt katili sıkıştırır; yanılabilen tanıklık tarife uyan herkesi (npcs/fear.ts ile aynı)
+    pressures: (verification.kind === 'CORROBORATION' &&
+    verification.witnessDescriptionFits
+      ? verification.witnessDescriptionFits
+      : [culpritId]
+    ).map((npcId) => ({ npcId, amount: PRESSURE_IMPLICATING })),
     eliminates: [],
   });
 

@@ -145,6 +145,25 @@ describe('solveCase', () => {
 // Bugünkü (v1) planlar her zaman çözülebilir değil: planlı cinayetlerde (tuzak iz) tuzağı ele veren kanıt
 // yalnızca suçlanan kişiyi temize çıkarıyor, kalan masumlar için 2 izin yetmiyor. v2'nin planı bunu
 // çözücüyle garanti edecek; o zaman bu testler "her plan çözülebilir" diye sıkılaşacak.
+describe('criticalPoints kısayolu', () => {
+  it('yalnızca çözümde kullanılan kanıtları dener; sonuç her kanıtı denemekle aynı', () => {
+    const config = getScenarioConfig('cyberpunk', 'hard');
+    for (let i = 1; i <= 40; i++) {
+      const graph = buildCaseGraph(
+        planCase(config, 'hard', seeded((i * 2654435761) % 4294967296)),
+      );
+      const ids = [
+        ...graph.clues.map((c) => c.id),
+        ...graph.deductions.map((d) => d.id),
+      ];
+      const brute = ids.filter(
+        (id) => !solveCase(graph, { removed: [id] }).solvable,
+      );
+      expect(criticalPoints(graph)).toEqual(brute);
+    }
+  });
+});
+
 describe('bugünkü (v1) vakalar', () => {
   it.each(SCENARIOS.flatMap((s) => DIFFICULTIES.map((d) => [s, d] as const)))(
     '%s / %s: katil hiçbir yoldan elenmez; aceleyle işlenen cinayetler en çok 2 izinle çözülür',

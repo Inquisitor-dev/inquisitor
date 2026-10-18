@@ -62,8 +62,13 @@ export function evidenceImpact(params: {
   const { evidence, targetNpcId, culpritId, caseFacts, alreadyShown } = params;
   if (alreadyShown) return 'REPEAT';
 
-  // Doğrulayan kanıt (eşya ya da tanıklık) sadece katili sıkıştırır
+  // Doğrulayan kanıt (eşya ya da tanıklık) katili sıkıştırır. Yanılabilen tanıklık ise tarife uyan herkesi
+  // sıkıştırır: yalnızca katilin korkusu artsaydı gösterge, tanığın söylemediği adı ele verirdi.
   if (evidence.kind === 'VERIFICATION') {
+    const fits = caseFacts?.verification?.witnessDescriptionFits;
+    if (fits && caseFacts?.verification.kind === 'CORROBORATION') {
+      return fits.includes(targetNpcId) ? 'IMPLICATING' : 'IRRELEVANT';
+    }
     return targetNpcId === culpritId ? 'IMPLICATING' : 'IRRELEVANT';
   }
   // Yara, aleti bilmeden veren kişiyi tedirgin eder: aletin onun elinden çıktığını anlar
