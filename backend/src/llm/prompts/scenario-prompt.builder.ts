@@ -49,7 +49,7 @@ export function buildCaseBrief(
       placement.type === 'LOCATION'
         ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST be physical evidence at the culprit's own place that matches the crime scene trace (for example the same material, the same item, or the rest of it). This replaces the usual secret clue of that location.`
         : verification.witnessDescriptionFits
-          ? `- VERIFYING EVIDENCE (A WITNESS WHO DOES NOT KNOW WHO IT WAS): The innocent ${who(placement.npcId)} saw a figure at the murder location around the time of death, connected to the crime scene trace, but could NOT see the face. Invent ONE visible detail (clothing, build, gait, something carried, a smell) that honestly fits ALL of these suspects and nobody else in the cast: ${verification.witnessDescriptionFits.map(who).join(', ')}. Return it in "witnessDescription" as a short Turkish phrase (for example "uzun boylu, deri önlüklü biri"). The witness never names or guesses anyone. Their npcPrompt MUST describe what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder. "verificationText" states this sighting WITHOUT any suspect's name.`
+          ? `- VERIFYING EVIDENCE (A WITNESS WHO DOES NOT KNOW WHO IT WAS): The innocent ${who(placement.npcId)} saw a figure at the murder location around the time of death, connected to the crime scene trace, but could NOT see the face. Invent ONE visible detail (build, height, gait, a cloak or hood, something carried, a smell) that is believable for EACH of these suspects given their role and usual look, and fits nobody else in the cast; avoid work clothes that only one of them would wear: ${verification.witnessDescriptionFits.map(who).join(', ')}. Return it in "witnessDescription" as a short Turkish phrase (for example "uzun boylu, deri önlüklü biri"). The witness never names or guesses anyone. Their npcPrompt MUST describe what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder. "verificationText" states this sighting WITHOUT any suspect's name.`
           : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder.`;
   } else {
     verificationLine =
@@ -69,7 +69,7 @@ ${clueLine}
 ${verificationLine}
 - Return "verificationText": one Turkish sentence that states the verifying evidence above as a fact.
 - VICTIM: Invent the victim's full name and profession and return them in "victim". The 'scenario' text must NOT reveal the name, but the NPCs knew the victim and may talk about them.
-- ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.${caseDetailsLines(plan, scenarioType, who)}`;
+- ALIBIS: Each innocent's secret MUST also give them an alibi for the time of the murder (where they really were and why they hide it). A FULLY INNOCENT suspect (see below) has no secret: their alibi is ordinary and they hide nothing. Return "alibis" with one Turkish sentence for each innocent: ${plan.innocentIds.map((id) => `"${id}"`).join(', ')}. The culprit has no true alibi and may lie about one.${caseDetailsLines(plan, scenarioType, who)}`;
 }
 
 // Vaka Motoru v2: silah, motif, ölüm saati ve masumların cinayete bağlı sırları. Kod seçer, yapay zekâ
@@ -117,7 +117,7 @@ function caseDetailsLines(
         case 'LAST_CONVERSATION':
           return `  - ${npc} LAST CONVERSATION: they were the last to speak with the victim, who was troubled about the matter behind the motive (without naming who was behind it). Their npcPrompt says this, and that they share it when asked about the victim. Their own secret and alibi stay as usual.`;
         case 'NONE':
-          return `  - ${npc} FULLY INNOCENT: no link to the murder and no shameful secret about that night. They were with ${about} at the time of death and say so openly. ${about}'s npcPrompt MUST confirm it ("${npc} was with me"). Their location clue is an ordinary sign of their alibi.`;
+          return `  - ${npc} FULLY INNOCENT: no link to the murder and no shameful secret at all (no smuggling, theft, affair or anything else to hide). They were with ${about} at the time of death doing something ordinary and say so openly. ${about}'s npcPrompt MUST confirm it ("${npc} was with me"). Their location clue is an ordinary sign of their alibi.`;
         default:
           return '';
       }
@@ -137,7 +137,7 @@ function crimeSceneLine(plan: CasePlan, scenarioType: string): string {
   const config = getScenarioConfig(scenarioType, undefined, plan.crimeSceneId);
   const scene = config.crimeScene;
   if (!scene) return '';
-  return `- MURDER LOCATION: The murder happened and the body was found at "${scene.label}" (${scene.description}). This place is NOT any suspect's home or workplace. Set the crime there in truthReveal and in every clue about the crime scene. The 'scenario' hook may say where the body was found.
+  return `- MURDER LOCATION: The murder happened and the body was found at "${scene.label}" (${scene.description}). This place is NOT any suspect's home or workplace. The victim was killed right there: the murder did NOT start or happen anywhere else and the body was NOT moved. Set the crime there in truthReveal and in every clue about the crime scene. The 'scenario' hook may say where the body was found.
 - THE BODY: When the Inquisitor arrives, the body lies on the ground, covered with ${config.crimeSceneBody}. The people who found the body covered it; the culprit did not. Never write that the culprit covered, wrapped or hid the body with it. Do not describe the body in a way that contradicts this (no hanging, sitting or standing body). Convey how the victim died through the clues, the testimony and truthReveal.`;
 }
 
