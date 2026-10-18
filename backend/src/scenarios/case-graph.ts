@@ -232,12 +232,12 @@ export function buildCaseGraph(
         }
         break;
       case 'LAST_CONVERSATION':
-        // Kurbanın son konuşmada kimden korktuğunu söyler: motifi gösterir, katili sıkıştırır
+        // Kurbanın son konuşmada neden korktuğunu söyler: motifi gösterir, kimseyi sıkıştırmaz (npcs/fear.ts)
         clues.push({
           id: testimonyClueId(inv.npcId),
           source: { kind: 'TESTIMONY', npcId: inv.npcId },
           requires: [],
-          pressures: [{ npcId: culpritId, amount: PRESSURE_IMPLICATING }],
+          pressures: [],
           eliminates: [],
           proves: ['MOTIVE'],
         });

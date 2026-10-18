@@ -16,6 +16,9 @@ import {
   describeJudged,
   EMPTY_BOARD_THOUGHT,
   judgeBoard,
+  judgePending,
+  NOTHING_NEW_THOUGHT,
+  waitingThought,
   parseStoredBoard,
   sanitizeBoard,
   templateThought,
@@ -170,10 +173,17 @@ export class BoardService {
             previous,
           });
 
-    const judged = judgeBoard(board, facts, evidence);
-    // Bağ yoksa günün düşünme hakkı harcanmaz
+    // Yalnızca henüz karar almamış ipler, en fazla MAX_STRINGS_PER_THOUGHT tanesi değerlendirilir
+    const { judged, waiting } = judgePending(board, facts, evidence);
+    // Değerlendirilecek yeni bağ yoksa günün düşünme hakkı harcanmaz
     if (judged.length === 0) {
-      return { board, thought: EMPTY_BOARD_THOUGHT, canThink: true };
+      const hasSealed = board.strings.some((s) => s.verdict);
+      return {
+        board,
+        thought: hasSealed ? NOTHING_NEW_THOUGHT : EMPTY_BOARD_THOUGHT,
+        canThink: true,
+        waiting: 0,
+      };
     }
 
     const scenarioType = session.scenarioType;
@@ -213,6 +223,7 @@ export class BoardService {
       );
       thought = llmText ?? templateThought(shortLines);
     }
+    if (waiting > 0) thought = `${thought} ${waitingThought(waiting)}`;
 
     const judgedBoard = applyVerdicts(board, judged);
     const abilityState = parseAbilityState(session.abilityState);
@@ -240,6 +251,8 @@ export class BoardService {
       board: judgedBoard,
       thought,
       canThink: thinkCount < thoughtLimit(session.characterId),
+      // Sırada bekleyen, bu düşünüşte değerlendirilmeyen ipler
+      waiting,
     };
   }
 }

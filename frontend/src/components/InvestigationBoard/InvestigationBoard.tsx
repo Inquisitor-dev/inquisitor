@@ -76,7 +76,7 @@ export default function InvestigationBoard() {
   // Türü seçilecek ya da düzenlenecek ip
   const [editingString, setEditingString] = useState<string | null>(null);
   const [boardSize, setBoardSize] = useState({ w: 1, h: 1 });
-  // Düşün: günde bir kez; son iç ses metni panelde gösterilir
+  // Düşün: günde bir kez, her seferinde henüz tartılmamış en fazla 3 ip; son iç ses metni panelde gösterilir
   const [canThink, setCanThink] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [thought, setThought] = useState<string | null>(null);
@@ -521,7 +521,11 @@ export default function InvestigationBoard() {
             className={styles.thinkBtn}
             onClick={handleThink}
             disabled={!canThink || thinking}
-            title={canThink ? 'Panodaki ipleri gözden geçir (günde bir kez)' : 'Bugün düşündün. Yarın yeniden düşünebilirsin.'}
+            title={
+              canThink
+                ? 'Henüz tartmadığın en fazla üç ipi gözden geçir (günde bir kez)'
+                : 'Bugün düşündün. Yarın yeniden düşünebilirsin.'
+            }
           >
             {thinking ? 'Düşünüyorsun…' : canThink ? 'Düşün' : 'Yarın Düşün'}
           </button>

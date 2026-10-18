@@ -76,10 +76,10 @@ export function judgeSuspectLink(
     // Mazeret doğrulaması, doğrulanan tamamen masumu aklar
     clears = vouchedBy(facts, e.sourceId).includes(suspectId);
   } else if (e.kind === 'CLUE') {
-    // Mekân ipucu orada yaşayanın sırrını anlatır: masumda mazeret, katilde kapanmayan bir açık
+    // Mekân ipucu orada yaşayanın sırrını anlatır: masumda mazeret. Katilinkinde motif ya da şüpheli bir
+    // uğraş vardır ama kişiyi suçlamaz; "işaret eder" deseydi, aranan her mekân tek iple katili söylerdi.
     if (e.sourceId === suspectId) {
       clears = !isCulprit;
-      implicates = isCulprit;
     }
   }
 
@@ -208,7 +208,31 @@ export function judgeBoard(
   return judged;
 }
 
-// Kararları panoya işler: değerlendirilen ipler kararını alır, diğerlerinin eski kararı silinir
+// Bir "Düşün"de en fazla bu kadar yeni ip değerlendirilir. Sınır olmasaydı pano tek düşünüşte bütün
+// olasılıkları dener bir kâhine dönerdi (izi her şüpheliye bağlayıp kimi gösterdiğini öğrenmek gibi).
+export const MAX_STRINGS_PER_THOUGHT = 3;
+
+// Henüz karar almamış ipler arasından bu düşünüşte değerlendirilecekler (önce kurulanlar önce)
+// ve sıraya kalanların sayısı. Karar almış ipler mühürlüdür, yeniden değerlendirilmez.
+export function judgePending(
+  board: BoardState,
+  facts: CaseFacts,
+  evidence: BoardEvidence[],
+  limit = MAX_STRINGS_PER_THOUGHT,
+): { judged: JudgedString[]; waiting: number } {
+  const pending = judgeBoard(
+    { cards: board.cards, strings: board.strings.filter((s) => !s.verdict) },
+    facts,
+    evidence,
+  );
+  return {
+    judged: pending.slice(0, limit),
+    waiting: Math.max(0, pending.length - limit),
+  };
+}
+
+// Kararları panoya işler: değerlendirilen ipler kararını alır, önceki kararlar korunur.
+// Değerlendirilemeyen ipler (LINK) karar taşımaz.
 export function applyVerdicts(
   board: BoardState,
   judged: JudgedString[],
@@ -217,7 +241,8 @@ export function applyVerdicts(
   return {
     cards: board.cards,
     strings: board.strings.map((s) => {
-      const verdict = verdicts.get(s.id);
+      const verdict =
+        verdicts.get(s.id) ?? (s.type === 'LINK' ? undefined : s.verdict);
       const rest: BoardString = {
         id: s.id,
         from: s.from,
