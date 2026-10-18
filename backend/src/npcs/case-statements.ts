@@ -183,6 +183,22 @@ export function linkPromptLines(
       : `- When the Inquisitor asks about the murder location, the victim or that night, you tell in your own words: ${s.text}`,
   );
   const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
+  // Tamamen masum ve onu doğrulayan aynı yeri ve aynı işi anlatsın; yoksa ikisi farklı yer uydurur
+  // ve oyuncu bunu yalan sanır (Gemini testinde görüldü)
+  const sharedAlibis = [
+    ...(own?.kind === 'NONE' ? [own] : []),
+    ...(caseFacts?.involvements ?? []).filter(
+      (i) => i.kind === 'NONE' && i.aboutNpcId === npcId,
+    ),
+  ];
+  for (const inv of sharedAlibis) {
+    const alibi = caseFacts?.alibis?.[inv.npcId];
+    if (alibi) {
+      lines.push(
+        `- That night ${nameOf(inv.npcId)} and ${nameOf(inv.aboutNpcId ?? '')} were together. Both of you tell the same place and activity, exactly as here: ${alibi}`,
+      );
+    }
+  }
   if (own?.kind === 'UNWITTING_HELP' || own?.kind === 'SCAVENGER') {
     const extra = confessionText(
       caseFacts,

@@ -137,6 +137,13 @@ describe('Vaka Motoru v2 ifadeleri', () => {
     expect(text).toContain('Değirmenci Giles istedi');
   });
 
+  it('tamamen masum ve onu doğrulayan aynı mazeret cümlesini alır', () => {
+    const farm = linkPromptLines(facts, 'farm', nameOf, 'medieval', 'X');
+    const tavern = linkPromptLines(facts, 'tavern', nameOf, 'medieval', 'X');
+    expect(farm).toContain('Çiftçi hancıyla birlikteydi.');
+    expect(tavern).toContain('Çiftçi hancıyla birlikteydi.');
+  });
+
   it('NPC istemi ifadeyi ve etiketi koddan verir', () => {
     const lines = linkPromptLines(
       facts,
