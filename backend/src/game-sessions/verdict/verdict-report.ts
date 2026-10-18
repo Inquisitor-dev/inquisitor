@@ -84,6 +84,13 @@ export function isSupportingEvidence(
   e: BoardEvidence,
   facts: CaseFacts,
 ): boolean {
+  // Tuzak iz katili değil, suçlanmak istenen masumu gösterir: hükmün dayanağı olamaz
+  if (
+    e.kind === 'CLUE' &&
+    e.sourceId === 'crime_scene' &&
+    facts.crimeSceneClue.authentic === false
+  )
+    return false;
   if (judgeSuspectLink('IMPLICATES', facts.culpritId, e, facts) === 'CORRECT')
     return true;
   if (

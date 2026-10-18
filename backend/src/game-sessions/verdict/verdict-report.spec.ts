@@ -177,6 +177,21 @@ describe('Hüküm Dosyası puanlaması', () => {
     );
   });
 
+  it('tuzak iz dayanak sayılmaz', () => {
+    const planted = {
+      ...facts,
+      murderStyle: 'PLANNED',
+      crimeSceneClue: {
+        ...facts.crimeSceneClue,
+        authentic: false,
+        implicatedNpcIds: ['tavern'],
+        eliminatedNpcIds: ['tavern'],
+      },
+    } as unknown as CaseFacts;
+    expect(isSupportingEvidence(evidence[0], planted)).toBe(false);
+    expect(isSupportingEvidence(evidence[0], facts)).toBe(true);
+  });
+
   it('ödül çarpanı boş raporda 0.5, tam raporda 1', () => {
     expect(rewardMultiplier(0)).toBe(0.5);
     expect(rewardMultiplier(100)).toBe(1);
