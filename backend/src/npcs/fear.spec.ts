@@ -1,4 +1,5 @@
 import {
+  fearThresholdOf,
   FEAR_BREAK_THRESHOLD,
   evidenceImpact,
   fearBand,
@@ -63,5 +64,23 @@ describe('korku', () => {
     expect(fearBand(5)).toBe('NERVOUS');
     expect(fearBand(7)).toBe('PANIC');
     expect(raiseFear(9, 'IMPLICATING')).toBe(10);
+  });
+});
+
+describe('mizaca göre korku eşiği', () => {
+  it('vaka gerçeklerindeki eşiği kullanır, yoksa 7', () => {
+    const facts = { fearThresholds: { tavern: 6, church: 8 } };
+    expect(fearThresholdOf(facts, 'tavern')).toBe(6);
+    expect(fearThresholdOf(facts, 'church')).toBe(8);
+    expect(fearThresholdOf(facts, 'mill')).toBe(7);
+    expect(fearThresholdOf(null, 'mill')).toBe(7);
+  });
+
+  it('bantlar eşiğe göre kayar: kırılgan erken, soğukkanlı geç paniğe kapılır', () => {
+    expect(fearBand(6, 6)).toBe('PANIC');
+    expect(fearBand(6, 8)).toBe('NERVOUS');
+    expect(fearBand(4, 6)).toBe('NERVOUS');
+    expect(fearBand(4, 8)).toBe('UNEASY');
+    expect(fearBand(3, 8)).toBe('CALM');
   });
 });

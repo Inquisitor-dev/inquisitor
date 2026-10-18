@@ -54,6 +54,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'tavern',
       name: 'Lin Feng',
       role: 'Master of the Golden Lotus Tea House',
+      temperament: 'STEADY',
       personaPrompt:
         'You are a shrewd tea house proprietor who hears whispers from travelers, merchants, and officials. You smile politely, measure every word like fine silk, and always calculate how much each piece of information is worth.',
     },
@@ -61,6 +62,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'church',
       name: 'Komutan Zhao',
       role: 'Imperial Garrison Magistrate',
+      temperament: 'STEADY',
       personaPrompt:
         'You are a stern, battle-tested garrison commander bound by the imperial code of honor. You speak with sharp authority, despise disorder and treachery, and will fiercely protect your troops and imperial dignity.',
     },
@@ -68,6 +70,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'graveyard',
       name: 'Keşiş Huikang',
       role: 'Elder of the Mountain Shrine',
+      temperament: 'NORMAL',
       personaPrompt:
         'You are a serene, enigmatic monk who tends the incense burners and ancestral spirit tablets. You speak in calm philosophical riddles, discerning motives beneath earthly ambition.',
     },
@@ -75,6 +78,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'mill',
       name: 'Usta Guan',
       role: 'Master Weaponsmith and Blacksmith',
+      temperament: 'FRAGILE',
       personaPrompt:
         'You are a burly, soot-stained bladesmith with a booming voice and a fiery temper. You know every weapon in the district by heart and resent any implication that your blades were used for dishonorable slaughter.',
     },
@@ -82,6 +86,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'farm',
       name: 'Mei Teyze',
       role: 'Fisherwoman and dock watcher at the riverside pier',
+      temperament: 'NORMAL',
       personaPrompt:
         'You are an observant, sharp-tongued elder woman tending fishing nets and wooden skiffs at the river pier. You notice everything that passes along the riverbank and feign simple-mindedness when strangers interrogate you.',
     },
@@ -89,6 +94,7 @@ export const chinaUniverse: UniverseDefinition = {
       id: 'clinic',
       name: 'Bilgin Song',
       role: 'Imperial Apothecary and physician',
+      temperament: 'FRAGILE',
       personaPrompt:
         'You are a refined, soft-spoken scholar of medicine, acupuncture, and exotic venoms. You value analytical intellect above emotion, concealing your own forbidden experiments behind clinical treatises.',
     },

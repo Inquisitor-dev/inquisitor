@@ -60,7 +60,8 @@ type Drag =
 
 export default function InvestigationBoard() {
   const router = useRouter();
-  const { sessionId, authToken, hasHydrated, scenarioType, evidence, setEvidence } = useGameStore();
+  const { sessionId, authToken, hasHydrated, scenarioType, evidence, setEvidence, crimeScene } =
+    useGameStore();
   const scenario = scenarioType || 'medieval';
 
   const [board, setBoard] = useState<BoardState>({ cards: [], strings: [] });
@@ -406,7 +407,7 @@ export default function InvestigationBoard() {
         </div>
       );
     }
-    const photo = evidencePhoto(scenario, item);
+    const photo = evidencePhoto(scenario, item, crimeScene);
     return (
       <div className={`${styles.polaroid} ${styles.evidenceCard}`}>
         <div className={`${styles.photo} ${photo ? '' : styles.photoEmpty}`} style={{ backgroundImage: photo ? `url(${photo})` : undefined }}>

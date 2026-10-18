@@ -343,3 +343,109 @@ describe('applyVerdicts ve templateThought', () => {
     expect(text).toContain('Değirmenci için İtiraf: Hancı yetmiyor galiba');
   });
 });
+
+describe('judgeBoard: Vaka Motoru v2 kanıtları', () => {
+  // Katil değirmenci. Kilise eşkâl tanığı (tarif değirmenciye ve hancıya uyar), çiftçi kısmi tanık
+  // (hancıyı başka yerde gördü), hancı silahı bilmeden verdi, mezarcı tamamen masum ve onu çiftçi doğruluyor.
+  const v2Facts = {
+    ...genuineFacts,
+    innocentIds: ['tavern', 'church', 'farm', 'graveyard'],
+    verification: {
+      kind: 'CORROBORATION',
+      placement: { type: 'TESTIMONY', npcId: 'church' },
+      witnessDescriptionFits: ['mill', 'tavern'],
+    },
+    involvements: [
+      { npcId: 'church', kind: 'WITNESS', aboutNpcId: 'mill' },
+      { npcId: 'farm', kind: 'WITNESS', aboutNpcId: 'tavern' },
+      { npcId: 'tavern', kind: 'UNWITTING_HELP', aboutNpcId: 'mill' },
+      { npcId: 'graveyard', kind: 'NONE', aboutNpcId: 'farm' },
+    ],
+  } as unknown as CaseFacts;
+  const v2Evidence = [
+    {
+      id: 'w',
+      kind: 'VERIFICATION',
+      category: 'STATEMENT',
+      sourceId: 'church',
+      text: 'eşkâl',
+    },
+    {
+      id: 't',
+      kind: 'TESTIMONY',
+      category: 'STATEMENT',
+      sourceId: 'farm',
+      text: 'hancıyı gördüm',
+    },
+    {
+      id: 'a',
+      kind: 'ALIBI',
+      category: 'STATEMENT',
+      sourceId: 'farm',
+      text: 'mezarcı benimleydi',
+    },
+    {
+      id: 'b',
+      kind: 'BODY',
+      category: 'ITEM',
+      sourceId: 'crime_scene',
+      text: 'yara',
+    },
+    {
+      id: 'h',
+      kind: 'CONFESSION',
+      category: 'STATEMENT',
+      sourceId: 'tavern',
+      text: 'çekici verdim',
+    },
+  ];
+  const v2Cards = [
+    ...['mill', 'tavern', 'church', 'farm', 'graveyard'].map((id, i) => ({
+      id: `s-${id}`,
+      kind: 'suspect' as const,
+      refId: id,
+      x: 10 * i,
+      y: 10,
+    })),
+    ...v2Evidence.map((e, i) => ({
+      id: `c-${e.id}`,
+      kind: 'evidence' as const,
+      refId: e.id,
+      x: 10 * i,
+      y: 50,
+    })),
+  ];
+  const judge = (
+    from: string,
+    to: string,
+    type: 'CLEARS' | 'IMPLICATES' | 'SUPPORTS' | 'CONTRADICTS',
+  ) =>
+    judgeBoard(
+      { cards: v2Cards, strings: [{ id: 'x', from, to, type }] },
+      v2Facts,
+      v2Evidence,
+    )[0]?.verdict;
+
+  it('eşkâl tanıklığı yalnız katile değil tarife uyan herkese "doğru" der: pano adı ele vermez', () => {
+    expect(judge('s-mill', 'c-w', 'IMPLICATES')).toBe('CORRECT');
+    expect(judge('s-tavern', 'c-w', 'IMPLICATES')).toBe('CORRECT');
+    expect(judge('s-farm', 'c-w', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-farm', 'c-w', 'IMPLICATES')).toBe('WRONG');
+  });
+
+  it('kısmi tanıklık gördüğü kişiyi, mazeret doğrulaması doğruladığı kişiyi aklar', () => {
+    expect(judge('s-tavern', 'c-t', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-mill', 'c-t', 'CLEARS')).toBe('WRONG');
+    expect(judge('s-graveyard', 'c-a', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-farm', 'c-a', 'CLEARS')).toBe('WRONG');
+  });
+
+  it('beden incelemesi kimseyi işaret etmez; silahı verenin itirafıyla birlikte silah zincirini destekler', () => {
+    expect(judge('s-tavern', 'c-b', 'IMPLICATES')).toBe('WRONG');
+    expect(judge('s-mill', 'c-b', 'IMPLICATES')).toBe('WRONG');
+    expect(judge('c-b', 'c-h', 'SUPPORTS')).toBe('CORRECT');
+    // Silahı verenin itirafı, aleti alan katili gösterir ve itiraf edeni aklar
+    expect(judge('s-mill', 'c-h', 'IMPLICATES')).toBe('CORRECT');
+    expect(judge('s-tavern', 'c-h', 'CLEARS')).toBe('CORRECT');
+  });
+});

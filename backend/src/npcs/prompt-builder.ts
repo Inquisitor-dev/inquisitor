@@ -2,15 +2,27 @@ import {
   FEAR_GAIN,
   FEAR_BREAK_THRESHOLD,
   fearPrompt,
+  fearThresholdOf,
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
+import { linkPromptLines } from './case-statements';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
   ScenarioConfig,
 } from '../scenarios/scenario-config';
 import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
+import { WeaponMethod, WEAPONS } from '../scenarios/case-catalog';
+
+// Örtü kaldırılınca görülen yara (anlatıcıya giden İngilizce tarif)
+const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
+  BLADE: 'a deep cut or stab wound from a sharp blade or point.',
+  BLUNT: 'a heavy blow from a blunt object: bruising and a crushed wound.',
+  POISON:
+    'no visible wound; discoloured lips and fingertips and a strange smell, the signs of poison.',
+  STRANGLE: 'dark marks around the neck from something pulled tight.',
+};
 import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 
 export interface ForcedConfessionCheckParams {
@@ -19,6 +31,8 @@ export interface ForcedConfessionCheckParams {
   hasConfessed: boolean;
   confrontation?: { impact: EvidenceImpact };
   fearLevel: number;
+  // Karakterin mizaca göre itiraf eşiği (fearThresholdOf)
+  fearThreshold?: number;
 }
 
 export function isForcedConfession({
@@ -27,6 +41,7 @@ export function isForcedConfession({
   hasConfessed,
   confrontation,
   fearLevel,
+  fearThreshold = FEAR_BREAK_THRESHOLD,
 }: ForcedConfessionCheckParams): boolean {
   return (
     !isNarrator &&
@@ -34,7 +49,7 @@ export function isForcedConfession({
     !hasConfessed &&
     !!confrontation &&
     FEAR_GAIN[confrontation.impact] > 0 &&
-    fearLevel >= FEAR_BREAK_THRESHOLD
+    fearLevel >= fearThreshold
   );
 }
 
@@ -154,6 +169,7 @@ STRICT CANON RULES:
   const isNarrator = npc.id.startsWith('narrator_');
   const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
   const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
+  const fearThreshold = fearThresholdOf(caseFacts, npc.id);
 
   const forcedConfession = isForcedConfession({
     isNarrator,
@@ -161,6 +177,7 @@ STRICT CANON RULES:
     hasConfessed,
     confrontation,
     fearLevel,
+    fearThreshold,
   });
 
   if (isNarrator) {
@@ -188,7 +205,7 @@ INVESTIGATION RULES FOR NARRATOR:
 7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
 8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.
 9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.
-10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.${crimeSceneNarratorRule(scenarioConfig, narratedLocationId, caseFacts?.sceneState)}`;
+10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.${crimeSceneNarratorRule(scenarioConfig, narratedLocationId, caseFacts?.sceneState, caseFacts?.weaponId)}`;
   } else {
     combinedPrompt += `
 PUBLIC IDENTITY:
@@ -197,7 +214,14 @@ Your public role is ${canonicalNpc?.role ?? npc.description}.
 ${canonicalNpc?.personaPrompt ?? npc.basePrompt}
 
 YOUR PERSONAL SECRET/ROLE IN THIS:
-${dynamicPromptText}
+${dynamicPromptText}${linkPromptLines(
+      caseFacts,
+      npc.id,
+      (id) =>
+        scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+      session.scenarioType,
+      EVIDENCE_TAG.statement,
+    )}
 `;
 
     combinedPrompt += `
@@ -224,7 +248,7 @@ ${confrontationRules}`;
     combinedPrompt += `
 
 EMOTIONAL STATE:
-${fearPrompt(fearLevel, isCulprit)}`;
+${fearPrompt(fearLevel, isCulprit, fearThreshold)}`;
 
     if (hasConfessed) {
       combinedPrompt += `
@@ -318,8 +342,16 @@ function crimeSceneNarratorRule(
   scenarioConfig: ScenarioConfig,
   narratedLocationId: string | null,
   sceneState: CaseFacts['sceneState'] | undefined,
+  weaponId?: string,
 ): string {
   const scene = scenarioConfig.crimeScene;
+  // Yaranın türü koddan gelir; anlatıcı aletin adını söylemez, oyuncu silahı ipuçlarından bulur
+  const weapon = WEAPONS[scenarioConfig.scenarioType].find(
+    (w) => w.id === weaponId,
+  );
+  const wound = weapon
+    ? ` If the player lifts the cover, the body shows that the victim died this way: ${WOUND_DESCRIPTIONS[weapon.method]} Describe only this kind of wound; never name the exact weapon or object.`
+    : ' If the player lifts the cover, describe the body only in line with the absolute truth above.';
   if (narratedLocationId !== 'crime_scene' || !scene) return '';
   const appearance =
     sceneState === 'MESSY'
@@ -328,7 +360,7 @@ function crimeSceneNarratorRule(
         ? ' The scene is TIDY: everything around the body is orderly, nothing is knocked over and there are no signs of a struggle. Never describe trampled ground, scattered objects or other disorder.'
         : '';
   return `
-11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture. If the player lifts the cover, describe the body only in line with the absolute truth above, and never state the victim's name.`;
+11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
 }
 
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında

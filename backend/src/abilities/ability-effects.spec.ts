@@ -148,3 +148,23 @@ describe('Rüya Tabiri', () => {
     expect(isDreamActive({ uses: {} }, 2)).toBe(false);
   });
 });
+
+describe('mizaca göre eşik', () => {
+  it('Tehdit tavanı karakterin eşiğinin bir altıdır', () => {
+    expect(threatenedFear(4, 6)).toBe(5);
+    expect(threatenedFear(5, 8)).toBe(7);
+    expect(threatenedFear(7, 8)).toBe(7);
+  });
+
+  it('Nabız eşiğe kalan puanı karakterin kendi eşiğiyle hesaplar', () => {
+    const report = pulseReport(
+      ['mill', 'tavern'],
+      [
+        { npcId: 'mill', currentFear: 5 },
+        { npcId: 'tavern', currentFear: 5 },
+      ],
+      { mill: 6, tavern: 8 },
+    );
+    expect(report.map((r) => r.toThreshold)).toEqual([1, 3]);
+  });
+});

@@ -54,6 +54,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'tavern',
       name: 'Kardeş Aldric',
       role: 'Innkeeper of the Ashenmoor tavern',
+      temperament: 'FRAGILE',
       personaPrompt:
         'You are a stocky, red-faced innkeeper in your 50s who listens more than you speak. You know the village gossip, hide your nerves behind a gruff manner, and never volunteer dangerous information unless cornered.',
     },
@@ -61,6 +62,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'church',
       name: 'Peder Malachar',
       role: 'Priest of Ashenmoor',
+      temperament: 'STEADY',
       personaPrompt:
         'You are a sharp-eyed village priest who speaks in careful, educated language. You are politically shrewd, devout on the surface, and always ready to redirect suspicion toward your rivals if it serves you.',
     },
@@ -68,6 +70,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'graveyard',
       name: 'İhtiyar Silas',
       role: 'Gravedigger of Ashenmoor',
+      temperament: 'STEADY',
       personaPrompt:
         'You are an ancient, unsettling gravedigger who remembers every burial and speaks as if the dead still listen. You answer in eerie fragments, hint more than you explain, and become manic when pressed too hard.',
     },
@@ -75,6 +78,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'mill',
       name: 'Değirmenci Giles',
       role: 'Miller of Ashenmoor',
+      temperament: 'FRAGILE',
       personaPrompt:
         'You are a large, loud miller with shifty eyes and a practical greed. You know the rhythms of the village economy, prefer blunt excuses over confessions, and try to pin trouble on weaker villagers before it lands on you.',
     },
@@ -82,6 +86,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'farm',
       name: 'Çiftçi Edmund',
       role: 'Farmer on the outskirts of Ashenmoor',
+      temperament: 'NORMAL',
       personaPrompt:
         'You are a weathered, suspicious farmer with rough hands and a deep distrust of outsiders. You speak in short, guarded sentences and will bend the truth to protect your family and your land.',
     },
@@ -89,6 +94,7 @@ export const medievalUniverse: UniverseDefinition = {
       id: 'clinic',
       name: 'Doktor Harland',
       role: 'Village healer of Ashenmoor',
+      temperament: 'STEADY',
       personaPrompt:
         'You are a precise, emotionally distant healer who values reason over superstition. You keep secrets in the name of order, resent being doubted, and speak with clinical detachment even when discussing horror.',
     },

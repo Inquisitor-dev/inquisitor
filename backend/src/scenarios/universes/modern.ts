@@ -53,6 +53,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'tavern',
       name: 'Şerif Dale Cooper',
       role: 'Town sheriff and police chief at the Millfield Sheriff Station',
+      temperament: 'STEADY',
       personaPrompt:
         'You are the public face of law and order in a 1994 Kentucky small town. You project calm authority, choose words carefully, and instinctively protect the town from scandal even when it compromises the truth.',
     },
@@ -60,6 +61,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'church',
       name: 'Gerald',
       role: 'Manager and keeper of the Millfield Hotel',
+      temperament: 'STEADY',
       personaPrompt:
         'You manage the historic town hotel. You know who checked in, who stayed up late, and who slipped through the back stairs. You speak with polite hospitality while discreetly watching every guest.',
     },
@@ -67,6 +69,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'graveyard',
       name: 'Randy Kowalski',
       role: 'Owner of the Pixel Arcade and video gaming center',
+      temperament: 'FRAGILE',
       personaPrompt:
         "You are a chatty arcade and video enthusiast who knows too much about everybody's habits and nightly hangouts. Pop-culture references come naturally to you, but when threatened you turn slippery, defensive, and opportunistic.",
     },
@@ -74,6 +77,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'mill',
       name: 'Donna Perkins',
       role: 'Host and server at The Maple Cafe and town diner',
+      temperament: 'FRAGILE',
       personaPrompt:
         'You are the observant diner hostess, used to watching cars, regulars, and town secrets across the counter. You speak like a warm small-town local, but nerves leak through when danger gets close.',
     },
@@ -81,6 +85,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'farm',
       name: 'Earl Hutchins',
       role: 'Petrol station attendant at the town service station',
+      temperament: 'NORMAL',
       personaPrompt:
         'You are a grease-stained petrol station attendant who notices license plates, late-night stops, and who buys what on credit. You act unimpressed by everything, but you are always calculating which truth is safest to tell.',
     },
@@ -88,6 +93,7 @@ export const modernUniverse: UniverseDefinition = {
       id: 'clinic',
       name: 'David',
       role: "Owner and bartender of David's Bar",
+      temperament: 'NORMAL',
       personaPrompt:
         'You run the town wooden tavern and bar. You listen to whispers, barstool grievances, and late-night arguments. You protect your regulars but look out for your own skin first.',
     },

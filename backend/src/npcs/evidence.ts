@@ -1,12 +1,26 @@
 import { CaseFacts } from '../scenarios/case-setup';
 import { foldTurkish } from './prompt-guard';
+import {
+  asksAboutBody,
+  bodyFindingText,
+  confessionText,
+  linkStatements,
+} from './case-statements';
 
 // Kanıt Defteri: yapay zekâ bir ipucunu verdiğinde ya da bir karakter itiraf ettiğinde cevabına
 // gizli bir etiket ekler (arama iznindeki [GRANT_WARRANT] gibi). Sunucu etiketi kanıta çevirir,
 // oyuncu etiketi hiç görmez. Kanıt metni o anki cümleden değil, vaka kurulumunda kaydedilen
 // resmi metinden alınır; böylece defter her zaman vakanın gerçekleriyle tutarlıdır.
 
-export type EvidenceKind = 'CLUE' | 'VERIFICATION' | 'CONFESSION';
+// BODY: örtü altındaki yara; TESTIMONY: cinayete bağlı sırrın ifadesi (kısmi tanık, son konuşan);
+// ALIBI: tamamen masumun mazeretini doğrulayan ifade (Vaka Motoru v2)
+export type EvidenceKind =
+  | 'CLUE'
+  | 'VERIFICATION'
+  | 'CONFESSION'
+  | 'BODY'
+  | 'TESTIMONY'
+  | 'ALIBI';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
 export type EvidenceCategory = 'ITEM' | 'STATEMENT';
@@ -23,9 +37,14 @@ export const EVIDENCE_TAG = {
   clue: 'CLUE_FOUND',
   confession: 'CONFESSED',
   verification: 'EVIDENCE_REVEALED',
+  // Karakter vakadaki payını (kısmi tanıklık, son konuşma, mazeret doğrulama) anlattı
+  statement: 'STATEMENT_GIVEN',
+  // Olay yeri anlatıcısı örtü altındaki bedeni anlattı
+  body: 'BODY_EXAMINED',
 } as const;
 
-const TAG_PATTERN = /\[\s*(CLUE_FOUND|CONFESSED|EVIDENCE_REVEALED)\s*\]/gi;
+const TAG_PATTERN =
+  /\[\s*(CLUE_FOUND|CONFESSED|EVIDENCE_REVEALED|STATEMENT_GIVEN|BODY_EXAMINED)\s*\]/gi;
 
 export function extractEvidenceTags(reply: string): {
   reply: string;
@@ -109,6 +128,9 @@ export function evidenceFromTags(params: {
   // Etiket yoksa tanıklığı metinden tanımak için (isteğe bağlı)
   reply?: string;
   nameOf?: (npcId: string) => string;
+  // Oyuncunun mesajı ve evren: beden incelemesi ve v2 ifadeleri için (isteğe bağlı)
+  playerMessage?: string;
+  scenarioType?: string;
 }): EvidenceDraft[] {
   const { tags, npcId, locationId, culpritId, caseFacts, locationClues } =
     params;
@@ -130,15 +152,54 @@ export function evidenceFromTags(params: {
     }
   }
 
+  // Olay yeri anlatıcısı örtü altındaki bedeni anlattı: yaranın türü (silahın ilk ipucu)
+  if (locationId === 'crime_scene') {
+    const finding = bodyFindingText(caseFacts, params.scenarioType ?? '');
+    const examined =
+      tags.has(EVIDENCE_TAG.body) ||
+      (!!params.playerMessage && asksAboutBody(params.playerMessage));
+    if (finding && examined) {
+      drafts.push({
+        kind: 'BODY',
+        category: 'ITEM',
+        sourceId: 'crime_scene',
+        text: finding,
+      });
+    }
+  }
+
   if (npcId) {
+    const nameOf = params.nameOf ?? ((id: string) => id);
     // Sadece masumların itirafı kanıttır: sırları aynı zamanda mazeretleridir
     if (tags.has(EVIDENCE_TAG.confession) && npcId !== culpritId) {
       drafts.push({
         kind: 'CONFESSION',
         category: 'STATEMENT',
         sourceId: npcId,
-        text: caseFacts?.alibis[npcId] || 'Sakladığı sırrı itiraf etti.',
+        text: confessionText(
+          caseFacts,
+          npcId,
+          nameOf,
+          params.scenarioType ?? '',
+        ),
       });
+    }
+    // Cinayete bağlı sırların ifadeleri. Karakterin tek ifadesi varsa etiket yeter; birden çoksa
+    // hangisini anlattığı cevabın içeriğinden anlaşılır.
+    const statements = linkStatements(caseFacts, npcId, nameOf);
+    const tagged = tags.has(EVIDENCE_TAG.statement);
+    for (const statement of statements) {
+      const told =
+        (tagged && statements.length === 1) ||
+        (!!params.reply && statement.matches(params.reply));
+      if (told) {
+        drafts.push({
+          kind: statement.kind,
+          category: 'STATEMENT',
+          sourceId: npcId,
+          text: statement.text,
+        });
+      }
     }
     // Tanıklıkla gelen doğrulayan kanıt sadece o tanıktan alınabilir
     const isWitness =

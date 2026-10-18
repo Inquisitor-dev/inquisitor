@@ -36,6 +36,18 @@ describe('prompt-builder domain', () => {
       expect(result).toBe(false);
     });
 
+    it('kırılgan karakter eşiği 6 olduğu için 6 korkuda itiraf eder; soğukkanlı etmez', () => {
+      const base = {
+        isNarrator: false,
+        isCulprit: false,
+        hasConfessed: false,
+        confrontation: { impact: 'IMPLICATING' as const },
+        fearLevel: 6,
+      };
+      expect(isForcedConfession({ ...base, fearThreshold: 6 })).toBe(true);
+      expect(isForcedConfession({ ...base, fearThreshold: 8 })).toBe(false);
+    });
+
     it('korku eşiğinin altındaysa zorla itiraf dönmez', () => {
       const result = isForcedConfession({
         isNarrator: false,
@@ -60,7 +72,7 @@ describe('prompt-builder domain', () => {
       caseFacts: {
         victim: { name: 'Lord Aldous', profession: 'Lord' },
         weapon: 'Zehir',
-        motive: 'İntikam',
+        motive: 'REVENGE' as const,
         alibis: {
           tavern: 'Gece boyu bardaydı.',
         },
@@ -185,6 +197,31 @@ describe('prompt-builder domain', () => {
         expect(prompt).not.toContain(unexpected);
       },
     );
+
+    it('olay yeri anlatıcısı yara türünü koddan anlatır, silahın adını söylemez', () => {
+      const prompt = buildNpcPrompt({
+        scenarioConfig: getScenarioConfig('medieval', 'easy', 'well'),
+        session: {
+          ...baseSession,
+          caseFacts: {
+            ...baseSession.caseFacts,
+            crimeSceneId: 'well',
+            weaponId: 'rope',
+          },
+        },
+        npc: {
+          id: 'narrator_crime_scene',
+          name: 'Olay Yeri',
+          description: '',
+          basePrompt: '',
+        },
+        dynamicPrompt: '',
+        fearLevel: 0,
+        hasConfessed: false,
+      });
+      expect(prompt).toContain('dark marks around the neck');
+      expect(prompt).toContain('never name the exact weapon');
+    });
 
     it('arama izni veren makam için sistem izin durumunu ekler', () => {
       const prompt = buildNpcPrompt({

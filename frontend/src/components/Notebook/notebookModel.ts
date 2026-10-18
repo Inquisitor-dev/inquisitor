@@ -1,4 +1,5 @@
 // Not Defteri'nin veri modeli (sunucudaki backend/src/notebook/notebook.ts ile aynı biçim)
+import type { EvidenceItem } from '@/store/slices/types';
 
 export type NotebookPage = 'L' | 'R';
 
@@ -69,7 +70,7 @@ export interface NotebookState {
 // Bir ifade kanıtından (itiraf ya da tanıklık) gelen kayıt kartı
 export interface NotebookRecord {
   evidenceId: string;
-  kind: 'CONFESSION' | 'VERIFICATION' | 'CLUE';
+  kind: EvidenceItem['kind'];
   day: number;
   speaker: string;
   text: string;
@@ -101,7 +102,7 @@ export function spreadCount(currentDay: number, items: NotebookItem[], records: 
 }
 
 export const recordLabel = (record: NotebookRecord) =>
-  record.kind === 'CONFESSION' ? 'İtiraf' : 'Tanıklık';
+  record.kind === 'CONFESSION' ? 'İtiraf' : record.kind === 'ALIBI' ? 'Mazeret' : 'Tanıklık';
 
 export const MAX_STROKE_POINTS = 120;
 

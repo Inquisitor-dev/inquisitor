@@ -8,6 +8,7 @@ import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence'
 import {
   evidenceImpact,
   fearBand,
+  fearThresholdOf,
   raiseFear,
   startingFear,
 } from './fear';
@@ -317,12 +318,17 @@ export class NpcsService {
       (e) => e.kind === 'CONFESSION' && e.sourceId === currentState.npc.id,
     );
 
+    const fearThreshold = fearThresholdOf(
+      currentState.session.caseFacts as Partial<CaseFacts> | null,
+      currentState.npc.id,
+    );
     const forcedConfession = isForcedConfession({
       isNarrator,
       isCulprit,
       hasConfessed,
       confrontation,
       fearLevel,
+      fearThreshold,
     });
     // Sessiz Oda (Gölge Ajan): o gün bu şüpheli daha doğrudan konuşur
     const quietRoom =
@@ -487,6 +493,8 @@ export class NpcsService {
         locationClues: sessionLocationClues,
         reply: finalReply,
         nameOf: (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
+        playerMessage: userMessage,
+        scenarioType: currentState.session.scenarioType,
       }),
     );
 
@@ -507,7 +515,9 @@ export class NpcsService {
       reply: finalReply,
       grantedWarrants: newlyGranted,
       newEvidence,
-      fear: isNarrator ? null : { level: fearLevel, band: fearBand(fearLevel) },
+      fear: isNarrator
+        ? null
+        : { level: fearLevel, band: fearBand(fearLevel, fearThreshold) },
     };
   }
 
@@ -558,7 +568,16 @@ export class NpcsService {
       currentDay,
       fear:
         state && !npcId.startsWith('narrator_')
-          ? { level: state.currentFear, band: fearBand(state.currentFear) }
+          ? {
+              level: state.currentFear,
+              band: fearBand(
+                state.currentFear,
+                fearThresholdOf(
+                  state.session.caseFacts as Partial<CaseFacts> | null,
+                  npcId,
+                ),
+              ),
+            }
           : null,
       shownEvidenceIds: state?.shownEvidenceIds ?? [],
     };

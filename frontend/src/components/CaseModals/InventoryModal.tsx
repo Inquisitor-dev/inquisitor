@@ -9,7 +9,7 @@ import styles from './CaseModals.module.scss';
 
 // Envanter: bulunan fiziksel kanıtların fotoğrafları ve arama izinleri
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { inventory, evidence, scenarioType } = useGameStore();
+  const { inventory, evidence, scenarioType, crimeScene } = useGameStore();
   const scenario = scenarioType || 'medieval';
   const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               {evidenceItems.map((item) => (
                 <EvidencePolaroid
                   key={item.id}
-                  photo={evidencePhoto(scenario, item)}
+                  photo={evidencePhoto(scenario, item, crimeScene)}
                   title={evidenceTitle(scenario, item)}
                   text={item.text}
                   meta={`${item.dayNumber}. gün`}

@@ -33,10 +33,22 @@ export function startingFear(baseFear: number): number {
   return Math.min(STARTING_FEAR_MAX, Math.max(0, Math.round(baseFear / 2)));
 }
 
-export function fearBand(level: number): FearBand {
-  if (level >= FEAR_BREAK_THRESHOLD) return 'PANIC';
-  if (level >= 5) return 'NERVOUS';
-  if (level >= 3) return 'UNEASY';
+// Karakterin itiraf eşiği: v2 vakalarında mizaca göre (soğukkanlı 8, normal 7, kırılgan 6), eskilerde 7
+export function fearThresholdOf(
+  caseFacts: Pick<Partial<CaseFacts>, 'fearThresholds'> | null | undefined,
+  npcId: string,
+): number {
+  return caseFacts?.fearThresholds?.[npcId] ?? FEAR_BREAK_THRESHOLD;
+}
+
+// Bantlar eşiğe göredir: kırılgan biri daha erken terler, soğukkanlı biri daha geç
+export function fearBand(
+  level: number,
+  threshold: number = FEAR_BREAK_THRESHOLD,
+): FearBand {
+  if (level >= threshold) return 'PANIC';
+  if (level >= threshold - 2) return 'NERVOUS';
+  if (level >= threshold - 4) return 'UNEASY';
   return 'CALM';
 }
 
@@ -50,9 +62,30 @@ export function evidenceImpact(params: {
   const { evidence, targetNpcId, culpritId, caseFacts, alreadyShown } = params;
   if (alreadyShown) return 'REPEAT';
 
-  // Doğrulayan kanıt (eşya ya da tanıklık) sadece katili sıkıştırır
+  // Doğrulayan kanıt (eşya ya da tanıklık) katili sıkıştırır. Yanılabilen tanıklık ise tarife uyan herkesi
+  // sıkıştırır: yalnızca katilin korkusu artsaydı gösterge, tanığın söylemediği adı ele verirdi.
   if (evidence.kind === 'VERIFICATION') {
+    const fits = caseFacts?.verification?.witnessDescriptionFits;
+    if (fits && caseFacts?.verification.kind === 'CORROBORATION') {
+      return fits.includes(targetNpcId) ? 'IMPLICATING' : 'IRRELEVANT';
+    }
     return targetNpcId === culpritId ? 'IMPLICATING' : 'IRRELEVANT';
+  }
+  // Yara, aleti bilmeden veren kişiyi tedirgin eder: aletin onun elinden çıktığını anlar
+  if (evidence.kind === 'BODY') {
+    const helper = caseFacts?.involvements?.find(
+      (i) => i.kind === 'UNWITTING_HELP' && i.npcId === targetNpcId,
+    );
+    return helper ? 'IMPLICATING' : 'IRRELEVANT';
+  }
+  // Kurbanın son konuşmada anlattığı dert katili sıkıştırır
+  if (evidence.kind === 'TESTIMONY') {
+    const lastWords = caseFacts?.involvements?.some(
+      (i) => i.kind === 'LAST_CONVERSATION' && i.npcId === evidence.sourceId,
+    );
+    return lastWords && targetNpcId === culpritId
+      ? 'IMPLICATING'
+      : 'IRRELEVANT';
   }
   if (evidence.kind === 'CLUE') {
     if (evidence.sourceId === 'crime_scene') {
@@ -71,8 +104,12 @@ export function raiseFear(current: number, impact: EvidenceImpact): number {
 }
 
 // Korku seviyesinin karakterin konuşmasına yansıması (yapay zekâya giden talimat)
-export function fearPrompt(level: number, isCulprit: boolean): string {
-  const band = fearBand(level);
+export function fearPrompt(
+  level: number,
+  isCulprit: boolean,
+  threshold: number = FEAR_BREAK_THRESHOLD,
+): string {
+  const band = fearBand(level, threshold);
   const behaviour: Record<FearBand, string> = {
     CALM: 'You feel calm and in control. Answer steadily.',
     UNEASY:
