@@ -367,6 +367,45 @@ describe('prompt-builder domain', () => {
       expect(unnamed).toContain('This evidence has nothing to do with you');
     });
 
+    it('masum ve katil ölüm saatini koddan bilir, başka saat uydurmaz', () => {
+      const session = {
+        ...baseSession,
+        caseFacts: {
+          ...baseSession.caseFacts,
+          timeOfDeath: 'EVENING' as const,
+        },
+      };
+      const innocent = buildNpcPrompt({
+        scenarioConfig: config,
+        session,
+        npc: {
+          id: 'tavern',
+          name: 'Aldric',
+          description: 'Hancı',
+          basePrompt: '',
+        },
+        fearLevel: 1,
+        hasConfessed: false,
+      });
+      expect(innocent).toContain(
+        'The murder happened akşam, hava karardıktan sonra',
+      );
+      expect(innocent).toContain('never name another hour');
+      const culprit = buildNpcPrompt({
+        scenarioConfig: config,
+        session,
+        npc: {
+          id: 'church',
+          name: 'Peder',
+          description: 'Rahip',
+          basePrompt: '',
+        },
+        fearLevel: 1,
+        hasConfessed: false,
+      });
+      expect(culprit).toContain('in the evening, after dark');
+    });
+
     it('katile kanıt yine onu gösteren kanıt olarak sunulur', () => {
       const church = {
         id: 'church',

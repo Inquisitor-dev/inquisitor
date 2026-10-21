@@ -7,9 +7,16 @@ import {
 import { MOTIVE_LABELS, WEAPONS } from '../scenarios/case-catalog';
 import {
   buildClueRepairPrompt,
+  buildTraceRepairPrompt,
   culpritClueGivesAway,
   parseClueRepair,
+  traceMissesFramed,
 } from './prompts/clue-repair-prompt.builder';
+import {
+  buildWitnessRepairPrompt,
+  parseWitnessRepair,
+} from './prompts/witness-repair-prompt.builder';
+import { mentions } from '../npcs/case-statements';
 import { CasePlan } from '../scenarios/case-setup';
 import type { ThoughtLine } from '../board/board';
 import { CompletionRequest, GeminiClient } from './client/gemini-client';
@@ -180,10 +187,24 @@ export class LlmService {
         caseBrief,
         sessionId,
       );
-      return await this.repairCulpritClue(
+      const clueRepaired = await this.repairCulpritClue(
         reconciled,
         plan,
         scenarioType,
+        sessionId,
+      );
+      const traceRepaired = await this.repairPlantedTrace(
+        clueRepaired,
+        plan,
+        scenarioType,
+        npcNames,
+        sessionId,
+      );
+      return await this.repairWitnessLeak(
+        traceRepaired,
+        plan,
+        scenarioType,
+        npcNames,
         sessionId,
       );
     } catch {
@@ -265,6 +286,158 @@ export class LlmService {
       locationClues: {
         ...draft.locationClues,
         [culpritId]: `${place} içinde, gözden uzak bir köşeye sıkıştırılmış, kurbanla aradaki meseleyi ima eden katlanmış bir not duruyor.`,
+      },
+    };
+  }
+
+  // Tuzak iz suçlanmak istenen herkesi (adı ya da mekânıyla) işaret etmeli; etmiyorsa iz ve gerçek metni
+  // tek küçük çağrıyla onarılır, olmazsa ize eksik kişiler için koddan bir işaret cümlesi eklenir.
+  private async repairPlantedTrace(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const { crimeSceneClue } = plan;
+    const clue = draft.locationClues?.crime_scene;
+    if (crimeSceneClue.authentic || !clue) return draft;
+    const framed = crimeSceneClue.implicatedNpcIds.map((id) => ({
+      name: npcNames[id] ?? id,
+      place: getLocalizedLocationLabel(scenarioType, id),
+    }));
+    const missing = traceMissesFramed(clue, framed, mentions);
+    if (missing.length === 0) return draft;
+
+    this.logger.warn(
+      `Planted trace misses ${missing.map((m) => m.name).join(', ')}, repairing.`,
+    );
+    let repaired: { clue: string; truthReveal: string } | null = null;
+    try {
+      const response = await this.complete(
+        {
+          messages: [
+            {
+              role: 'user',
+              content: buildTraceRepairPrompt({
+                scenarioType,
+                clue,
+                truthReveal: draft.truthReveal,
+                framed,
+              }),
+            },
+          ],
+          temperature: 0.4,
+        },
+        'Planted trace repair',
+        30_000,
+        { kind: 'CLUE_REPAIR', sessionId },
+      );
+      repaired = parseClueRepair(
+        response?.choices?.[0]?.message?.content || '',
+      );
+    } catch (error) {
+      this.logger.warn(`Planted trace repair failed. ${error}`);
+    }
+
+    const culpritName = npcNames[plan.culpritId] ?? plan.culpritId;
+    if (
+      repaired &&
+      traceMissesFramed(repaired.clue, framed, mentions).length === 0 &&
+      !mentions(repaired.clue, culpritName)
+    ) {
+      return {
+        ...draft,
+        truthReveal: repaired.truthReveal,
+        locationClues: { ...draft.locationClues, crime_scene: repaired.clue },
+      };
+    }
+    this.logger.warn('Planted trace repair rejected; adding a plain mark.');
+    const extra = missing.map((m) => `${m.name} (${m.place})`).join(' ve ');
+    return {
+      ...draft,
+      locationClues: {
+        ...draft.locationClues,
+        crime_scene: `${clue} Yakınında ${extra} ile bağlantılı bir işaret de seçiliyor.`,
+      },
+    };
+  }
+
+  // Doğrulayan tanık katili görmemiştir. Tanıklık metninde ya da tanığın rolünde katilin adı geçerse
+  // ikisi tek küçük çağrıyla onarılır; olmazsa koddan, kimseyi adıyla söylemeyen sade bir tanıklık konur.
+  private async repairWitnessLeak(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const { placement } = plan.verification;
+    if (placement.type !== 'TESTIMONY') return draft;
+    const witnessId = placement.npcId;
+    const culpritName = npcNames[plan.culpritId] ?? plan.culpritId;
+    const witnessName = npcNames[witnessId] ?? witnessId;
+    const verificationText = draft.verificationText ?? '';
+    const npcPrompt = draft.npcPrompts?.[witnessId] ?? '';
+    const leaks = (text: string) => mentions(text, culpritName);
+    if (!leaks(verificationText) && !leaks(npcPrompt)) return draft;
+
+    this.logger.warn(
+      `Verifying witness names the culprit, repairing: ${verificationText.slice(0, 120)}`,
+    );
+    let repaired: { verificationText: string; npcPrompt: string } | null = null;
+    try {
+      const response = await this.complete(
+        {
+          messages: [
+            {
+              role: 'user',
+              content: buildWitnessRepairPrompt({
+                scenarioType,
+                witnessName,
+                culpritName,
+                verificationText,
+                npcPrompt,
+              }),
+            },
+          ],
+          temperature: 0.3,
+        },
+        'Witness repair',
+        30_000,
+        { kind: 'WITNESS_REPAIR', sessionId },
+      );
+      repaired = parseWitnessRepair(
+        response?.choices?.[0]?.message?.content || '',
+      );
+    } catch (error) {
+      this.logger.warn(`Witness repair failed. ${error}`);
+    }
+
+    if (
+      repaired &&
+      !leaks(repaired.verificationText) &&
+      !leaks(repaired.npcPrompt)
+    ) {
+      return {
+        ...draft,
+        verificationText: repaired.verificationText,
+        npcPrompts: { ...draft.npcPrompts, [witnessId]: repaired.npcPrompt },
+      };
+    }
+    // Onarım da adı söylüyorsa tanıklık koddan kurulur: eylem var, kişi yok
+    this.logger.warn('Witness repair rejected; using a plain testimony.');
+    const framed = plan.crimeSceneClue.implicatedNpcIds[0];
+    const plain =
+      plan.verification.kind === 'FLAW' && framed
+        ? `${witnessName}, cinayetten kısa süre önce birinin, olay yerinde bulunan eşyayı ${npcNames[framed] ?? framed} adlı kişinin mekânından aldığını gördü; karanlıkta kim olduğunu seçemedi.`
+        : `${witnessName}, cinayet saatinde olay yerinin yakınında ${draft.witnessDescription ? `${draft.witnessDescription} ` : ''}birini gördü; yüzünü seçemedi.`;
+    return {
+      ...draft,
+      verificationText: plain,
+      npcPrompts: {
+        ...draft.npcPrompts,
+        [witnessId]: `Sen ${witnessName}'sın. O gece şunu gördün: ${plain} Kim olduğunu bilmiyorsun, kimseyi tahmin etmezsin. Bunu, o gece ya da olay yerindeki eşya sorulunca anlatırsın.`,
       },
     };
   }

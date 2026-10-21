@@ -13,7 +13,11 @@ import {
   ScenarioConfig,
 } from '../scenarios/scenario-config';
 import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
-import { WeaponMethod, WEAPONS } from '../scenarios/case-catalog';
+import {
+  TIME_OF_DEATH_LABELS,
+  WeaponMethod,
+  WEAPONS,
+} from '../scenarios/case-catalog';
 
 // Örtü kaldırılınca görülen yara (anlatıcıya giden İngilizce tarif)
 const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
@@ -183,6 +187,12 @@ STRICT CANON RULES:
   const fearThreshold = fearThresholdOf(caseFacts, npc.id);
   const nameOf = (id: string) =>
     scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id;
+  // Karakterler ölüm saatini bilmeyince "gece yarısı" gibi bir saat uyduruyordu; ifade kartları ise
+  // koddaki saati söylüyor. Saat oyuncudan gizli değil (ifadelerde geçiyor).
+  const timeOfDeathLine = caseFacts?.timeOfDeath
+    ? `
+The murder happened ${TIME_OF_DEATH_LABELS[caseFacts.timeOfDeath].toLocaleLowerCase('tr-TR')} (in English: ${caseFacts.timeOfDeath === 'EVENING' ? 'in the evening, after dark' : caseFacts.timeOfDeath === 'MIDNIGHT' ? 'around midnight' : 'before dawn'}). Whenever you mention the time of that night, use this time; never name another hour.`
+    : '';
 
   const forcedConfession = isForcedConfession({
     isNarrator,
@@ -247,12 +257,12 @@ ${publicCaseFacts(session.scenarioType, caseFacts)}
     if (isCulprit) {
       combinedPrompt += `
 THE ABSOLUTE TRUTH OF THE INCIDENT:
-${truthRevealText}
+${truthRevealText}${timeOfDeathLine}
 `;
     } else if (caseFacts?.alibis?.[npc.id]) {
       combinedPrompt += `
 YOUR WHEREABOUTS ON THE NIGHT OF THE MURDER (your secret alibi):
-${caseFacts.alibis[npc.id]}
+${caseFacts.alibis[npc.id]}${timeOfDeathLine}
 `;
     }
 

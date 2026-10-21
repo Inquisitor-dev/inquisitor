@@ -40,7 +40,7 @@ export function buildCaseBrief(
 
   const clueLine = crimeSceneClue.authentic
     ? `- CRIME SCENE CLUE (GENUINE): The culprit accidentally left this real trace. The 'crime_scene' clue MUST describe exactly this trace: "${crimeSceneClue.poolClueText}". Keep the same object, smell or mark and its meaning, but write the clue as one natural Turkish sentence together with its exact position at the scene. Do not paste the text in mid-sentence and do not repeat words such as "olay yerinde".`
-    : `- CRIME SCENE CLUE (PLANTED): The culprit deliberately planted a fake clue to frame ${crimeSceneClue.implicatedNpcIds.map(who).join(' and ')}. Invent ONE concrete object or trace that is clearly linked to ${crimeSceneClue.implicatedNpcIds.length > 1 ? 'these people' : 'this person'} (something they own, make or use) and to nobody else, and put it in the 'crime_scene' clue.`;
+    : `- CRIME SCENE CLUE (PLANTED): The culprit deliberately planted a fake clue to frame ${crimeSceneClue.implicatedNpcIds.map(who).join(' and ')}. Invent ONE concrete object or trace that is clearly linked to ${crimeSceneClue.implicatedNpcIds.length > 1 ? 'EACH of these people (for example something they share, or one mark for each of them; the clue names or clearly points at every one of them)' : 'this person'} (something they own, make or use) and to nobody else, and put it in the 'crime_scene' clue.`;
 
   const { placement } = verification;
   let verificationLine: string;
@@ -50,14 +50,14 @@ export function buildCaseBrief(
         ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST be physical evidence at the culprit's own place that matches the crime scene trace (for example the same material, the same item, or the rest of it). This replaces the usual secret clue of that location.`
         : verification.witnessDescriptionFits
           ? `- VERIFYING EVIDENCE (A WITNESS WHO DOES NOT KNOW WHO IT WAS): The innocent ${who(placement.npcId)} saw a figure at the murder location around the time of death, connected to the crime scene trace, but could NOT see the face. Invent ONE visible detail (build, height, gait, a cloak or hood, something carried, a smell) that is believable for EACH of these suspects given their role and usual look, and fits nobody else in the cast; avoid work clothes that only one of them would wear: ${verification.witnessDescriptionFits.map(who).join(', ')}. Return it in "witnessDescription" as a short Turkish phrase (for example "uzun boylu, deri önlüklü biri"). The witness never names or guesses anyone. Their npcPrompt MUST describe what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder. "verificationText" states this sighting WITHOUT any suspect's name.`
-          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder.`;
+          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} witnessed something that links the culprit to the crime scene trace, without seeing who it was. Their npcPrompt MUST describe exactly what they saw, and say they reveal it when the Inquisitor asks about the trace or about the night of the murder. Neither the npcPrompt nor "verificationText" names or hints at the culprit.`;
   } else {
     verificationLine =
       placement.type === 'LOCATION'
         ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST show that the planted item was taken from there before the murder (for example an empty hook, a forced lock, or the matching missing piece). This replaces the usual secret clue of that location.`
         : placement.npcId === crimeSceneClue.implicatedNpcIds[0]
           ? `- VERIFYING EVIDENCE: The framed person ${who(placement.npcId)} noticed that the planted item went missing shortly before the murder. Their npcPrompt MUST say this, and that they mention it when the Inquisitor asks about the item.`
-          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} saw someone take the planted item from ${who(crimeSceneClue.implicatedNpcIds[0])}'s place shortly before the murder (they did not see the face clearly). Their npcPrompt MUST describe this, and say they reveal it when asked about the item or that night.`;
+          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} saw someone take the planted item from ${who(crimeSceneClue.implicatedNpcIds[0])}'s place shortly before the murder, but could not see who it was (dark, hooded, from behind). Their npcPrompt MUST describe this, and say they reveal it when asked about the item or that night. Neither the npcPrompt nor "verificationText" names, describes or guesses who took it: the witness does not know.`;
   }
 
   return `CASE FACTS (decided by the game engine; do NOT change them):
@@ -230,7 +230,7 @@ CLUE & MYSTERY RULES:
 3. In the 'scenario' text, NEVER reveal the victim's name. Refer to them only as 'the victim', 'the body', or 'the poor soul' to maintain the mystery.
 4. For 'locationClues': exactly one hidden physical clue per canonical location. These should be very specific and small details, not generic descriptions, but exact objects or marks the player needs to find.
 5. Every location clue MUST explicitly include the exact hiding spot or exact physical position of the clue inside that location.
-6. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth.
+6. The truthReveal paragraph must fully support and explain why every location clue exists. Do not leave any location clue disconnected from the truth. It describes each clue and the planted trace exactly as written in 'locationClues' and never adds other hidden, planted or stolen items, or places them anywhere else.
 7. Imagine the narrator will later reveal ONLY these canonical clues. So do NOT create optional alternates.
 8. NEVER invent extra named locations, businesses, landmarks, neighborhoods, or workplaces outside the canonical list above.
 9. The crime, alibis, rumors, and secrets must stay grounded in the canonical cast and canonical locations only.
@@ -292,7 +292,8 @@ CONTINUITY RULES:
 3. Every CASE FACT above must still hold: crime scene appearance, genuine/planted clue, verifying evidence placement, victim and alibis. Fix the draft where it breaks them.
 4. Ensure every canonical location has exactly one location clue.
 5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
-6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense.
+6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense. Remove any hidden, planted or stolen item from truthReveal that is not in 'locationClues' (for example "he also hid a chip at the bar" when the bar's clue is something else).
+6c. Only the culprit knows who the culprit is. No innocent's npcPrompt and no "verificationText" may name or hint at the culprit; a witness who saw the act did not see who it was.
 6a. Each INNOCENT's location clue must prove that innocent's own alibi secret, at the same place and time as the alibi. If a clue places them somewhere else or doing something else at the time of death, rewrite the clue to match the alibi. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
 6b. The 'scenario' hook must not reveal how orderly or messy the crime scene is, or whether the murder looks panicked or planned. Remove such sentences.
 6c. No English words or game terms (tidy, messy, hurried, planned) in Turkish text.
