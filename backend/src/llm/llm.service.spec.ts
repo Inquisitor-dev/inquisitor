@@ -222,4 +222,22 @@ describe('LlmService', () => {
       );
     });
   });
+
+  it('karakter cevabı boş dönerse bir kez daha denenir', async () => {
+    const complete = jest
+      .fn()
+      .mockResolvedValueOnce({ choices: [{ message: { content: '' } }] })
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: '{"reply": "Tamam, anlatıyorum."}' } }],
+      });
+    Object.assign(service, { complete });
+    const { reply } = await service.generateNpcResponse(
+      'Aldric',
+      'rol',
+      [],
+      'Konuş!',
+    );
+    expect(complete).toHaveBeenCalledTimes(2);
+    expect(reply).toBe('Tamam, anlatıyorum.');
+  });
 });
