@@ -124,7 +124,7 @@ model Evidence {
 model LlmUsage {
   id               String   @id @default(uuid())
   sessionId        String?  // Çağrının ait olduğu vaka (yabancı anahtar yok; vaka silinse de kayıt kalır)
-  kind             String   // SCENARIO | SCENARIO_REVIEW | NPC_REPLY | CONFRONT | NARRATOR | BOARD_THOUGHT | CONTRADICTION_SCAN | VERDICT_JUDGE | CLUE_REPAIR
+  kind             String   // SCENARIO | SCENARIO_REVIEW | NPC_REPLY | CONFRONT | NARRATOR | BOARD_THOUGHT | CONTRADICTION_SCAN | VERDICT_JUDGE | CLUE_REPAIR | WITNESS_REPAIR
   model            String
   promptTokens     Int
   completionTokens Int

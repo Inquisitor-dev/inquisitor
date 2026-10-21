@@ -12,7 +12,8 @@ export type LlmCallKind =
   | 'VERIFY_QUOTE'
   | 'CONTRADICTION_SCAN'
   | 'VERDICT_JUDGE'
-  | 'CLUE_REPAIR';
+  | 'CLUE_REPAIR'
+  | 'WITNESS_REPAIR';
 
 export interface LlmUsageContext {
   kind: LlmCallKind;

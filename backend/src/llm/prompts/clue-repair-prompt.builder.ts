@@ -75,3 +75,46 @@ export function parseClueRepair(
     return null;
   }
 }
+
+// Tuzak iz, suçlanmak istenen herkesi işaret etmeli: kişinin adı ya da mekânı geçmeli. Yalnızca birini
+// gösterirse panonun "iz → diğeri" kararı oyuncuya anlamsız gelir (oyun testinde iz iki kişiden birini
+// gösteriyordu).
+export function traceMissesFramed(
+  clue: string,
+  framed: { name: string; place: string }[],
+  mentions: (text: string, name: string) => boolean,
+): { name: string; place: string }[] {
+  return framed.filter(
+    (f) => !mentions(clue, f.name) && !mentions(clue, f.place),
+  );
+}
+
+export interface TraceRepairInput {
+  scenarioType: string;
+  clue: string;
+  truthReveal: string;
+  framed: { name: string; place: string }[];
+}
+
+export function buildTraceRepairPrompt(input: TraceRepairInput): string {
+  const setting = getScenarioConfig(input.scenarioType).settingLabel;
+  const people = input.framed
+    .map((f) => `${f.name} (${f.place})`)
+    .join(' and ');
+  return `You are a continuity editor for a detective game (setting: ${setting}).
+
+The murderer planted a fake trace at the crime scene to frame ${people}. The trace must point at EACH of them, but now it does not.
+
+CURRENT TRACE:
+${input.clue}
+
+TRUE STORY:
+${input.truthReveal}
+
+Rewrite:
+- "clue": one Turkish sentence. Keep the same object and its exact position at the scene, and make it clearly linked to every one of them by name or by their place (for example one mark for each, or something they share). Never name the murderer.
+- "truthReveal": the true story with only the sentences about this trace changed so that they match. Keep everything else word for word.
+Correct Turkish spelling with all special characters.
+
+Return only JSON: {"clue": "...", "truthReveal": "..."}`;
+}
