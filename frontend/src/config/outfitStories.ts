@@ -152,7 +152,8 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
         summary: 'Seçtiğin şüphelinin korkusunu 2 artırır.',
         usage: 'Günde 1 kez',
         rules: [
-          'Korkuyu en çok 6’ya kadar çıkarır; tek başına itiraf eşiğini (7) geçemez.',
+          'Korkuyu en çok itiraf eşiğinin bir altına çıkarır; tek başına kimseyi itiraf ettiremez.',
+          'İtiraf eşiği kişiden kişiye değişir (6–8); dayanıklı biri daha geç kırılır.',
           'Eşiği aşmak için yine bir delil göstermen gerekir.',
           'Suçlu yalnızca panikler, itiraf etmez. Aynı gün tekrar kullanılamaz.',
         ],
