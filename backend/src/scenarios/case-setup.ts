@@ -269,14 +269,18 @@ export function planInvolvements(
   const others = (id: string) => innocentIds.filter((other) => other !== id);
   let kinds = sample(LINKED_KINDS, LINKED_KINDS.length, rng);
 
+  // Tamamen masumun mazeretini başka bir masum doğrular ("o gece benimleydi"). İki tamamen masum
+  // varsa birbirlerinin eşidir: zincir kurulursa (A, B ile; C, A ile) yapay zekâ üçünü tek mazerette
+  // birleştiriyor, mazeret satırları birbiriyle çelişiyordu (oyun testinde görüldü).
+  const noneIds = rest.slice(0, noneCount);
+  const partnerOf = (npcId: string) =>
+    noneIds.length >= 2
+      ? noneIds[(noneIds.indexOf(npcId) + 1) % 2]
+      : pick(others(npcId), rng);
+
   rest.forEach((npcId, i) => {
     if (i < noneCount) {
-      // Tamamen masumun mazeretini başka bir masum doğrular ("o gece benimleydi")
-      result.push({
-        npcId,
-        kind: 'NONE',
-        aboutNpcId: pick(others(npcId), rng),
-      });
+      result.push({ npcId, kind: 'NONE', aboutNpcId: partnerOf(npcId) });
       return;
     }
     const verificationHere =
