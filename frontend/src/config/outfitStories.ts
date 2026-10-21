@@ -108,9 +108,10 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
     abilities: [
       {
         name: 'Muhbir',
-        summary: 'Henüz aramadığın mekânlardan delil içeren birinin adını fısıldar.',
+        summary: 'Henüz aramadığın mekânlardan birinin adını fısıldar; orada işine yarayacak bir şey vardır.',
         usage: 'Günde 1 kez',
         rules: [
+          'Mekânı rastgele seçer; katile ya da kilit delile yönlendirmez.',
           'Yalnızca mekânın adını söyler; delilin ne olduğunu ya da kimi işaret ettiğini söylemez.',
           'Aranmamış en az bir mekân kalmış olmalı.',
           'Arama sırasını verimli kurmana yardım eder, vakayı çözmez.',
@@ -168,11 +169,11 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
     abilities: [
       {
         name: 'İz Sürme',
-        summary: 'Birini ikna etmeden, aramak istediğin mekân için ücretsiz arama izni kazanırsın.',
+        summary: 'Birini ikna etmeden, aramak istediğin mekân için arama izni kazanırsın.',
         usage: 'Günde 1 kez',
         rules: [
           'Henüz aranmamış bir mekân seçmelisin.',
-          'Delil üretmez; yalnızca kaç mekânı arayabileceğini artırır.',
+          'Bu izin de vakadaki 2 arama izni sınırına sayılır; sınır dolduysa kullanılamaz.',
           'İzin kazanmak için yapılan diyaloğu atlamanı sağlar.',
         ],
       },

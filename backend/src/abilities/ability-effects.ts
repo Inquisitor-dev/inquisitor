@@ -1,5 +1,4 @@
 import { FEAR_BREAK_THRESHOLD } from '../npcs/fear';
-import { CaseFacts } from '../scenarios/case-setup';
 import { AbilityState } from './abilities';
 
 // Derin Tefekkür (Ak Turna): panoda günde 2 kez düşünülür, diğerlerinde 1
@@ -107,29 +106,19 @@ export function archiveQuotes(replies: string[]): string[] {
     );
 }
 
-// Muhbir (Şehir Dedektifi): aranmamış bir mekânın adı. Doğrulayan kanıt bir mekândaysa ve
-// o mekân henüz aranmadıysa orası söylenir; yoksa aranmamış mekânlardan biri.
+// Muhbir (Şehir Dedektifi): aranmamış mekânlardan rastgele birinin adı. Vaka gerçeklerine
+// bakılmaz: doğrulayan kanıt çoğu vakada katilin kendi mekânındadır, orayı söylemek katili
+// ele verirdi. Her aranmamış mekânda bir ipucu olduğu için söylenen yer yine işe yarar.
 export function informantLocation(params: {
   locationIds: string[];
   searched: Set<string>;
-  caseFacts: Pick<CaseFacts, 'verification'> | null;
-  verificationFound: boolean;
   rng?: () => number;
 }): string | null {
-  const { locationIds, searched, caseFacts, verificationFound } = params;
+  const { locationIds, searched } = params;
   const unsearched = locationIds.filter(
     (id) => id !== 'crime_scene' && !searched.has(id),
   );
   if (unsearched.length === 0) return null;
-
-  const placement = caseFacts?.verification?.placement;
-  if (
-    placement?.type === 'LOCATION' &&
-    !verificationFound &&
-    unsearched.includes(placement.locationId)
-  ) {
-    return placement.locationId;
-  }
   const rng = params.rng ?? Math.random;
   return unsearched[Math.floor(rng() * unsearched.length)];
 }
