@@ -240,4 +240,64 @@ describe('LlmService', () => {
     expect(complete).toHaveBeenCalledTimes(2);
     expect(reply).toBe('Tamam, anlatıyorum.');
   });
+
+  describe('tamamen masum eşler aynı yeri söyler', () => {
+    const plan = {
+      involvements: [
+        { npcId: 'clinic', kind: 'NONE', aboutNpcId: 'mill' },
+        { npcId: 'mill', kind: 'NONE', aboutNpcId: 'clinic' },
+      ],
+    };
+    const names = { clinic: 'Doktor Harland', mill: 'Değirmenci Giles' };
+    // Tarama sırasında çıkan mazeretler
+    const draft = {
+      scenario: '',
+      truthReveal: '',
+      culpritId: 'x',
+      npcPrompts: {},
+      locationClues: { mill: 'Değirmende un defteri.' },
+      alibis: {
+        clinic:
+          'Gece yarısı revirin arka çalışma odasında Değirmenci Giles ile birlikte merhem tariflerini kaydediyordu.',
+        mill: 'Gece yarısı değirmenin un öğütme odasında Doktor Harland ile birlikte tahıl stok dökümünü düzenliyordu.',
+      },
+    };
+    type Repair = (
+      d: unknown,
+      p: unknown,
+      s: string,
+      n: Record<string, string>,
+    ) => Promise<typeof draft>;
+    const runWith = (reply: string) => {
+      const complete = jest.fn().mockResolvedValue({
+        choices: [{ message: { content: reply } }],
+      });
+      Object.assign(service, { complete });
+      const target = service as unknown as { repairAlibiPlaces: Repair };
+      return {
+        complete,
+        result: target.repairAlibiPlaces(draft, plan, 'medieval', names),
+      };
+    };
+
+    it('farklı mekân söyleyen eşin mazereti ve ipucu ilkinin yerine göre onarılır', async () => {
+      const { complete, result } = runWith(
+        JSON.stringify({
+          alibi:
+            'Gece yarısı revirde Doktor Harland ile birlikte merhem tariflerini kaydediyordu.',
+          clue: 'Değirmende, gece revirde olduğunu gösteren bir not.',
+        }),
+      );
+      const repaired = await result;
+      expect(complete).toHaveBeenCalledTimes(1);
+      expect(repaired.alibis.mill).toContain('revirde');
+      expect(repaired.locationClues.mill).toContain('revirde');
+    });
+
+    it('onarım tutmazsa ilkinin mazereti ikisine de verilir', async () => {
+      const { result } = runWith('yapamam');
+      const repaired = await result;
+      expect(repaired.alibis.mill).toBe(draft.alibis.clinic);
+    });
+  });
 });

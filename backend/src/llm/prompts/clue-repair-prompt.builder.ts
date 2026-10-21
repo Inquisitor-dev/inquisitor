@@ -118,3 +118,79 @@ Correct Turkish spelling with all special characters.
 
 Return only JSON: {"clue": "...", "truthReveal": "..."}`;
 }
+
+// Tamamen masum eşler aynı yerde birlikteydi; mazeretleri farklı mekân söylerse oyuncu birini yalancı
+// sanır (oyun taramasında: "revirde Giles ile" / "değirmende Harland ile"). Metinde geçen mekânlar,
+// mekân adının bütün kelimeleri kelime başında geçiyorsa sayılır ("Sokak Pazarı" için yalnız "sokak" yetmez).
+export function placesIn(
+  text: string,
+  labels: Record<string, string>,
+  mentions: (text: string, name: string) => boolean,
+): Set<string> {
+  return new Set(
+    Object.entries(labels)
+      .filter(([, label]) =>
+        label
+          .split(/\s+/)
+          .filter((w) => w.replace(/[^\p{L}\p{N}]/gu, '').length >= 3)
+          .every((w) => mentions(text, w)),
+      )
+      .map(([id]) => id),
+  );
+}
+
+export interface AlibiAlignInput {
+  scenarioType: string;
+  // Yeri doğru kabul edilen kişi ve mazereti
+  anchorName: string;
+  anchorAlibi: string;
+  place: string;
+  // Yeri farklı söyleyen eş
+  partnerName: string;
+  partnerAlibi: string;
+  partnerClue: string;
+}
+
+export function buildAlibiAlignPrompt(input: AlibiAlignInput): string {
+  const setting = getScenarioConfig(input.scenarioType).settingLabel;
+  return `You are a continuity editor for a detective game (setting: ${setting}).
+
+${input.anchorName} and ${input.partnerName} were together at the time of the murder, at ${input.place}. Their accounts must name the same place and the same activity, but ${input.partnerName}'s account names another place.
+
+${input.anchorName}'s account (correct):
+${input.anchorAlibi}
+
+${input.partnerName}'s account (wrong place):
+${input.partnerAlibi}
+
+${input.partnerName}'s hidden location clue (an ordinary sign of that night):
+${input.partnerClue}
+
+Rewrite:
+- "alibi": ${input.partnerName}'s account in one Turkish sentence: together with ${input.anchorName} at ${input.place}, doing the same thing as in the correct account.
+- "clue": the location clue with the same object and hiding spot, now showing that ${input.partnerName} spent that time at ${input.place} with ${input.anchorName}.
+Correct Turkish spelling with all special characters.
+
+Return only JSON: {"alibi": "...", "clue": "..."}`;
+}
+
+export function parseAlibiAlign(
+  text: string,
+): { alibi: string; clue: string } | null {
+  const match = /\{[\s\S]*\}/.exec(text);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[0]) as { alibi?: unknown; clue?: unknown };
+    if (
+      typeof parsed.alibi !== 'string' ||
+      !parsed.alibi.trim() ||
+      typeof parsed.clue !== 'string' ||
+      !parsed.clue.trim()
+    ) {
+      return null;
+    }
+    return { alibi: parsed.alibi.trim(), clue: parsed.clue.trim() };
+  } catch {
+    return null;
+  }
+}

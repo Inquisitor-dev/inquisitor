@@ -4,6 +4,7 @@ import {
   confessionText,
   linkPromptLines,
   linkStatements,
+  mentions,
 } from './case-statements';
 import {
   EVIDENCE_TAG,
@@ -238,5 +239,19 @@ describe('eşkâl tanıklığı korkuyu adı ele vermeden etkiler', () => {
     expect(impact('mill')).toBe('IMPLICATING');
     expect(impact('tavern')).toBe('IMPLICATING');
     expect(impact('farm')).toBe('IRRELEVANT');
+  });
+});
+
+describe('ad eşleşmesi', () => {
+  it('ad kelime başında aranır, ekler serbest; kelime içindeki parça sayılmaz', () => {
+    expect(mentions("Lin'in dükkânındaydım.", 'Lin Feng')).toBe(true);
+    expect(mentions('Feng beni gördü.', 'Lin Feng')).toBe(true);
+    // Tarama sırasında: "lin" parçası sıradan kelimelerde bulunuyordu
+    expect(mentions('Bilinen bir şey yok, gelince söylerim.', 'Lin Feng')).toBe(
+      false,
+    );
+    expect(mentions('Kardeş Aldric gelmedi.', 'Kardeş Aldric')).toBe(true);
+    // Unvan tek başına ad sayılmaz
+    expect(mentions('Kardeş geldi.', 'Kardeş Aldric')).toBe(false);
   });
 });

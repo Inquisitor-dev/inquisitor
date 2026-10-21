@@ -6,10 +6,13 @@ import {
 } from '../scenarios/scenario-config';
 import { MOTIVE_LABELS, WEAPONS } from '../scenarios/case-catalog';
 import {
+  buildAlibiAlignPrompt,
   buildClueRepairPrompt,
   buildTraceRepairPrompt,
   culpritClueGivesAway,
+  parseAlibiAlign,
   parseClueRepair,
+  placesIn,
   traceMissesFramed,
 } from './prompts/clue-repair-prompt.builder';
 import {
@@ -223,8 +226,15 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      return await this.repairInnocentLeaks(
+      const leaksRepaired = await this.repairInnocentLeaks(
         witnessRepaired,
+        plan,
+        scenarioType,
+        npcNames,
+        sessionId,
+      );
+      return await this.repairAlibiPlaces(
+        leaksRepaired,
         plan,
         scenarioType,
         npcNames,
@@ -384,6 +394,98 @@ export class LlmService {
         crime_scene: `${clue} Yakınında ${extra} ile bağlantılı bir işaret de seçiliyor.`,
       },
     };
+  }
+
+  // Tamamen masum eşler aynı yeri söyler. İkisinin mazeretinde geçen mekânlar ayrışıyorsa ikincinin
+  // mazereti ve mekân ipucu ilkinin yerine göre onarılır; olmazsa ilkinin mazereti ikisine de verilir.
+  private async repairAlibiPlaces(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const alibis = { ...(draft.alibis ?? {}) };
+    const locationClues = { ...draft.locationClues };
+    const labels = Object.fromEntries(
+      Object.keys(npcNames).map((id) => [
+        id,
+        getLocalizedLocationLabel(scenarioType, id),
+      ]),
+    );
+    const done = new Set<string>();
+    let changed = false;
+    // Karakter adları mekân sayılmasın ("Değirmenci Giles" değirmen değildir)
+    const withoutNames = (text: string) =>
+      Object.values(npcNames).reduce(
+        (acc, name) => acc.split(name).join(' '),
+        text,
+      );
+    const placesOf = (text: string) =>
+      placesIn(withoutNames(text), labels, mentions);
+
+    for (const inv of plan.involvements ?? []) {
+      if (inv.kind !== 'NONE' || !inv.aboutNpcId) continue;
+      const anchorId = inv.npcId;
+      const partnerId = inv.aboutNpcId;
+      const key = [anchorId, partnerId].sort().join('|');
+      if (done.has(key)) continue;
+      done.add(key);
+      const anchorAlibi = alibis[anchorId];
+      const partnerAlibi = alibis[partnerId];
+      if (!anchorAlibi || !partnerAlibi) continue;
+      const anchorPlaces = placesOf(anchorAlibi);
+      const partnerPlaces = placesOf(partnerAlibi);
+      const conflict =
+        anchorPlaces.size > 0 &&
+        partnerPlaces.size > 0 &&
+        ![...partnerPlaces].some((p) => anchorPlaces.has(p));
+      if (!conflict) continue;
+
+      const placeId = [...anchorPlaces][0];
+      this.logger.warn(
+        `Alibi partners name different places (${anchorId}: ${[...anchorPlaces].join(',')}, ${partnerId}: ${[...partnerPlaces].join(',')}); aligning.`,
+      );
+      let aligned: { alibi: string; clue: string } | null = null;
+      try {
+        const response = await this.complete(
+          {
+            messages: [
+              {
+                role: 'user',
+                content: buildAlibiAlignPrompt({
+                  scenarioType,
+                  anchorName: npcNames[anchorId] ?? anchorId,
+                  anchorAlibi,
+                  place: labels[placeId],
+                  partnerName: npcNames[partnerId] ?? partnerId,
+                  partnerAlibi,
+                  partnerClue: locationClues[partnerId] ?? '',
+                }),
+              },
+            ],
+            temperature: 0.3,
+          },
+          'Alibi place repair',
+          30_000,
+          { kind: 'CLUE_REPAIR', sessionId },
+        );
+        aligned = parseAlibiAlign(
+          response?.choices?.[0]?.message?.content || '',
+        );
+      } catch (error) {
+        this.logger.warn(`Alibi place repair failed. ${error}`);
+      }
+      changed = true;
+      if (aligned && placesOf(aligned.alibi).has(placeId)) {
+        alibis[partnerId] = aligned.alibi;
+        locationClues[partnerId] = aligned.clue;
+      } else {
+        // İlkinin mazereti iki adı da içerir; ikisinde de aynı yer ve iş geçer
+        alibis[partnerId] = anchorAlibi;
+      }
+    }
+    return changed ? { ...draft, alibis, locationClues } : draft;
   }
 
   // Masumların mekân ipuçları ve rol metinleri katilin adını söylemez. Silahı bilmeden veren aleti kime
