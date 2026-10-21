@@ -81,37 +81,22 @@ describe('Nabız ve Arşiv Özeti', () => {
 
 describe('Muhbir', () => {
   const locationIds = ['crime_scene', 'tavern', 'mill', 'church'];
-  const verificationAtMill = {
-    verification: {
-      kind: 'FLAW' as const,
-      placement: { type: 'LOCATION' as const, locationId: 'mill' },
-    },
-  };
+  const pick = (searched: string[], roll: number) =>
+    informantLocation({
+      locationIds,
+      searched: new Set(searched),
+      rng: () => roll,
+    });
 
-  it('bulunmamış doğrulayan kanıtın mekânını söyler', () => {
-    expect(
-      informantLocation({
-        locationIds,
-        searched: new Set(['tavern']),
-        caseFacts: verificationAtMill,
-        verificationFound: false,
-        rng: () => 0,
-      }),
-    ).toBe('mill');
+  it('aranmamış mekânlardan rastgele birini söyler; her aranmamış mekân seçilebilir', () => {
+    expect(pick([], 0)).toBe('tavern');
+    expect(pick([], 0.5)).toBe('mill');
+    expect(pick([], 0.99)).toBe('church');
   });
 
-  it('kanıt bulunduysa ya da orası arandıysa aranmamış başka mekânı söyler, olay yerini asla', () => {
-    const pick = (searched: string[], verificationFound: boolean) =>
-      informantLocation({
-        locationIds,
-        searched: new Set(searched),
-        caseFacts: verificationAtMill,
-        verificationFound,
-        rng: () => 0,
-      });
-    expect(pick([], true)).toBe('tavern');
-    expect(pick(['mill', 'tavern'], false)).toBe('church');
-    expect(pick(['mill', 'tavern', 'church'], false)).toBeNull();
+  it('aranmış mekânı ve olay yerini asla söylemez', () => {
+    expect(pick(['mill', 'tavern'], 0)).toBe('church');
+    expect(pick(['mill', 'tavern', 'church'], 0)).toBeNull();
   });
 });
 

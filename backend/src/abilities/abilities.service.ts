@@ -16,6 +16,7 @@ const caseFactsOf = (session: { caseFacts: unknown }) =>
   session.caseFacts as Partial<CaseFacts> | null;
 import { appendToNotes, recordEvidence } from '../npcs/evidence-recorder';
 import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
+import { MAX_WARRANTS } from '../npcs/warrant';
 import {
   AbilityDef,
   AbilityState,
@@ -238,10 +239,19 @@ export class AbilitiesService {
             'Bu mekân için zaten bir arama iznin var ya da orayı aradın.',
           );
         }
+        // Yetenek ikna konuşmasını atlatır ama izin sınırını aşmaz: çözücü vakayı
+        // MAX_WARRANTS izinle çözülebilir kurar (scenarios/case-graph.ts)
+        if (session.warrantsIssued >= MAX_WARRANTS) {
+          throw new BadRequestException(
+            `Bu vakadaki ${MAX_WARRANTS} arama iznini de kullandın; iz sürmek yeni izin getirmez.`,
+          );
+        }
         return {
           state,
-          // Yetenekle gelen izin, iki izinlik sınıra (warrantsIssued) sayılmaz
-          data: { activeWarrants: [...session.activeWarrants, locationId] },
+          data: {
+            activeWarrants: [...session.activeWarrants, locationId],
+            warrantsIssued: { increment: 1 },
+          },
           result: {
             message: `${labelOf(locationId)} için iz buldun; orayı arayabilirsin.`,
             locationId,
@@ -312,8 +322,6 @@ export class AbilitiesService {
         const locationId = informantLocation({
           locationIds: config.locationDefinitions.map((l) => l.id),
           searched,
-          caseFacts: (session.caseFacts ?? null) as unknown as CaseFacts | null,
-          verificationFound: evidence.some((e) => e.kind === 'VERIFICATION'),
         });
         if (!locationId)
           throw new BadRequestException(

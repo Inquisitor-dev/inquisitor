@@ -44,6 +44,7 @@ function setup(
     notes: 'Eski not',
     activeWarrants: [],
     usedWarrants: [],
+    warrantsIssued: 0,
     ...patch,
   };
   const gameSession = {
@@ -167,12 +168,12 @@ describe('AbilitiesService', () => {
     ).toBe(true);
   });
 
-  it('İz Sürme izin sınırına saymadan arama izni verir', async () => {
+  it('İz Sürme izin sınırına sayılan bir arama izni verir', async () => {
     const { service, gameSession } = setup({ characterId: 'kul_avcisi' });
     await use(service, { abilityId: 'tracking', locationId: 'tavern' });
     const data = gameSession.update.mock.calls[0][0].data;
     expect(data.activeWarrants).toEqual(['tavern']);
-    expect(data).not.toHaveProperty('warrantsIssued');
+    expect(data.warrantsIssued).toEqual({ increment: 1 });
     await expect(
       setup({ characterId: 'kul_avcisi' }).service.use('session-1', 'owner', {
         abilityId: 'tracking',
@@ -212,11 +213,28 @@ describe('AbilitiesService', () => {
     expect(silent.gameSession.update).not.toHaveBeenCalled();
   });
 
-  it('Muhbir bulunmamış doğrulayan kanıtın mekânını notlara yazar', async () => {
-    const { service } = setup({ characterId: 'sehir_dedektifi' });
-    const { result } = await use(service, { abilityId: 'informant' });
-    expect(result.locationId).toBe('church');
-    expect(result.notes).toContain('Muhbir');
+  it('İz Sürme izin sınırı dolunca izin vermez ve hak harcanmaz', async () => {
+    const { service, gameSession } = setup({
+      characterId: 'kul_avcisi',
+      warrantsIssued: 2,
+    });
+    await expect(
+      use(service, { abilityId: 'tracking', locationId: 'tavern' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(gameSession.update).not.toHaveBeenCalled();
+  });
+
+  it('Muhbir aranmamış bir mekânı notlara yazar, doğrulayan kanıta yönelmez', async () => {
+    const spy = jest.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      const { service } = setup({ characterId: 'sehir_dedektifi' });
+      const { result } = await use(service, { abilityId: 'informant' });
+      // Doğrulayan kanıt church'te; rastgele seçim ilk aranmamış mekânı verir
+      expect(result.locationId).not.toBe('church');
+      expect(result.notes).toContain('Muhbir');
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   describe('Çelişki Taraması', () => {
