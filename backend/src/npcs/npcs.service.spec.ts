@@ -362,6 +362,18 @@ describe('NpcsService — yüzleştirme ve korku', () => {
     expect(sessionRow.notes).toBe('');
   });
 
+  it('kırılma anında model boş dönerse itiraf koddan söylenir', async () => {
+    const { service } = setup('Hmm...', false, 'tavern', {
+      caseFacts,
+      existingEvidence: evidence,
+      currentFear: 1,
+    });
+    const result = await service.confront('session-1', 'tavern', 'ev-tavern');
+    expect(result.reply).toContain('daha fazla saklayamayacağım');
+    expect(result.reply).toContain('O gece mahzende kaçak içki dolduruyordu.');
+    expect(result.newEvidence).toMatchObject([{ kind: 'CONFESSION' }]);
+  });
+
   it('ilgisiz kanıt korkuyu artırmaz ve itiraf ettirmez', async () => {
     const { service, generateNpcResponse, state } = confrontSetup('tavern', 4);
     const result = await service.confront('session-1', 'tavern', 'ev-farm');

@@ -110,7 +110,21 @@ export class LlmService {
         usage,
       );
 
-      const responseText = response?.choices?.[0]?.message?.content || '';
+      let responseText = response?.choices?.[0]?.message?.content || '';
+      // Model bazen hiç metin döndürmüyor (çoğunlukla kırılma ve itiraf sahnelerinde güvenlik filtresi):
+      // bir kez daha denenir, yoksa cevap "Hmm..." olarak kalıyordu
+      if (!responseText.trim()) {
+        this.logger.warn(
+          `Empty reply for NPC ${npcName} (finish: ${response?.choices?.[0]?.finish_reason}); retrying once.`,
+        );
+        const retry = await this.complete(
+          { messages, temperature: 0.9 },
+          `NPC ${npcName} retry`,
+          30_000,
+          usage,
+        );
+        responseText = retry?.choices?.[0]?.message?.content || '';
+      }
       this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
 
       const reply = parseNpcReply(responseText, (msg) => this.logger.warn(msg));
