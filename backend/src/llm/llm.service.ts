@@ -13,7 +13,9 @@ import {
   traceMissesFramed,
 } from './prompts/clue-repair-prompt.builder';
 import {
+  buildLeakRepairPrompt,
   buildWitnessRepairPrompt,
+  parseLeakRepair,
   parseWitnessRepair,
 } from './prompts/witness-repair-prompt.builder';
 import { mentions } from '../npcs/case-statements';
@@ -200,8 +202,15 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      return await this.repairWitnessLeak(
+      const witnessRepaired = await this.repairWitnessLeak(
         traceRepaired,
+        plan,
+        scenarioType,
+        npcNames,
+        sessionId,
+      );
+      return await this.repairInnocentLeaks(
+        witnessRepaired,
         plan,
         scenarioType,
         npcNames,
@@ -361,6 +370,94 @@ export class LlmService {
         crime_scene: `${clue} Yakınında ${extra} ile bağlantılı bir işaret de seçiliyor.`,
       },
     };
+  }
+
+  // Masumların mekân ipuçları ve rol metinleri katilin adını söylemez. Silahı bilmeden veren aleti kime
+  // verdiğini bilir (itirafı koddan söyler), o yüzden onun rol metni denetlenmez; doğrulayan tanığın rol
+  // metni repairWitnessLeak'te denetlenir. Onarım da adı söylerse ipucu koddan sade bir notla değişir.
+  private async repairInnocentLeaks(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const culpritName = npcNames[plan.culpritId] ?? plan.culpritId;
+    const leaks = (text: string | undefined) =>
+      !!text && mentions(text, culpritName);
+    const { placement } = plan.verification;
+    const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+    const kindOf = (id: string) =>
+      plan.involvements?.find((i) => i.npcId === id)?.kind;
+
+    const fields: Record<string, string> = {};
+    for (const id of plan.innocentIds) {
+      const clue = draft.locationClues?.[id];
+      if (leaks(clue)) fields[`clue:${id}`] = clue;
+      const prompt = draft.npcPrompts?.[id];
+      if (
+        id !== witnessId &&
+        kindOf(id) !== 'UNWITTING_HELP' &&
+        leaks(prompt)
+      ) {
+        fields[`prompt:${id}`] = prompt;
+      }
+    }
+    const keys = Object.keys(fields);
+    if (keys.length === 0) return draft;
+
+    this.logger.warn(
+      `Innocent texts name the culprit, repairing: ${keys.join(', ')}`,
+    );
+    let repaired: Record<string, string> | null = null;
+    try {
+      const response = await this.complete(
+        {
+          messages: [
+            {
+              role: 'user',
+              content: buildLeakRepairPrompt({
+                scenarioType,
+                culpritName,
+                fields,
+              }),
+            },
+          ],
+          temperature: 0.3,
+        },
+        'Innocent leak repair',
+        30_000,
+        { kind: 'WITNESS_REPAIR', sessionId },
+      );
+      repaired = parseLeakRepair(
+        response?.choices?.[0]?.message?.content || '',
+        keys,
+      );
+    } catch (error) {
+      this.logger.warn(`Innocent leak repair failed. ${error}`);
+    }
+
+    const locationClues = { ...draft.locationClues };
+    const npcPrompts = { ...draft.npcPrompts };
+    for (const key of keys) {
+      const [field, id] = key.split(':');
+      const fixed = repaired?.[key];
+      const ok = !!fixed && !leaks(fixed);
+      if (field === 'clue') {
+        locationClues[id] = ok
+          ? fixed
+          : `${getLocalizedLocationLabel(scenarioType, id)} içinde, gözden uzak bir köşede, sahibinin o geceyle ilgili sakladığı bir kayıt duruyor.`;
+      } else {
+        // Rol metninde ad kalırsa adın geçtiği cümleler çıkarılır
+        npcPrompts[id] = ok
+          ? fixed
+          : fields[key]
+              .split(/(?<=[.!?])\s+/)
+              .filter((sentence) => !leaks(sentence))
+              .join(' ');
+      }
+    }
+    return { ...draft, locationClues, npcPrompts };
   }
 
   // Doğrulayan tanık katili görmemiştir. Tanıklık metninde ya da tanığın rolünde katilin adı geçerse

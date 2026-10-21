@@ -16,6 +16,7 @@ import {
   deflectionReply,
   leaksHiddenPrompt,
   looksLikePromptInjection,
+  stripMarkdown,
 } from './prompt-guard';
 import { decideWarrants, isWarrantIssuer, WarrantDecision } from './warrant';
 import {
@@ -469,7 +470,7 @@ export class NpcsService {
 
     // Kanıt etiketleri cevaptan ayıklanır ve deftere işlenir; oyuncu etiketleri hiç görmez
     const extracted = extractEvidenceTags(finalReply);
-    finalReply = extracted.reply;
+    finalReply = stripMarkdown(extracted.reply);
     // İtirafa yapay zekâ değil korku eşiği karar verir: sohbetteki itiraf etiketi sayılmaz,
     // eşik aşıldığında ise itiraf her zaman kaydedilir (Not defterine de düşer)
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);

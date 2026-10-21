@@ -151,4 +151,75 @@ describe('LlmService', () => {
       expect(result.truthReveal).toBe(draft.truthReveal);
     });
   });
+
+  describe('masum metinleri katilin adını söylemez', () => {
+    const plan = {
+      culpritId: 'mill',
+      innocentIds: ['tavern', 'church'],
+      verification: {
+        kind: 'FLAW',
+        placement: { type: 'LOCATION', locationId: 'church' },
+      },
+      involvements: [
+        { npcId: 'tavern', kind: 'UNWITTING_HELP', aboutNpcId: 'mill' },
+        { npcId: 'church', kind: 'WITNESS', aboutNpcId: 'tavern' },
+      ],
+    };
+    const names = { mill: 'AURA-9', tavern: 'Kael Voss', church: 'Mirel Sato' };
+    const draft = {
+      scenario: '',
+      truthReveal: '',
+      culpritId: 'mill',
+      locationClues: {
+        tavern: "AURA-9'a satılan enjektörün satış fişi.",
+        church: 'Boş bir askı.',
+      },
+      npcPrompts: {
+        // Silahı veren alıcıyı bilir: onun rol metni denetlenmez
+        tavern: "Enjektörü AURA-9'a sattın.",
+        church: "Sen Mirel'sin. AURA-9'u o gece gördün. Sırrın: kaçak un.",
+      },
+    };
+    type Repair = (
+      d: unknown,
+      p: unknown,
+      s: string,
+      n: Record<string, string>,
+    ) => Promise<typeof draft>;
+    const runWith = (reply: string) => {
+      const complete = jest.fn().mockResolvedValue({
+        choices: [{ message: { content: reply } }],
+      });
+      Object.assign(service, { complete });
+      const target = service as unknown as { repairInnocentLeaks: Repair };
+      return {
+        complete,
+        result: target.repairInnocentLeaks(draft, plan, 'cyberpunk', names),
+      };
+    };
+
+    it('adı geçen ipucu ve rol metni tek çağrıyla onarılır', async () => {
+      const { complete, result } = runWith(
+        JSON.stringify({
+          'clue:tavern': 'Adı yazılmamış bir alıcıya satılan enjektörün fişi.',
+          'prompt:church':
+            "Sen Mirel'sin. O gece kapüşonlu birini gördün. Sırrın: kaçak un.",
+        }),
+      );
+      const repaired = await result;
+      expect(complete).toHaveBeenCalledTimes(1);
+      expect(repaired.locationClues.tavern).not.toContain('AURA');
+      expect(repaired.npcPrompts.church).toContain('kaçak un');
+      expect(repaired.npcPrompts.tavern).toContain('AURA-9');
+    });
+
+    it('onarım başarısızsa ipucu koddan, rol metni adı geçen cümle çıkarılarak düzelir', async () => {
+      const { result } = runWith('yapamam');
+      const repaired = await result;
+      expect(repaired.locationClues.tavern).not.toContain('AURA');
+      expect(repaired.npcPrompts.church).toBe(
+        "Sen Mirel'sin. Sırrın: kaçak un.",
+      );
+    });
+  });
 });
