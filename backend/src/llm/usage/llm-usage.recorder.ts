@@ -13,7 +13,8 @@ export type LlmCallKind =
   | 'CONTRADICTION_SCAN'
   | 'VERDICT_JUDGE'
   | 'CLUE_REPAIR'
-  | 'WITNESS_REPAIR';
+  | 'WITNESS_REPAIR'
+  | 'STORY_REVIEW';
 
 export interface LlmUsageContext {
   kind: LlmCallKind;

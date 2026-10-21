@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LlmService } from './llm.service';
 import { LlmUsageRecorder } from './usage/llm-usage.recorder';
+import { storyReviewFields } from '../stories/story-review';
+import { CLEAN_REVIEW_CASE } from '../stories/review-fixtures';
 
 describe('LlmService', () => {
   let service: LlmService;
@@ -298,6 +300,51 @@ describe('LlmService', () => {
       const { result } = runWith('yapamam');
       const repaired = await result;
       expect(repaired.alibis.mill).toBe(draft.alibis.clinic);
+    });
+  });
+
+  describe('hikâye hakemi', () => {
+    const fields = storyReviewFields(CLEAN_REVIEW_CASE);
+    const reviewWith = (complete: jest.Mock) => {
+      Object.assign(service, { complete });
+      return service.reviewStory(CLEAN_REVIEW_CASE, fields);
+    };
+
+    it('bulguları okur ve çağrıyı STORY_REVIEW olarak kaydeder', async () => {
+      const complete = jest.fn().mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                issues: [
+                  {
+                    category: 'LOGIC',
+                    severity: 'CERTAIN',
+                    field: 'truthReveal',
+                    quote: 'orakla Marta’nın boğazını kesti',
+                    note: 'Örnek.',
+                  },
+                ],
+              }),
+            },
+          },
+        ],
+      });
+      const issues = await reviewWith(complete);
+      expect(issues).toEqual([
+        expect.objectContaining({ category: 'LOGIC', source: 'JUDGE' }),
+      ]);
+      expect(complete).toHaveBeenCalledWith(
+        expect.anything(),
+        'Story review',
+        90_000,
+        { kind: 'STORY_REVIEW' },
+      );
+    });
+
+    it('çağrı başarısızsa null döner', async () => {
+      const complete = jest.fn().mockRejectedValue(new Error('429'));
+      expect(await reviewWith(complete)).toBeNull();
     });
   });
 });
