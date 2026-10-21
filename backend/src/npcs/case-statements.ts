@@ -80,10 +80,14 @@ export function nameTokens(name: string): string[] {
     .filter((w) => w.length >= 3 && !NAME_TITLES.has(w));
 }
 
-// Metinde karakterin adı geçiyor mu (unvanlar sayılmaz)
+// Metinde karakterin adı geçiyor mu (unvanlar sayılmaz). Ad kelime başında aranır, ekler serbesttir
+// ("Lin'in", "Line"): kelime içinde aransaydı "Lin Feng" adı "bilinen", "gelince" gibi kelimelerde
+// de bulunurdu.
 export const mentions = (reply: string, name: string) => {
   const folded = foldTurkish(reply);
-  return nameTokens(name).some((token) => folded.includes(token));
+  return nameTokens(name).some((token) =>
+    new RegExp(`(^|[^a-z0-9])${token}`).test(folded),
+  );
 };
 
 const timeLabel = (caseFacts: Partial<CaseFacts> | null) =>

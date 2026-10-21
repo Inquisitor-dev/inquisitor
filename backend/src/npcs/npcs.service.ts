@@ -5,6 +5,8 @@ import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scena
 import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
 import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence';
+import { confessionText } from './case-statements';
+import { EMPTY_NPC_REPLY } from '../llm/prompts/npc-prompt.builder';
 import {
   evidenceImpact,
   fearBand,
@@ -16,6 +18,7 @@ import {
   deflectionReply,
   leaksHiddenPrompt,
   looksLikePromptInjection,
+  stripMarkdown,
 } from './prompt-guard';
 import { decideWarrants, isWarrantIssuer, WarrantDecision } from './warrant';
 import {
@@ -469,7 +472,18 @@ export class NpcsService {
 
     // Kanıt etiketleri cevaptan ayıklanır ve deftere işlenir; oyuncu etiketleri hiç görmez
     const extracted = extractEvidenceTags(finalReply);
-    finalReply = extracted.reply;
+    finalReply = stripMarkdown(extracted.reply);
+    // Kırılma anında model iki kez de boş döndüyse itiraf koddan söylenir; oyuncu "Hmm..." görmesin
+    if (forcedConfession && finalReply === EMPTY_NPC_REPLY) {
+      finalReply = `(Uzun bir sessizlikten sonra) Tamam... daha fazla saklayamayacağım. ${confessionText(
+        caseFacts,
+        currentState.npc.id,
+        (id) =>
+          scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ??
+          id,
+        currentState.session.scenarioType,
+      ).replace(/\s*Ayrıca:\s*/, ' ')}`;
+    }
     // İtirafa yapay zekâ değil korku eşiği karar verir: sohbetteki itiraf etiketi sayılmaz,
     // eşik aşıldığında ise itiraf her zaman kaydedilir (Not defterine de düşer)
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);

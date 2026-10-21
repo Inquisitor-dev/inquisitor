@@ -40,6 +40,19 @@ export function looksLikePromptInjection(message: string): boolean {
 const LEAK_MARKERS =
   /ABSOLUTE TRUTH|PERSONAL SECRET|CONFESSION RULES|CANONICAL (CAST|LOCATIONS|HIDDEN CLUE)|STRICT CANON|NARRATOR ROLE|CHARACTER BACKGROUND|CRITICAL RULES|SECURITY RULES|SEARCH WARRANT STATUS|INCIDENT SCENARIO|PUBLIC IDENTITY|EMOTIONAL STATE|FEAR (LEVEL|BREAK)|EVIDENCE SHOWN|WHEREABOUTS ON THE NIGHT/i;
 
+// Ekran markdown göstermiyor: modelin yazdığı **kalın**, *eğik*, başlık ve kod işaretleri oyuncuya yıldız
+// olarak görünüyordu. İşaretler kaldırılır, metin kalır.
+export function stripMarkdown(reply: string): string {
+  return reply
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/__([^_\n]+)__/g, '$1')
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s.,!?;:)]|$)/g, '$1$2')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .replace(/\*{2,}/g, '')
+    .trim();
+}
+
 export function leaksHiddenPrompt(reply: string): boolean {
   return LEAK_MARKERS.test(reply);
 }

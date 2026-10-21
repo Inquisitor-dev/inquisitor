@@ -6,14 +6,19 @@ import {
 } from '../scenarios/scenario-config';
 import { MOTIVE_LABELS, WEAPONS } from '../scenarios/case-catalog';
 import {
+  buildAlibiAlignPrompt,
   buildClueRepairPrompt,
   buildTraceRepairPrompt,
   culpritClueGivesAway,
+  parseAlibiAlign,
   parseClueRepair,
+  placesIn,
   traceMissesFramed,
 } from './prompts/clue-repair-prompt.builder';
 import {
+  buildLeakRepairPrompt,
   buildWitnessRepairPrompt,
+  parseLeakRepair,
   parseWitnessRepair,
 } from './prompts/witness-repair-prompt.builder';
 import { mentions } from '../npcs/case-statements';
@@ -108,7 +113,21 @@ export class LlmService {
         usage,
       );
 
-      const responseText = response?.choices?.[0]?.message?.content || '';
+      let responseText = response?.choices?.[0]?.message?.content || '';
+      // Model bazen hiç metin döndürmüyor (çoğunlukla kırılma ve itiraf sahnelerinde güvenlik filtresi):
+      // bir kez daha denenir, yoksa cevap "Hmm..." olarak kalıyordu
+      if (!responseText.trim()) {
+        this.logger.warn(
+          `Empty reply for NPC ${npcName} (finish: ${response?.choices?.[0]?.finish_reason}); retrying once.`,
+        );
+        const retry = await this.complete(
+          { messages, temperature: 0.9 },
+          `NPC ${npcName} retry`,
+          30_000,
+          usage,
+        );
+        responseText = retry?.choices?.[0]?.message?.content || '';
+      }
       this.logger.log(`Gemini raw response: ${responseText.slice(0, 200)}`);
 
       const reply = parseNpcReply(responseText, (msg) => this.logger.warn(msg));
@@ -200,8 +219,22 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      return await this.repairWitnessLeak(
+      const witnessRepaired = await this.repairWitnessLeak(
         traceRepaired,
+        plan,
+        scenarioType,
+        npcNames,
+        sessionId,
+      );
+      const leaksRepaired = await this.repairInnocentLeaks(
+        witnessRepaired,
+        plan,
+        scenarioType,
+        npcNames,
+        sessionId,
+      );
+      return await this.repairAlibiPlaces(
+        leaksRepaired,
         plan,
         scenarioType,
         npcNames,
@@ -361,6 +394,186 @@ export class LlmService {
         crime_scene: `${clue} Yakınında ${extra} ile bağlantılı bir işaret de seçiliyor.`,
       },
     };
+  }
+
+  // Tamamen masum eşler aynı yeri söyler. İkisinin mazeretinde geçen mekânlar ayrışıyorsa ikincinin
+  // mazereti ve mekân ipucu ilkinin yerine göre onarılır; olmazsa ilkinin mazereti ikisine de verilir.
+  private async repairAlibiPlaces(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const alibis = { ...(draft.alibis ?? {}) };
+    const locationClues = { ...draft.locationClues };
+    const labels = Object.fromEntries(
+      Object.keys(npcNames).map((id) => [
+        id,
+        getLocalizedLocationLabel(scenarioType, id),
+      ]),
+    );
+    const done = new Set<string>();
+    let changed = false;
+    // Karakter adları mekân sayılmasın ("Değirmenci Giles" değirmen değildir)
+    const withoutNames = (text: string) =>
+      Object.values(npcNames).reduce(
+        (acc, name) => acc.split(name).join(' '),
+        text,
+      );
+    const placesOf = (text: string) =>
+      placesIn(withoutNames(text), labels, mentions);
+
+    for (const inv of plan.involvements ?? []) {
+      if (inv.kind !== 'NONE' || !inv.aboutNpcId) continue;
+      const anchorId = inv.npcId;
+      const partnerId = inv.aboutNpcId;
+      const key = [anchorId, partnerId].sort().join('|');
+      if (done.has(key)) continue;
+      done.add(key);
+      const anchorAlibi = alibis[anchorId];
+      const partnerAlibi = alibis[partnerId];
+      if (!anchorAlibi || !partnerAlibi) continue;
+      const anchorPlaces = placesOf(anchorAlibi);
+      const partnerPlaces = placesOf(partnerAlibi);
+      const conflict =
+        anchorPlaces.size > 0 &&
+        partnerPlaces.size > 0 &&
+        ![...partnerPlaces].some((p) => anchorPlaces.has(p));
+      if (!conflict) continue;
+
+      const placeId = [...anchorPlaces][0];
+      this.logger.warn(
+        `Alibi partners name different places (${anchorId}: ${[...anchorPlaces].join(',')}, ${partnerId}: ${[...partnerPlaces].join(',')}); aligning.`,
+      );
+      let aligned: { alibi: string; clue: string } | null = null;
+      try {
+        const response = await this.complete(
+          {
+            messages: [
+              {
+                role: 'user',
+                content: buildAlibiAlignPrompt({
+                  scenarioType,
+                  anchorName: npcNames[anchorId] ?? anchorId,
+                  anchorAlibi,
+                  place: labels[placeId],
+                  partnerName: npcNames[partnerId] ?? partnerId,
+                  partnerAlibi,
+                  partnerClue: locationClues[partnerId] ?? '',
+                }),
+              },
+            ],
+            temperature: 0.3,
+          },
+          'Alibi place repair',
+          30_000,
+          { kind: 'CLUE_REPAIR', sessionId },
+        );
+        aligned = parseAlibiAlign(
+          response?.choices?.[0]?.message?.content || '',
+        );
+      } catch (error) {
+        this.logger.warn(`Alibi place repair failed. ${error}`);
+      }
+      changed = true;
+      if (aligned && placesOf(aligned.alibi).has(placeId)) {
+        alibis[partnerId] = aligned.alibi;
+        locationClues[partnerId] = aligned.clue;
+      } else {
+        // İlkinin mazereti iki adı da içerir; ikisinde de aynı yer ve iş geçer
+        alibis[partnerId] = anchorAlibi;
+      }
+    }
+    return changed ? { ...draft, alibis, locationClues } : draft;
+  }
+
+  // Masumların mekân ipuçları ve rol metinleri katilin adını söylemez. Silahı bilmeden veren aleti kime
+  // verdiğini bilir (itirafı koddan söyler), o yüzden onun rol metni denetlenmez; doğrulayan tanığın rol
+  // metni repairWitnessLeak'te denetlenir. Onarım da adı söylerse ipucu koddan sade bir notla değişir.
+  private async repairInnocentLeaks(
+    draft: ScenarioDraft,
+    plan: CasePlan,
+    scenarioType: string,
+    npcNames: Record<string, string>,
+    sessionId?: string,
+  ): Promise<ScenarioDraft> {
+    const culpritName = npcNames[plan.culpritId] ?? plan.culpritId;
+    const leaks = (text: string | undefined) =>
+      !!text && mentions(text, culpritName);
+    const { placement } = plan.verification;
+    const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
+    const kindOf = (id: string) =>
+      plan.involvements?.find((i) => i.npcId === id)?.kind;
+
+    const fields: Record<string, string> = {};
+    for (const id of plan.innocentIds) {
+      const clue = draft.locationClues?.[id];
+      if (leaks(clue)) fields[`clue:${id}`] = clue;
+      const prompt = draft.npcPrompts?.[id];
+      if (
+        id !== witnessId &&
+        kindOf(id) !== 'UNWITTING_HELP' &&
+        leaks(prompt)
+      ) {
+        fields[`prompt:${id}`] = prompt;
+      }
+    }
+    const keys = Object.keys(fields);
+    if (keys.length === 0) return draft;
+
+    this.logger.warn(
+      `Innocent texts name the culprit, repairing: ${keys.join(', ')}`,
+    );
+    let repaired: Record<string, string> | null = null;
+    try {
+      const response = await this.complete(
+        {
+          messages: [
+            {
+              role: 'user',
+              content: buildLeakRepairPrompt({
+                scenarioType,
+                culpritName,
+                fields,
+              }),
+            },
+          ],
+          temperature: 0.3,
+        },
+        'Innocent leak repair',
+        30_000,
+        { kind: 'WITNESS_REPAIR', sessionId },
+      );
+      repaired = parseLeakRepair(
+        response?.choices?.[0]?.message?.content || '',
+        keys,
+      );
+    } catch (error) {
+      this.logger.warn(`Innocent leak repair failed. ${error}`);
+    }
+
+    const locationClues = { ...draft.locationClues };
+    const npcPrompts = { ...draft.npcPrompts };
+    for (const key of keys) {
+      const [field, id] = key.split(':');
+      const fixed = repaired?.[key];
+      const ok = !!fixed && !leaks(fixed);
+      if (field === 'clue') {
+        locationClues[id] = ok
+          ? fixed
+          : `${getLocalizedLocationLabel(scenarioType, id)} içinde, gözden uzak bir köşede, sahibinin o geceyle ilgili sakladığı bir kayıt duruyor.`;
+      } else {
+        // Rol metninde ad kalırsa adın geçtiği cümleler çıkarılır
+        npcPrompts[id] = ok
+          ? fixed
+          : fields[key]
+              .split(/(?<=[.!?])\s+/)
+              .filter((sentence) => !leaks(sentence))
+              .join(' ');
+      }
+    }
+    return { ...draft, locationClues, npcPrompts };
   }
 
   // Doğrulayan tanık katili görmemiştir. Tanıklık metninde ya da tanığın rolünde katilin adı geçerse
