@@ -3,6 +3,7 @@ import {
   buildTraceRepairPrompt,
   culpritClueGivesAway,
   parseClueRepair,
+  placesIn,
   traceMissesFramed,
 } from './clue-repair-prompt.builder';
 import { mentions } from '../../npcs/case-statements';
@@ -89,5 +90,23 @@ describe('tuzak iz denetimi', () => {
     });
     expect(prompt).toContain('AURA-9 (Tamirhane) and Mirel Sato (Lokanta)');
     expect(prompt).toContain('Never name the murderer');
+  });
+});
+
+describe('mazeretteki mekânlar', () => {
+  const labels = {
+    clinic: 'Revir',
+    mill: 'Değirmen',
+    farm: 'Sokak Pazarı',
+  };
+  it('mekân adı kelime başında geçiyorsa sayılır; çok kelimeli adın hepsi gerekir', () => {
+    expect([
+      ...placesIn('Revirin arka odasındaydık.', labels, mentions),
+    ]).toEqual(['clinic']);
+    expect([
+      ...placesIn("Sokak Pazarı'nda hesap yaptık.", labels, mentions),
+    ]).toEqual(['farm']);
+    // Yalnız "sokak" yetmez
+    expect(placesIn('Sokakta yürüyordum.', labels, mentions).size).toBe(0);
   });
 });
