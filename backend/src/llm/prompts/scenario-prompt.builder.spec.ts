@@ -92,6 +92,9 @@ describe('Vaka Motoru v2 vaka özeti', () => {
 
   it('her masumun cinayetle bağını o masuma yazdırır', () => {
     expect(brief).toContain('HELPED WITHOUT KNOWING');
+    // Silahı veren kime verdiğini bilir; yalnızca yazılı kayıtta alıcının adı yoktur
+    expect(brief).toContain('They know very well whom they gave it to');
+    expect(brief).toContain("without the other person's name");
     expect(brief).toContain('SCAVENGER');
     expect(brief).toContain('FULLY INNOCENT');
     // Doğrulayan tanığın kendi satırı zaten var; bağ listesinde tekrar edilmez
