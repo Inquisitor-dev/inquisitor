@@ -50,6 +50,11 @@ import {
   parseScenarioDraft,
   mergeScenarioDraftWithFallback,
 } from './prompts/scenario-prompt.builder';
+import {
+  buildStoryReviewPrompt,
+  parseStoryReview,
+} from './prompts/story-review-prompt.builder';
+import type { StoryIssue, StoryReviewInput } from '../stories/story-review';
 
 export type { ScenarioDraft };
 
@@ -771,6 +776,33 @@ export class LlmService {
       return parseContradictions(text, replies);
     } catch (error) {
       this.logger.warn(`Contradiction scan failed. ${error}`);
+      return null;
+    }
+  }
+
+  // Hikâye hakemi: havuza girecek vakanın metinlerindeki kaymalar; başarısızlıkta null.
+  // stories/story-review.ts reviewStory'ye StoryJudge olarak verilir.
+  async reviewStory(
+    input: StoryReviewInput,
+    fields: Record<string, string>,
+  ): Promise<StoryIssue[] | null> {
+    const prompt = buildStoryReviewPrompt(input, fields);
+
+    try {
+      const response = await this.complete(
+        { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
+        'Story review',
+        90_000,
+        { kind: 'STORY_REVIEW' },
+      );
+      const issues = parseStoryReview(
+        response?.choices?.[0]?.message?.content || '',
+        fields,
+      );
+      if (!issues) this.logger.warn('Story review returned unreadable JSON.');
+      return issues;
+    } catch (error) {
+      this.logger.warn(`Story review failed. ${error}`);
       return null;
     }
   }
