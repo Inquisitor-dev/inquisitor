@@ -217,6 +217,8 @@ YOUR TASK:
    - Each innocent NPC's secret must make them look suspicious AND be their alibi (see ALIBIS). When they confess the secret, it clears them of the murder.
    - Include any VERIFYING EVIDENCE testimony in the right NPC's prompt.
    - Every dynamic prompt must preserve that NPC's public identity exactly. Do NOT rename them, do NOT change their profession, and do NOT move them to another workplace.
+   - A dynamic prompt describes what the character did, knows and hides. It never tells them when or whether to confess ("you will confess after questioning"): the game decides when anyone breaks.
+   - No innocent's dynamic prompt and no innocent's location clue names or hints at the culprit. Whoever gave, sold or lent the culprit something did not write the buyer's name down (for example "a hooded buyer"); only their confession, which the game handles, says who it was.
 
 CRITICAL RULE:
 The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the village and its atmosphere. Never put English words or game terms (such as tidy, messy, hurried, planned) in Turkish text.
@@ -293,7 +295,7 @@ CONTINUITY RULES:
 4. Ensure every canonical location has exactly one location clue.
 5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
 6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense. Remove any hidden, planted or stolen item from truthReveal that is not in 'locationClues' (for example "he also hid a chip at the bar" when the bar's clue is something else).
-6c. Only the culprit knows who the culprit is. No innocent's npcPrompt and no "verificationText" may name or hint at the culprit; a witness who saw the act did not see who it was.
+6c. Only the culprit knows who the culprit is. No innocent's npcPrompt, no innocent's location clue and no "verificationText" may name or hint at the culprit; a witness who saw the act did not see who it was, and a record of a sale or loan does not show the buyer's name. No npcPrompt tells the character to confess.
 6a. Each INNOCENT's location clue must prove that innocent's own alibi secret, at the same place and time as the alibi. If a clue places them somewhere else or doing something else at the time of death, rewrite the clue to match the alibi. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
 6b. The 'scenario' hook must not reveal how orderly or messy the crime scene is, or whether the murder looks panicked or planned. Remove such sentences.
 6c. No English words or game terms (tidy, messy, hurried, planned) in Turkish text.

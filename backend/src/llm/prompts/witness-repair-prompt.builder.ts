@@ -56,3 +56,44 @@ export function parseWitnessRepair(
     return null;
   }
 }
+
+// Masumların mekân ipuçları ve rol metinleri de katili adıyla söylememeli: silahı bilmeden verenin
+// ipucu "AURA-9'a satılan enjektörün fişi" diyordu ve tek arama izni vakayı bitiriyordu. Ad geçen
+// alanların hepsi tek çağrıyla onarılır; anahtarlar aynen geri döner.
+export function buildLeakRepairPrompt(input: {
+  scenarioType: string;
+  culpritName: string;
+  fields: Record<string, string>;
+}): string {
+  const setting = getScenarioConfig(input.scenarioType).settingLabel;
+  return `You are a continuity editor for a detective game (setting: ${setting}).
+
+These texts belong to INNOCENT characters (their hidden location clues and their role instructions). They wrongly name the murderer, ${input.culpritName}, so the player could solve the case without any reasoning.
+
+${JSON.stringify(input.fields, null, 2)}
+
+Rewrite each text so that it no longer names or hints at ${input.culpritName} (name, job, uniform, kind, looks). Keep its object, place, hiding spot, meaning and everything else. Where a person must appear, use an unnamed one (for example "a buyer whose name was not written down", "a hooded customer"). The role texts may keep everything the character really knows, only without the murderer's identity.
+Correct Turkish spelling with all special characters.
+
+Return only JSON with exactly the same keys and the rewritten texts.`;
+}
+
+export function parseLeakRepair(
+  text: string,
+  keys: string[],
+): Record<string, string> | null {
+  const match = /\{[\s\S]*\}/.exec(text);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+    const result: Record<string, string> = {};
+    for (const key of keys) {
+      const value = parsed[key];
+      if (typeof value !== 'string' || !value.trim()) return null;
+      result[key] = value.trim();
+    }
+    return result;
+  } catch {
+    return null;
+  }
+}

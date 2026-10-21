@@ -1,4 +1,5 @@
 import {
+  stripMarkdown,
   deflectionReply,
   leaksHiddenPrompt,
   looksLikePromptInjection,
@@ -61,5 +62,18 @@ describe('deflectionReply', () => {
 
   it('anlatıcı için mekân dili kullanır', () => {
     expect(deflectionReply('Anlatıcı', true)).not.toContain('Anlatıcı');
+  });
+});
+
+describe('stripMarkdown', () => {
+  it('kalın, eğik, başlık ve kod işaretlerini kaldırır, metni bırakır', () => {
+    expect(stripMarkdown("**Klinik**'teydim, *gerçekten* oradaydım.")).toBe(
+      "Klinik'teydim, gerçekten oradaydım.",
+    );
+    expect(stripMarkdown('## Not\n`kod` ve __alt__')).toBe('Not\nkod ve alt');
+  });
+
+  it('yalnız yıldızları ve çarpı gibi kullanımları bozmaz', () => {
+    expect(stripMarkdown('2 * 3 eşittir 6')).toBe('2 * 3 eşittir 6');
   });
 });
