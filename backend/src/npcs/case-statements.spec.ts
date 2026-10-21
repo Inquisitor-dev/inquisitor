@@ -154,7 +154,10 @@ describe('Vaka Motoru v2 ifadeleri', () => {
     );
     expect(lines).toContain('YOUR PART IN THE CASE');
     expect(lines).toContain('Çiftçi Edmund benimleydi');
-    expect(lines).toContain('If you ever confess');
+    expect(lines).toContain(
+      'only when the instruction at the end says you break',
+    );
+    expect(lines).not.toContain('exactly as here');
     expect(lines).toContain('[STATEMENT_GIVEN]');
     expect(linkPromptLines(facts, 'mill', nameOf, 'medieval', 'X')).toBe('');
   });
@@ -173,6 +176,20 @@ describe('Vaka Motoru v2 ifadeleri', () => {
     expect(impact('TESTIMONY', 'graveyard', 'mill')).toBe('IRRELEVANT');
     expect(impact('TESTIMONY', 'church', 'mill')).toBe('IRRELEVANT');
     expect(impact('ALIBI', 'tavern', 'farm')).toBe('IRRELEVANT');
+  });
+});
+
+describe('tanık ve son konuşan: yer koddan, ipucu yok', () => {
+  it('kısmi tanık gördüğü kişiyi o kişinin anlattığı yerde gördüğünü bilir', () => {
+    const lines = linkPromptLines(facts, 'church', nameOf, 'medieval', 'X');
+    expect(lines).toContain('Where exactly you saw Kardeş Aldric');
+    expect(lines).toContain('Hancı mahzendeydi.');
+  });
+
+  it('son konuşan kurbanın kimden korktuğunu tarif etmez', () => {
+    const lines = linkPromptLines(facts, 'graveyard', nameOf, 'medieval', 'X');
+    expect(lines).toContain('You do not know who the victim was afraid of');
+    expect(lines).toContain('no name, job, kind');
   });
 });
 

@@ -80,7 +80,8 @@ export function nameTokens(name: string): string[] {
     .filter((w) => w.length >= 3 && !NAME_TITLES.has(w));
 }
 
-const mentions = (reply: string, name: string) => {
+// Metinde karakterin adı geçiyor mu (unvanlar sayılmaz)
+export const mentions = (reply: string, name: string) => {
   const folded = foldTurkish(reply);
   return nameTokens(name).some((token) => folded.includes(token));
 };
@@ -189,32 +190,55 @@ export function linkPromptLines(
 ): string {
   // Hazır cümle kelimesi kelimesine kopyalanıp alakasız bir soruya eklenebiliyor (Gemini testinde görüldü):
   // ne zaman söyleneceği ve kendi sözleriyle söyleneceği açıkça yazılır
+  const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
   const lines = linkStatements(caseFacts, npcId, nameOf).map((s) =>
     s.kind === 'ALIBI'
       ? `- ONLY when the Inquisitor asks where someone was that night, you confirm it in your own words (meaning: ${s.text}).`
       : `- ONLY when the Inquisitor asks about that night, the murder location or the victim, you tell this in your own words (meaning: ${s.text}).`,
   );
+  // Kısmi tanık gördüğü kişiyi, o kişinin kendi anlattığı yerde gördü. Yer koddan verilir: yapay zekâ
+  // yeri yazmayınca tanık "başka bir sokakta" ya da "kendi alibisini koruduğu bölgede" diyordu.
+  if (
+    own?.kind === 'WITNESS' &&
+    own.aboutNpcId &&
+    own.aboutNpcId !== caseFacts?.culpritId
+  ) {
+    const where = caseFacts?.alibis?.[own.aboutNpcId];
+    if (where) {
+      lines.push(
+        `- Where exactly you saw ${nameOf(own.aboutNpcId)}: at the place described in this account of their night (retell only the place and what they were doing, in your own words): ${where}`,
+      );
+    }
+  }
+  // Son konuşan kurbanın kimden korktuğunu bilmez: "otonom bir tehdit" gibi bir tarif katili ele veriyordu
+  if (own?.kind === 'LAST_CONVERSATION') {
+    lines.push(
+      '- You do not know who the victim was afraid of. Never describe or hint at that person: no name, job, kind (human, android, cyborg…), looks or place.',
+    );
+  }
   if (lines.length > 0) {
     lines.push(
       '- Never bring these up on your own or in answer to an unrelated question, and never repeat the sentence in brackets word for word.',
     );
   }
-  const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
   // Tamamen masum ve onu doğrulayan aynı yeri ve aynı işi anlatsın; yoksa ikisi farklı yer uydurur
-  // ve oyuncu bunu yalan sanır (Gemini testinde görüldü)
-  const sharedAlibis = [
-    ...(own?.kind === 'NONE' ? [own] : []),
-    ...(caseFacts?.involvements ?? []).filter(
-      (i) => i.kind === 'NONE' && i.aboutNpcId === npcId,
-    ),
-  ];
-  for (const inv of sharedAlibis) {
+  // ve oyuncu bunu yalan sanır (Gemini testinde görüldü). Mazeret cümlesi diğer kişinin ağzından
+  // yazılmış olabilir: karakter onu kendi gözünden anlatır, kelimesi kelimesine tekrarlamaz
+  // (aksi hâlde başkasının "dükkânımda çorba kaynatıyordum" cümlesini kendi mazereti gibi söylüyordu).
+  const partners = new Map<string, string>();
+  if (own?.kind === 'NONE' && own.aboutNpcId) {
+    const alibi = caseFacts?.alibis?.[npcId];
+    if (alibi) partners.set(own.aboutNpcId, alibi);
+  }
+  for (const inv of caseFacts?.involvements ?? []) {
+    if (inv.kind !== 'NONE' || inv.aboutNpcId !== npcId) continue;
     const alibi = caseFacts?.alibis?.[inv.npcId];
-    if (alibi) {
-      lines.push(
-        `- That night ${nameOf(inv.npcId)} and ${nameOf(inv.aboutNpcId ?? '')} were together. Both of you tell the same place and activity, exactly as here: ${alibi}`,
-      );
-    }
+    if (alibi && !partners.has(inv.npcId)) partners.set(inv.npcId, alibi);
+  }
+  for (const [partnerId, alibi] of partners) {
+    lines.push(
+      `- That night you and ${nameOf(partnerId)} were together, at the same place doing the same thing. Here is that account (it may be in someone else's words; it is a summary, never a sentence to repeat): ${alibi} Tell it from your own point of view, in your own words, and only when asked about that night.`,
+    );
   }
   if (own?.kind === 'UNWITTING_HELP' || own?.kind === 'SCAVENGER') {
     const extra = confessionText(
@@ -224,7 +248,7 @@ export function linkPromptLines(
       scenarioType,
     ).replace(caseFacts?.alibis?.[npcId] ?? '', '');
     lines.push(
-      `- You hide this until you break. If you ever confess, you also say:${extra.replace(/^\s*Ayrıca:/, '')}`,
+      `- You hide this until you break. Never mention it in conversation, whatever the Inquisitor says; only when the instruction at the end says you break, you also say:${extra.replace(/^\s*Ayrıca:/, '')}`,
     );
   }
   if (lines.length === 0) return '';

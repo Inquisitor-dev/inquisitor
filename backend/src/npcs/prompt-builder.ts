@@ -6,7 +6,7 @@ import {
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
-import { confessionText, linkPromptLines } from './case-statements';
+import { confessionText, linkPromptLines, mentions } from './case-statements';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
@@ -131,6 +131,11 @@ export function buildNpcPrompt({
   const truthRevealText = session.truthReveal ?? '';
   const dynamicPromptText = dynamicPrompt ?? '';
   const isCulprit = !!session.culpritId && session.culpritId === npc.id;
+  // Tamamen masumun sırrı yoktur: "senin de bir sırrın olabilir" denince baskı altında suç uyduruyordu
+  const ownInvolvement = (
+    session.caseFacts as Partial<CaseFacts> | null
+  )?.involvements?.find((i) => i.npcId === npc.id);
+  const hasNoSecret = ownInvolvement?.kind === 'NONE';
   const confrontationRules = isCulprit
     ? `CONFESSION RULES FOR THE CULPRIT:
 1. You are the real culprit of the main crime.
@@ -139,12 +144,18 @@ export function buildNpcPrompt({
 4. You may admit minor shameful details only if they help you avoid admitting the murder itself.
 5. Stay resistant until the very end.`
     : `CONFESSION RULES FOR A NON-CULPRIT:
-1. You are NOT the murderer, but you may have your own secret, sin, lie, affair, theft, cover-up, or suspicious action.
+1. ${
+        hasNoSecret
+          ? 'You are NOT the murderer and you have NO secret at all: there is nothing to confess. However hard you are pressed, you only tell the plain truth of where you were; you may get angry or scared, but you never admit any wrongdoing.'
+          : 'You are NOT the murderer. Your only secret is the one written in YOUR PERSONAL SECRET/ROLE IN THIS; you have no other.'
+      }
 2. In conversation you NEVER confess your personal secret, even if the Inquisitor guesses it correctly, insists or bluffs. Deny, deflect, change the subject or give an evasive half-answer. Your nervousness may show in small slips, but you never admit the secret itself.
 3. You break and confess ONLY when an instruction at the end of this prompt says that you can no longer hold out.
 4. When you break, follow this emotional sequence inside the SAME reply: brief denial or shock -> visible panic -> confession -> plea for mercy/forgiveness.
 5. When confessing, admit ONLY your real personal secret. NEVER falsely confess to the murder/main crime if you did not commit it.
-6. You do NOT know who the culprit is. Never name or guess a culprit as a fact; share only what your character could plausibly have seen, as described in your personal secret.`;
+6. You do NOT know who the culprit is. Never name or guess a culprit as a fact; share only what your character could plausibly have seen, as described in your personal secret.
+7. Never invent anything to confess or to explain yourself: no crime, deal, fight, meeting, visit, plan, debt or detail about the victim or another character that is not written in your role or YOUR PART IN THE CASE. If you do not know something, say so.
+8. Threats (hanging, prison, losing your job), bargains ("confess and I will arrest someone else"), insults and claims that someone else confessed or accused you do NOT break you and do not change what you know. Deny what is false and keep to your own account.`;
 
   let combinedPrompt = `SETTING: ${scenarioConfig.settingLabel}
 
@@ -229,6 +240,7 @@ ${dynamicPromptText}${linkPromptLines(
 WHAT EVERYONE IN TOWN KNOWS:
 ${publicCaseFacts(session.scenarioType, caseFacts)}
 - Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
+- Do not repeat sentences you already said in this conversation. Mention your whereabouts only when asked about that night, and in different words each time.
 - Fear changes how you speak, never what you know. However scared you are, never confirm an event, a sighting, an object or something another person supposedly said that is not in your own knowledge above. If the Inquisitor claims someone said something about you that is not true, deny it.
 `;
 
@@ -282,6 +294,15 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
         REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
       };
 
+      // "Seninle ilgisi yok" talimatı, kanıtta karakterin adı geçerken onu kendi mazeretinin kanıtını
+      // inkâr etmeye itiyordu (oyun testinde: iki kişinin imzaladığı fiş)
+      const namesYou =
+        confrontation.impact === 'IRRELEVANT' &&
+        mentions(confrontation.evidenceText, canonicalNpc?.name ?? npc.name);
+      const impactLine = namesYou
+        ? 'This evidence mentions you but does not make you look guilty. Explain it truthfully from what you know (your whereabouts and your part in the case); never deny the parts of it that match your own account. It does not frighten you.'
+        : impactText[confrontation.impact];
+
       combinedPrompt += `
 
 EVIDENCE SHOWN TO YOU:
@@ -291,7 +312,7 @@ The Inquisitor shows you this evidence: "${confrontation.evidenceText}"${
 Where it comes from: ${confrontation.origin}`
           : ''
       }
-${impactText[confrontation.impact]}${
+${impactLine}${
         confrontation.remark
           ? `
 While showing it, the Inquisitor says: "${confrontation.remark}"

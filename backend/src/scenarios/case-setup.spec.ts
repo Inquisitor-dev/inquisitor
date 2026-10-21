@@ -259,6 +259,11 @@ describe('Vaka Motoru v2 planı', () => {
       }
       // Bağın ilgili olduğu kişi kendisi değil
       for (const x of involvements) expect(x.aboutNpcId).not.toBe(x.npcId);
+      // İki tamamen masum birbirinin eşidir; zincir kurulmaz (A, B ile; C, A ile)
+      if (none.length === 2) {
+        expect(none[0].aboutNpcId).toBe(none[1].npcId);
+        expect(none[1].aboutNpcId).toBe(none[0].npcId);
+      }
       // Silah evrenin kataloğundan; aceleyle işlenen cinayette hazırlık isteyen silah yok
       const weapon = WEAPONS.modern.find((w) => w.id === plan.weaponId)!;
       expect(weapon).toBeDefined();

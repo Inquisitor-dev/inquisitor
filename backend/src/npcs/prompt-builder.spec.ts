@@ -313,6 +313,60 @@ describe('prompt-builder domain', () => {
       );
     });
 
+    it('tamamen masumun sırrı yoktur; baskı, tehdit ve pazarlık kimseyi itiraf ettirmez', () => {
+      const session = {
+        ...baseSession,
+        caseFacts: {
+          ...baseSession.caseFacts,
+          involvements: [
+            { npcId: 'tavern', kind: 'NONE' as const, aboutNpcId: 'mill' },
+          ],
+        },
+      };
+      const prompt = buildNpcPrompt({
+        scenarioConfig: config,
+        session,
+        npc: {
+          id: 'tavern',
+          name: 'Aldric',
+          description: 'Hancı',
+          basePrompt: '',
+        },
+        fearLevel: 2,
+        hasConfessed: false,
+      });
+      expect(prompt).toContain('you have NO secret at all');
+      expect(prompt).not.toContain('you may have your own secret');
+      expect(prompt).toContain('Never invent anything to confess');
+      expect(prompt).toContain('Threats (hanging, prison');
+      expect(prompt).toContain('Do not repeat sentences you already said');
+    });
+
+    it('adı geçen ama onu suçlamayan kanıtı karakter inkâr etmez', () => {
+      const tavern = {
+        id: 'tavern',
+        name: 'Aldric',
+        description: 'Hancı',
+        basePrompt: '',
+      };
+      const promptFor = (evidenceText: string) =>
+        buildNpcPrompt({
+          scenarioConfig: config,
+          session: baseSession,
+          npc: tavern,
+          fearLevel: 1,
+          hasConfessed: false,
+          confrontation: { evidenceText, impact: 'IRRELEVANT' },
+        });
+      const named = promptFor(
+        `Değirmenin defterinde ${config.npcDefinitions.find((n) => n.id === 'tavern')!.name} ile değirmencinin imzası var.`,
+      );
+      expect(named).toContain('This evidence mentions you');
+      expect(named).not.toContain('This evidence has nothing to do with you');
+      const unnamed = promptFor('Değirmende bir un çuvalı.');
+      expect(unnamed).toContain('This evidence has nothing to do with you');
+    });
+
     it('katile kanıt yine onu gösteren kanıt olarak sunulur', () => {
       const church = {
         id: 'church',
