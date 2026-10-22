@@ -2,6 +2,7 @@ import {
   StoryIssue,
   decideStoryReview,
   findInternalIds,
+  findMissingDiacritics,
   quoteIn,
   reviewStory,
   storyReviewFields,
@@ -64,6 +65,33 @@ describe('findInternalIds', () => {
     expect(
       findInternalIds({ a: 'Millfield kasabası, farmasötik bir koku.' }),
     ).toEqual([]);
+  });
+});
+
+describe('findMissingDiacritics', () => {
+  it('temiz vakada bulgu çıkmaz', () => {
+    expect(findMissingDiacritics(storyReviewFields(CLEAN_REVIEW_CASE))).toEqual(
+      [],
+    );
+  });
+
+  it('harfleri eksik yazılmış sık kelimeleri şüphe olarak işaretler', () => {
+    const issues = findMissingDiacritics({
+      a: 'Saklayacak bir seyin yok, cunku hicbir sucun yok.',
+      b: 'uzun boylu, koyu renk deri ceketli biri',
+      c: 'Sen Randy Kowalski’sin, Pixel Arcade’in sahibisin.',
+    });
+    expect(issues.map((i) => [i.field, i.quote, i.severity])).toEqual([
+      ['a', 'seyin', 'DOUBT'],
+      ['a', 'cunku', 'DOUBT'],
+      ['a', 'hicbir', 'DOUBT'],
+    ]);
+  });
+
+  it('kelimenin parçasını saymaz', () => {
+    expect(findMissingDiacritics({ a: 'Kocaman bir hiçlik, sicim.' })).toEqual(
+      [],
+    );
   });
 });
 
@@ -149,7 +177,11 @@ describe('review-fixtures', () => {
 
   it('kodun yakalaması gereken bozuk vakaları kod yakalar', () => {
     for (const fixture of REVIEW_FIXTURES.filter((f) => f.codeOnly)) {
-      const found = findInternalIds(storyReviewFields(fixture.input));
+      const fields = storyReviewFields(fixture.input);
+      const found = [
+        ...findInternalIds(fields),
+        ...findMissingDiacritics(fields),
+      ];
       expect(found.map((i) => i.field)).toContain(fixture.field);
     }
   });

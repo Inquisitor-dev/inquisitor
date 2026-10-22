@@ -10,6 +10,7 @@ import {
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
+import { buildCaseFacts } from './case-facts';
 import { startingFear } from '../npcs/fear';
 import {
   CASE_DAYS,
@@ -85,7 +86,7 @@ export class GameSessionsService {
           sessionId,
         );
     const { scenario, truthReveal, npcPrompts, locationClues } = draft;
-    const caseFacts = this.buildCaseFacts(plan, draft);
+    const caseFacts = buildCaseFacts(plan, draft);
 
     this.logger.log(`Scenario generated. Culprit is confirmed: ${culpritId}`);
 
@@ -141,20 +142,6 @@ export class GameSessionsService {
 
     this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
     return toPublicSession(session);
-  }
-
-  // Vaka gerçekleri: kodun planı + yapay zekânın yazdığı ayrıntılar. Kanıt Defteri ve
-  // Hüküm Dosyası bu kayda göre çalışacak; aktif oturumda oyuncuya gönderilmez.
-  private buildCaseFacts(plan: CasePlan, draft: ScenarioDraft): CaseFacts {
-    return {
-      ...plan,
-      version: 1,
-      crimeSceneClueText: draft.locationClues?.crime_scene ?? plan.crimeSceneClue.poolClueText ?? '',
-      verificationText: draft.verificationText ?? '',
-      victim: draft.victim ?? { name: '', profession: '' },
-      alibis: Object.fromEntries(plan.innocentIds.map((id) => [id, draft.alibis?.[id] ?? ''])),
-      witnessDescription: draft.witnessDescription,
-    };
   }
 
   // Test modu: yapay zekâ çağrılmadan, plana uyan yer tutucu bir vaka kurar

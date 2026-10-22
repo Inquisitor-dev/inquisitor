@@ -113,6 +113,40 @@ describe('parseStoryReview', () => {
     );
   });
 
+  it('gerçek metni bulgusu kesin denmiş olsa da şüphe sayılır', () => {
+    expect(
+      parseStoryReview(
+        reply([
+          {
+            category: 'TRUTH',
+            severity: 'CERTAIN',
+            field: 'truthReveal',
+            quote: 'Giles',
+            note: 'Not.',
+          },
+        ]),
+        fields,
+      ),
+    ).toEqual([expect.objectContaining({ severity: 'DOUBT' })]);
+  });
+
+  it('çalışma kâğıdı bozuksa sondaki bulgu listesini yine okur', () => {
+    const broken = `{"worksheet":{"innocents":[{"match":false}],\\"truthEvidence":[]},"issues":${JSON.stringify(
+      [
+        {
+          category: 'TRUTH',
+          severity: 'CERTAIN',
+          field: 'truthReveal',
+          quote: 'Giles',
+          note: 'Not.',
+        },
+      ],
+    )}}`;
+    expect(parseStoryReview(broken, fields)).toEqual([
+      expect.objectContaining({ category: 'TRUTH', field: 'truthReveal' }),
+    ]);
+  });
+
   it('okunamayan cevapta null döner', () => {
     expect(parseStoryReview('Bir sorun göremedim.', fields)).toBeNull();
     expect(parseStoryReview('{"issues": "yok"}', fields)).toBeNull();

@@ -781,7 +781,8 @@ export class LlmService {
   }
 
   // Hikâye hakemi: havuza girecek vakanın metinlerindeki kaymalar; başarısızlıkta null.
-  // stories/story-review.ts reviewStory'ye StoryJudge olarak verilir.
+  // stories/story-review.ts reviewStory'ye StoryJudge olarak verilir. Model ara sıra okunamayan
+  // JSON döndürüyor (denemelerde ~%5); o zaman bir kez daha sorulur.
   async reviewStory(
     input: StoryReviewInput,
     fields: Record<string, string>,
@@ -789,18 +790,21 @@ export class LlmService {
     const prompt = buildStoryReviewPrompt(input, fields);
 
     try {
-      const response = await this.complete(
-        { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
-        'Story review',
-        90_000,
-        { kind: 'STORY_REVIEW' },
-      );
-      const issues = parseStoryReview(
-        response?.choices?.[0]?.message?.content || '',
-        fields,
-      );
-      if (!issues) this.logger.warn('Story review returned unreadable JSON.');
-      return issues;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        const response = await this.complete(
+          { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
+          'Story review',
+          90_000,
+          { kind: 'STORY_REVIEW' },
+        );
+        const text = response?.choices?.[0]?.message?.content || '';
+        const issues = parseStoryReview(text, fields);
+        if (issues) return issues;
+        this.logger.warn(
+          `Story review returned unreadable JSON (attempt ${attempt}): …${text.slice(-300)}`,
+        );
+      }
+      return null;
     } catch (error) {
       this.logger.warn(`Story review failed. ${error}`);
       return null;
