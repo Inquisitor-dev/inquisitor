@@ -47,7 +47,7 @@ ${input.truthReveal}
 Rewrite:
 - "clue": one Turkish sentence. Keep the exact hiding spot inside ${input.place}. It must NOT contain blood, the murder weapon${input.weaponLabel ? ` (${input.weaponLabel})` : ''}, the victim's belongings or anything from the crime scene.
 - "truthReveal": the true story with only the sentences about this clue changed so that they match the new clue. Keep everything else word for word.
-Correct Turkish spelling with all special characters.
+Correct Turkish spelling with all special characters, and no English words.
 
 Return only JSON: {"clue": "...", "truthReveal": "..."}`;
 }
@@ -114,7 +114,7 @@ ${input.truthReveal}
 Rewrite:
 - "clue": one Turkish sentence. Keep the same object and its exact position at the scene, and make it clearly linked to every one of them by name or by their place (for example one mark for each, or something they share). Never name the murderer.
 - "truthReveal": the true story with only the sentences about this trace changed so that they match. Keep everything else word for word.
-Correct Turkish spelling with all special characters.
+Correct Turkish spelling with all special characters, and no English words.
 
 Return only JSON: {"clue": "...", "truthReveal": "..."}`;
 }
@@ -149,6 +149,8 @@ export interface AlibiAlignInput {
   partnerName: string;
   partnerAlibi: string;
   partnerClue: string;
+  // Gerçek metni de eşin eski yerini anlatıyorsa onarılmazsa hakem çelişki bulur
+  truthReveal: string;
 }
 
 export function buildAlibiAlignPrompt(input: AlibiAlignInput): string {
@@ -166,30 +168,44 @@ ${input.partnerAlibi}
 ${input.partnerName}'s hidden location clue (an ordinary sign of that night):
 ${input.partnerClue}
 
+TRUE STORY:
+${input.truthReveal}
+
 Rewrite:
 - "alibi": ${input.partnerName}'s account in one Turkish sentence: together with ${input.anchorName} at ${input.place}, doing the same thing as in the correct account.
 - "clue": the location clue with the same object and hiding spot, now showing that ${input.partnerName} spent that time at ${input.place} with ${input.anchorName}.
-Correct Turkish spelling with all special characters.
+- "truthReveal": the true story with only the sentences about where ${input.partnerName} and ${input.anchorName} were (and their clues) changed to match. Keep everything else word for word.
+Correct Turkish spelling with all special characters, and no English words.
 
-Return only JSON: {"alibi": "...", "clue": "..."}`;
+Return only JSON: {"alibi": "...", "clue": "...", "truthReveal": "..."}`;
 }
 
 export function parseAlibiAlign(
   text: string,
-): { alibi: string; clue: string } | null {
+): { alibi: string; clue: string; truthReveal: string } | null {
   const match = /\{[\s\S]*\}/.exec(text);
   if (!match) return null;
   try {
-    const parsed = JSON.parse(match[0]) as { alibi?: unknown; clue?: unknown };
+    const parsed = JSON.parse(match[0]) as {
+      alibi?: unknown;
+      clue?: unknown;
+      truthReveal?: unknown;
+    };
     if (
       typeof parsed.alibi !== 'string' ||
       !parsed.alibi.trim() ||
       typeof parsed.clue !== 'string' ||
-      !parsed.clue.trim()
+      !parsed.clue.trim() ||
+      typeof parsed.truthReveal !== 'string' ||
+      !parsed.truthReveal.trim()
     ) {
       return null;
     }
-    return { alibi: parsed.alibi.trim(), clue: parsed.clue.trim() };
+    return {
+      alibi: parsed.alibi.trim(),
+      clue: parsed.clue.trim(),
+      truthReveal: parsed.truthReveal.trim(),
+    };
   } catch {
     return null;
   }

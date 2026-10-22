@@ -22,6 +22,7 @@ import {
   parseWitnessRepair,
 } from './prompts/witness-repair-prompt.builder';
 import { mentions } from '../npcs/case-statements';
+import { cleanInternalIds } from './prompts/internal-ids';
 import { CasePlan } from '../scenarios/case-setup';
 import type { ThoughtLine } from '../board/board';
 import { CompletionRequest, GeminiClient } from './client/gemini-client';
@@ -57,6 +58,55 @@ import {
 import type { StoryIssue, StoryReviewInput } from '../stories/story-review';
 
 export type { ScenarioDraft };
+
+// Silahı bilmeden veren kime verdiğini bilir. Gemini "kayıtta alıcının adı yok" kuralını rol metnine de
+// taşıyıp "şüpheli birine sattın" yazabiliyor; hakem bunu reddediyor. Ad yoksa cümle koddan eklenir.
+export function ensureHelperKnowsBuyer(
+  draft: ScenarioDraft,
+  plan: Pick<CasePlan, 'culpritId' | 'involvements'>,
+  npcNames: Record<string, string>,
+): ScenarioDraft {
+  const culpritName = npcNames[plan.culpritId] ?? plan.culpritId;
+  const npcPrompts = { ...draft.npcPrompts };
+  let changed = false;
+  for (const inv of plan.involvements ?? []) {
+    if (inv.kind !== 'UNWITTING_HELP') continue;
+    const prompt = npcPrompts[inv.npcId] ?? '';
+    if (mentions(prompt, culpritName)) continue;
+    npcPrompts[inv.npcId] =
+      `${prompt} Cinayet aletini kime verdiğini biliyorsun: ${culpritName}. Bunu kendine saklıyorsun.`.trim();
+    changed = true;
+  }
+  return changed ? { ...draft, npcPrompts } : draft;
+}
+
+// Üretilen bütün metinlerdeki iç kimlikler ("'mill' (AURA-9)") karakterin adına çevrilir
+export function cleanDraftIds(
+  draft: ScenarioDraft,
+  npcNames: Record<string, string>,
+): ScenarioDraft {
+  const clean = (text: string) => cleanInternalIds(text, npcNames);
+  const cleanAll = (map: Record<string, string> | undefined) =>
+    map
+      ? Object.fromEntries(
+          Object.entries(map).map(([key, text]) => [key, clean(text)]),
+        )
+      : map;
+  return {
+    ...draft,
+    scenario: clean(draft.scenario),
+    truthReveal: clean(draft.truthReveal),
+    npcPrompts: cleanAll(draft.npcPrompts) ?? {},
+    locationClues: cleanAll(draft.locationClues) ?? {},
+    alibis: cleanAll(draft.alibis),
+    verificationText: draft.verificationText
+      ? clean(draft.verificationText)
+      : draft.verificationText,
+    witnessDescription: draft.witnessDescription
+      ? clean(draft.witnessDescription)
+      : draft.witnessDescription,
+  };
+}
 
 @Injectable()
 export class LlmService {
@@ -238,12 +288,16 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      return await this.repairAlibiPlaces(
+      const placesRepaired = await this.repairAlibiPlaces(
         leaksRepaired,
         plan,
         scenarioType,
         npcNames,
         sessionId,
+      );
+      return cleanDraftIds(
+        ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
+        npcNames,
       );
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
@@ -412,6 +466,7 @@ export class LlmService {
   ): Promise<ScenarioDraft> {
     const alibis = { ...(draft.alibis ?? {}) };
     const locationClues = { ...draft.locationClues };
+    let truthReveal = draft.truthReveal;
     const labels = Object.fromEntries(
       Object.keys(npcNames).map((id) => [
         id,
@@ -451,7 +506,8 @@ export class LlmService {
       this.logger.warn(
         `Alibi partners name different places (${anchorId}: ${[...anchorPlaces].join(',')}, ${partnerId}: ${[...partnerPlaces].join(',')}); aligning.`,
       );
-      let aligned: { alibi: string; clue: string } | null = null;
+      let aligned: { alibi: string; clue: string; truthReveal: string } | null =
+        null;
       try {
         const response = await this.complete(
           {
@@ -466,6 +522,7 @@ export class LlmService {
                   partnerName: npcNames[partnerId] ?? partnerId,
                   partnerAlibi,
                   partnerClue: locationClues[partnerId] ?? '',
+                  truthReveal,
                 }),
               },
             ],
@@ -485,12 +542,13 @@ export class LlmService {
       if (aligned && placesOf(aligned.alibi).has(placeId)) {
         alibis[partnerId] = aligned.alibi;
         locationClues[partnerId] = aligned.clue;
+        truthReveal = aligned.truthReveal;
       } else {
         // İlkinin mazereti iki adı da içerir; ikisinde de aynı yer ve iş geçer
         alibis[partnerId] = anchorAlibi;
       }
     }
-    return changed ? { ...draft, alibis, locationClues } : draft;
+    return changed ? { ...draft, alibis, locationClues, truthReveal } : draft;
   }
 
   // Masumların mekân ipuçları ve rol metinleri katilin adını söylemez. Silahı bilmeden veren aleti kime

@@ -16,7 +16,7 @@ export function buildWitnessRepairPrompt(input: WitnessRepairInput): string {
   const setting = getScenarioConfig(input.scenarioType).settingLabel;
   return `You are a continuity editor for a detective game (setting: ${setting}).
 
-${input.witnessName} is a witness who saw part of the murder, but could NOT see who did it (dark, hooded, from behind). The texts below wrongly name ${input.culpritName}.
+${input.witnessName} is a witness who saw part of the murder, but could NOT see who did it (for example «karanlıktı, kapüşonluydu, arkası dönüktü»). The texts below wrongly name ${input.culpritName}.
 
 TESTIMONY (one sentence, a fact about what the witness saw):
 ${input.verificationText}
@@ -25,7 +25,7 @@ WITNESS ROLE (second person, instructions for the character):
 ${input.npcPrompt}
 
 Rewrite both so that the witness only describes the act, the place, the time and the object, and refers to the person as "someone" whose face they did not see. Remove every mention of ${input.culpritName} and any hint at them (name, job, uniform, kind, looks). Keep everything else, including the witness's own secret, word for word.
-Correct Turkish spelling with all special characters.
+Correct Turkish spelling with all special characters, and no English words.
 
 Return only JSON: {"verificationText": "...", "npcPrompt": "..."}`;
 }
@@ -72,8 +72,8 @@ These texts belong to INNOCENT characters (their hidden location clues and their
 
 ${JSON.stringify(input.fields, null, 2)}
 
-Rewrite each text so that it no longer names or hints at ${input.culpritName} (name, job, uniform, kind, looks). Keep its object, place, hiding spot, meaning and everything else. Where a person must appear, use an unnamed one (for example "a buyer whose name was not written down", "a hooded customer"). The role texts may keep everything the character really knows, only without the murderer's identity.
-Correct Turkish spelling with all special characters.
+Rewrite each text so that it no longer names or hints at ${input.culpritName} (name, job, uniform, kind, looks). Keep its object, place, hiding spot, meaning and everything else. Where a person must appear, use an unnamed one (for example «adı yazılmamış bir alıcı», «kapüşonlu bir müşteri»). The role texts may keep everything the character really knows, only without the murderer's identity.
+Correct Turkish spelling with all special characters, and no English words.
 
 Return only JSON with exactly the same keys and the rewritten texts.`;
 }

@@ -94,6 +94,10 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     expect(brief).toContain('HELPED WITHOUT KNOWING');
     // Silahı veren kime verdiğini bilir; yalnızca yazılı kayıtta alıcının adı yoktur
     expect(brief).toContain('They know very well whom they gave it to');
+    // Rol metni itiraftan ya da kırılmadan söz etmez; kimlikler metne yazılmaz
+    expect(brief).not.toContain('until they break');
+    expect(brief).toContain('does not mention confessing');
+    expect(brief).toContain('never write them in any text you return');
     expect(brief).toContain("without the other person's name");
     expect(brief).toContain('SCAVENGER');
     expect(brief).toContain('FULLY INNOCENT');

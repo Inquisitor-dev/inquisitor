@@ -288,12 +288,15 @@ describe('LlmService', () => {
           alibi:
             'Gece yarısı revirde Doktor Harland ile birlikte merhem tariflerini kaydediyordu.',
           clue: 'Değirmende, gece revirde olduğunu gösteren bir not.',
+          truthReveal: 'Harland ile Giles revirdeydi.',
         }),
       );
       const repaired = await result;
       expect(complete).toHaveBeenCalledTimes(1);
       expect(repaired.alibis.mill).toContain('revirde');
       expect(repaired.locationClues.mill).toContain('revirde');
+      // Gerçek metni de yeni yere göre güncellenir
+      expect(repaired.truthReveal).toBe('Harland ile Giles revirdeydi.');
     });
 
     it('onarım tutmazsa ilkinin mazereti ikisine de verilir', async () => {
