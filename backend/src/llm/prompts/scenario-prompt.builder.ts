@@ -57,10 +57,10 @@ export function buildCaseBrief(
         ? `- VERIFYING EVIDENCE: The ${place(placement.locationId)} location clue MUST show that the planted item was taken from there before the murder (for example an empty hook, a forced lock, or the matching missing piece). This replaces the usual secret clue of that location.`
         : placement.npcId === crimeSceneClue.implicatedNpcIds[0]
           ? `- VERIFYING EVIDENCE: The framed person ${who(placement.npcId)} noticed that the planted item went missing shortly before the murder. Their npcPrompt MUST say this, and that they mention it when the Inquisitor asks about the item.`
-          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} saw someone take the planted item from ${who(crimeSceneClue.implicatedNpcIds[0])}'s place shortly before the murder, but could not see who it was (dark, hooded, from behind). Their npcPrompt MUST describe this, and say they reveal it when asked about the item or that night. Neither the npcPrompt nor "verificationText" names, describes or guesses who took it: the witness does not know.`;
+          : `- VERIFYING EVIDENCE: The innocent ${who(placement.npcId)} saw someone take the planted item from ${who(crimeSceneClue.implicatedNpcIds[0])}'s place shortly before the murder, but could not see who it was (for example «karanlıktı, kapüşonluydu, arkası dönüktü»). Their npcPrompt MUST describe this, and say they reveal it when asked about the item or that night. Neither the npcPrompt nor "verificationText" names, describes or guesses who took it: the witness does not know.`;
   }
 
-  return `CASE FACTS (decided by the game engine; do NOT change them):
+  return `CASE FACTS (decided by the game engine; do NOT change them). The ids in quotes ("mill", "tavern"…) are for you only: never write them in any text you return; always use the character's name. Every text you return is Turkish: no English words, even inside a Turkish sentence:
 - CULPRIT: ${who(plan.culpritId)}. Innocent suspects: ${plan.innocentIds.map(who).join(', ')}.
 - MURDER STYLE: ${plan.murderStyle === 'HURRIED' ? 'HURRIED (unplanned, the culprit panicked)' : 'PLANNED (premeditated, the culprit staged the scene)'}.
 ${crimeSceneLine(plan, scenarioType)}
@@ -111,7 +111,7 @@ function caseDetailsLines(
         case 'SHARED_MOTIVE':
           return `  - ${npc} HAD THEIR OWN MOTIVE: they also had a reason to resent the victim (a different reason than the culprit's), which makes them look guilty. Their secret and alibi still clear them. Their npcPrompt mentions the grudge; they deny caring about it.`;
         case 'UNWITTING_HELP':
-          return `  - ${npc} HELPED WITHOUT KNOWING: shortly before the murder they gave, lent or sold the murder weapon (${weapon?.label ?? 'the weapon'}) to ${about}, with no idea what it was for. They know very well whom they gave it to: their npcPrompt says so, and that they hide it until they break (never "I did not see who it was"). Their location clue shows where the weapon used to be or a record of the deal without the other person's name (it does NOT clear them). When they confess, they say whom they gave it to. Their alibi still covers the time of death.`;
+          return `  - ${npc} HELPED WITHOUT KNOWING: shortly before the murder they gave, lent or sold the murder weapon (${weapon?.label ?? 'the weapon'}) to ${about}, with no idea what it was for. They know very well whom they gave it to: their npcPrompt says so and that they keep it to themselves (never "I did not see who it was"). The npcPrompt does not mention confessing, being cornered or breaking: the game decides that. Their location clue shows where the weapon used to be or a record of the deal without the other person's name (it does NOT clear them). When they confess, they say whom they gave it to. Their alibi still covers the time of death.`;
         case 'SCAVENGER':
           return `  - ${npc} SCAVENGER: they found the body before anyone else, took a small valuable belonging of the victim and told no one. Their location clue is that belonging, hidden at their place (it does NOT clear them). When they confess, they tell when they found the body, which fixes the time of death. They did not kill. Their alibi in 'alibis' covers the time of death itself (where they were when the murder happened); they found the body only later.`;
         case 'LAST_CONVERSATION':
@@ -218,7 +218,7 @@ YOUR TASK:
    - Include any VERIFYING EVIDENCE testimony in the right NPC's prompt.
    - Every dynamic prompt must preserve that NPC's public identity exactly. Do NOT rename them, do NOT change their profession, and do NOT move them to another workplace.
    - A dynamic prompt describes what the character did, knows and hides. It never tells them when or whether to confess ("you will confess after questioning"): the game decides when anyone breaks.
-   - No innocent's location clue names or hints at the culprit, and no innocent's dynamic prompt does either, with one exception: whoever gave, sold or lent the culprit the weapon knows who got it, and their prompt says so (they hide it until they break). Their written record of the deal still does not show the name (for example "a buyer whose name was not written down").
+   - No innocent's location clue names or hints at the culprit, and no innocent's dynamic prompt does either, with one exception: whoever gave, sold or lent the culprit the weapon knows who got it, and their prompt says so (they keep it to themselves; it says nothing about when they would admit it). Their written record of the deal still does not show the name (for example «adı yazılmamış bir alıcı»).
 
 CRITICAL RULE:
 The 'scenario' and 'truthReveal' text MUST be written in dark, literary, and natural TURKISH (Turkce). ${styleInstruction} Do not sound like a machine translation. Use rich vocabulary to describe the village and its atmosphere. Never put English words or game terms (such as tidy, messy, hurried, planned) in Turkish text.
