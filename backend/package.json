@@ -22,6 +22,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
     "usage:report": "ts-node -r tsconfig-paths/register prisma/llm-usage-report.ts",
+    "stories:review": "ts-node -r tsconfig-paths/register prisma/story-review.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

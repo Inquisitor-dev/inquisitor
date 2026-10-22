@@ -86,7 +86,7 @@ export interface ReviewFixture {
   expect: StoryIssueCategory[];
   // Bulgunun hangi alanda çıkması beklenir
   field?: string;
-  // Hatayı yalnızca kod kontrolü mü yakalar (yapay zekâ gerekmez)
+  // Hatayı kod kontrolü de yakalar (yapay zekâ gerekmez)
   codeOnly?: boolean;
   input: StoryReviewInput;
 }
@@ -205,6 +205,7 @@ export const REVIEW_FIXTURES: ReviewFixture[] = [
     description: 'Türkçe karakterleri olmayan metin',
     expect: ['LANGUAGE'],
     field: 'npcPrompts.graveyard',
+    codeOnly: true,
     input: mutate(
       'npcPrompts.graveyard',
       'Saklayacak bir şeyin yok.',

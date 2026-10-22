@@ -10,7 +10,8 @@ import { foldTurkish } from '../npcs/prompt-guard';
 // Hikâye hakemi: havuza girecek bir vakanın metinlerini onaydan önce denetler. Kesin kurallar
 // (katilin ipucunda kan/silah, tuzak izin herkesi göstermesi, adıyla sızıntı, masum eşlerin yeri)
 // üretim sırasında kodla onarılır (llm.service.ts repair*). Burada ikisi kalır: kodla bedavaya
-// bulunabilen iç kimlikler ve yalnızca okuyarak görülebilen serbest metin kaymaları (yapay zekâ hakemi).
+// bulunabilenler (iç kimlikler, Türkçe karakterleri eksik cümleler) ve yalnızca okuyarak görülebilen
+// serbest metin kaymaları (yapay zekâ hakemi).
 
 export type StoryIssueCategory =
   | 'TRUTH' // gerçek metni mazeretlerle ya da ipuçlarıyla çelişiyor
@@ -133,6 +134,70 @@ export function findInternalIds(fields: Record<string, string>): StoryIssue[] {
   return issues;
 }
 
+// Türkçe karakterleri eksik yazılmış metin ("şeyin" yerine "seyin"). Ucuz model bunu göremiyor.
+// Yalnızca harfleri eksik yazılınca belli olan sık kelimelere bakılır: "uzun boylu, deri ceketli biri"
+// gibi hiç özel harf içermeyen doğru cümleler yanlış alarm vermesin. Tahmin olduğu için şüphe sayılır.
+const ASCII_TURKISH_WORDS = [
+  'cunku',
+  'icin',
+  'degil',
+  'degildi',
+  'hicbir',
+  'hicbiri',
+  'hic',
+  'cok',
+  'simdi',
+  'boyle',
+  'oyle',
+  'soyle',
+  'sey',
+  'seyi',
+  'seyin',
+  'seyler',
+  'kisi',
+  'gordu',
+  'gordum',
+  'gormedi',
+  'gormedin',
+  'buyuk',
+  'kucuk',
+  'uzerinde',
+  'ustunde',
+  'oldurdu',
+  'yuzunu',
+  'yuzu',
+  'gozleri',
+];
+// Uzun kelimeler önce denenir ("seyin", "sey"den önce)
+const ASCII_TURKISH_PATTERN = new RegExp(
+  `(?<!\\p{L})(${[...ASCII_TURKISH_WORDS]
+    .sort((a, b) => b.length - a.length)
+    .join('|')})(?!\\p{L})`,
+  'giu',
+);
+
+export function findMissingDiacritics(
+  fields: Record<string, string>,
+): StoryIssue[] {
+  const issues: StoryIssue[] = [];
+  for (const [field, text] of Object.entries(fields)) {
+    const found = new Set(
+      [...text.matchAll(ASCII_TURKISH_PATTERN)].map((m) => m[1]),
+    );
+    for (const word of found) {
+      issues.push({
+        category: 'LANGUAGE',
+        severity: 'DOUBT',
+        field,
+        quote: word,
+        note: `"${word}" kelimesi Türkçe karakterleri eksik yazılmış olabilir.`,
+        source: 'CODE',
+      });
+    }
+  }
+  return issues;
+}
+
 // Modelin eklediği tırnak, üç nokta ve boşluk farkları karşılaştırmaya katılmaz
 const normalizeQuote = (text: string) =>
   foldTurkish(text)
@@ -161,7 +226,10 @@ export async function reviewStory(
   judge: StoryJudge | null,
 ): Promise<StoryReviewResult> {
   const fields = storyReviewFields(input);
-  const codeIssues = findInternalIds(fields);
+  const codeIssues = [
+    ...findInternalIds(fields),
+    ...findMissingDiacritics(fields),
+  ];
   const judgeIssues = judge ? await judge(input, fields) : null;
   const issues = [...codeIssues, ...(judgeIssues ?? [])];
   const judged = judgeIssues !== null;

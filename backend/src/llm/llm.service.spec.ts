@@ -342,6 +342,17 @@ describe('LlmService', () => {
       );
     });
 
+    it('okunamayan cevapta bir kez daha sorar', async () => {
+      const complete = jest
+        .fn()
+        .mockResolvedValueOnce({ choices: [{ message: { content: 'bozuk' } }] })
+        .mockResolvedValueOnce({
+          choices: [{ message: { content: '{"issues":[]}' } }],
+        });
+      expect(await reviewWith(complete)).toEqual([]);
+      expect(complete).toHaveBeenCalledTimes(2);
+    });
+
     it('çağrı başarısızsa null döner', async () => {
       const complete = jest.fn().mockRejectedValue(new Error('429'));
       expect(await reviewWith(complete)).toBeNull();

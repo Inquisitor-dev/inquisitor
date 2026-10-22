@@ -1,5 +1,6 @@
 import {
   INVOLVEMENT_LABELS,
+  TIME_OF_DEATH_LABELS,
   WEAPON_METHOD_LABELS,
   WEAPONS,
 } from '../../scenarios/case-catalog';
@@ -49,6 +50,10 @@ function reviewFactLines(
       ? `Olay yerindeki iz gerçek; şu şüphelilere uyar: ${implicated}.`
       : `Olay yerindeki iz katilin koyduğu tuzak; bilerek şunları suçlu gösterir: ${implicated}.`,
   );
+  if (facts.crimeSceneClueText)
+    lines.push(
+      `Olay yerindeki iz (locationClues.crime_scene): ${facts.crimeSceneClueText}`,
+    );
   lines.push(`Doğrulayan kanıt: ${facts.verificationText}`);
   const { placement, witnessDescriptionFits } = facts.verification;
   if (placement.type === 'TESTIMONY')
@@ -133,17 +138,31 @@ DO NOT REPORT (the game engine already checks and repairs these, or they are int
 - a witness or an innocent naming the culprit, and two fully innocent partners naming different places;
 - the witness description fitting several suspects (that is intended); report it only if it fits ${nameOf(input.facts.culpritId)} alone;
 - the culprit's npcPrompt containing the whole truth;
+- truthReveal naming the murder weapon, the motive or the time of death (they are case facts, not found evidence);
+- different words for the same thing ("atari salonunun sahibi" and "Pixel Arcade'in işletmecisi" are the same);
 - style, tone, length, and facts a text simply leaves out.
+
+HOW TO WORK: first fill in the worksheet below by actually comparing the texts, word by word. Only then write the issues. Every mismatch, instruction or wrong word the worksheet shows becomes an issue.
+- "innocents": one row per innocent. "alibi": the place, people and time in their alibis.* text. "truth": the place, people and time truthReveal gives for them at the time of death. "match": false if any of these differ.
+- "truthEvidence": every object, trace or wound truthReveal presents as evidence, and the field key that contains it. Look in every locationClues.* field (locationClues.crime_scene is the crime scene trace), verificationText and alibis.*; write "none" only after checking them all. An item that really is nowhere is a DOUBT, not CERTAIN.
+- "roles": for each npcPrompts.* field, the exact words that tell the character to confess, admit or break, or "none".${helper ? `\n- "helper": the exact words in npcPrompts.${helper.npcId} saying whom they gave the weapon to, or "none".` : ''}
+- "times": every time of day in alibis.*, truthReveal and npcPrompts.* that is about the night of the murder, and whether it fits the time of death${input.facts.timeOfDeath ? ` (${TIME_OF_DEATH_LABELS[input.facts.timeOfDeath]})` : ''}. Every alibi covers exactly the time of death; morning, noon, afternoon or any daytime (sabah, öğle, ikindi, gündüz) never fits.
+- "death": how truthReveal and the clues describe the death or the wound, and whether it fits the weapon.
+- "language": every English word, misspelled word, or Turkish word written without its special characters (for example "seyin" instead of "şeyin", "cunku" instead of "çünkü"), with its field key.
+
+Then turn the worksheet into issues: every row with "match": false, "fits": false or "foundIn": "none", every instruction other than "none",${helper ? ' a "helper" of "none",' : ''} and every language word MUST become an issue, quoting the exact words from that field.
 
 SEVERITY:
 - CERTAIN: you can quote the exact words, and by the facts above they are clearly wrong.
 - DOUBT: it may be wrong; a human should look.
 
 Return only JSON, no code fences:
-{"issues":[{"category":"TRUTH|ROLE|IMPLICIT_LEAK|LANGUAGE|LOGIC","severity":"CERTAIN|DOUBT","field":"<field key>","quote":"<exact words>","note":"<Turkish>"}]}
+{"worksheet":{"innocents":[{"npc":"<name>","alibi":"...","truth":"...","match":true}],"truthEvidence":[{"item":"...","foundIn":"<field key or none>"}],"roles":[{"field":"<field key>","instruction":"<exact words or none>"}],${helper ? '"helper":"...",' : ''}"times":[{"field":"<field key>","time":"...","fits":true}],"death":"...","language":[{"field":"<field key>","word":"..."}]},
+"issues":[{"category":"TRUTH|ROLE|IMPLICIT_LEAK|LANGUAGE|LOGIC","severity":"CERTAIN|DOUBT","field":"<field key>","quote":"<exact words>","note":"<Turkish>"}]}
+- Keep the worksheet short: a few words per entry.
 - "field" is one of the bracketed keys above; "quote" is a short EXACT copy (at most 20 words) from that field.
 - "note" is one short Turkish sentence saying what is wrong, with correct Turkish characters.
-- At most ${MAX_STORY_ISSUES} items, the most serious first. If nothing is wrong, return {"issues":[]}.`;
+- At most ${MAX_STORY_ISSUES} issues, the most serious first. If nothing is wrong, "issues" is [].`;
 }
 
 const clip = (text: string, max: number) =>
@@ -152,21 +171,33 @@ const clip = (text: string, max: number) =>
 const isCategory = (value: unknown): value is StoryIssueCategory =>
   STORY_ISSUE_CATEGORIES.includes(value as StoryIssueCategory);
 
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+};
+
+// Bulgu listesi. Model bazen çalışma kâğıdına bozuk bir karakter koyuyor (ör. \"); cevabın tamamı
+// okunamazsa yalnızca en sondaki "issues" dizisi okunur, doğru bulgular kaybolmasın.
+function issueItems(text: string): unknown {
+  const whole = /\{[\s\S]*\}/.exec(text);
+  const parsed = whole ? parseJson(whole[0]) : undefined;
+  if (parsed !== undefined) return (parsed as { issues?: unknown }).issues;
+  const tail = /"issues"\s*:\s*(\[[\s\S]*\])\s*\}\s*$/.exec(
+    text.replace(/```\s*$/, '').trim(),
+  );
+  return tail ? parseJson(tail[1]) : undefined;
+}
+
 // Modelin cevabını okur. Alanı olmayan ya da alıntısı o alanda geçmeyen maddeler atılır.
 // Okunamayan cevapta null döner (hakem çalışmamış sayılır).
 export function parseStoryReview(
   text: string,
   fields: Record<string, string>,
 ): StoryIssue[] | null {
-  const match = /\{[\s\S]*\}/.exec(text);
-  if (!match) return null;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(match[0]);
-  } catch {
-    return null;
-  }
-  const items = (parsed as { issues?: unknown }).issues;
+  const items = issueItems(text);
   if (!Array.isArray(items)) return null;
 
   const issues: StoryIssue[] = [];
@@ -178,7 +209,12 @@ export function parseStoryReview(
     if (typeof note !== 'string' || !note.trim()) continue;
     issues.push({
       category: raw.category,
-      severity: raw.severity === 'CERTAIN' ? 'CERTAIN' : 'DOUBT',
+      // Gerçek metni karşılaştırması en çok yanlış alarm veren kontrol (ipucunda duran eşyayı "yok"
+      // sanıyor): kesin hata sayılmaz, insana gider
+      severity:
+        raw.severity === 'CERTAIN' && raw.category !== 'TRUTH'
+          ? 'CERTAIN'
+          : 'DOUBT',
       field,
       quote: clip(quote.trim(), QUOTE_LENGTH),
       note: clip(note.trim(), NOTE_LENGTH),
