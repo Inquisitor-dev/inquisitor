@@ -88,7 +88,9 @@ Ucuz model (Flash-Lite) "bul ve yaz" denince metinleri karşılaştırmadan "sor
 
 Bu ikisi üretimde düzeltilebilir (senaryo istemi ya da yeni bir onarım adımı); hakem yakalamaya devam eder.
 
-## Onay kuralları (Faz 0 önerisi)
+## Onay kuralları (Faz 0 kararı, 22 Ekim 2026)
 
-- Kesin çelişki varsa red, şüphe varsa insana.
-- Hikâyeleri 1–2 kişi okur ve oynar; kimse kendi ürettiği hikâyeyi onaylamaz.
+- **Hakemin geçme eşiği:** kesin hata (`CERTAIN`) varsa red, yalnızca şüphe (`DOUBT`) varsa ya da hakem çalışmadıysa insana, bulgu yoksa geçer. Kararı kod verir (`decideStoryReview`).
+- **Onaylayan:** Enes. Hikâyeleri okur ve bir kısmını oynar; gerekirse ikinci bir kişi eklenir.
+- **Kimse kendi ürettiği hikâyeyi onaylamaz.** Enes'in ürettiği bir hikâyeyi başka bir ekip üyesi onaylar.
+- Hakemin geçirdiği (`PASS`) hikâye de insan onayından geçmeden havuza girmez.
