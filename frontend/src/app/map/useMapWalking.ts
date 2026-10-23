@@ -15,14 +15,14 @@ export const CHARACTER_REF_LAYER_SCALE = 0.6;
 export const CHARACTER_SPRITE_SCALE = 0.36;
 // Yürüme hızı çarpanı: yüzde tabanlı yolların hızı (eski değerler 15 / 75) bununla ölçeklenir.
 // Yürüyüş sprite'ı ve ayak sesleri mesafeden türetilen faza bağlı olduğundan hız artınca birlikte hızlanır.
-const WALK_SPEED_MULTIPLIER = 5;
+const WALK_SPEED_MULTIPLIER = 3.5;
 const WALK_SPEED = 15 * WALK_SPEED_MULTIPLIER;
 // Görsel yollarda hız (referans piksel/sn) rotanın uzunluğuna göre seçilir: kısa rotalar
 // SCREEN_WALK_SPEED ile yürünür, uzun rotalar WALK_MAX_DURATION içinde bitecek kadar hızlanır.
-// Böylece her yolculuk 4 saniyenin altında kalır (tipik ~2,5–3 sn, en uzun ~3,5 sn).
+// Böylece yolculuklar tipik ~3,5–4 sn, en uzun ~5 sn sürer.
 const SCREEN_WALK_SPEED = 75 * WALK_SPEED_MULTIPLIER;
-const WALK_MAX_SPEED = 850;
-const WALK_MAX_DURATION = 2.4;
+const WALK_MAX_SPEED = 600;
+const WALK_MAX_DURATION = 3.4;
 // Hızlı yürüyüşte bir sprite döngüsü bu kat daha uzun yol alır (koşar adım). Böylece sprite
 // saniyede 8-10 döngüye çıkıp bulanıklaşmaz; fark küçük olduğundan ayak kayması belli olmaz.
 const WALK_STRIDE_FACTOR = 1.5;
