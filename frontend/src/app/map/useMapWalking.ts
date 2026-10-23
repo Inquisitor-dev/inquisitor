@@ -13,10 +13,13 @@ import {
 
 export const CHARACTER_REF_LAYER_SCALE = 0.6;
 export const CHARACTER_SPRITE_SCALE = 0.36;
-const WALK_SPEED = 15;
-const SCREEN_WALK_SPEED = 75;
-const WALK_MAX_SPEED = 90;
-const WALK_MAX_DURATION = 9;
+// Yürüme hızı çarpanı: tüm hız sabitleri (eski değerler 15 / 75 / 90 / 9 sn) bununla ölçeklenir.
+// Yürüyüş sprite'ı ve ayak sesleri mesafeden türetilen faza bağlı olduğundan hız artınca birlikte hızlanır.
+const WALK_SPEED_MULTIPLIER = 1.75;
+const WALK_SPEED = 15 * WALK_SPEED_MULTIPLIER;
+const SCREEN_WALK_SPEED = 75 * WALK_SPEED_MULTIPLIER;
+const WALK_MAX_SPEED = 90 * WALK_SPEED_MULTIPLIER;
+const WALK_MAX_DURATION = 9 / WALK_SPEED_MULTIPLIER;
 const WALK_ACCEL_TIME = 0.25;
 const WALK_DECEL_DISTANCE = 30;
 const WALK_LOOKAHEAD = 12;
@@ -120,7 +123,10 @@ export function useMapWalking({
         if (to.x !== from.x || to.y !== from.y) {
           setPlayerFacing(directionFromDelta(to.x - from.x, to.y - from.y));
         }
-        setWalkPhase((now - startTime) / 1000 / (character?.walk.cycleSeconds ?? 1));
+        // Faz zamana bağlı olduğundan sprite döngüsü de hız çarpanıyla hızlanır (kayma olmasın)
+        setWalkPhase(
+          ((now - startTime) / 1000 / (character?.walk.cycleSeconds ?? 1)) * WALK_SPEED_MULTIPLIER
+        );
         setWalkPos({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
         walkFrame.current = requestAnimationFrame(step);
       };
