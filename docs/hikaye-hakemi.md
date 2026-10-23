@@ -112,7 +112,9 @@ Kovalar (evren × zorluk) sırayla birer birer doldurulur ve var olan reddedilme
 
 Bu ikisi üretimde düzeltilebilir (senaryo istemi ya da yeni bir onarım adımı); hakem yakalamaya devam eder.
 
-## Onay kuralları (Faz 0 önerisi)
+## Onay kuralları (Faz 0 kararı, 22–23 Ekim 2026)
 
-- Kesin çelişki varsa red, şüphe varsa insana.
-- Hikâyeleri 1–2 kişi okur ve oynar; kimse kendi ürettiği hikâyeyi onaylamaz.
+- **Hakemin geçme eşiği:** kesin hata (`CERTAIN`) varsa red, yalnızca şüphe (`DOUBT`) varsa ya da hakem çalışmadıysa insana, bulgu yoksa geçer. Kararı kod verir (`decideStoryReview`).
+- **Onaylayan:** Enes. Hikâyeleri okur ve bir kısmını oynar; gerekirse ikinci bir kişi eklenir.
+- Hakemin geçirdiği (`PASS`) hikâye de insan onayından geçmeden havuza girmez.
+- "Kimse kendi ürettiği hikâyeyi onaylamaz" kuralı 23 Ekim'de kaldırıldı: üretim de Enes'e geçti ve hikâyeyi Gemini yazıyor.
