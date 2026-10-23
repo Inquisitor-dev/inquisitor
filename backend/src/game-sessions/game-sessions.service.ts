@@ -41,6 +41,13 @@ import {
   verdictFactLines,
 } from './verdict/verdict-report';
 
+import { StoryPoolService } from '../stories/story-pool.service';
+import {
+  StoryCriteria,
+  StoryPackage,
+  parseStoryPackage,
+} from '../stories/story-package';
+
 @Injectable()
 export class GameSessionsService {
   private readonly logger = new Logger(GameSessionsService.name);
@@ -49,24 +56,25 @@ export class GameSessionsService {
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
     private readonly marketService?: MarketService,
+    private readonly storyPoolService?: StoryPoolService,
   ) {}
 
-  async createSession(
-    userId: string = 'demo-user-001',
-    difficulty: string = 'easy',
+  /**
+   * Bir vakanın planını (CasePlan), gerçeklerini (CaseFacts) ve metinlerini (ScenarioDraft)
+   * içeren bağımsız StoryPackage nesnesi üretir. Veritabanına yazmaz.
+   * Ahmet'in toplu üretim komutu (stories:generate) ve canlı vaka kurulumu bu fonksiyonu çağırır.
+   */
+  async generateStoryPackage(
     scenarioType: string = 'medieval',
-    testMode = false,
-    characterId: string = DEFAULT_CHARACTER_ID,
-  ) {
-    this.logger.log(
-      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType}, character: ${characterId})`,
-    );
-
+    difficulty: string = 'easy',
+    options?: {
+      testMode?: boolean;
+      sessionId?: string;
+      plan?: CasePlan;
+    },
+  ): Promise<StoryPackage> {
     const scenarioConfig = getScenarioConfig(scenarioType, difficulty);
-    const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
-
-    // Suçlu, cinayet tarzı, olay yerinin görünüşü, ipucu ve doğrulayan kanıt kodla belirlenir
-    const plan = planCase(scenarioConfig, difficulty);
+    const plan = options?.plan ?? planCase(scenarioConfig, difficulty);
     const { culpritId } = plan;
 
     this.logger.log(
@@ -75,9 +83,8 @@ export class GameSessionsService {
         `verification: ${plan.verification.kind}/${plan.verification.placement.type}`,
     );
 
-    // Kimlik önceden üretilir: senaryo çağrılarının token kullanımı da bu vakaya yazılsın
-    const sessionId = randomUUID();
-    const draft: ScenarioDraft = testMode
+    const sessionId = options?.sessionId ?? randomUUID();
+    const draft: ScenarioDraft = options?.testMode
       ? this.buildTestScenario(scenarioConfig, plan)
       : await this.llm.generateSessionScenario(
           difficulty,
@@ -85,10 +92,40 @@ export class GameSessionsService {
           plan,
           sessionId,
         );
-    const { scenario, truthReveal, npcPrompts, locationClues } = draft;
-    const caseFacts = buildCaseFacts(plan, draft);
 
+    const facts = buildCaseFacts(plan, draft);
     this.logger.log(`Scenario generated. Culprit is confirmed: ${culpritId}`);
+
+    return {
+      scenarioType,
+      difficulty,
+      wildcardCount: 0,
+      gameMode: 'standard',
+      plan,
+      facts,
+      draft,
+    };
+  }
+
+  /**
+   * Verilen StoryPackage nesnesinden oyundaki oturumu kurar (GameSession, SessionNpcState).
+   * Hem canlı üretilen paketler hem de havuzdan seçilen paketler bu fonksiyonla başlatılır.
+   */
+  async setupSessionFromPackage(
+    userId: string,
+    pkg: StoryPackage,
+    options?: {
+      isTestMode?: boolean;
+      characterId?: string;
+      storyId?: string;
+      sessionId?: string;
+    },
+  ) {
+    const sessionId = options?.sessionId ?? randomUUID();
+    const characterId = options?.characterId ?? DEFAULT_CHARACTER_ID;
+    const isTestMode = Boolean(options?.isTestMode);
+    const scenarioConfig = getScenarioConfig(pkg.scenarioType, pkg.difficulty);
+    const allowedNpcIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
 
     await this.prisma.gameSession.updateMany({
       where: {
@@ -104,16 +141,17 @@ export class GameSessionsService {
       data: {
         id: sessionId,
         userId,
-        difficulty,
-        scenarioType,
-        scenario,
-        truthReveal,
-        locationClues,
-        culpritId,
-        caseFacts: caseFacts as unknown as Prisma.InputJsonValue,
+        difficulty: pkg.difficulty,
+        scenarioType: pkg.scenarioType,
+        scenario: pkg.draft.scenario,
+        truthReveal: pkg.draft.truthReveal,
+        locationClues: pkg.draft.locationClues,
+        culpritId: pkg.plan.culpritId,
+        caseFacts: pkg.facts as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
-        isTestMode: testMode,
+        isTestMode,
         characterId,
+        storyId: options?.storyId ?? null,
       },
     });
 
@@ -123,11 +161,14 @@ export class GameSessionsService {
       const isMainNpc = allowedNpcIds.includes(npc.id);
       const isNarrator =
         npc.id.startsWith('narrator_') &&
-        scenarioConfig.locationDefinitions.some((location) => npc.id === `narrator_${location.id}`);
+        scenarioConfig.locationDefinitions.some(
+          (location) => npc.id === `narrator_${location.id}`,
+        );
 
       if (!isMainNpc && !isNarrator) continue;
 
-      const dynamicPrompt = npcPrompts[npc.id] || 'No dynamic prompt generated.';
+      const dynamicPrompt =
+        pkg.draft.npcPrompts?.[npc.id] || 'No dynamic prompt generated.';
 
       await this.prisma.sessionNpcState.create({
         data: {
@@ -140,8 +181,101 @@ export class GameSessionsService {
       });
     }
 
-    this.logger.log(`Session ${session.id} fully created and populated (difficulty: ${difficulty}).`);
+    this.logger.log(
+      `Session ${session.id} fully created and populated (difficulty: ${pkg.difficulty}, storyId: ${options?.storyId ?? 'live'}).`,
+    );
     return toPublicSession(session);
+  }
+
+  async createSession(
+    userId: string = 'demo-user-001',
+    difficulty: string = 'easy',
+    scenarioType: string = 'medieval',
+    testMode = false,
+    characterId: string = DEFAULT_CHARACTER_ID,
+  ) {
+    this.logger.log(
+      `Creating new ${testMode ? 'TEST (no AI)' : 'dynamic'} session for user: ${userId} (difficulty: ${difficulty}, scenario: ${scenarioType}, character: ${characterId})`,
+    );
+
+    // 1. Havuz açıksa ve test modu değilse havuzdan hazır onaylı hikâye ara
+    if (!testMode && this.isPoolEnabled()) {
+      const pooled = await this.findAvailableStoryFromPool(userId, {
+        universe: scenarioType,
+        difficulty,
+      });
+
+      if (pooled) {
+        this.logger.log(
+          `[StoryPool] Using pooled story ${pooled.id} for user ${userId} (${scenarioType}/${difficulty}). SCENARIO call eliminated.`,
+        );
+        return this.setupSessionFromPackage(userId, pooled.package, {
+          isTestMode: false,
+          characterId,
+          storyId: pooled.id,
+        });
+      }
+
+      this.logger.warn(
+        `[StoryPool] No unplayed approved story in pool for ${scenarioType}/${difficulty}. Falling back to live generation.`,
+      );
+    }
+
+    // 2. Canlı üretim (veya test modu)
+    const sessionId = randomUUID();
+    const pkg = await this.generateStoryPackage(scenarioType, difficulty, {
+      testMode,
+      sessionId,
+    });
+
+    return this.setupSessionFromPackage(userId, pkg, {
+      isTestMode: testMode,
+      characterId,
+      sessionId,
+    });
+  }
+
+  private isPoolEnabled(): boolean {
+    if (this.storyPoolService) {
+      return this.storyPoolService.isPoolEnabled();
+    }
+    return process.env.STORY_POOL_ENABLED === 'true';
+  }
+
+  private async findAvailableStoryFromPool(
+    userId: string,
+    criteria: StoryCriteria,
+  ): Promise<{ id: string; package: StoryPackage } | null> {
+    if (this.storyPoolService) {
+      return this.storyPoolService.findAvailableStory(userId, criteria);
+    }
+    if (!this.prisma.story) return null;
+
+    const candidates = await this.prisma.story.findMany({
+      where: {
+        universe: criteria.universe,
+        difficulty: criteria.difficulty,
+        status: 'APPROVED',
+        NOT: {
+          sessions: {
+            some: { userId },
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (candidates.length === 0) return null;
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    const story = await this.prisma.story.findUnique({
+      where: { id: chosen.id },
+    });
+    if (!story) return null;
+    try {
+      return { id: story.id, package: parseStoryPackage(story.content) };
+    } catch {
+      return null;
+    }
   }
 
   // Test modu: yapay zekâ çağrılmadan, plana uyan yer tutucu bir vaka kurar
@@ -163,7 +297,9 @@ export class GameSessionsService {
       : `${plan.crimeSceneClue.implicatedNpcIds.map(name).join(' ve ')} ile bağlantılı bir eşya (tuzak).`;
     const { placement } = plan.verification;
     const verificationText = `[TEST MODU] ${plan.verification.kind === 'CORROBORATION' ? 'İzi doğrulayan' : 'Tuzağı ele veren'} kanıt: ${
-      placement.type === 'LOCATION' ? `${placement.locationId} mekânında` : `${name(placement.npcId)} tanıklığında`
+      placement.type === 'LOCATION'
+        ? `${placement.locationId} mekânında`
+        : `${name(placement.npcId)} tanıklığında`
     }.`;
 
     const locationClues: Record<string, string> = {};
@@ -171,7 +307,8 @@ export class GameSessionsService {
       locationClues[location.id] =
         location.id === 'crime_scene'
           ? `[TEST MODU] ${sceneText} ${clueText}`
-          : placement.type === 'LOCATION' && placement.locationId === location.id
+          : placement.type === 'LOCATION' &&
+              placement.locationId === location.id
             ? verificationText
             : `[TEST MODU] ${location.id} için yer tutucu ipucu.`;
     }
@@ -185,7 +322,10 @@ export class GameSessionsService {
       victim: { name: 'Test Kurbanı', profession: 'Yer tutucu' },
       verificationText,
       alibis: Object.fromEntries(
-        plan.innocentIds.map((id) => [id, `[TEST MODU] ${name(id)} cinayet saatinde başka yerdeydi.`]),
+        plan.innocentIds.map((id) => [
+          id,
+          `[TEST MODU] ${name(id)} cinayet saatinde başka yerdeydi.`,
+        ]),
       ),
       // Yanılabilen tanıklık: tarifin uyduğu şüpheliler test modunda açıkça yazılır
       witnessDescription: plan.verification.witnessDescriptionFits
@@ -204,7 +344,9 @@ export class GameSessionsService {
     });
     // Son günden sonra gün yoktur: hüküm verilir (vaka uzunluğu sunucuda, İkinci Nefes uzatabilir)
     if (session.currentDay >= lastDayOf(session.abilityState)) {
-      throw new BadRequestException('Soruşturmanın son günündesin; hükmünü ver.');
+      throw new BadRequestException(
+        'Soruşturmanın son günündesin; hükmünü ver.',
+      );
     }
     return toPublicSession(await this.advanceDay(session));
   }
@@ -226,7 +368,11 @@ export class GameSessionsService {
 
     for (const state of session.npcStates) {
       // Vizör Kilidi'ndeki şüphelinin korkusu gece azalmaz
-      const newFear = fearAfterNight(state.npcId, state.currentFear, abilityState);
+      const newFear = fearAfterNight(
+        state.npcId,
+        state.currentFear,
+        abilityState,
+      );
       await this.prisma.sessionNpcState.update({
         where: { id: state.id },
         data: { currentFear: newFear },
@@ -280,7 +426,9 @@ export class GameSessionsService {
 
     const abilityState = parseAbilityState(session.abilityState);
     if (abilityState.secondBreath?.clearedNpcId === npcId) {
-      throw new BadRequestException('Bu kişinin masum olduğu zaten ortaya çıktı.');
+      throw new BadRequestException(
+        'Bu kişinin masum olduğu zaten ortaya çıktı.',
+      );
     }
 
     const won = session.culpritId === npcId;
@@ -303,7 +451,7 @@ export class GameSessionsService {
           abilityState: {
             ...abilityState,
             secondBreath: { clearedNpcId: npcId, extended },
-          } as unknown as Prisma.InputJsonValue,
+          },
         },
       });
       const advanced = await this.advanceDay(full);
@@ -346,10 +494,10 @@ export class GameSessionsService {
       },
     });
 
-    let reward = null;
+    let reward: Record<string, unknown> | null = null;
     if (won && this.marketService) {
       try {
-        reward = await this.marketService.awardCaseReward(
+        reward = (await this.marketService.awardCaseReward(
           userId,
           session.id,
           session.currentDay,
@@ -357,9 +505,10 @@ export class GameSessionsService {
             halved: !!abilityState.secondBreath,
             multiplier: verdict ? rewardMultiplier(verdict.total) : 1,
           },
-        );
-      } catch (err: any) {
-        this.logger.error(`Error awarding case reward: ${err.message}`);
+        )) as Record<string, unknown>;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.error(`Error awarding case reward: ${msg}`);
       }
     }
 
@@ -367,7 +516,9 @@ export class GameSessionsService {
       success: true,
       won,
       culpritId: session.culpritId,
-      message: won ? 'Doğru kişiyi buldun! Adalet yerini buldu.' : 'Masum birini mahkûm ettin.',
+      message: won
+        ? 'Doğru kişiyi buldun! Adalet yerini buldu.'
+        : 'Masum birini mahkûm ettin.',
       session: updatedSession,
       reward,
       verdict,
@@ -432,7 +583,9 @@ export class GameSessionsService {
   }
 
   async consumeWarrant(sessionId: string, userId: string, location: string) {
-    this.logger.log(`Consuming warrant for ${location} in session: ${sessionId}`);
+    this.logger.log(
+      `Consuming warrant for ${location} in session: ${sessionId}`,
+    );
 
     const session = await findOwnedSession(this.prisma, sessionId, userId);
 
@@ -514,7 +667,15 @@ export class GameSessionsService {
     return this.prisma.evidence.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, kind: true, category: true, sourceId: true, text: true, dayNumber: true, createdAt: true },
+      select: {
+        id: true,
+        kind: true,
+        category: true,
+        sourceId: true,
+        text: true,
+        dayNumber: true,
+        createdAt: true,
+      },
     });
   }
 

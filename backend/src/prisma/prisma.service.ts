@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
@@ -24,6 +29,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly userPurchase = prismaClient.userPurchase;
   readonly tokenTransaction = prismaClient.tokenTransaction;
   readonly llmUsage = prismaClient.llmUsage;
+  readonly story = prismaClient.story;
 
   get $transaction() {
     return prismaClient.$transaction.bind(prismaClient);
@@ -31,7 +37,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     await prismaClient.$connect();
-    this.logger.log('✅ Database connected successfully (Prisma 7 + PrismaPg adapter).');
+    this.logger.log(
+      '✅ Database connected successfully (Prisma 7 + PrismaPg adapter).',
+    );
   }
 
   async onModuleDestroy() {

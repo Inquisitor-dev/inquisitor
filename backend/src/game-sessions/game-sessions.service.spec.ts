@@ -206,8 +206,13 @@ describe('GameSessionsService — erişim ve gizlilik', () => {
     expect(gameSession.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { currentDay: 2, timeOfDay: 1 } }),
     );
-    const fearUpdates = (prisma.sessionNpcState.update as jest.Mock).mock.calls.map(
-      ([arg]: [{ where: { id: string }; data: { currentFear: number } }]) => [arg.where.id, arg.data.currentFear],
+    const fearUpdates = (
+      prisma.sessionNpcState.update as jest.Mock
+    ).mock.calls.map(
+      ([arg]: [{ where: { id: string }; data: { currentFear: number } }]) => [
+        arg.where.id,
+        arg.data.currentFear,
+      ],
     );
     expect(fearUpdates).toEqual([
       ['s-mill', 5],
@@ -381,4 +386,151 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
       expect(saved.locationClues.crime_scene).toBeTruthy();
     },
   );
+
+  it('paket üret ve paketten kur bağımsız çalışabilir', async () => {
+    const { service, create } = setupCreate();
+    const pkg = await service.generateStoryPackage('medieval', 'easy', {
+      testMode: true,
+    });
+    expect(pkg.plan).toBeDefined();
+    expect(pkg.facts).toBeDefined();
+    expect(pkg.draft).toBeDefined();
+    expect(create).not.toHaveBeenCalled();
+
+    const session = await service.setupSessionFromPackage('owner', pkg, {
+      isTestMode: true,
+      storyId: 'story-xyz',
+    });
+
+    expect(create).toHaveBeenCalledTimes(1);
+    const createdData = create.mock.calls[0][0].data;
+    expect(createdData.storyId).toBe('story-xyz');
+    expect(createdData.culpritId).toBe(pkg.plan.culpritId);
+    expectNoSecrets(session);
+  });
+
+  describe('STORY_POOL_ENABLED ve havuzdan vaka açma', () => {
+    afterEach(() => {
+      delete process.env.STORY_POOL_ENABLED;
+    });
+
+    it('havuz açıkken ve onaylı hikâye varken yapay zekâ çağrılmaz, storyId bağlanır', async () => {
+      process.env.STORY_POOL_ENABLED = 'true';
+      const { create } = setupCreate();
+      const mockLlm = {
+        generateSessionScenario: jest.fn(),
+      } as unknown as LlmService;
+
+      const mockStoryPool = {
+        isPoolEnabled: jest.fn().mockReturnValue(true),
+        findAvailableStory: jest.fn().mockResolvedValue({
+          id: 'pooled-story-123',
+          package: {
+            scenarioType: 'medieval',
+            difficulty: 'easy',
+            plan: {
+              culpritId: 'mill',
+              innocentIds: ['tavern'],
+              crimeSceneClue: { authentic: true, poolClueId: 'c1' },
+              verification: {
+                kind: 'CORROBORATION',
+                placement: { type: 'LOCATION' },
+              },
+            },
+            facts: {
+              culpritId: 'mill',
+              innocentIds: ['tavern'],
+              crimeSceneClueText: 'ipucu',
+              verificationText: 'kanıt',
+              victim: { name: 'Kurban' },
+              alibis: { tavern: 'oradaydı' },
+            },
+            draft: {
+              scenario: 'Havuzdan gelen hikaye.',
+              truthReveal: 'Değirmenci yaptı.',
+              culpritId: 'mill',
+              npcPrompts: { mill: 'promp1' },
+              locationClues: { crime_scene: 'ipucu' },
+            },
+          },
+        }),
+      };
+
+      const prisma = {
+        gameSession: { updateMany: jest.fn(), create },
+        npc: { findMany: jest.fn().mockResolvedValue([]) },
+        sessionNpcState: { create: jest.fn() },
+      } as unknown as PrismaService;
+
+      const serviceWithPool = new GameSessionsService(
+        prisma,
+        mockLlm,
+        undefined,
+        mockStoryPool as any,
+      );
+
+      const session = await serviceWithPool.createSession(
+        'owner',
+        'easy',
+        'medieval',
+        false,
+      );
+
+      expect(mockStoryPool.findAvailableStory).toHaveBeenCalledWith('owner', {
+        universe: 'medieval',
+        difficulty: 'easy',
+      });
+      expect(mockLlm.generateSessionScenario).not.toHaveBeenCalled();
+      expect(create).toHaveBeenCalledTimes(1);
+      expect(create.mock.calls[0][0].data.storyId).toBe('pooled-story-123');
+      expect(create.mock.calls[0][0].data.scenario).toBe(
+        'Havuzdan gelen hikaye.',
+      );
+      expectNoSecrets(session);
+    });
+
+    it('havuz boşsa canlı üretime düşer', async () => {
+      process.env.STORY_POOL_ENABLED = 'true';
+      const { create } = setupCreate();
+      const mockLlm = {
+        generateSessionScenario: jest.fn().mockResolvedValue({
+          scenario: 'Canlı üretilen hikaye.',
+          truthReveal: 'Canlı gerçek.',
+          culpritId: 'mill',
+          npcPrompts: {},
+          locationClues: { crime_scene: 'canlı iz' },
+        }),
+      } as unknown as LlmService;
+
+      const mockStoryPool = {
+        isPoolEnabled: jest.fn().mockReturnValue(true),
+        findAvailableStory: jest.fn().mockResolvedValue(null),
+      };
+
+      const prisma = {
+        gameSession: { updateMany: jest.fn(), create },
+        npc: { findMany: jest.fn().mockResolvedValue([]) },
+        sessionNpcState: { create: jest.fn() },
+      } as unknown as PrismaService;
+
+      const serviceWithPool = new GameSessionsService(
+        prisma,
+        mockLlm,
+        undefined,
+        mockStoryPool as any,
+      );
+
+      const session = await serviceWithPool.createSession(
+        'owner',
+        'easy',
+        'medieval',
+        false,
+      );
+
+      expect(mockStoryPool.findAvailableStory).toHaveBeenCalled();
+      expect(mockLlm.generateSessionScenario).toHaveBeenCalled();
+      expect(create.mock.calls[0][0].data.storyId).toBeNull();
+      expectNoSecrets(session);
+    });
+  });
 });

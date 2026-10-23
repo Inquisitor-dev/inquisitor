@@ -12,26 +12,30 @@ import { NpcsModule } from './npcs/npcs.module';
 import { LlmModule } from './llm/llm.module';
 import { MarketModule } from './market/market.module';
 import { PaymentsModule } from './payments/payments.module';
+import { StoriesModule } from './stories/stories.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 20, // 1 dakikada maks 20 diyalog isteği
-    }]),
-    PrismaModule, 
-    UsersModule, 
-    AuthModule, 
-    GameSessionsModule, 
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 20, // 1 dakikada maks 20 diyalog isteği
+      },
+    ]),
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    GameSessionsModule,
     BoardModule,
     AbilitiesModule,
     NotebookModule,
-    NpcsModule, 
+    NpcsModule,
     LlmModule,
     MarketModule,
     PaymentsModule,
+    StoriesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,7 +43,7 @@ import { APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    }
+    },
   ],
 })
 export class AppModule {}

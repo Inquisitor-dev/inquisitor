@@ -63,10 +63,37 @@ model GameSession {
   characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
   abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
   verdictReport  Json?                          // Hüküm Dosyası: oyuncunun raporu ve puanı (src/game-sessions/verdict/verdict-report.ts)
+  storyId        String?                        // Havuzdan seçilmişse bağlı olduğu hikâye paketi
+  story          Story?            @relation(fields: [storyId], references: [id])
   createdAt     DateTime          @default(now())
   npcStates     SessionNpcState[]
   dialogues     DialogueHistory[]
   evidence      Evidence[]
+}
+
+enum StoryStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+// Önceden üretilmiş ve doğrulanmış hikâye havuzu (Vaka Motoru v2)
+model Story {
+  id            String        @id @default(uuid())
+  universe      String        // medieval, modern, cyberpunk, china, winter
+  difficulty    String        // easy, medium, hard
+  wildcardCount Int           @default(0)
+  gameMode      String        @default("standard")
+  content       Json          // StoryPackage: kodun vaka planı, gerçekler ve yapay zekâ metinleri
+  status        StoryStatus   @default(DRAFT)
+  reviewResults Json?         // Hakem ve onay sonuçları: bulgular, notlar, karar
+  ruleVersion   Int           @default(1)   // Kural sürümü; kurallar geliştikçe eski hikâyeler yeniden taranabilir
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  sessions      GameSession[]
+
+  @@index([universe, difficulty, status])
+  @@index([status])
 }
 
 model Npc {
