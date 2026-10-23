@@ -5,8 +5,9 @@ import { getScenarioDefinition } from '@/config/scenarioRegistry';
 // Adımın düştüğü an döngünün başına denk gelmiyorsa buradan kaydırılır (0–1, döngü kesri)
 const FOOTSTEP_PHASE_OFFSET = 0;
 // İki adım sesi arasındaki asgari süre (ms). Karakter hızlı yürüse veya kare atlasa bile
-// seslerin arka arkaya komik şekilde üst üste binmesini engeller.
-const MIN_STEP_INTERVAL_MS = 280;
+// seslerin arka arkaya komik şekilde üst üste binmesini engeller. Yürüme hızlandığı için
+// (useMapWalking) adımlar sıklaştı; eşik gerçek adım aralığının altında tutulur ki adım atlanmasın.
+const MIN_STEP_INTERVAL_MS = 160;
 
 /**
  * Bir önceki çalınan sesle AYNI OLMAYACAK şekilde rastgele bir sonraki sesi seçer.
