@@ -2,7 +2,7 @@
 
 Hikâye havuzuna girecek bir vaka, insan onayından önce hakemden geçer. Hakem iki parçadır:
 
-1. **Kod kontrolü** (bedava, her zaman çalışır): metinlerde iç kimlik var mı, Türkçe karakterleri eksik yazılmış sık kelimeler (cunku, icin, seyin…) var mı?
+1. **Kod kontrolü** (bedava, her zaman çalışır): metinlerde iç kimlik var mı, Türkçe karakterleri eksik yazılmış sık kelimeler (cunku, icin, seyin…) var mı, rol metninde itiraf talimatı ("Sorguda bunu itiraf edeceksin", kesin hata) kalmış mı, bir mazeret gecenin başka bir vaktini mi söylüyor (ölüm akşam, mazerette "gece yarısı tütsüleri"; şüphe)?
 2. **Yapay zekâ hakemi** (tek Gemini çağrısı, `STORY_REVIEW`): serbest metindeki kaymalar.
 
 Kodu: `backend/src/stories/story-review.ts` (kontroller ve karar), `backend/src/llm/prompts/story-review-prompt.builder.ts` (istem ve cevabın okunması), `LlmService.reviewStory`.
@@ -72,7 +72,7 @@ Ucuz model (Flash-Lite) "bul ve yaz" denince metinleri karşılaştırmadan "sor
 
 ## Deneme seti
 
-`backend/src/stories/review-fixtures.ts`: kurallara uyan temiz bir Ortaçağ vakası ve ondan tek bir hatayla bozulmuş on kopya (her kategoriden; ekip testlerinde görülen kaymaların aynısı). Temiz vakada bulgu çıkmamalı; her bozuk vakada beklenen kategoride bir bulgu çıkmalı. Birim testleri kod kontrolünü bu setle ölçer; yapay zekâ hakemi gerçek Gemini ile ölçülür.
+`backend/src/stories/review-fixtures.ts`: kurallara uyan temiz bir Ortaçağ vakası, bulgu vermemesi gereken üç temiz çeşidi (cesedin örtüsü ve ipucunda geçmeyen silah, mazerette sabah yapılacak bir iş, mazeretiyle uyuşan kısmi tanık) ve tek bir hatayla bozulmuş on iki kopya (her kategoriden; ekip testlerinde ve pilotta görülen kaymaların aynısı). Temiz vakalarda bulgu çıkmamalı; her bozuk vakada beklenen kategoride bir bulgu çıkmalı. Birim testleri kod kontrolünü bu setle ölçer; yapay zekâ hakemi gerçek Gemini ile ölçülür.
 
 ## Deneme komutu
 
@@ -83,6 +83,7 @@ Ucuz model (Flash-Lite) "bul ve yaz" denince metinleri karşılaştırmadan "sor
 | `npm run stories:review -- --fixtures [--repeat 3] [--only clean,truth-extra-item] [--verbose]` | Deneme setini hakemden geçirir; yakalama ve yanlış alarm oranını yazar. |
 | `npm run stories:review -- --generate 5 [--universe winter] [--difficulty hard]` | Oyundaki yoldan vaka üretir (`planCase` + `generateSessionScenario`) ve hakemden geçirir; veritabanı gerekmez. |
 | `npm run stories:review -- --sessions 5` | Yerel veritabanındaki son Vaka Motoru v2 vakalarını hakemden geçirir. |
+| `npm run stories:review -- --stories b178ba2b,8d38be6d` | Havuzdaki hikâyeleri bugünkü hakemden yeniden geçirir ve kayıtlı kararla yan yana yazar; kayıt değişmez. Hakem ayarı değişince eski bulguları yeniden ölçmek için. |
 | `--out sonuc.json` | Bütün sonuçları dosyaya yazar. |
 
 ## Havuzu doldurma
@@ -111,6 +112,21 @@ Kovalar (evren × zorluk) sırayla birer birer doldurulur ve var olan reddedilme
 - **Silahı bilmeden veren** karakterin rol metninde iki vakada "sıkıştırıldığında bunu itiraf edeceksin" talimatı var. Senaryo istemindeki "kırılana kadar saklar" ifadesi böyle yazılıyor olabilir.
 
 Bu ikisi üretimde düzeltilebilir (senaryo istemi ya da yeni bir onarım adımı); hakem yakalamaya devam eder.
+
+## Pilottan sonra ayar (23 Ekim 2026)
+
+Pilotun 15 hikâyesinde hakemin yanıldığı üç yer düzeltildi:
+
+| Pilottaki hata | Ayar | Yeniden ölçüm (`--stories`) |
+|---|---|---|
+| Haksız ret (Çin-zor): "sabah teslim edilecek kılıçları dövüyordu" ölüm saatiyle çelişki sayıldı | Çalışma kâğıdında yalnızca planlanan ya da gelecekteki bir işi söyleyen saat atlanır | Kesin hata kalktı |
+| Gereksiz şüphe: cesedin örtüsü (modern-zor) ve cinayet aleti (cyberpunk-orta) ipuçlarında geçmiyor | İkisi "bildirme" listesinde; gerçek metnindeki kanıtlar arasında sayılmaz | İki hikâyede de bildirilmedi |
+| Kaçırılan: kısmi tanığın gördüğü yer kişinin mazeretiyle uyuşmuyor (cyberpunk-orta) | Kadroda kısmi tanığın kimi gördüğü yazılır; çalışma kâğıdına `sightings` satırı | 3/3 denemede yakalandı |
+| Kaçırılan: mazerette ölüm saatiyle çelişen saat (Çin-zor, "gece yarısı tütsüleri", ölüm akşam) | Kâğıtta üç gece vakti ayrı sayılır; hakem yine kaçırdı (3/3), kod kontrolü eklendi | Kod yakalıyor (şüphe) |
+
+İstem uzayınca hakem rol metnindeki itiraf talimatını ara sıra atladı (main'de 3/3, ayardan sonra 2/4); bu kontrol de koda taşındı (`findConfessionInstructions`, üretimdeki `removeConfessionInstructions` ile aynı kural).
+
+Deneme seti (16 vaka, 1 tur): bozuk vakaların 12/12'si yakalandı, temiz vakalarda yanlış alarm 0/4; hakem ortalama ~3.700 token.
 
 ## İnsan onayı
 

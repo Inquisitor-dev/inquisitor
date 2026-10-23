@@ -5,6 +5,8 @@
 //     [--universe medieval]  evren (varsayılan: hepsi sırayla)
 //     [--difficulty easy]    zorluk (varsayılan: hepsi sırayla)
 //   --sessions N             yerel veritabanındaki son N gerçek (Vaka Motoru v2) vakayı hakemden geçirir
+//   --stories a,b            havuzdaki bu hikâyeleri (kimlik ya da ilk 8 karakteri) bugünkü hakemden
+//                            yeniden geçirir; kayıtlı hakem sonucu değişmez, yalnızca karşılaştırılır
 //     [--only a,b]           yalnızca bu id'li deneme vakaları
 //   --verbose                deneme setinde de her bulguyu alıntısıyla yazar
 //   --out dosya.json         bütün sonuçları JSON olarak kaydeder
@@ -30,6 +32,14 @@ import {
   reviewStory,
 } from '../src/stories/story-review';
 import { REVIEW_FIXTURES } from '../src/stories/review-fixtures';
+import {
+  packageToReviewInput,
+  parseStoryPackage,
+} from '../src/stories/story-package';
+import {
+  parseReviewRecord,
+  resolveStoryId,
+} from '../src/stories/story-approval';
 import { evaluateFixture, summarizeFixtures } from '../src/stories/review-eval';
 
 Logger.overrideLogger(['warn', 'error']);
@@ -244,6 +254,55 @@ async function runSessions(total: number) {
   }
 }
 
+// Havuzdaki hikâyeleri yeniden hakemden geçirir: hakem ayarı değişince eski kararla yan yana görülür
+async function runStories(prefixes: string[]) {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+  try {
+    const ids = (
+      await prisma.story.findMany({
+        where: {
+          OR: prefixes.map((prefix) => ({ id: { startsWith: prefix } })),
+        },
+        select: { id: true },
+      })
+    ).map((story) => story.id);
+    const cases: {
+      id: string;
+      before: string | null;
+      result: StoryReviewResult;
+    }[] = [];
+    for (const [i, prefix] of prefixes.entries()) {
+      const resolved = resolveStoryId(prefix, ids);
+      if ('error' in resolved) {
+        console.log(`
+[${i + 1}/${prefixes.length}] ${resolved.error}`);
+        continue;
+      }
+      const story = await prisma.story.findUnique({
+        where: { id: resolved.id },
+      });
+      if (!story) continue;
+      const input = packageToReviewInput(parseStoryPackage(story.content));
+      const before =
+        parseReviewRecord(story.reviewResults)?.review?.verdict ?? null;
+      usage.review = 0;
+      const result = await reviewStory(input, judge);
+      printResult(
+        `[${i + 1}/${prefixes.length}] ${story.id.slice(0, 8)} · ${story.universe} · ${story.difficulty} · önceki karar: ${before ?? '-'}`,
+        input,
+        result,
+      );
+      cases.push({ id: story.id, before, result });
+      await sleep(PAUSE_MS);
+    }
+    return cases;
+  } finally {
+    await prisma.$disconnect();
+    await pool.end();
+  }
+}
+
 async function main() {
   if (!process.env.GEMINI_API_KEY) {
     console.error('GEMINI_API_KEY tanımlı değil (backend/.env).');
@@ -257,9 +316,11 @@ async function main() {
     report.generated = await runGenerated(count('generate', 1));
   if (option('sessions') !== undefined)
     report.sessions = await runSessions(count('sessions', 5));
+  if (option('stories'))
+    report.stories = await runStories(option('stories')!.split(','));
   if (Object.keys(report).length === 0) {
     console.log(
-      'Kullanım: npm run stories:review -- --fixtures [--repeat N] [--only a,b] | --generate N [--universe X] [--difficulty Y] | --sessions N [--verbose] [--out dosya.json]',
+      'Kullanım: npm run stories:review -- --fixtures [--repeat N] [--only a,b] | --generate N [--universe X] [--difficulty Y] | --sessions N | --stories a,b [--verbose] [--out dosya.json]',
     );
     return;
   }
