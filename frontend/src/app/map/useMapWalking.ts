@@ -13,13 +13,19 @@ import {
 
 export const CHARACTER_REF_LAYER_SCALE = 0.6;
 export const CHARACTER_SPRITE_SCALE = 0.36;
-// Yürüme hızı çarpanı: tüm hız sabitleri (eski değerler 15 / 75 / 90 / 9 sn) bununla ölçeklenir.
+// Yürüme hızı çarpanı: yüzde tabanlı yolların hızı (eski değerler 15 / 75) bununla ölçeklenir.
 // Yürüyüş sprite'ı ve ayak sesleri mesafeden türetilen faza bağlı olduğundan hız artınca birlikte hızlanır.
-const WALK_SPEED_MULTIPLIER = 1.75;
+const WALK_SPEED_MULTIPLIER = 5;
 const WALK_SPEED = 15 * WALK_SPEED_MULTIPLIER;
+// Görsel yollarda hız (referans piksel/sn) rotanın uzunluğuna göre seçilir: kısa rotalar
+// SCREEN_WALK_SPEED ile yürünür, uzun rotalar WALK_MAX_DURATION içinde bitecek kadar hızlanır.
+// Böylece her yolculuk 4 saniyenin altında kalır (tipik ~2,5–3 sn, en uzun ~3,5 sn).
 const SCREEN_WALK_SPEED = 75 * WALK_SPEED_MULTIPLIER;
-const WALK_MAX_SPEED = 90 * WALK_SPEED_MULTIPLIER;
-const WALK_MAX_DURATION = 9 / WALK_SPEED_MULTIPLIER;
+const WALK_MAX_SPEED = 850;
+const WALK_MAX_DURATION = 2.4;
+// Hızlı yürüyüşte bir sprite döngüsü bu kat daha uzun yol alır (koşar adım). Böylece sprite
+// saniyede 8-10 döngüye çıkıp bulanıklaşmaz; fark küçük olduğundan ayak kayması belli olmaz.
+const WALK_STRIDE_FACTOR = 1.5;
 const WALK_ACCEL_TIME = 0.25;
 const WALK_DECEL_DISTANCE = 30;
 const WALK_LOOKAHEAD = 12;
@@ -197,7 +203,8 @@ export function useMapWalking({
 
         if (stride > 0) {
           phase +=
-            (advance * CHARACTER_REF_LAYER_SCALE) / (stride * CHARACTER_SPRITE_SCALE * characterScale * depth);
+            (advance * CHARACTER_REF_LAYER_SCALE) /
+            (stride * WALK_STRIDE_FACTOR * CHARACTER_SPRITE_SCALE * characterScale * depth);
           setWalkPhase(phase);
         }
 
