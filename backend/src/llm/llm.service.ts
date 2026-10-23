@@ -56,6 +56,7 @@ import {
   parseStoryReview,
 } from './prompts/story-review-prompt.builder';
 import type { StoryIssue, StoryReviewInput } from '../stories/story-review';
+import { removeConfessionInstructions } from './prompts/confession-instructions';
 
 export type { ScenarioDraft };
 
@@ -295,10 +296,15 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      return cleanDraftIds(
+      const cleaned = cleanDraftIds(
         ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
         npcNames,
       );
+      // İtirafı oyun verir: rol metinlerinde "sorguda itiraf edeceksin" gibi talimat kalmaz
+      return {
+        ...cleaned,
+        npcPrompts: removeConfessionInstructions(cleaned.npcPrompts ?? {}),
+      };
     } catch {
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
