@@ -7,6 +7,19 @@ Hikâye havuzuna girecek bir vaka, insan onayından önce hakemden geçer. Hakem
 
 Kodu: `backend/src/stories/story-review.ts` (kontroller ve karar), `backend/src/llm/prompts/story-review-prompt.builder.ts` (istem ve cevabın okunması), `LlmService.reviewStory`.
 
+## Hakemden önce: kod doğrulaması
+
+Üretilen her hikâye paketi (`StoryPackage`) hakeme gitmeden `validateStoryPackage` (`backend/src/stories/story-validation.ts`) ile denetlenir. Yapay zekâ çağrılmaz.
+
+| Kontrol | Ne bakar? | Sonuç |
+|---|---|---|
+| Eksik alan | Vaka Motoru v2 alanları (`validateV2StoryPackage`) | hata |
+| Plana uyum | Plan, gerçekler ve metinler aynı katili ve aynı silah, motif, saat, olay yerini söylüyor mu; her şüphelinin rol metni, her mekânın ipucu, her masumun mazereti ve tek bir cinayet bağı var mı; silah evrenin kataloğunda mı; tanık varsa eşkâli yazılmış mı | hata |
+| Katilin erken sızması | Oyunun başında okunan vaka metni (`scenario`) kurbanın adını veriyor mu, şüphelilerden yalnızca katili mi anıyor | hata; katil ve şüphelilerin bir kısmı anılıyorsa uyarı |
+| Çözücü | Plan `isPlanSound`'dan geçiyor mu: 2 arama izniyle çözülebilir, zorluğa yetecek emek, iki bağımsız yol | hata |
+
+Hatası olan paket reddedilir, uyarısı olan insana gider. 10 gerçek üretilmiş vakanın hepsi doğrulamadan geçti.
+
 ## Girdi
 
 Hakem bir vakayı `StoryReviewInput` olarak okur:
