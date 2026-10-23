@@ -23,6 +23,7 @@
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
     "usage:report": "ts-node -r tsconfig-paths/register prisma/llm-usage-report.ts",
     "stories:review": "ts-node -r tsconfig-paths/register prisma/story-review.ts",
+    "stories:generate": "ts-node -r tsconfig-paths/register prisma/story-generate.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

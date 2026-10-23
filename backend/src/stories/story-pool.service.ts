@@ -82,11 +82,14 @@ export class StoryPoolService {
   /**
    * Üretilen bir hikâye paketini taslak (DRAFT) olarak veritabanına kaydeder.
    * v2 paketi ise varsayılan ruleVersion 2 yapılır.
+   * Üretim komutu (stories:generate) kod doğrulaması ve hakem sonucunu da yazar; doğrulamadan
+   * kalan ya da hakemin reddettiği hikâye doğrudan REJECTED kaydedilir.
    */
   async saveDraft(
     criteria: StoryCriteria,
     pkg: StoryPackage,
     ruleVersion?: number,
+    options?: { status?: 'DRAFT' | 'REJECTED'; reviewResults?: unknown },
   ) {
     const version = ruleVersion ?? (isV2StoryPackage(pkg) ? 2 : 1);
     return this.prisma.story.create({
@@ -96,8 +99,13 @@ export class StoryPoolService {
         wildcardCount: criteria.wildcardCount ?? 0,
         gameMode: criteria.gameMode ?? 'standard',
         content: pkg as unknown as Prisma.InputJsonValue,
-        status: 'DRAFT',
+        status: options?.status ?? 'DRAFT',
         ruleVersion: version,
+        ...(options?.reviewResults
+          ? {
+              reviewResults: options.reviewResults,
+            }
+          : {}),
       },
     });
   }
