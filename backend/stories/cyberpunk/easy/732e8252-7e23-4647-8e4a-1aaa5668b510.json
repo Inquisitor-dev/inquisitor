@@ -1,0 +1,204 @@
+{
+  "id": "732e8252-7e23-4647-8e4a-1aaa5668b510",
+  "universe": "cyberpunk",
+  "difficulty": "easy",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:20:38.904Z",
+  "updatedAt": "2026-10-23T18:03:20.645Z",
+  "content": {
+    "plan": {
+      "motive": "JEALOUSY",
+      "weaponId": "fiber_cable",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "capsule_hotel",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "tavern"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "tavern",
+          "graveyard"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sentetik_yag",
+        "poolClueText": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 7,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "mill": "Cinayet saatinde, Tamirhane'nin ana atölyesinde arızalı bir suni sinir ağı işlemcisinin kalibrasyon testlerini yapıyor ve sistem loglarını güncelliyordum.",
+        "church": "Cinayet saatinde, siber-cerrah Brakk Coil ile birlikte Lokanta'nın arka odasında yeni bir çorba tarifi deniyor ve dükkanın hesap defterini düzenliyorduk.",
+        "graveyard": "Cinayet saatinde, Lokanta'da Mirel Sato ile birlikte oturup eski günlerden ve sokak siber-tıbbından konuşuyorduk."
+      },
+      "victim": {
+        "name": "Cenk Demirci",
+        "profession": "Veri Brokeri"
+      },
+      "scenario": "Neon Prime'ın asla uyumayan, siber-gözlerin her köşeyi dikizlediği asit yağmurlu gecelerinden birinde, Kapsül Otel Koridoru'nun sessizliği acil durum sirenleriyle yırtıldı. Megakentin gökdelenlerinin arasında sıkışıp kalmış bu dar koridorda, siber-tıp laboratuvarlarının mavimsi ışıltısı altında soğuk bir ceset bulundu. Kurban, neon ışıklarının sönmeye yüz tuttuğu saatlerde hayattan koparılmıştı. Şehrin bu karanlık köşesinde herkesin gizlediği sırlar, neon tabelalarının gölgesinde saklanırken; bu cinayet, polisin, aşçının, siber-cerrahın ve tamirci androidin karmaşık ilişkiler ağını gün ışığına çıkaracak.",
+      "culpritId": "tavern",
+      "npcPrompts": {
+        "mill": "Sen AURA-9'sun. Tamirhanede çalışan otonom bir teknisyen androidsin. Cinayet gecesi olay yerinin yakınından geçerken uzun boylu, deri önlüklü bir figür gördün ancak yüzünü tarayamadın. Inquisitor bu konuyu açarsa gördüğün bu detayları ve yere damlayan mavi sentetik eklem yağı izini rapor edersin.",
+        "church": "Sen Mirel Sato'sun. All-night noodle restoranının sahibisin. Tamamen masumsun. Cinayet saatinde Brakk Coil ile birlikte dükkanda oturuyordun. Saklayacak hiçbir suçun yok, sadece gecenin müşterilerine çorba servis ediyorsun.",
+        "tavern": "Sen Memur Kael Voss'sun. Karakolun desk memurusun. Cenk Demirci'yi kıskançlık yüzünden Kapsül Otel Koridoru'nda fiber optik kabloyla boğarak öldürdün ve arkanda mavi eklem yağı damlaları bıraktın. Bu cinayeti saklamak ve şüpheleri başka yöne çekmek için elinden geleni yapıyorsun.",
+        "graveyard": "Sen Brakk Coil'sin. Yeraltı siber-cerrahı ve klinik sahibisin. Cinayetten kısa süre önce, adını bilmediğin birine (aslında katile) bir fiber optik kablo sattın. Cinayet saatinde Mirel Sato ile birlikte idin. Kime sattığını kendi kendine saklıyorsun. Cinayet aletini kime verdiğini biliyorsun: Memur Kael Voss. Bunu kendine saklıyorsun."
+      },
+      "truthReveal": "Neon Prime'ın acımasız sokaklarında geçen bu karanlık gecede, veri brokeri Cenk Demirci, karakolda görevli Memur Kael Voss tarafından kıskançlık yüzünden Kapsül Otel Koridoru'nda ani bir kavgayla boğularak öldürüldü. Olay yerindeki 'Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı.' izi tamamen gerçektir ve katilin cibernetik vücudundan damlamıştır. Memur Kael Voss, kurbanı Brakk Coil'den kısa süre önce temin ettiği fiber optik kablo ile öldürmüştür. Tamirci android AURA-9, tam o sırada olay yerinde uzun boylu ve deri önlüklü bir figür görmüş ancak yüzünü fark edememiştir. Masum aşçı Mirel Sato, cinayet saatinde siber-cerrah Brakk Coil ile birlikte Lokanta'daydı; Lokanta'daki masa kayıt defteri bu buluşmayı doğrulamaktadır. Brakk Coil ise olaydan hemen önce fiber optik kabloyu Memur Kael Voss'a satmış, klinik kayıtlarındaki emanet defterinde bu satış yer almıştır ancak alıcının adı gizli tutulmuştur. Katil Memur Kael Voss'un karakoldaki masasının çekmecesinde bulunan ve kurban ile olan ilişkisini açığa vuran mektuplar suçun motivasyonunu kanıtlamaktadır.",
+      "locationClues": {
+        "mill": "Tamirhane'deki ana çalışma tezgahının orta çekmecesinin içinde, o gece dışarıyı gözetleyen güvenlik kamerasının arızalanmadan hemen önce kaydettiği silinmiş video kütüklerinin yedeğini içeren küçük bir optik disk bulunmaktadır.",
+        "church": "Lokanta'nın mutfak tezgahının altındaki ahşap kasanın içinde, cinayet saatinde Mirel Sato ile Brakk Coil'in birlikte olduğunu ve çorba malzemeleri saytığını gösteren imzalı bir sipariş fişi bulunmaktadır.",
+        "tavern": "Karakol'daki kayıt masasının en alt kilitli çekmecesinin en dibinde, kurban Cenk Demirci ile ilişkisini açığa çıkaran yırtılmış eski bir mektup saklıdır.",
+        "graveyard": "Klinik'teki ameliyat masasının hemen arkasındaki paslanmaz çelik alet dolabının ikinci raflı gözünde, son dönemde satılan malzemelerin kaydedildiği ve alıcı sütunu boş bırakılmış eski bir el terminali veri günlüğü durmaktadır.",
+        "crime_scene": "Holografik polis bariyerinin hemen arkasında, kurbanın yattığı yerin sol köşesindeki metalik ızgaranın üzerinde yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı bulunmaktadır."
+      },
+      "verificationText": "Tanık, olay yerinin yakınlarında uzun boylu ve deri önlüklü bir figür gördüğünü ancak karanlıkta yüzünü seçemediğini doğrulamaktadır.",
+      "witnessDescription": "uzun boylu, deri önlüklü biri"
+    },
+    "facts": {
+      "alibis": {
+        "mill": "Cinayet saatinde, Tamirhane'nin ana atölyesinde arızalı bir suni sinir ağı işlemcisinin kalibrasyon testlerini yapıyor ve sistem loglarını güncelliyordum.",
+        "church": "Cinayet saatinde, siber-cerrah Brakk Coil ile birlikte Lokanta'nın arka odasında yeni bir çorba tarifi deniyor ve dükkanın hesap defterini düzenliyorduk.",
+        "graveyard": "Cinayet saatinde, Lokanta'da Mirel Sato ile birlikte oturup eski günlerden ve sokak siber-tıbbından konuşuyorduk."
+      },
+      "motive": "JEALOUSY",
+      "victim": {
+        "name": "Cenk Demirci",
+        "profession": "Veri Brokeri"
+      },
+      "version": 1,
+      "weaponId": "fiber_cable",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "capsule_hotel",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "tavern"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "tavern",
+          "graveyard"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sentetik_yag",
+        "poolClueText": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 7,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Tanık, olay yerinin yakınlarında uzun boylu ve deri önlüklü bir figür gördüğünü ancak karanlıkta yüzünü seçemediğini doğrulamaktadır.",
+      "crimeSceneClueText": "Holografik polis bariyerinin hemen arkasında, kurbanın yattığı yerin sol köşesindeki metalik ızgaranın üzerinde yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı bulunmaktadır.",
+      "witnessDescription": "uzun boylu, deri önlüklü biri"
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "cyberpunk",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 3955,
+      "generation": 9987
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:20.637Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Mirel'in rolünde 'All-night noodle' (İngilizce sızıntı); Lokanta ipucunda 'saytığını'.",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:20:38.903Z"
+  }
+}

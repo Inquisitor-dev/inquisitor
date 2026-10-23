@@ -1,0 +1,209 @@
+{
+  "id": "b57dc3af-8c40-492d-bdfc-f847be2596d6",
+  "universe": "medieval",
+  "difficulty": "easy",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:06:21.620Z",
+  "updatedAt": "2026-10-23T18:02:44.016Z",
+  "content": {
+    "plan": {
+      "motive": "REVENGE",
+      "weaponId": "hammer",
+      "culpritId": "mill",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "MIDNIGHT",
+      "crimeSceneId": "watchtower",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "church",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "camurlu_cizme_izi",
+        "poolClueText": "Yerde çamurlu, şekli bozulmuş kaba bir çizme izi.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "mill",
+          "tavern"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "church": "Gece yarısı civarında Kardeş Aldric ile birlikte kilisenin karanlıkta kalan mumluk deposunda dua ediyor ve envanter düzenliyorlardı.",
+        "tavern": "Gece yarısı civarında Peder Malachar ile birlikte kilisenin arka odasında eski hesap defterlerini inceliyor ve dışarı adım atmamışlardı.",
+        "graveyard": "Gece yarısı civarında mezarlığın alt kulübesinde uyuyordu ve ancak sabah ezanına doğru uyanıp dışarı çıkmıştı."
+      },
+      "victim": {
+        "name": "Leon Vane",
+        "profession": "Tüccar"
+      },
+      "scenario": "Sürekli tütmekte olan sisin ve çürümüş köknar kokusunun hakim olduğu Ashenmoor köyünde, gecenin karanlığı boğucu bir sessizlikle çökmüştü. Sabahın ilk solgun ışıkları köyün sınırındaki yıkık yapının üzerine vurduğunda, orada yatan ve köylüler tarafından kaba bir keten örtüyle kapatılmış cansız beden keşfedildi. Köyün kaderini sarsacak bu karanlık cinayetin ardından, korku ve şüphe tüm sokakları sarmış durumda; herkes birbirini suçlarken, gerçeği aramak müfettişe düşüyor.",
+      "culpritId": "mill",
+      "npcPrompts": {
+        "mill": "Sen Değirmenci Giles'sın, Ashenmoor'un değirmencisisin. Suçunu örtbas etmek için soğukkanlı görünmeye çalışıyor, hiçbir şey bilmediğini iddia ediyorsun.",
+        "church": "Sen Peder Malachar'sın, Ashenmoor'un rahibisin. Kardeş Aldric o saatte seninle birlikteydi, bunu kesin olarak onaylıyorsun. Ayrıca cinayetten hemen önce kurban sana gelmiş ve büyük bir korku içinde dert yanmıştı; bunu sorgulayanlara çekinmeden aktarırsın.",
+        "tavern": "Sen Kardeş Aldric'sin, Ashenmoor tavernasının işletmecisisin. Olay gecesi Peder Malachar ile birlikte kilisede olduğun için tamamen masumsun; gizleyecek hiçbir sırrın yoktur, her şeyi dürüstçe anlatırsın.",
+        "graveyard": "Sen İhtiyar Silas'sın, köyün mezarcısısın. Olay gecesi uykudaydın ve cinayetle hiçbir ilgin yok; ancak sabah erkenden kulesinin orada cesedi ilk sen buldun ve korkuya kapılarak kurbanın cebindeki gümüş saati alıp mezarlığın toprağına sakladın. Sorguda bunu itiraf edeceksin."
+      },
+      "truthReveal": "Kurban, Ashenmoor'un eski tüccarlarından Leon Vane idi. Katil ise Değirmenci Giles'tı; yıllar önce ailesinin topraklarına hileli borç senetleriyle el koyan Leon Vane'e karşı beslediği derin intikam hırsı, o gece akıl almaz bir patlamaya yol açmıştı. Gece yarısı civarı Yıkık Gözcü Kulesi'nde karşılaşan ikili arasındaki tartışma kavgaya dönüştü ve Giles, panik içinde yakındaki demirci çekicini kaptığı gibi kurbana vurarak onu ortadan kaldırdı. Olay yeri tamamen düzenliydi ve kurbanın üzeri köylüler tarafından sonradan kaba keten bir örtüyle örtülmüştü. Olay yerinde bulunan çamurlu ve şekli bozulmuş kaba çizme izi, Değirmenci Giles'ın aceleyle kaçarken bıraktığı gerçek izdi; nitekim Değirmen'in tahıl ambarının tabanında ele geçirilen ve aynı çamura bulanmış ikinci yedek çamurlu kaba çizme bu cinayeti kesin olarak doğruladı. Bu sırada masum olan Kardeş Aldric ve Peder Malachar o saatte kilisenin arka odasında eski hesap defterlerini inceliyor ve dışarı adım atmamışlardı. İhtiyar Silas ise kurbanı ölü bulduktan sonra cesedin üzerinden küçük gümüş bir köstekli saat çalmış ve mezarlığa saklamıştı; ancak bu hırsızlık onun cinayeti işlediği anlamına gelmiyordu. Peder Malachar ise kurbanla son konuşmasında onun büyük bir korku içinde dert yandığını dinlemişti.",
+      "locationClues": {
+        "mill": "Değirmen'in öğütme taşının altındaki gizli ahşap bölmede saklanan, olay yerindeki çamurlu izle eşleşen tek sol çizme.",
+        "church": "Kilisenin vaftiz kürsüsünün tahta tabanına kazınmış, kurbanın son günlerinde duyduğu korkuyu anlatan günah çıkarma notu.",
+        "tavern": "Tavernanın ana salonundaki kiler dolabının arkasına sıkıştırılmış, o gece Kardeş Aldric ile Peder Malachar'ın kilisede olduklarını ve mum saydıklarını gösteren imzalı kilise kayıt defteri.",
+        "graveyard": "Mezarlıktaki en eski meşe ağacının üç adım kuzeyindeki köklerin arasına gömülmüş, kurbanın üzerinden İhtiyar Silas tarafından alınmış olan gümüş köstekli saat.",
+        "crime_scene": "Yıkık Gözcü Kulesi'nin giriş eşiğinde, kilit taşının hemen altında yer alan çamurlu, şekli bozulmuş kaba bir çizme izi."
+      },
+      "verificationText": "Değirmen'in tahıl ambarının tabanında, olay yerindeki izle birebir uyuşan çamurlu ve şekli bozulmuş kaba bir sol çizme tek olarak ele geçirilmiştir."
+    },
+    "facts": {
+      "alibis": {
+        "church": "Gece yarısı civarında Kardeş Aldric ile birlikte kilisenin karanlıkta kalan mumluk deposunda dua ediyor ve envanter düzenliyorlardı.",
+        "tavern": "Gece yarısı civarında Peder Malachar ile birlikte kilisenin arka odasında eski hesap defterlerini inceliyor ve dışarı adım atmamışlardı.",
+        "graveyard": "Gece yarısı civarında mezarlığın alt kulübesinde uyuyordu ve ancak sabah ezanına doğru uyanıp dışarı çıkmıştı."
+      },
+      "motive": "REVENGE",
+      "victim": {
+        "name": "Leon Vane",
+        "profession": "Tüccar"
+      },
+      "version": 1,
+      "weaponId": "hammer",
+      "culpritId": "mill",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "MIDNIGHT",
+      "crimeSceneId": "watchtower",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "church",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "camurlu_cizme_izi",
+        "poolClueText": "Yerde çamurlu, şekli bozulmuş kaba bir çizme izi.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "mill",
+          "tavern"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      },
+      "verificationText": "Değirmen'in tahıl ambarının tabanında, olay yerindeki izle birebir uyuşan çamurlu ve şekli bozulmuş kaba bir sol çizme tek olarak ele geçirilmiştir.",
+      "crimeSceneClueText": "Yıkık Gözcü Kulesi'nin giriş eşiğinde, kilit taşının hemen altında yer alan çamurlu, şekli bozulmuş kaba bir çizme izi."
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "medieval",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "Karakterin itiraf etmesini veya bükülmesini isteyen bir talimat içeriyor.",
+          "field": "npcPrompts.graveyard",
+          "quote": "Sorguda bunu itiraf edeceksin.",
+          "source": "JUDGE",
+          "category": "ROLE",
+          "severity": "CERTAIN"
+        },
+        {
+          "note": "Bu delil doğrulayan kanıtlar arasında yer almıyor olabilir.",
+          "field": "truthReveal",
+          "quote": "ikinci yedek çamurlu kaba çizme",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "REJECT"
+    },
+    "tokens": {
+      "review": 3737,
+      "generation": 9300
+    },
+    "decision": {
+      "at": "2026-10-23T18:02:44.008Z",
+      "by": "Enes",
+      "note": "Silas'ın rolünde itiraf talimatı ('Sorguda bunu itiraf edeceksin', #78 öncesi); ortaçağ köyünde 'sabah ezanı'.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:06:21.617Z"
+  }
+}

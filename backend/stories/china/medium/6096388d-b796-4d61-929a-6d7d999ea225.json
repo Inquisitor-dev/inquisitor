@@ -1,0 +1,229 @@
+{
+  "id": "6096388d-b796-4d61-929a-6d7d999ea225",
+  "universe": "china",
+  "difficulty": "medium",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:21:37.210Z",
+  "updatedAt": "2026-10-23T18:03:41.679Z",
+  "content": {
+    "plan": {
+      "motive": "GREED",
+      "weaponId": "scale_weight",
+      "culpritId": "mill",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "lotus_pavilion",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "graveyard",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "farm"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "demirci_curufu",
+        "poolClueText": "Yerdeki çamura bulanmış, dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıkları.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "mill",
+          "tavern",
+          "church",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 7
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Nehir kenarındaki balıkçı iskelemde ağlarımı onarıyor ve günün son avını tuzluyordum.",
+        "church": "Muhafız karargahının ana avlusunda nöbetçileri teftiş ediyor ve devriye raporlarını inceliyordum.",
+        "tavern": "Hanın ikinci katındaki muhasebe defterlerini denetliyor ve yeni gelen çay yapraklarını sayıyordum.",
+        "graveyard": "Kadim tapınağın ana sunağının önünde Mei Teyze ile birlikte akşam tütsülerini yakıp dua ediyordum."
+      },
+      "victim": {
+        "name": "Sun Wu",
+        "profession": "Antikacı ve Bezirgan"
+      },
+      "scenario": "Jinling şehrinin sisli ve kadim sokaklarında, imparatorluk sarayının gölgesinde karanlık bir haber rüzgar gibi yayıldı. Lotus havuzunun kıyısındaki zarif ahşap pavyonda, akşamın en sessiz saatinde hayatını kaybetmiş bir kurbanın bedeni bulundu. Şehrin bu huzurlu köşesinde işlenen bu vahşi suç, şüpheli fısıltıları ve gizli ortaklıkları gün ışığına çıkardı. Adalet terazisinin yeniden dengelenmesi için bu kadim mahallenin sırlarla dolu köşe başlarının araştırılması gerekmektedir.",
+      "culpritId": "mill",
+      "npcPrompts": {
+        "farm": "Sen balıkçı Mei Teyze'sin. Olay yeri yakınından geçerken kurbanın bedenini ilk sen buldun; korkuya kapılarak maktulün küçük bir altın mücevherini aldın ve bunu iskelende sakladın. Cinayetle ilgin yok ve o saatte Keşiş Huikang ile birlikteydin.",
+        "mill": "Sen Usta Guan'sın. Açgözlülüğe yenik düşerek kurbanı Lotus Köşkü'nde ani bir panikle öldürdün ve cinayet silahı olan bronz terazi ağırlığını kullandın. Suçunu gizlemek için demirci ocağındaki tüm kanıtları saklamaya ve masum olduğunu iddia etmeye çalışıyorsun.",
+        "church": "Sen İmparatorluk Muhafız Karargahı Komutanısın. Akşam karanlığı çökerken, kadim tapınağın arkasında Keşiş Huikang ile Mei Teyze'yi birlikte gördün; onların cinayet saatinde tamamen başka bir yerde olduklarına şahitlik ediyorsun.",
+        "tavern": "Sen Çay Evi'nin efendisi Lin Feng'sin. Cinayetten kısa bir süre önce, hiçbir şeyden habersiz bir şekilde o ağır bronz terazi ağırlığını demirci Usta Guan'a sattın. Bu ticareti şimdilik kimseye söylemiyorsun ve kendi işlerinin başında sessizce duruyorsun.",
+        "graveyard": "Sen Kadim Tapınak'ın yaşlı Keşişi Huikang'sın. Tamamen masumsun, hiçbir karanlık sırrın veya suç bağlantın yok. Cinayet saatinde Mei Teyze ile birlikte tapınakta ibadet ediyordun ve bunu sorgulayanlara açıkça anlatıyorsun."
+      },
+      "truthReveal": "Bu karanlık cinayet, açgözlülüğün kurbanı olan talihsiz antikacı Sun Wu'nun ölümünü aydınlatmaktadır. Kurban, mirası ve değerli jade koleksiyonu için Usta Guan tarafından bronz terazi ağırlığıyla saldırıya uğramış; suç ani bir panikle işlendiği için olay yerinde büyük bir boğuşma izi ve dağınıklık bırakmıştır. Gerçek katil olan Usta Guan, kurbanın parasıyla kendi demirci ocağındaki borçlarını kapatmayı umuyordu ancak kaçarken olay yerinde yere düşürdüğü, çamura bulanmış dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıklarını arkasında bırakmıştır; demirci ocağında körük çukurunun derinliklerinde saklanan kırık döküm kalıbı bu izi kesin olarak doğrulamaktadır. Lin Feng, cinayetten kısa süre önce bu ağır bronz nesneyi Usta Guan'a satmış ancak kime gittiğini gizlemiştir. Komutan Zhao, olay gecesi Keşiş Huikang ile Mei Teyze'yi tapınak bahçesinde birlikte gördüğünü bilmektedir. Keşiş Huikang ve Mei Teyze o saatte birlikte dua edip çay içmekteydiler ve suçla hiçbir ilgileri yoktur; nitekim Mei Teyze sadece korkudan cesedin yanındaki küçük bir değerli eşyayı alıp iskeledeki balıkçı kutusunda saklamıştır.",
+      "locationClues": {
+        "farm": "Balıkçı iskele tahtalarının altına gizlenmiş paslı bir balıkçı kutusunun içinde duran kurbana ait altın işlemeli mühür yüzüğü.",
+        "mill": "Demirci ocağının körük çukurunun derinliklerinde saklanan, olay yerindeki izle mükemmel uyum sağlayan kırık döküm kalıbı parçası.",
+        "church": "Komutanın çalışma masasının üzerindeki mühürlü devriye defterinde, tapınak civarındaki kişilerin adlarının el yazısıyla kaydedildiği açık sayfa.",
+        "tavern": "Çay evinin arka odasındaki kilitli dolabın ikinci rafında duran, o akşam yapılan ağır tartı aleti satışının kaydedildiği eski muhasebe defteri.",
+        "graveyard": "Tapınağın tahta sunağının gizli çekmecesine iliştirilmiş, o akşam birlikte içilen bitki çayının yapraklarını ve bağış miktarını listeleyen temiz bir bağış makbuzu.",
+        "crime_scene": "Yerdeki çamura bulanmış, dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıkları."
+      },
+      "verificationText": "Demirci ocağının körük çukurunun derinliklerinde, olay yerinde bulunanla aynı maddeden yapılmış ve birebir eşleşen kırık bir döküm kalıbı parçası saklanmaktadır."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Nehir kenarındaki balıkçı iskelemde ağlarımı onarıyor ve günün son avını tuzluyordum.",
+        "church": "Muhafız karargahının ana avlusunda nöbetçileri teftiş ediyor ve devriye raporlarını inceliyordum.",
+        "tavern": "Hanın ikinci katındaki muhasebe defterlerini denetliyor ve yeni gelen çay yapraklarını sayıyordum.",
+        "graveyard": "Kadim tapınağın ana sunağının önünde Mei Teyze ile birlikte akşam tütsülerini yakıp dua ediyordum."
+      },
+      "motive": "GREED",
+      "victim": {
+        "name": "Sun Wu",
+        "profession": "Antikacı ve Bezirgan"
+      },
+      "version": 1,
+      "weaponId": "scale_weight",
+      "culpritId": "mill",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "lotus_pavilion",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "graveyard",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "farm"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "demirci_curufu",
+        "poolClueText": "Yerdeki çamura bulanmış, dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıkları.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "mill",
+          "tavern",
+          "church",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 7
+      },
+      "verificationText": "Demirci ocağının körük çukurunun derinliklerinde, olay yerinde bulunanla aynı maddeden yapılmış ve birebir eşleşen kırık bir döküm kalıbı parçası saklanmaktadır.",
+      "crimeSceneClueText": "Yerdeki çamura bulanmış, dövülmüş çelikten kopan küçük siyah demir ve kömür parçacıkları."
+    },
+    "gameMode": "standard",
+    "difficulty": "medium",
+    "scenarioType": "china",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "Komutan Zhao'nun alibisi ile truthReveal metnindeki yeri uyuşmamaktadır.",
+          "field": "truthReveal",
+          "quote": "Komutan Zhao, olay gecesi Keşiş Huikang ile Mei Teyze'yi tapınak bahçesinde birlikte gördüğünü bilmektedir.",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        },
+        {
+          "note": "Mei Teyze'nin alibisi ile truthReveal metnindeki yeri uyuşmamaktadır.",
+          "field": "truthReveal",
+          "quote": "Mei Teyze o saatte birlikte dua edip çay içmekteydiler",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "HUMAN"
+    },
+    "tokens": {
+      "review": 3962,
+      "generation": 10087
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:41.672Z",
+      "by": "Enes",
+      "note": "Mazeret eşi hatası: Mei Teyze'nin mazereti iskele, rolü ve Huikang'ın mazereti 'tapınakta birlikteydik' diyor.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:21:37.209Z"
+  }
+}

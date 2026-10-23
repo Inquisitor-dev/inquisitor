@@ -1,0 +1,244 @@
+{
+  "id": "61954b09-46f0-432b-bcd6-e6c11fea2304",
+  "universe": "medieval",
+  "difficulty": "hard",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:19:43.878Z",
+  "updatedAt": "2026-10-23T18:02:59.855Z",
+  "content": {
+    "plan": {
+      "motive": "SILENCE",
+      "weaponId": "rope",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "bridge",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "clinic",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "tavern",
+          "church",
+          "graveyard"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "ic_yagi_mesale",
+        "poolClueText": "Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı.",
+        "eliminatedNpcIds": [
+          "mill",
+          "clinic"
+        ],
+        "implicatedNpcIds": [
+          "church",
+          "tavern",
+          "graveyard",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 8,
+        "tavern": 6,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Çiftçi Edmund, şafaktan önce Peder Malachar ile birlikte kilisenin kilerinde un çuvallarını sayıyordu.",
+        "mill": "Değirmenci Giles, şafaktan önce un değirmeninin devasa taş çarklarını yağlamakla meşguldü.",
+        "church": "Peder Malachar, şafaktan önce Çiftçi Edmund ile birlikte kilisenin kilerindeki un çuvallarını saymakla meşguldü.",
+        "clinic": "Doktor Harland, cinayet anında revirde acı çeken bir köylünün yarasını sarmakla meşguldü.",
+        "graveyard": "İhtiyar Silas, cinayet saatinde mezarlığın alt ucundaki yeni kazılan çukurda uyukluyordu."
+      },
+      "victim": {
+        "name": "Klaudious",
+        "profession": "Köy Yazıcısı ve Hesap Dökümcüsü"
+      },
+      "scenario": "Ashenmoor köyünün sisli ve kasvetli sokaklarında, taş köprünün üzerinde soğuk bir ceset bulundu. Şafak sökmeden önce işlenen bu cinayet, köyün huzurunu kökten sarstı; yerli halk korku ve şüphe içinde kapılarını kilitledi. Yabancı bir engizisyoncunun köyümüze ayak basmasıyla birlikte, herkesin sakladığı karanlık sırlar gün yüzüne çıkmaya başlıyor.",
+      "culpritId": "tavern",
+      "npcPrompts": {
+        "farm": "Sen Çiftçi Edmund, Ashenmoor'un çiftçisisin. Hiçbir suçun ve sırrın yoktur. Şafaktan önce Peder Malachar ile birlikte kilisenin kilerindeydin; sorgularda Peder Malachar'ın o anlarda seninle olduğunu ve birlikte çalıştığınızı doğruluyorsun.",
+        "mill": "Sen Değirmenci Giles, Ashenmoor'un değirmencisiyiz. Şafaktan önce değirmenin penceresinden bakarken taş köprü üzerinde uzun boylu, hantal yürüyüşlü birinin aceleyle uzaklaştığını gördün ancak yüzünü seçemedin. Bu gördüğün detayı trace hakkında veya cinayet gecesi sorulduğunda anlatıyorsun.",
+        "church": "Sen Peder Malachar, Ashenmoor'un rahibisin. Hiçbir suçun yoktur; şafaktan önce Çiftçi Edmund ile birlikte kilisenin kilerinde un çuvallarını sayıyordun ve bunu sorgularda açıkça dile getiriyorsun, Çiftçi Edmund da bunu doğrulamaktadır.",
+        "clinic": "Sen Doktor Harland, Ashenmoor'un şifacısısın. Cinayetten kısa süre önce, kime sattığını çok iyi bildiğin ama sakladığın kişiye revirdeki depodan bir miktar kendir urgan sattın. Katil sen değilsin ancak bu satışı gizli tutmak istiyorsun. Cinayet aletini kime verdiğini biliyorsun: Kardeş Aldric. Bunu kendine saklıyorsun.",
+        "tavern": "Sen Kardeş Aldric, Ashenmoor'un han sahibisin ve kurban Klaudious senin karanlık borç defterlerini ele geçirmek üzereydi; bu yüzden onu şafaktan önce taş köprüde sıkıştırıp revirden aldığın urganla boğdun. Sırrının ortaya çıkmasından korkuyor, olay gecesi handa uyuduğunu iddia ederek yalan söylüyorsun.",
+        "graveyard": "Sen İhtiyar Silas, Ashenmoor'un mezarcısısın. Cinayetten hemen sonra şafak vakti köprüye gittiğinde cesedi ilk sen buldun, korkudan kurbanın altın köstekli saatini çaldın ve mezarlığa sakladın. Katil sen değilsin ancak hırsızlık suçlamasından korktuğun için sessiz kalıyorsun."
+      },
+      "truthReveal": "Ashenmoor köyünün ıslak taşlarında can veren kurban, köyün tefecisi ve yabancı tüccarların hesaplarını tutan Klaudious adında bir yazıcıydı. Asıl katil, hanın sahibi Kardeş Aldric idi. Kardeş Aldric, Klaudious'un köyün gelirlerinden gizlice haraç kestiğini ve hanının tapusunu ele geçirmek üzere olduğunu öğrenmişti; bu sırrın yayılmasını engellemek için panik içinde ve planlamadan, revirden temin ettiği kendir urganla şafaktan önce Taş Köprü'de kurbanı boğarak öldürdü. Olay yerindeki 'Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı.' katilin aceleyle kaçarken düşürdüğü gerçek bir izdi. Değirmenci Giles, bu cinayet sırasında olay yerinde uzun boylu, hantal yürüyüşlü biri gördüğünü hatırlamaktadır. Doktor Harland cinayetten kısa süre önce kurbana değil ama katile urganı satmıştı ve bunu gizliyordu. İhtiyar Silas cesedi ilk bulduğunda kurbanın cebindeki altın köstekli saati çalmış ve mezarlıktaki tahta çit direğinin hemen dibine kazılmış çukura saklamıştı. Çiftçi Edmund ile Peder Malachar ise şafaktan önce kilisenin kilerinde un çuvallarını saymakla meşguldüler ve birbirlerinin masumiyetinin tek şahidiydiler.",
+      "locationClues": {
+        "farm": "Çiftlik evinin mutfağındaki un çuvalının arkasına iliştirilmiş, kilisenin kilerindeki sayımı gösteren Peder Malachar'ın el yazısıyla yazılmış bir iaşe makbuzu bulunmaktadır.",
+        "mill": "Değirmen taşının arkasındaki tozlu kirişte, Giles'ın o gece gördüğü şüpheli figürün bıraktığına inandığı pamuklu bir manto lifi takılıdır.",
+        "church": "Kilisenin vaftiz kürsüsünün altındaki kilitli ahşap çekmecede, Peder Malachar ile Çiftçi Edmund'un imzaladığı şafak vakti kiler sayım defteri durmaktadır.",
+        "clinic": "Revirdeki ilaç dolabının en alt rafındaki demir çekmecede, yakın zamanda satılan urganın miktarını gösteren ama adı yazılmamış bir alıcı içeren defter kaydı yer almaktadır.",
+        "tavern": "Tezgahın arkasındaki meşe tahtasının altında, kurbanın tefecilik faaliyetiyle ilgili Aldric'e yazdığı tehditkar imzalısız şantaj mektubu sıkıştırılmış durumdadır.",
+        "graveyard": "Mezarlığın en eski tahta çit direğinin hemen dibine kazılmış çukurda, kurbandan çalınan altın köstekli saat sarı bir beze sarılı halde saklıdır.",
+        "crime_scene": "Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı."
+      },
+      "verificationText": "Değirmenci Giles, şafaktan önce taş köprünün yakınlarında uzun boylu, hantal yürüyüşlü ve ağır adımlarla hareket eden bir figür gördüğünü hatırlamaktadır.",
+      "witnessDescription": "uzun boylu, hantal yürüyüşlü biri"
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Çiftçi Edmund, şafaktan önce Peder Malachar ile birlikte kilisenin kilerinde un çuvallarını sayıyordu.",
+        "mill": "Değirmenci Giles, şafaktan önce un değirmeninin devasa taş çarklarını yağlamakla meşguldü.",
+        "church": "Peder Malachar, şafaktan önce Çiftçi Edmund ile birlikte kilisenin kilerindeki un çuvallarını saymakla meşguldü.",
+        "clinic": "Doktor Harland, cinayet anında revirde acı çeken bir köylünün yarasını sarmakla meşguldü.",
+        "graveyard": "İhtiyar Silas, cinayet saatinde mezarlığın alt ucundaki yeni kazılan çukurda uyukluyordu."
+      },
+      "motive": "SILENCE",
+      "victim": {
+        "name": "Klaudious",
+        "profession": "Köy Yazıcısı ve Hesap Dökümcüsü"
+      },
+      "version": 1,
+      "weaponId": "rope",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "bridge",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "clinic",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "tavern",
+          "church",
+          "graveyard"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "ic_yagi_mesale",
+        "poolClueText": "Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı.",
+        "eliminatedNpcIds": [
+          "mill",
+          "clinic"
+        ],
+        "implicatedNpcIds": [
+          "church",
+          "tavern",
+          "graveyard",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 8,
+        "tavern": 6,
+        "graveyard": 8
+      },
+      "verificationText": "Değirmenci Giles, şafaktan önce taş köprünün yakınlarında uzun boylu, hantal yürüyüşlü ve ağır adımlarla hareket eden bir figür gördüğünü hatırlamaktadır.",
+      "crimeSceneClueText": "Taşların üzerinde sönmüş bir meşale sapı ve etrafa damlamış, donmuş iç yağı kalıntısı.",
+      "witnessDescription": "uzun boylu, hantal yürüyüşlü biri"
+    },
+    "gameMode": "standard",
+    "difficulty": "hard",
+    "scenarioType": "medieval",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 4657,
+      "generation": 11235
+    },
+    "decision": {
+      "at": "2026-10-23T18:02:59.848Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Giles'ın rolünde İngilizce 'trace'; gerçek metni ipucunu tırnakla aynen alıntılıyor.",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:19:43.877Z"
+  }
+}

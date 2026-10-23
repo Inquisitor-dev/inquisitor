@@ -1,0 +1,208 @@
+{
+  "id": "e3047b0d-5bb7-4989-a322-1fe4e631a5f8",
+  "universe": "medieval",
+  "difficulty": "medium",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:19:29.115Z",
+  "updatedAt": "2026-10-23T18:02:54.662Z",
+  "content": {
+    "plan": {
+      "motive": "REVENGE",
+      "weaponId": "hemlock",
+      "culpritId": "tavern",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "stable",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "farm",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "church"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Şafaktan önce Çiftçi Edmund, ahırdaki hasta ineğin doğum sancılarıyla ilgileniyor ve sabaha kadar uykusuz bekliyordu.",
+        "mill": "Şafaktan önce Değirmenci Giles, değirmenin alt katındaki mısır çuvallarını güvelerden korumak için ilaçlı suyla yıkıyordu.",
+        "church": "Şafaktan önce Peder Malachar, İhtiyar Silas ile birlikte kilisenin bodrumundaki eski vaftiz kayıtlarını düzenliyordu.",
+        "graveyard": "Şafaktan önce İhtiyar Silas, Peder Malachar ile birlikte kilisenin bodrum odasında arşiv defterlerini inceliyordu."
+      },
+      "victim": {
+        "name": "Kaan Demirci",
+        "profession": "Tüccar"
+      },
+      "scenario": "Ashenmoor, sislerin ve kömür karası bacaların arasında, güneşin bile ısıtmadıgı lanetli bir vadide boğulmaktadır. Sisin ağır bir kefen gibi sokakları sardığı bu acı gecede, terk edilmiş ahırın kasvetli duvarları arasında, üzerine kaba keten bir örtü serilmiş cansız bir beden bulunmuştur. Köyün huzurunu ebediyen boğan bu ölümün ardından, neye inanacağını bilemeyen korku dolu halk karanlığa gömülmüştür. Soruşturmacı, bu ürkütücü sırrı çözmek, günahkar kalpleri ve saklanan gerçekleri gün ışığına çıkarmak için çağrılmıştır.",
+      "culpritId": "tavern",
+      "npcPrompts": {
+        "farm": "Sen Çiftçi Edmund'sun, köyün dışındaki ıssız çiftliğin sahibisin. Kurbanla cinayetten hemen önce konuşan son kişi sensin; kurban sana geçmişteki karanlık bir intikam korkusundan bahsetti, ancak katilin adını bilmiyordu. Soruşturmacı sana kurbanı sorması halinde bu son sohbeti ve onun endişelerini dürüstçe paylaşıyorsun.",
+        "mill": "Sen Değirmenci Giles'sın, köyün değirmencisisin. Cinayetten kısa süre önce değirmene gelen ve adını bilmediğin bir müşteriye baldıran zehrini sıradan bir haşere ilacı niyetine sattın, bunun bir cinayette kullanılacağından tamamen bihaberdarsın. Bu satışı kime yaptığını çok iyi biliyorsun ancak kendi kendine saklıyorsun; soruşturmacı sorgulayana kadar bu sırrı tutuyorsun. Cinayet aletini kime verdiğini biliyorsun: Kardeş Aldric. Bunu kendine saklıyorsun.",
+        "church": "Sen Peder Malachar'sın, Ashenmoor'un ruhani liderisin. Hiçbir suçun ve gizli günahın yoktur, tamamen masumsundur. Olay gecesi şafaktan önce İhtiyar Silas ile birlikte kilisenin bodrumunda arşiv defterlerini düzenliyordun. Kilisedeki gümüş tespih parçasının yerinde olmadığını fark ettiğinde şoke oldun; bunu soruşturmacıya açıkça anlatıyorsun.",
+        "tavern": "Sen Kardeş Aldric'sin, Ashenmoor tavernasının işletmecisisin. Kaan Demirci'yi yıllar önceki ihaneti yüzünden baldıran zehri ile planlayarak öldürdün. Suçu Peder Malachar'ın üzerine yıkmak için kiliseden çaldığın gümüş tespih parçasını cinayet mahalline bıraktın. Sorguda soğukkanlılığını koruyor, kurbanı tanımadığını iddia ediyor ve suçlamaları reddediyorsun.",
+        "graveyard": "Sen İhtiyar Silas'sın, köyün emektar mezarcısısın. Olay gecesi şafaktan önce Peder Malachar ile birlikte kilisenin bodrumunda arşiv defterlerini düzenlediğinize dair kusursuz bir tanıklığın var. Soruşturmacı sana o geceyi sorduğunda gördüklerini saklamadan anlatıyorsun."
+      },
+      "truthReveal": "Ashenmoor köyünü sarsan bu karanlık cinayetin kurbanı, köyün eski tüccarlarından, geçmişin unutulmuş hesaplarını kurcalayan Kaan Demirci idi. Cinayetin katili, yıllar önce uğradığı haksızlıkların intikamını almak için plan yapan Taverna'nın sahibi Kardeş Aldric'tir. Kardeş Aldric, cinayeti Terk Edilmiş Ahır'da ustalıkla planlamış ve kurbanı Değirmenci Giles'tan bilmeden temin ettiği baldıran zehri ile zehirleyerek katletmiştir; kurbanın vücudundaki izler bu vahşi zehirlenmeyi doğrulamaktadır. Olay yerindeki arbede izleri ve döküntüler, tamamen katil tarafından cinayete boğuşma süsü vermek için tasarlanmıştır. Dahası, katil masumiyetini gizlemek ve şüpheyi Peder Malachar'ın üzerine çekmek için kiliseden çalınmış gümüş bir tespih parçasını olay yerine delil olarak bırakmıştır; Kilise'deki boş kanca ise bu nesnenin oradan alındığını açıkça kanıtlamaktadır. Soruşturma sırasında Peder Malachar ile İhtiyar Silas o gece şafaktan önce birlikte kilisenin bodrumunda arşiv defterlerini düzenlediklerini, kilisedeki mum lekeli not kağıdı ve kendi tanıklıkları ile doğrulamışlardır. Değirmenci Giles, baldıran zehrini o gece değirmenin alt katındaki mısır çuvallarını korumak için hazırlık yaptığı sırada adını bilmeden bir müşteriye sattığını sır olarak saklamakta, Çiftçi Edmund ise cinayetten hemen önce kurbanla konuşarak onun eski bir intikam korkusundan bahsettiğini aktarmaktadır. Bulunan tüm deliller, bu tasarlanmış intikam planının arkasındaki tek failin Kardeş Aldric olduğunu ortaya koymaktadır.",
+      "locationClues": {
+        "farm": "Ahırın girişindeki yemliğin tahta tahtaları arasına sıkıştırılmış, kurbanın son buluşmada kararsızlıkla yere düşürdüğü ucu yırtık parşömen kağıdı gizlenmiştir.",
+        "mill": "Değirmenin alt katındaki un çuvallarının arkasına yaslanmış ahşap tezgahın üzerinde, o gece yapılan ilaçlama ve malzeme kullanımını kaydeden mühürlü bir defter durmaktadır.",
+        "church": "Ana sunak tahtasının üzerinde, gümüş zincirin asılı olduğu demir kancanın boş kalıntısı ve yerinde olmayan tespihin kopuk halkası açıkça görülmektedir.",
+        "tavern": "Tavernanın arka deposundaki meşe fıçının arkasına zulalanmış, Kardeş Aldric'in geçmişteki haksızlıkları ve katledilen Kaan Demirci'nin adının yazılı olduğu öfkeli intikam planları içeren karalanmış bir defter gizlenmiştir.",
+        "graveyard": "Mezarlık kulübesindeki demir masanın çekmecesinin en dibinde, o gece kilisede tutulan arşiv defterinin sayfasına iliştirilmiş, o saatleri doğrulayan mum lekeli bir not kağıdı bulunmaktadır.",
+        "crime_scene": "Devrik ahşap taburenin ve devrilmiş eski demir kovaların arasında, kurbanın hemen yakınındaki kanlı samanların üzerine düşmüş, kiliseden alınmış gümüş bir tespih parçası durmaktadır."
+      },
+      "verificationText": "Ana sunak tahtasının üzerinde, gümüş zincirin asılı olduğu demir kancanın boş kalıntısı ve yerinde olmayan tespihin kopuk halkası açıkça görülmektedir."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Şafaktan önce Çiftçi Edmund, ahırdaki hasta ineğin doğum sancılarıyla ilgileniyor ve sabaha kadar uykusuz bekliyordu.",
+        "mill": "Şafaktan önce Değirmenci Giles, değirmenin alt katındaki mısır çuvallarını güvelerden korumak için ilaçlı suyla yıkıyordu.",
+        "church": "Şafaktan önce Peder Malachar, İhtiyar Silas ile birlikte kilisenin bodrumundaki eski vaftiz kayıtlarını düzenliyordu.",
+        "graveyard": "Şafaktan önce İhtiyar Silas, Peder Malachar ile birlikte kilisenin bodrum odasında arşiv defterlerini inceliyordu."
+      },
+      "motive": "REVENGE",
+      "victim": {
+        "name": "Kaan Demirci",
+        "profession": "Tüccar"
+      },
+      "version": 1,
+      "weaponId": "hemlock",
+      "culpritId": "tavern",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "stable",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "farm",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "church"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      },
+      "verificationText": "Ana sunak tahtasının üzerinde, gümüş zincirin asılı olduğu demir kancanın boş kalıntısı ve yerinde olmayan tespihin kopuk halkası açıkça görülmektedir.",
+      "crimeSceneClueText": "Devrik ahşap taburenin ve devrilmiş eski demir kovaların arasında, kurbanın hemen yakınındaki kanlı samanların üzerine düşmüş, kiliseden alınmış gümüş bir tespih parçası durmaktadır."
+    },
+    "gameMode": "standard",
+    "difficulty": "medium",
+    "scenarioType": "medieval",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 4386,
+      "generation": 11932
+    },
+    "decision": {
+      "at": "2026-10-23T18:02:54.655Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Açılışta 'ısıtmadıgı'; zehirle ölümde olay yerinde 'kanlı samanlar'; Giles'ın rolünde 'adını bilmediğin müşteri' ile 'Aldric'e verdin' bir arada.",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:19:29.114Z"
+  }
+}

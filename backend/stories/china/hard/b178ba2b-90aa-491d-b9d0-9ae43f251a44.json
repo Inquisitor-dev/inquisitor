@@ -1,0 +1,245 @@
+{
+  "id": "b178ba2b-90aa-491d-b9d0-9ae43f251a44",
+  "universe": "china",
+  "difficulty": "hard",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:21:56.613Z",
+  "updatedAt": "2026-10-23T18:03:47.254Z",
+  "content": {
+    "plan": {
+      "motive": "JEALOUSY",
+      "weaponId": "scale_weight",
+      "culpritId": "clinic",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "bamboo_grove",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "farm",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "clinic"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard",
+          "tavern"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "tavern"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 6,
+        "tavern": 8,
+        "graveyard": 7
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Mei Teyze, cinayet saatinde Balıkçı İskelesi'nde ağlarını onarıyor ve nehir akıntısını gözlemliyordu.",
+        "mill": "Usta Guan, cinayet saatinde Demirci Ocağı'ndaki körüğü harlıyor ve sabah teslim edilecek kılıçları dövüyordu.",
+        "church": "Komutan Zhao, cinayet saatinde Çay Evi & Han'ın sahibi Lin Feng ile birlikte karargahta resmi mühürleri kontrol ediyordu.",
+        "tavern": "Lin Feng, cinayet saatinde Muhafız Karargahı'nda Komutan Zhao ile birlikte geçmiş yılın vergi parşömenlerini sayıyordu.",
+        "graveyard": "Keşiş Huikang, cinayet saatinde Kadim Tapınak'ın ana sunak odasında gece yarısı tütsülerini yakıyor ve dua ediyordu."
+      },
+      "victim": {
+        "name": "Bayan Wei",
+        "profession": "İmparatorluk Tüccarı"
+      },
+      "scenario": "Jinling şehrinin sisli ve kadim sokaklarında, imparatorluk sarayının gölgesinde karanlık bir fısıltı yayıldı. Bambu korusunun derinliklerindeki ıssız bir taş patikada, sabahın ilk ayazında soğuk bir ceset bulundu. Üzerine örtülen sade beyaz kefen, hayatın ve ölümün kırılgan dengesini hatırlatırken, bu cinayet şehrin huzurunu kökünden sarstı. Soruşturma yetkisi size verildi; çay evlerinden tapınaklara, demirci ocaklarından balıkçı iskelesine kadar uzanan bu esrarengiz ağda, suçluyu bulmak için karanlığın üzerine yürümelisiniz.",
+      "culpritId": "clinic",
+      "npcPrompts": {
+        "farm": "Sen Mei Teyze, Balıkçı İskelesi'nde balıkçı ve rıhtım gözcüsüsün. Cinayet gecesi, maktulün öldürüldüğü saatlerde Keşiş Huikang'ı kendi tapınağından çok uzakta, Kadim Tapınak'ın arka kapısı önünde açıkça gördün. Bu bilgiyi sorgulandığında paylaşıyorsun.",
+        "mill": "Sen Usta Guan, baş demirci ve ustasın. Cinayet gecesi karanlıkta, kapüşonlu birinin Kadim Tapınak'tan bir eşyayı aldığını gördün ancak kim olduğunu seçemedin. Bu gördüğünü sana sorulduğunda anlatmaya hazırsın.",
+        "church": "Sen Komutan Zhao, Muhafız Komutanısın. Cinayetle hiçbir ilgin yok ve hiçbir karanlık sırrın yok. Cinayet saatinde Lin Feng ile birlikte karargahta bulunduğunu ve birlikte olduğunuzu doğruluyorsun.",
+        "clinic": "Sen Bilgin Song, Şifacı ve baharatçısın. Maktulü kıskançlık ve saray hekimliği hırsıyla öldürdün; suçunu gizlemek için bambu korusuna Keşiş Huikang ve Lin Feng'i işaret eden sahte deliller bıraktın.",
+        "tavern": "Sen Lin Feng, Çay Evi & Han'ın sahibisin. Cinayetle hiçbir ilgin yok ve hiçbir utanç verici sırrın bulunmuyor. Cinayet saatinde Komutan Zhao ile birlikte resmi kayıtları inceliyordun ve bunu açıkça söylüyorsun.",
+        "graveyard": "Sen Keşiş Huikang, Kadim Tapınak'ın sorumlususun. Cinayetten kısa süre önce bronz terazi ağırlığını Şifacı Bilgin Song'a verdin, ancak ne için kullanılacağını hiç bilmiyordun. Bunu kendi kendine saklıyorsun ve cinayet saatindeki ibadetini alibi olarak öne sürüyorsun."
+      },
+      "truthReveal": "Cinayetin maktulü, saraya değerli otlar ve iksirler tedarik eden kıdemli tüccar Bayan Wei'dir. Asıl fail, Şifacı Bilgin Song'dur; suçunu planlamış ve cinayeti ustalıkla işlemiştir. Olay yeri tamamen düzenliydi ve maktulün ölüm nedeni, Şifacı Bilgin Song'un gizlice temin ettiği bronz terazi ağırlığıyla başına vurulan ağır, küt bir darbeydi. Kıskançlık saikiyle hareket eden Şifacı Bilgin Song, sarayın gözde hekimi olmak ve maktulün elindeki nadir tıp el yazmalarını ele geçirmek için bu cinayeti işlemiştir. Şüpheyi üzerimizden atmak için, cinayet mahalline hem Kadim Tapınak'tan alınmış bir miktar tütsü külü hem de Çay Evi & Han'a ait özel bir mühürlü çay yaprağı yerleştirerek delilleri manipüle etmiştir. Ancak Usta Guan, cinayetten kısa süre önce karanlıkta kadim tapınaktan bu ağır nesnenin alındığını görmüştür. Keşiş Huikang, o bronz ağırlığı kısa süre önce Şifacı Bilgin Song'a ödünç verdiğini ancak ne amaçla kullanılacağını bilmediğini saklamaktadır. Lin Feng ve Komutan Zhao, cinayet saatinde birlikte sarayın vergi kayıtlarını incelediklerini belirten ortak bir alibi sunmuşlar ve suçsuzlukları kanıtlanmıştır. Mei Teyze ise o sırada Kadim Tapınak'ın arka kapısında Keşiş Huikang'ı gördüğüne yemin etmiştir. Tüm bu karmaşık ağ, kıskançlığın ve ihtirasın körüklediği bu planlı cinayeti gözler önüne sermektedir.",
+      "locationClues": {
+        "farm": "Balıkçı İskelesi'ndeki ahşap kulübenin giriş eşiğinin altına sıkıştırılmış, o gece nehir kıyısından geçenlerin ayak izlerini ve yönünü çizen ıslak bir seyir defteri yaprağı bulunuyor.",
+        "mill": "Demirci Ocağı'nın körük tezgahının altındaki paslı kömür kovasının arkasına saklanmış, o gece dışarıyı gözetlemek için kullanılan eski bir demirci feneri duruyor.",
+        "church": "Muhafız Karargahı'ndaki demir kilitli arşiv dolabının en üst rafındaki parşömen sepetinin içinde, Lin Feng ile o gece yapılan toplantıyı onaylayan mühürlü bir celp kağıdı duruyor.",
+        "clinic": "Şifacı & Baharatçı dükkanındaki kurutulmuş ginseng otu kavanozlarının en arkasındaki gizli bölmede, sarayın baş hekimliği için maktulün yazdığı eserleri karalayıp ele geçirme planını anlatan kendi el yazısıyla öfkeli taslak notları saklı duruyor.",
+        "tavern": "Çay Evi & Han'ın arka odasındaki ahşap çay sandığının en dip tahtasının altına sıkıştırılmış, Komutan Zhao ile Lin Feng'in cinayet saatinde birlikte imzaladıkları resmi vergi denetim tutanağı bulunuyor.",
+        "graveyard": "Kadim Tapınak'ın sunağının arkasındaki gizli taş oyuğun içinde, bir süre önce adı yazılmamış bir kişiye verilen bronz terazi ağırlığının boşta kalan dairesel izi yer alıyor.",
+        "crime_scene": "Bambu korusundaki taş patikanın kenarında, maktulün cesedinin yakınındaki nemli toprağın üzerine titizlikle yerleştirilmiş; üzerinde hem tapınak tütsü külü hem de han yaprakları bulaşmış bronz bir terazi ağırlığı duruyor."
+      },
+      "verificationText": "Demirci Usta Guan, cinayet gecesi karanlıkta birinin Keşiş Huikang'ın yerinden tapınak eşyasını aldığını görmüştür."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Mei Teyze, cinayet saatinde Balıkçı İskelesi'nde ağlarını onarıyor ve nehir akıntısını gözlemliyordu.",
+        "mill": "Usta Guan, cinayet saatinde Demirci Ocağı'ndaki körüğü harlıyor ve sabah teslim edilecek kılıçları dövüyordu.",
+        "church": "Komutan Zhao, cinayet saatinde Çay Evi & Han'ın sahibi Lin Feng ile birlikte karargahta resmi mühürleri kontrol ediyordu.",
+        "tavern": "Lin Feng, cinayet saatinde Muhafız Karargahı'nda Komutan Zhao ile birlikte geçmiş yılın vergi parşömenlerini sayıyordu.",
+        "graveyard": "Keşiş Huikang, cinayet saatinde Kadim Tapınak'ın ana sunak odasında gece yarısı tütsülerini yakıyor ve dua ediyordu."
+      },
+      "motive": "JEALOUSY",
+      "victim": {
+        "name": "Bayan Wei",
+        "profession": "İmparatorluk Tüccarı"
+      },
+      "version": 1,
+      "weaponId": "scale_weight",
+      "culpritId": "clinic",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "bamboo_grove",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "farm",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "clinic"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard",
+          "tavern"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "tavern"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 6,
+        "tavern": 8,
+        "graveyard": 7
+      },
+      "verificationText": "Demirci Usta Guan, cinayet gecesi karanlıkta birinin Keşiş Huikang'ın yerinden tapınak eşyasını aldığını görmüştür.",
+      "crimeSceneClueText": "Bambu korusundaki taş patikanın kenarında, maktulün cesedinin yakınındaki nemli toprağın üzerine titizlikle yerleştirilmiş; üzerinde hem tapınak tütsü külü hem de han yaprakları bulaşmış bronz bir terazi ağırlığı duruyor."
+    },
+    "gameMode": "standard",
+    "difficulty": "hard",
+    "scenarioType": "china",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "Mei Teyze'nin truthReveal içindeki yeri, alibis.farm metni ile uyuşmamaktadır.",
+          "field": "truthReveal",
+          "quote": "Mei Teyze ise o sırada Kadim Tapınak'ın arka kapısında Keşiş Huikang'ı gördüğüne yemin etmiştir.",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        },
+        {
+          "note": "Cinayet zamanı akşamdır, sabah vakti ölüm saati ile çelişmektedir.",
+          "field": "alibis.mill",
+          "quote": "sabah teslim edilecek kılıçları dövüyordu",
+          "source": "JUDGE",
+          "category": "LOGIC",
+          "severity": "CERTAIN"
+        }
+      ],
+      "judged": true,
+      "verdict": "REJECT"
+    },
+    "tokens": {
+      "review": 4664,
+      "generation": 13009
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:47.247Z",
+      "by": "Enes",
+      "note": "Hakemin kılıç gerekçesi yanlış (sabah teslim, dövme akşam) ama başka hatalar var: Huikang'ın mazeretinde 'gece yarısı tütsüleri' (ölüm akşam); Mei Teyze iskeledeyken Huikang'ı 'kendi tapınağından çok uzakta' Kadim Tapınak'ta görüyor; Guan ağırlığın tapınaktan alındığını görüyor, Huikang ödünç verdiğini söylüyor.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:21:56.610Z"
+  }
+}

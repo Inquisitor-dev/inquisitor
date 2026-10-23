@@ -1,0 +1,221 @@
+{
+  "id": "fdbec610-0c33-4be7-bffd-384307335d3f",
+  "universe": "cyberpunk",
+  "difficulty": "medium",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:20:52.138Z",
+  "updatedAt": "2026-10-23T18:03:25.964Z",
+  "content": {
+    "plan": {
+      "motive": "GREED",
+      "weaponId": "monoblade",
+      "culpritId": "tavern",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "rooftop",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "farm"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "muhur_bandi",
+        "poolClueText": "Olay yerinin kenarına sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçası.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 7,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Şafaktan önce Sokak Pazarı'ndaki tezgâhımın arkasında siber çöp ayıklıyordum.",
+        "mill": "Şafaktan önce Klinik'te Brakk Coil ile beraber sistem kalibrasyonu yapıyordum.",
+        "church": "Şafaktan önce Lokanta'nın ocakbaşında yeni sipariş için noodle hamuru yoğuruyordum.",
+        "graveyard": "Şafaktan önce klinik odasında AURA-9 ile birlikte sibernetik bakım kayıtlarını inceliyorduk."
+      },
+      "victim": {
+        "name": "Orion Vane",
+        "profession": "Veri Simsarı"
+      },
+      "scenario": "Neon Prime kasvetli, asit yağmurlu bir gecenin koyruluğunda boğulurken, gökdelenlerin tepesindeki yankesici rüzgârlar soğuk bir ölümün haberini taşıdı. Reklam panolarının yapay mor ışıkları altında, yüksek bir binanın çatısında cansız bir beden bulundu; kurbanın hayatı Neon Prime'ın yeraltı hesaplaşmalarına kurban gitmişti. Müfettiş, bu siberpunk labirentin en karanlık köşelerinde adaleti sağlamak için karakollardan noodle dükkânlarına, yeraltı kliniklerinden gece pazarlarına kadar uzanan bu ölümcül ağın iplerini çözmek zorunda.",
+      "culpritId": "tavern",
+      "npcPrompts": {
+        "farm": "Sen Ash'sin; kurbana karşı kişisel bir kinin var ancak cinayetle ilgin yok, şafaktan önce pazardaki tezgâhındaydın.",
+        "mill": "Sen AURA-9'sun; tamamen masumsun, şafaktan önce Brakk Coil ile birlikte klinikte çalışıyordun ve hiçbir gizli saklı işin yok.",
+        "church": "Sen Mirel Sato'sun; cinayetten kısa süre önce o monoblade'i kime verdiğini çok iyi biliyorsun ancak bu sırrı kimseye söylemiyorsun; şafaktan önce dükkândaydın. Cinayet aletini kime verdiğini biliyorsun: Memur Kael Voss. Bunu kendine saklıyorsun.",
+        "tavern": "Sen Memur Kael Voss'sun; kurbanın taşıdığı değerli veri çiplerini ele geçirmek için aniden panikleyerek onu öldürdün ve delilleri karakolda saklamaya çalışıyorsun.",
+        "graveyard": "Sen Brakk Coil'sin; şafaktan önce klinikte AURA-9 ile birlikteydin ve Mirel'i o saatlerde kliniğin arka kapısında gördün."
+      },
+      "truthReveal": "Gece yarısından sonra Neon Prime'ın göğe uzanan reklam kulelerinden birinin tepesinde, açgözlülüğün körüklediği acımasız bir cinayet işlendi. Kurban Orion Vane idi ve yanında taşıdığı değerli veri çiplerini ele geçirmek isteyen Memur Kael Voss tarafından ani bir panikle, kesici bir monoblade ile öldürüldü. Cinayet anında olay yerinde yaşanan boğuşma sonucunda Memur Kael Voss, aceleyle kaçarken kenara sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçasını orada düşürdü. Karakol'daki kayıt masasının altındaki çekmecede bulunan aynı seri numaralı mühür bandı rulosu bu suçu doğrulamaktadır. Olay sırasında Mirel Sato noodle dükkânında çalışıyordu ve kısa süre önce bu cinayette kullanılan monoblade'i kime verdiğini çok iyi biliyordu ancak bu sırrı saklıyordu. Brakk Coil ile AURA-9, şafaktan önce klinik odasında birlikte sıradan bir sibernetik bakım günlüğü tutuyorlardı; Brakk, Mirel'i gece yarısı kliniğin arka kapısının orada gördüğünü biliyordu. Ash ise kurbana karşı geçmişten gelen kişisel bir kin besliyordu ve bu yüzden cinayet gecesi pazarda öfkeli görünüyordu; ancak katil kesinlikle Memur Kael Voss'un kendisiydi.",
+      "locationClues": {
+        "farm": "Sokak Pazarı'ndaki tezgâhın tahta kasalarının arkasında, şafaktan önce siber çöp ayıklarken kullandığı paslı hurda ayıklama tornavidası.",
+        "mill": "Tamirhane'deki çalışma masasının çekmecesinde, sadece şafaktan önceki saatlerde Brakk Coil ile yaptığı sistem kalibrasyonuna ait bakım notları.",
+        "church": "Lokanta'nın mutfak tezgahının altında, şafaktan önceki saatlerde hamur yoğururken kullandığı un torbalarının arasına gizlenmiş günlük sipariş defteri.",
+        "tavern": "Karakol'daki kayıt masasının altındaki çelik çekmecenin içinde bulunan, olay yerindeki bandın tıpatıp aynısı olan mühür bandı rulosu.",
+        "graveyard": "Klinik'teki ameliyat masasının üzerindeki dijital terminalde, şafaktan önceki saatleri gösteren AURA-9 ile ortak bakım log kayıtları.",
+        "crime_scene": "Olay yerinin kenarına sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçası."
+      },
+      "verificationText": "Karakol'daki kayıt masasının altındaki çekmecede, olay yerinde bulunan parlak mühür bandının tam eşiği olan yarım kesilmiş bir rulo mühür bandı parçası ele geçirilmiştir."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Şafaktan önce Sokak Pazarı'ndaki tezgâhımın arkasında siber çöp ayıklıyordum.",
+        "mill": "Şafaktan önce Klinik'te Brakk Coil ile beraber sistem kalibrasyonu yapıyordum.",
+        "church": "Şafaktan önce Lokanta'nın ocakbaşında yeni sipariş için noodle hamuru yoğuruyordum.",
+        "graveyard": "Şafaktan önce klinik odasında AURA-9 ile birlikte sibernetik bakım kayıtlarını inceliyorduk."
+      },
+      "motive": "GREED",
+      "victim": {
+        "name": "Orion Vane",
+        "profession": "Veri Simsarı"
+      },
+      "version": 1,
+      "weaponId": "monoblade",
+      "culpritId": "tavern",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "rooftop",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "farm"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "muhur_bandi",
+        "poolClueText": "Olay yerinin kenarına sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçası.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 7,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Karakol'daki kayıt masasının altındaki çekmecede, olay yerinde bulunan parlak mühür bandının tam eşiği olan yarım kesilmiş bir rulo mühür bandı parçası ele geçirilmiştir.",
+      "crimeSceneClueText": "Olay yerinin kenarına sürüklenmiş, üzerinde yarım kalmış bir barkod olan parlak bir mühür bandı parçası."
+    },
+    "gameMode": "standard",
+    "difficulty": "medium",
+    "scenarioType": "cyberpunk",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "Cinayet aleti olan monoblade doğrulayan kanıtlar arasında bulunmamaktadır.",
+          "field": "truthReveal",
+          "quote": "kesici bir monoblade ile öldürüldü",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "HUMAN"
+    },
+    "tokens": {
+      "review": 3765,
+      "generation": 9351
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:25.957Z",
+      "by": "Enes",
+      "note": "Kısmi tanık Brakk, Mirel'i kliniğin arka kapısında görüyor; Mirel'in mazereti dükkânı (Lokanta). Tanık aklamak yerine yalancı gösteriyor. Hakemin silah şüphesi yersiz; açılışta 'koyruluğunda'.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:20:52.138Z"
+  }
+}

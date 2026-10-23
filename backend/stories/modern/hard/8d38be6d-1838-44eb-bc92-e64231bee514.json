@@ -1,0 +1,241 @@
+{
+  "id": "8d38be6d-1838-44eb-bc92-e64231bee514",
+  "universe": "modern",
+  "difficulty": "hard",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:20:23.857Z",
+  "updatedAt": "2026-10-23T18:03:15.663Z",
+  "content": {
+    "plan": {
+      "motive": "SILENCE",
+      "weaponId": "extension_cord",
+      "culpritId": "graveyard",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "bleachers",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "clinic",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "clinic"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "farm",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "graveyard"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sigara_izmariti",
+        "poolClueText": "Yerde ezilmiş, yarısına kadar içilmiş ucuz marka bir sigara izmariti.",
+        "eliminatedNpcIds": [
+          "church",
+          "mill"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "farm",
+          "clinic"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 7,
+        "tavern": 8,
+        "graveyard": 6
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Sabahın ilk ışıklarından önce benzin istasyonunun ofisinde mahalli nakliye defterini düzenliyordum.",
+        "mill": "Cinayet saatinde uykusuzluk çektiğim için kasabanın boş sokaklarında yalnız başına yürüyüş yapıyordum.",
+        "church": "O gece sabaha karşı otelin bodrum katındaki eski ısıtma kazanının contalarını David ile birlikte tamir ediyorduk.",
+        "clinic": "O karanlık saatte otelin bodrum katında Gerald ile birlikte patlayan su borusunu onarmaya çalışıyorduk.",
+        "tavern": "Şafaktan hemen önce devriye gezerken Lokanta'nın arka sokağında Donna Perkins'i yürürken gördüm."
+      },
+      "victim": {
+        "name": "Arthur Pendelton",
+        "profession": "Mahalli Gazete Muhabiri"
+      },
+      "scenario": "Sislerin şehri Millfield'ın üzerindeki gök gürültülü karanlık örtü, 1994 yılının bu kasvetli sabahında yerini derin ve boğucu bir sessizliğe bıraktı. Lise futbol sahasının metal tribünlerinin altında keşfedilen cansız beden, bu küçük ve kendi halinde görünen kasabanın yüzeyindeki gülümsemelerin ardında yatan sırları gün ışığına çıkardı. Şeriflik telsizlerinden yayılan cızırtılı sesler, her köşede saklanan bir tehlikenin habercisiydi.",
+      "culpritId": "graveyard",
+      "npcPrompts": {
+        "farm": "Earl Hutchins olarak petrol istasyonundayım; şafaktan hemen önce istasyona uğrayan kurbanla son konuşan kişi ben oldum ve bana büyük bir sır yüzünden korktuğunu söyledi.",
+        "mill": "Donna Perkins olarak lokantada çalışıyorum; kurbanla geçmişten kalan kişisel bir husumetim vardı ve bu yüzden herkes beni suçlu sanıyor ancak o saatte sokaklarda sadece yürüyüş yapıyordum.",
+        "church": "Gerald olarak otelin emektar müdürüyüm; cinayet saatinde David ile birlikte otelin bodrum katında su tesisatını tamir ediyorduk ve David o sırada yanımdaydı.",
+        "clinic": "David olarak barın sahibiyim; cinayet saatinde otelde Gerald ile birlikte boru tamiriyle meşgul olduğumu ve o sırada otelde bulunduğumu herkes bilir.",
+        "tavern": "Şerif Dale Cooper olarak kasabanın huzurunu korumaya çalışıyorum; şafak vakti devriye atarken Lokanta'nın arka sokağında Donna Perkins'i başka bir işle meşgul halde gördüm ve bunu soruşturmada saklamıyorum.",
+        "graveyard": "Randy Kowalski olarak video oyun merkezini işletiyorum; kurbanın sırlarımı ifşa etmesini engellemek için sabaha karşı onu tribünlerin altında uzatma kablosuyla boğdum."
+      },
+      "truthReveal": "Millfield kasabasının üzerine çöken bu karanlık gecede, Video Oyuncusu'nun sahibi Randy Kowalski, kurban Arthur Pendelton'ın kasabanın geçmişindeki karanlık bir zimmet olayını bildiğini ve bunu herkese anlatmakla tehdit ettiğini öğrenince büyük bir paniğe kapıldı. Şafaktan hemen önce lise futbol sahasının metal tribünlerinin altında buluştukları sırada, kontrolünü kaybeden Randy, cebindeki turuncu renkli uzun uzatma kablosunu kurbanın boynuna dolayarak onu boğdu; bu cinayet tamamen planlanmamış, suçlunun paniğe kapıldığı aceleci bir eylemdi. Olay yerindeki düzenli görünüm ve polisin gelmesinden önce başkaları tarafından cesedin üzerine örtülen düz beyaz çarşaf bu durumu gizleyemezdi; Randy aceleyle kaçarken yerde ezilmiş, yarısına kadar içilmiş ucuz marka bir sigara izmariti bırakmıştı ve bu gerçek delil, Video Oyuncusu'nda kasanın arkasında bulunan aynı marka sigara paketinin boş kutusuyla birebir uyuşuyordu. Şerif Dale Cooper, o gece lisenin arkasındaki yolda Donna Perkins'i bambaşka bir yerde görmüştü; Lokanta'da çalışan Donna'nın kurbana karşı başka bir husumeti vardı ancak cinayetle ilgisi yoktu. Earl Hutchins, şafaktan önce istasyonda kurbanla son konuşan kişi olarak onun korkularına tanık olmuştu. Gerald ve David ise o saatlerde otelde birlikte sıradan bir sohbette olduklarını kanıtlayan eski kayıt defteriyle tamamen masumdular.",
+      "locationClues": {
+        "farm": "Petrol istasyonunun cam tezgahının hemen altında sıkışmış duran, kurbanın o sabah bıraktığı buruşturulmuş yakıt fişi.",
+        "mill": "Lokanta mutfağındaki un çuvalının arkasına düşmüş olan, kurbanla yaşadığım tartışmanın not alındığı eski bir garson adisyonu.",
+        "church": "Otel odasının ahşap komodininin alt çekmecesinde saklı olan, David'in o gece otelde olduğunu doğrulayan eski kayıt defteri.",
+        "clinic": "Barın tahta tezgahının arkasındaki rafın üzerinde duran, Gerald'ın o geceki buluşmayı onaylayan imzasını taşıyan tatlı sipariş fişi.",
+        "tavern": "Karakolun demir masasının çekmecesinin en dibinde duran, şafak vakti devriye güzergahını gösteren imzalı vardiya defteri.",
+        "graveyard": "Video oyun merkezindeki ana kasanın metalik arkalığına sıkıştırılmış, olay yerindeki izmaritle aynı marka ucuz sigaraların bulunduğu boş paket.",
+        "crime_scene": "Tribünlerin metal ayaklarının hemen dibindeki nemli toprakta duran, ezilmiş ve yarısına kadar içilmiş ucuz marka bir sigara izmariti."
+      },
+      "verificationText": "Randy Kowalski'nin işlettiği video oyun merkezindeki kasanın hemen arkasında, olay yerinde bulunanla aynı marka ucuz sigara izmaritlerinden oluşan boş bir paket bulunmaktaydı."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Sabahın ilk ışıklarından önce benzin istasyonunun ofisinde mahalli nakliye defterini düzenliyordum.",
+        "mill": "Cinayet saatinde uykusuzluk çektiğim için kasabanın boş sokaklarında yalnız başına yürüyüş yapıyordum.",
+        "church": "O gece sabaha karşı otelin bodrum katındaki eski ısıtma kazanının contalarını David ile birlikte tamir ediyorduk.",
+        "clinic": "O karanlık saatte otelin bodrum katında Gerald ile birlikte patlayan su borusunu onarmaya çalışıyorduk.",
+        "tavern": "Şafaktan hemen önce devriye gezerken Lokanta'nın arka sokağında Donna Perkins'i yürürken gördüm."
+      },
+      "motive": "SILENCE",
+      "victim": {
+        "name": "Arthur Pendelton",
+        "profession": "Mahalli Gazete Muhabiri"
+      },
+      "version": 1,
+      "weaponId": "extension_cord",
+      "culpritId": "graveyard",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "bleachers",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "clinic",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "clinic"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "farm",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "graveyard"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sigara_izmariti",
+        "poolClueText": "Yerde ezilmiş, yarısına kadar içilmiş ucuz marka bir sigara izmariti.",
+        "eliminatedNpcIds": [
+          "church",
+          "mill"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "farm",
+          "clinic"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "clinic": 7,
+        "tavern": 8,
+        "graveyard": 6
+      },
+      "verificationText": "Randy Kowalski'nin işlettiği video oyun merkezindeki kasanın hemen arkasında, olay yerinde bulunanla aynı marka ucuz sigara izmaritlerinden oluşan boş bir paket bulunmaktaydı.",
+      "crimeSceneClueText": "Tribünlerin metal ayaklarının hemen dibindeki nemli toprakta duran, ezilmiş ve yarısına kadar içilmiş ucuz marka bir sigara izmariti."
+    },
+    "gameMode": "standard",
+    "difficulty": "hard",
+    "scenarioType": "modern",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "truthReveal metninde geçen düz beyaz çarşaf delili hiçbir ipucu metninde yer almamaktadır.",
+          "field": "truthReveal",
+          "quote": "düz beyaz çarşaf",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "HUMAN"
+    },
+    "tokens": {
+      "review": 4321,
+      "generation": 10218
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:15.655Z",
+      "by": "Enes",
+      "note": "Hakemin çarşaf şüphesi yersiz. Gerçek metni Şerif'in Donna'yı 'lisenin arkasında' gördüğünü söylüyor, rolde 'Lokanta'nın arka sokağı'; Lokanta ipucu birinci tekil ('yaşadığım').",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:20:23.856Z"
+  }
+}

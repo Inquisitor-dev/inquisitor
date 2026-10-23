@@ -1,0 +1,212 @@
+{
+  "id": "1bb9aef4-836c-49cf-b6ec-0b6e4bdf1431",
+  "universe": "modern",
+  "difficulty": "medium",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:20:09.646Z",
+  "updatedAt": "2026-10-23T18:03:10.464Z",
+  "content": {
+    "plan": {
+      "motive": "SILENCE",
+      "weaponId": "kitchen_knife",
+      "culpritId": "mill",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "MIDNIGHT",
+      "crimeSceneId": "laundromat",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "church"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "kaset_seridi",
+        "poolClueText": "Kurbanın ayakkabısına dolanmış, kopmuş parlak siyah bir kaset şeridi parçası.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "tavern",
+          "mill",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 6
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Earl Hutchins, cinayet saatinde Şerif Dale Cooper ile birlikte karakolun iç odasında oturmuş eski benzin sevkiyat makbuzlarını dosyalıyorlardı.",
+        "church": "Gerald, cinayet saatinde Millfield Oteli'nin resepsiyon masasında uyukluyor ve otelin gece defterine yeni konuk kayıtlarını işliyordu.",
+        "tavern": "Şerif Dale Cooper, cinayet saati olan gece yarısı civarında karakol odasında Earl Hutchins ile birlikte eski devriye log defterlerini düzenliyor ve kahve içiyordu.",
+        "graveyard": "Randy Kowalski, gece yarısı caddenin karşısındaki Video Oyuncusu dükkanının arka odasında yeni gelen atari kartuşlarını test ediyordu."
+      },
+      "victim": {
+        "name": "Arthur Pendelton",
+        "profession": "Mahalli Gazete Muhabiri"
+      },
+      "scenario": "Sonbahar sisinin Millfield kasabasının üzerini ağır bir battaniye gibi örttüğü, 1994 yılının kasvetli bir Kasım gecesi... Çamaşırhane'nin titrek neon ışıkları altında, bu küçük ve sessiz yerin derinliklerinde gizlenen korkunç bir sır gün ışığına çıktı. Yıllardır herkesin birbirini tanıdığı, dostça yüzlerin ardında karanlık niyetlerin saklandığı bu kasabada, soğuk beton üstünde yatan cansız beden, mahallenin huzurunu bir anda paramparça etti. Şimdi dedektif olarak bu kasabaya adım atıyor, inkar maskelerini düşürmek ve bu ölümün ardındaki gerçeği ortaya çıkarmak zorundasınız.",
+      "culpritId": "mill",
+      "npcPrompts": {
+        "farm": "Sen Earl Hutchins, kasaba benzin istasyonunun görevlisisin. Tamamen suçsuzsun, hiçbir karanlık sırrın veya suç bağlantın yok. Cinayet saatinde Şerif Dale Cooper ile birlikte karakoldaydın ve bunu sorulduğunda açıkça dile getiriyorsun.",
+        "mill": "Sen Donna Perkins, Maple Cafe'nin işletmecisisin. Kurban senin geçmişteki karanlık sırrını biliyor ve sana şantaj yapıyordu; panik içinde karakoldan edindiğin mutfak bıçağıyla onu Çamaşırhane'de öldürdün. Suçunu saklamak için son derece sakin ve masum rolü yapıyor, şüpheleri üzerinden atmaya çalışıyorsun.",
+        "church": "Sen Gerald, Millfield Oteli'nin yöneticisi ve bekçisisin. Kurbanla geçmişten gelen kişisel bir husumetin vardı ve bu durum seni şüpheli kılıyor. Ancak cinayet saatinde otelde yalnız başına çalıştığını ve kurbanla o gece hiç karşılaşmadığını biliyorsun; sorguda bunu gizlemeden anlatıyorsun.",
+        "tavern": "Sen Millfield Şerifi Dale Cooper'sın. Cinayet kurbanının ölümünden kısa süre önce, kasaba dükkanından gelen Donna Perkins'e bir mutfak bıçağı ödünç verdin ya da sattın; bu işlemin kaydını tutarken alıcının adını yazmamıştın. Earl Hutchins o saatte seninle birlikte karakoldaydı ve bunu biliyorsun. Bu silah meselesini sorgulanana kadar kendine saklıyorsun.",
+        "graveyard": "Sen Randy Kowalski, Pixel Arcade video oyun merkezinin sahibisin. Cinayetten hemen önce kurban senin dükkanına uğradı ve arkasında kimin olduğunu söylemeden büyük bir sır yüzünden son derece tedirgin olduğunu belirterek seninle son konuşmasını yaptı. Soruşturmada bu konuşmayı polise aktarıyorsun."
+      },
+      "truthReveal": "Bu karanlık cinayet, Millfield kasabasının kafe işletmecisi Donna Perkins tarafından, kurbanın kendisinin geçmişteki karanlık sırlarını bilmesi ve bunu herkese yaymakla tehdit etmesi üzerine anlık bir panikle işlenmiştir. Olay gecesi Çamaşırhane'de karşılaşan ikili arasında çıkan tartışmada, Donna Perkins Şerif Dale Cooper'dan kısa süre önce temin ettiği mutfak bıçağını kullanarak kurbanı ani bir darbeyle öldürmüştür; kurbanın ayakkabısına dolanan kopmuş parlak siyah bir kaset şeridi parçası bu boğuşma sırasında suç mahallinde kalmıştır ve lokantada bulunan aynı kaset şeridi artığı bu suçu kesin olarak doğrulamaktadır. Olay yeri tamamen düzenli görünmektedir çünkü cinayet tam bir panik ve aceleyle işlenmiş, ardından tesadüfen oradan geçenler tarafından beden basit bir beyaz çarşafla örtülmüştür. Şerif Dale Cooper silahı satmış olmanın tedirginliğini gizlerken Earl Hutchins ile birlikte o saatte karakolda sıradan bir evrak işiyle meşguldü; Gerald kurbana karşı kişisel bir husumet beslese de cinayetle ilgisi yoktu ve otel kayıtlarıyla bunu kanıtlıyordu; Randy Kowalski ise gece yarısı kurbanla son konuşan kişi olup onun korkularına şahit olmuştu ancak cinayetle bağı bulunmuyordu.",
+      "locationClues": {
+        "farm": "Petrol istasyonunun ofis masasının çekmecesesinde, Şerif Dale Cooper ile o gece imzalanmış ortak vardiya ve denetim log defteri bulunmaktadır.",
+        "mill": "Lokantanın mutfak tezgahının altındaki ahşap çekmecede, olay yerindeki izle birebir eşleşen kopmuş parlak siyah bir kaset şeridi artığı saklanmaktadır.",
+        "church": "Otel odasının resepsiyon bankosunun hemen arkasındaki duvara asılı tahtada, o gece otelde konaklayanların isimlerinin işlendiği el yazısı otel defteri durmaktadır.",
+        "tavern": "Karakolun eski ahşap arşiv dolabının en alt gözünde, alıcısının adı yazılmamış ve üzerine mutfak bıçağı satış kaydı düşülmüş soluk mürekkepli bir defter sayfası durmaktadır.",
+        "graveyard": "Video oyun merkezinin neon masasının altında, kurbanın o gece heyecanla üzerinde parmak izlerini bıraktığı buruşturulmuş bir arcade oyun fişi bulunmaktadır.",
+        "crime_scene": "Çamaşırhane'deki sıralı yıkama makinelerinin en sol köşesindeki beton zeminde, kurbanın ayakkabısına dolanmış, kopmuş parlak siyah bir kaset şeridi parçası durmaktadır."
+      },
+      "verificationText": "Lokantanın mutfak tezgahının altındaki ahşap çekmecede, olay yerinde kurbanın ayakkabısında bulunanla birebir aynı materyale ve kesik uçlarına sahip kopmuş parlak siyah bir kaset şeridi parçası saklanmaktadır."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Earl Hutchins, cinayet saatinde Şerif Dale Cooper ile birlikte karakolun iç odasında oturmuş eski benzin sevkiyat makbuzlarını dosyalıyorlardı.",
+        "church": "Gerald, cinayet saatinde Millfield Oteli'nin resepsiyon masasında uyukluyor ve otelin gece defterine yeni konuk kayıtlarını işliyordu.",
+        "tavern": "Şerif Dale Cooper, cinayet saati olan gece yarısı civarında karakol odasında Earl Hutchins ile birlikte eski devriye log defterlerini düzenliyor ve kahve içiyordu.",
+        "graveyard": "Randy Kowalski, gece yarısı caddenin karşısındaki Video Oyuncusu dükkanının arka odasında yeni gelen atari kartuşlarını test ediyordu."
+      },
+      "motive": "SILENCE",
+      "victim": {
+        "name": "Arthur Pendelton",
+        "profession": "Mahalli Gazete Muhabiri"
+      },
+      "version": 1,
+      "weaponId": "kitchen_knife",
+      "culpritId": "mill",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "farm"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "MIDNIGHT",
+      "crimeSceneId": "laundromat",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "church"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "mill"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "kaset_seridi",
+        "poolClueText": "Kurbanın ayakkabısına dolanmış, kopmuş parlak siyah bir kaset şeridi parçası.",
+        "eliminatedNpcIds": [
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "tavern",
+          "mill",
+          "farm"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 7,
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 6
+      },
+      "verificationText": "Lokantanın mutfak tezgahının altındaki ahşap çekmecede, olay yerinde kurbanın ayakkabısında bulunanla birebir aynı materyale ve kesik uçlarına sahip kopmuş parlak siyah bir kaset şeridi parçası saklanmaktadır.",
+      "crimeSceneClueText": "Çamaşırhane'deki sıralı yıkama makinelerinin en sol köşesindeki beton zeminde, kurbanın ayakkabısına dolanmış, kopmuş parlak siyah bir kaset şeridi parçası durmaktadır."
+    },
+    "gameMode": "standard",
+    "difficulty": "medium",
+    "scenarioType": "modern",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 4122,
+      "generation": 10270
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:10.457Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Petrol istasyonu ipucunda 'çekmecesesinde' yazım hatası.",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:20:09.646Z"
+  }
+}

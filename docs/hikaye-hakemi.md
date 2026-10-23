@@ -142,6 +142,18 @@ Deneme seti (16 vaka, 1 tur): bozuk vakaların 12/12'si yakalandı, temiz vakala
 
 `<id>` yerine listedeki ilk 8 karakter yeter. Karar (durum, kişi, not, zaman) `reviewResults.decision`'a yazılır. Oyun yalnızca onaylı hikâyeleri seçer (`STORY_POOL_ENABLED=true`).
 
+## Havuzu ekiple paylaşma
+
+Havuzun ortak kaydı repo'dur: her hikâye `backend/stories/<evren>/<zorluk>/<id>.json` dosyasıdır (içerik, durum, hakem ve onay kaydı). Kod: `backend/prisma/story-sync.ts`, `backend/src/stories/story-files.ts`.
+
+| Kim | Ne yapar? |
+|---|---|
+| Üreten ve onaylayan (Enes) | `stories:generate` ve `stories:approve` sonrası `npm run stories:export`, ardından `backend/stories` için branch + PR |
+| Ekip | main'i çekince `npm run stories:import` (önce `prisma:push`; `-- --dry-run` yalnızca ne olacağını gösterir) |
+| Canlı ortam | Aynı `stories:import`, canlı `DATABASE_URL` ile |
+
+Hikâyeler kimlikle eşleşir. İçe aktarım yeni hikâyeyi ekler, dosyası daha yeni olanı günceller; yerelde dosyadan daha yeni kayıt (dışa aktarılmamış bir karar) ezilmez. İki yönde de hiçbir şey silinmez. Değişmeyen hikâye dışa aktarımda fark üretmez. 16 pilot hikâye ~200 KB tutuyor.
+
 ## Onay kuralları (Faz 0 kararı, 22–23 Ekim 2026)
 
 - **Hakemin geçme eşiği:** kesin hata (`CERTAIN`) varsa red, yalnızca şüphe (`DOUBT`) varsa ya da hakem çalışmadıysa insana, bulgu yoksa geçer. Kararı kod verir (`decideStoryReview`).

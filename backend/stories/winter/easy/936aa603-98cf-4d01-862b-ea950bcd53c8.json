@@ -1,0 +1,204 @@
+{
+  "id": "936aa603-98cf-4d01-862b-ea950bcd53c8",
+  "universe": "winter",
+  "difficulty": "easy",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:22:13.095Z",
+  "updatedAt": "2026-10-23T18:03:52.557Z",
+  "content": {
+    "plan": {
+      "motive": "FEAR",
+      "weaponId": "ice_pick",
+      "culpritId": "graveyard",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "storehouse",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "tavern"
+        },
+        "witnessDescriptionFits": [
+          "graveyard",
+          "mill"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "baharatli_sicak_sarap_kokusu",
+        "poolClueText": "Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu.",
+        "eliminatedNpcIds": [
+          "mill"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "church",
+          "graveyard"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "mill": "Madenci Durn, cinayet saatinde Torstein ile birlikte hanın bodrumunda yeni maden sevkiyatının kayıtlarını düzenliyordu.",
+        "church": "Kahin Valda, cinayet saatinde Yürek Ağacı'nın donmuş havuzu başında arınma ritüeli gerçekleştiriyordu.",
+        "tavern": "Torstein, cinayet saatinde Madenci Durn ile birlikte hanın bodrumunda eski ambar kayıtlarını inceliyordu."
+      },
+      "victim": {
+        "name": "Selim Demirci",
+        "profession": "Hesap Uzmanı"
+      },
+      "scenario": "Buz kesmiş kuzey rüzgarlarının Frosthold kalesinin taş duvarlarını dövdüğü karanlık bir gecede, yerel halkın korkuyla içine kapandığı bu ezeli surlarda dehşet verici bir olay yaşandı. Sabahın ilk soluk ayazında, Erzak Ambarı'nın karanlık köşesinde donmuş bir ceset bulundu. Kar altında kalan bu ıssız kasabada kimse güvende değil; çünkü herkesin birbirinden sakladığı karanlık sırları var.",
+      "culpritId": "graveyard",
+      "npcPrompts": {
+        "mill": "Sen terk edilmiş madenin ocağında çalışan Madenci Durn'sün. Tamamen masumsun; cinayet saatinde Torstein ile birlikte hanın bodrumunda sevkiyat kayıtlarını düzenliyordun ve bu senin alibindir. Hiçbir suçun veya saklayacak karanlık bir sırrın yoktur.",
+        "church": "Sen Yürek Ağacı'nın koruyucusu Kahin Valda'sın. Cinayet gecesi donmuş havuzun başında yalnız dua ediyordun; bu senin alibindir. Kurban ile ölümünden hemen önce konuştun; kurban sana birisinden duyduğu büyük korkuyu ve tehdit edildiğini anlatmıştı ancak kim olduğunu bilmiyordun. Bu sırrı sadece olayla ilgili doğrudan soru sorulduğunda paylaşırsın.",
+        "tavern": "Sen Kış Hanı'nın sahibi Torstein'sın. Cinayet gecesi Madenci Durn ile birlikte hanın bodrumundaydın ve onunla beraber fıçı kayıtlarını inceliyordun; bu senin alibindir. Olay yerine yakın bir noktada koyu renk kukuletalı pelerin giyen biri gördün ve havada karanfilli sıcak şarap kokusu aldığını biliyorsun. Madenci Durn o saatte seninle birlikteydi. Bu gördüklerini ve bildiklerini sorgulayanlara ancak soru sorulduğunda anlatırsın.",
+        "graveyard": "Sen Frosthold Kalesi'nin Castellan'ı Komutan Bjorn'sün. Kurban seni geçmişteki kirli işlerinle tehdit ettiği için korkuya kapıldın ve onu erzak ambarında aceleyle ortadan kaldırdın."
+      },
+      "truthReveal": "Kurban, madende hesap uzmanı olarak çalışan Selim Demirci'ydi. Katil, kale surlarının hakimi olan ve suçunu aceleyle işleyen Komutan Bjorn'den başkası değildi. Selim Demirci, Bjorn'un geçmişteki zulümlerini ve karanlık sırlarını bilmekteydi ve bu yüzden Castellan'ı sürekli tehdit ediyordu; bu korku ve panik içinde Bjorn, erzak ambarında sıkıştırdığı kurbana buz kazmasıyla saldırdı. Olay yerindeki dağınıklık ani ve aceleci bir boğuşmanın izlerini taşıyordu. Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu, katil suç mahalinden hızla uzaklaşırken üzerindeki kokunun oraya sinmesiyle oluşan gerçek bir izdi. Gözcü Kalesi'ndeki gizli bölmede bulunan şantaj mektupları bu vahşi cinayetin arkasındaki korku ve motivasyonu gözler önüne sermektedir. Hancı Torstein ve Madenci Durn o saatte hanın bodrumunda eski fıçının hesabını tutuyorlardı ve bu durum masumiyetlerini kanıtlayan deftere işlenmişti. Kahin Valda ise kurbanla en son görüşen kişi olup, Selim'in yaşadığı derin korkuyu ve tehdit edildiğini dinlemişti ancak katilin kimliğini bilmiyordu.",
+      "locationClues": {
+        "mill": "Madenin girişindeki paslı demir vincin altında kalan ve Durn'ün han bodrumunda olduğunu doğrulayan imzalı tespih.",
+        "church": "Kutsal Yürek Ağacı'nın kökleri arasına sıkıştırılmış, kurbanın son endişelerini karaladığı yırtık parşömen parçası.",
+        "tavern": "Hanın bodrum katındaki meşe masanın üzerinde duran ve Torstein ile Madenci Durn'ün imzaladığı mühürlü sevkiyat defteri.",
+        "graveyard": "Gözcü Kalesi'nin taş duvarındaki gizli bölmede saklanan, Selim Demirci'nin geçmişteki karanlık sırları ifşa etmekle tehdit ettiği şantaj mektupları.",
+        "crime_scene": "Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu."
+      },
+      "verificationText": "Torstein, cinayet saatinde olay yerinden koşan koyu renk kukuletalı pelerin giyen biri gördüğünü ve havada yoğun bir karanfilli şarap kokusu yayıldığını fark etmiştir.",
+      "witnessDescription": "koyu renk kukuletalı pelerin giyen biri"
+    },
+    "facts": {
+      "alibis": {
+        "mill": "Madenci Durn, cinayet saatinde Torstein ile birlikte hanın bodrumunda yeni maden sevkiyatının kayıtlarını düzenliyordu.",
+        "church": "Kahin Valda, cinayet saatinde Yürek Ağacı'nın donmuş havuzu başında arınma ritüeli gerçekleştiriyordu.",
+        "tavern": "Torstein, cinayet saatinde Madenci Durn ile birlikte hanın bodrumunda eski ambar kayıtlarını inceliyordu."
+      },
+      "motive": "FEAR",
+      "victim": {
+        "name": "Selim Demirci",
+        "profession": "Hesap Uzmanı"
+      },
+      "version": 1,
+      "weaponId": "ice_pick",
+      "culpritId": "graveyard",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "storehouse",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern",
+          "aboutNpcId": "graveyard"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "church",
+          "aboutNpcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "tavern"
+        },
+        "witnessDescriptionFits": [
+          "graveyard",
+          "mill"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "baharatli_sicak_sarap_kokusu",
+        "poolClueText": "Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu.",
+        "eliminatedNpcIds": [
+          "mill"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "church",
+          "graveyard"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Torstein, cinayet saatinde olay yerinden koşan koyu renk kukuletalı pelerin giyen biri gördüğünü ve havada yoğun bir karanfilli şarap kokusu yayıldığını fark etmiştir.",
+      "crimeSceneClueText": "Olay yerindeki soğuk havada asılı kalmış, han ocağında kaynatılan karanfilli sıcak şarap kokusu.",
+      "witnessDescription": "koyu renk kukuletalı pelerin giyen biri"
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "winter",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 3447,
+      "generation": 10052
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:52.550Z",
+      "by": "Enes",
+      "note": "Olay yeri izi ('han ocağında kaynatılan şarap kokusu') katili değil hancıyı gösteriyor, kolay vakanın elemesi bozuk; tanık Torstein han bodrumundayken olay yeri yakınında birini görüyor; 'Castellan', 'imzalı tespih'.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:22:13.095Z"
+  }
+}

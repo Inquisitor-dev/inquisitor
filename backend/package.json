@@ -25,6 +25,8 @@
     "stories:review": "ts-node -r tsconfig-paths/register prisma/story-review.ts",
     "stories:generate": "ts-node -r tsconfig-paths/register prisma/story-generate.ts",
     "stories:approve": "ts-node -r tsconfig-paths/register prisma/story-approve.ts",
+    "stories:export": "ts-node -r tsconfig-paths/register prisma/story-sync.ts --export",
+    "stories:import": "ts-node -r tsconfig-paths/register prisma/story-sync.ts --import",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

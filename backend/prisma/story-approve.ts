@@ -159,7 +159,7 @@ async function decide(prefix: string, status: 'APPROVED' | 'REJECTED') {
   if (status === 'APPROVED') await pool.approveStory(story.id, updated);
   else await pool.rejectStory(story.id, updated);
   console.log(
-    `${story.id.slice(0, 8)} ${status === 'APPROVED' ? 'onaylandı; havuzda oynanabilir' : 'reddedildi'} (${decision.by}).`,
+    `${story.id.slice(0, 8)} ${status === 'APPROVED' ? 'onaylandı; havuzda oynanabilir' : 'reddedildi'} (${decision.by}). Ekiple paylaşmak için: npm run stories:export, sonra commit.`,
   );
 }
 
