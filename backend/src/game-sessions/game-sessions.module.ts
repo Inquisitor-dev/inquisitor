@@ -5,10 +5,11 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { LlmModule } from '../llm/llm.module';
 import { AuthModule } from '../auth/auth.module';
 import { MarketModule } from '../market/market.module';
+import { StoriesModule } from '../stories/stories.module';
 
 @Module({
-  imports: [PrismaModule, LlmModule, AuthModule, MarketModule],
+  imports: [PrismaModule, LlmModule, AuthModule, MarketModule, StoriesModule],
   providers: [GameSessionsService],
-  controllers: [GameSessionsController]
+  controllers: [GameSessionsController],
 })
 export class GameSessionsModule {}
