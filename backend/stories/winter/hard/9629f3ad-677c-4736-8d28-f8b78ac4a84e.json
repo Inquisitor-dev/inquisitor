@@ -1,0 +1,228 @@
+{
+  "id": "9629f3ad-677c-4736-8d28-f8b78ac4a84e",
+  "universe": "winter",
+  "difficulty": "hard",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:22:39.293Z",
+  "updatedAt": "2026-10-23T18:03:57.927Z",
+  "content": {
+    "plan": {
+      "motive": "DEBT",
+      "weaponId": "ice_pick",
+      "culpritId": "clinic",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "standing_stones",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "mill",
+          "aboutNpcId": "clinic"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "farm",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "graveyard"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard",
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 8,
+        "clinic": 7,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Einar, akşam karanlığında sur kapısının üst kulesinde donmuş çelik zincirleri yağlamakla meşguldü.",
+        "mill": "Madenci Durn, akşam saatlerinde terk edilmiş maden ocağının ana galerisinde eski destek kirişlerini onarıyordu.",
+        "church": "Kahin Valda, akşam saatlerinde Torstein ile birlikte Kış Hanı'nın sıcak salonunda bitkisel karışımlar hazırlıyordu.",
+        "tavern": "Torstein, akşam karanlığı çöktüğünde Kahin Valda ile birlikte Kış Hanı'nın ocak başında reçete hazırlıyordu.",
+        "graveyard": "Komutan Bjorn, akşam karanlığı bastığında Gözcü Kalesi'nin ana kulesinde nöbetçi erlerin teftişini yapıyordu."
+      },
+      "victim": {
+        "name": "Arvid Vance",
+        "profession": "Tüccar"
+      },
+      "scenario": "Donmuş kuzey kalesi Frosthold, buz kesen fırtınaların ve acımasız kışın sessizliğine bürünmüştü. Taş Dikitler olarak bilinen karla kaplı tepede, devasa buz kayalıklarının gölgesinde korkunç bir ceset bulundu. Üzerine serilen ağır gri kürklü battaniyenin altındaki cansız beden, bu donduran coğrafyanın karanlık sırlarını gün yüzüne çıkardı. Kalenin sakinleri ve muhafızları şüphe dolu gözlerle birbirini süzerken, adalet bu buzlu diyarda hakikati arıyor.",
+      "culpritId": "clinic",
+      "npcPrompts": {
+        "farm": "Sen Einar'sın. Akşam saatlerinde surlardan dışarıyı gözetlerken Madenci Durn'ü madenin arka çıkışında gördün. Bu gördüğün kritik detayı muhataplar sana cinayet yerini veya o geceyi sorduğunda paylaşıyorsun.",
+        "mill": "Sen Madenci Durn'sün. Kısa süre önce Muhafız Kenneth'e bir buz kazması ödünç verdin ancak bunun cinayette kullanılacağını asla bilmiyordun. Bu teslimatı kime yaptığını çok iyi biliyorsun ancak bunu kimseye söylemeyip sır olarak saklıyorsun.",
+        "church": "Sen Kutsal Yürek Ağacı'nın bekçisi Kahin Valda'sın. Olay gecesi Torstein ile birlikte handaydın ve hiçbir suçla ilgin yok. Torstein o gece benimle birlikteydi. Sorguda Torstein ile birlikte olduğunuzu ve bu masumiyetinizi saklamadan anlatıyorsun.",
+        "clinic": "Sen Muhafız Kenneth'sin. Arvid Vance'e olan devasa borçların seni mahvettiği için onu Taş Dikitler'de öldürdün. Suçunu gizlemek ve şüpheyi komutan ile kahinin üzerine yıkmak için delilleri kasten yerleştirdin; bunu kusursuzca saklamaya çalışıyorsun.",
+        "tavern": "Sen Kış Hanı'nın işletmecisi Torstein'sın. Olay gecesi Kahin Valda ile birlikte hanın mutfağında olduğun için tamamen masumsun. Kahin Valda o gece seninle birlikteydi. Bu durumu ve Valda ile birlikte ne yaptığını sorgularda açıkça dile getiriyorsun.",
+        "graveyard": "Sen Gözcü Kalesi'nin komutanı Bjorn'sün. Cinayet mahalline bırakılan mühür senin kişisel eşyandır ve bu mührün cinayetten hemen önce odandan çalındığını fark edip bunu sorguda ilk fırsatta dile getiriyorsun."
+      },
+      "truthReveal": "Bu cinayet, tamamen para borcu yüzünden planlanmış soğuk kanlı bir infazdı. Kurban, tefecilik ve borç tahsilatıyla tanınan tüccar Arvid Vance idi. Asıl katil, borçlarını ödeyemediği için köşeye sıkışan Muhafız Kenneth idi. Kenneth, Madenci Durn'den kısa süre önce temin ettiği buz kazmasıyla Arvid'i Taş Dikitler'de pusuya düşürüp katletmiş, ardından suçunu gizlemek için Komutan Bjorn'ün kaleden çalınan mührünü ve Kahin Valda'ya ait kutsal bir adağı olay yerine yerleştirerek suçu başka yönlere çekmeye çalışmıştır. Olay yeri tamamen düzenliydi, çünkü katil hiçbir iz bırakmak için her şeyi titizlikle planlamıştı. Torstein ile Kahin Valda olay saatinde hanın ortak salonunda kalbin şifalı otlarını ayıklamakla meşguldü; bunu doğrulayan günlük defteri hanın mutfak rafındaki un çuvalının arkasında duruyordu. Komutan Bjorn, kaledeki silah envanteri sayımında mühürlü sandığından eksilen mührünün kayıp olduğunu fark etmişti ve bunu sorgulamada dile getirdi. Madenci Durn, katile kazmayı veren kişi olduğunu gizlese de maden ocağındaki defterde alıcının adı yazılmayan bir aletin kaydı mevcuttu. Einar ise akşam devriyesi sırasında Durn'ü madenin arka çıkışında gördüğünü hatırlıyordu. Kenneth, borç batağından kurtulmak için bu cinayeti işlemiş ve delilleri ustalıkla manipüle etmiştir.",
+      "locationClues": {
+        "farm": "Sur girişindeki tahta nöbet kulübesinin dış eşiğinde, Einar'ın o gece Madenci Durn'ü madenin arka çıkışında izlerken tükettiği çam sakızlı tütünün külleri bulunmaktadır.",
+        "mill": "Terk edilmiş maden ocağındaki demir vinç kolunun hemen altında, alıcının adı yazılmamış olan buz kazmasının çıkış kaydını gösteren kömür karası bir irsaliye kağıdı vardır.",
+        "church": "Kutsal Yürek Ağacı'nın donmuş havuzunun dibindeki buz kütlesine sıkışmış, Valda'nın o gece Torstein ile birlikte hazırladığı otların listesini içeren kağıt parçası yer almaktadır.",
+        "clinic": "İnfaz Meydanı'ndaki idam sehpasının tahta döşemesinin altındaki gizli bölmede, katilin tefeciden yaptığı devasa borçları ve ödeme tarihlerini not ettiği yıpranmış bir borç defteri durmaktadır.",
+        "tavern": "Kış Hanı'nın mutfak rafındaki un çuvalının arkasında, Torstein ve Kahin Valda'nın o akşam birlikte yazdığı bitkisel reçete defteri durmaktadır.",
+        "graveyard": "Gözcü Kalesi'nin silah deposundaki kilitli demir sandığın üzerinde, mühürlerin saklandığı kadife kesenin boş ve kesilmiş ip uçları bulunmaktadır.",
+        "crime_scene": "Taş Dikitler'deki tamamen düzenli karların arasında, Komutan Bjorn'e ait çalınmış demir mühür ve Kahin Valda'nın adakta kullandığı gümüş boncuk kasten yan yana bırakılmıştır."
+      },
+      "verificationText": "Komutan Bjorn, cinayetten kısa süre önce suç mahalline bırakılan kişisel mührünün kaybolduğunu ve bunun kendisini suçlamak için kasten çalındığını açıkça belirtti."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Einar, akşam karanlığında sur kapısının üst kulesinde donmuş çelik zincirleri yağlamakla meşguldü.",
+        "mill": "Madenci Durn, akşam saatlerinde terk edilmiş maden ocağının ana galerisinde eski destek kirişlerini onarıyordu.",
+        "church": "Kahin Valda, akşam saatlerinde Torstein ile birlikte Kış Hanı'nın sıcak salonunda bitkisel karışımlar hazırlıyordu.",
+        "tavern": "Torstein, akşam karanlığı çöktüğünde Kahin Valda ile birlikte Kış Hanı'nın ocak başında reçete hazırlıyordu.",
+        "graveyard": "Komutan Bjorn, akşam karanlığı bastığında Gözcü Kalesi'nin ana kulesinde nöbetçi erlerin teftişini yapıyordu."
+      },
+      "motive": "DEBT",
+      "victim": {
+        "name": "Arvid Vance",
+        "profession": "Tüccar"
+      },
+      "version": 1,
+      "weaponId": "ice_pick",
+      "culpritId": "clinic",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill",
+        "farm"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "standing_stones",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "mill",
+          "aboutNpcId": "clinic"
+        },
+        {
+          "kind": "WITNESS",
+          "npcId": "farm",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "graveyard"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard",
+          "church"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 8,
+        "clinic": 7,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Komutan Bjorn, cinayetten kısa süre önce suç mahalline bırakılan kişisel mührünün kaybolduğunu ve bunun kendisini suçlamak için kasten çalındığını açıkça belirtti.",
+      "crimeSceneClueText": "Taş Dikitler'deki tamamen düzenli karların arasında, Komutan Bjorn'e ait çalınmış demir mühür ve Kahin Valda'nın adakta kullandığı gümüş boncuk kasten yan yana bırakılmıştır."
+    },
+    "gameMode": "standard",
+    "difficulty": "hard",
+    "scenarioType": "winter",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 4314,
+      "generation": 11921
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:57.919Z",
+      "by": "Enes",
+      "note": "Temiz. Gerçek metninde küçük yazım hataları ('kalbin', 'iz bırakmak için').",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:22:39.292Z"
+  }
+}

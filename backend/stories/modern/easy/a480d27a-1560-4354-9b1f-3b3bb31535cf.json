@@ -1,0 +1,211 @@
+{
+  "id": "a480d27a-1560-4354-9b1f-3b3bb31535cf",
+  "universe": "modern",
+  "difficulty": "easy",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:19:56.500Z",
+  "updatedAt": "2026-10-23T18:03:05.336Z",
+  "content": {
+    "plan": {
+      "motive": "FEAR",
+      "weaponId": "baseball_bat",
+      "culpritId": "church",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "laundromat",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "church",
+          "tavern"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "seker_ambalaji",
+        "poolClueText": "Yerde buruşturulup atılmış, kasaba bakkalında satılan ucuz bir şekerleme ambalajı.",
+        "eliminatedNpcIds": [
+          "tavern"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "mill",
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 6
+      }
+    },
+    "draft": {
+      "alibis": {
+        "mill": "Donna Perkins, cinayet saatinde kasaba lokantasının mutfağında Şerif Dale Cooper ile birlikte hesapları kontrol ediyordu.",
+        "tavern": "Şerif Dale Cooper, cinayet saatinde kasaba lokantasında Donna Perkins ile birlikte resmi evrakları düzenliyor ve arşiv defterini güncelliyordu.",
+        "graveyard": "Randy Kowalski, cinayet saatinde video oyun salonunun arka odasındaki bozuk atari makinelerini tamir etmekle meşguldü."
+      },
+      "victim": {
+        "name": "Caleb Miller",
+        "profession": "Serbest Muhasebeci"
+      },
+      "scenario": "Millfield kasabasının sonbahar sisleri altında boğulduğu, son derece kasvetli bir 1994 gecesinde, çamaşırhanenin loş floresan ışıkları altında korkunç bir manzara keşfedildi. Soğuk asfaltın üzerine serilmiş beyaz bir çarşafın altından sızan kan izleri, bu küçük ve sakin Amerikan kasabasında hiçbir şeyin göründüğü gibi olmadığını haykırıyordu. Şeriflik, otel, arcade salonu ve lokanta arasındaki gerilim tırmanırken, soruşturmayı yürüten dedektif kasabanın en karanlık sırlarını gün ışığına çıkarmak zorunda.",
+      "culpritId": "church",
+      "npcPrompts": {
+        "mill": "Sen Donna Perkins'sin, The Maple Cafe'nin sunucususun. Tamamen masumsun. Cinayet saatinde Şerif Dale Cooper ile lokantada birlikte çalıştığını biliyorsun. Ayrıca olay gecesi çamaşırhanenin yakınlarında kalın siyah yün montlu, ağır tütün kokan ve yüzünü göremediğin şüpheli bir figürün hızla uzaklaştığına şahit oldun; bu gördüklerini dedektife sorulduğunda anlatacaksın.",
+        "church": "Sen Millfield Oteli'nin müdürü Gerald'sın. Kurban Caleb Miller seni kasabadaki karanlık işlerin ve geçmişinle ilgili ifşa etmekle tehdit ediyordu; bu korku ve panikle onu çamaşırhanede beyzbol sopasıyla öldürdün. Cinayeti gizlemek için soğukkanlı davranıyor, şüpheleri başka yöne çekmeye çalışıyor ve o gece odanda uyuduğunu iddia ediyorsun.",
+        "tavern": "Sen Millfield Şerifi Dale Cooper'sın. Tamamen masumsun, hiçbir karanlık sırrın veya yasadışı işin yok. Cinayet saatinde Donna Perkins ile birlikte lokantada olduğun için bu vahşetle hiçbir alakan olmadığını biliyorsun ve bunu soruşturmayı yürüten dedektife tüm samimiyetinle anlatıyorsun.",
+        "graveyard": "Sen Randy Kowalski'yim, Pixel Arcade'in sahibiyim. Cinayet gecesi olay yerine herkesten önce vardın, korkuyla cesedin yanındaki küçük bir değerli eşyayı alıp kasaya sakladın ve kimseye söylemedin. Cinayeti sen işlemedin ancak hırsızlık suçlamasından korktuğun için bu bilgiyi saklıyorsun; soruşturma derinleştiğinde cesedi ilk gördüğün saati anlatacaksın."
+      },
+      "truthReveal": "Millfield kasabasında kurban olan Caleb Miller, yerel otel müdürü Gerald'ın karanlık geçmişini ve kasabadaki yasadışı işlerini bildiği için onu uzun süredir tehdit ediyordu. Olay gecesi çamaşırhanede karşılaşan ikili arasında çıkan tartışmada panikleyen Gerald, cebinden çıkardığı beyzbol sopasıyla kurbana vahşice vurarak ölümüne sebep oldu; ceset sonradan bulunup beyaz bir çarşafla örtüldü ve olay yeri son derece derli toplu bırakıldı çünkü katil aceleyle kaçmıştı. Olay yerinde bulunan buruşturulup atılmış kasaba bakkalına ait ucuz şekerleme ambalajı, katilin geride bıraktığı tek gerçek delildi ve otel odasındaki gizli defterde bulunan tehdit notu cinayeti aydınlattı. Şerif Dale Cooper ile Donna Perkins o sırada lokantada beraber olduklarını kanıtlayan ortak bir vardiya kaydıyla tamamen masumdu; arcade sahibi Randy Kowalski ise cesedi daha önce bulup kurbanın cüzdanını çaldığı için suçluluk psikolojisiyle saklanıyordu ancak cinayetle bir ilgisi yoktu.",
+      "locationClues": {
+        "mill": "Lokanta mutfağındaki un çuvallarının arkasındaki ahşap rafa iliştirilmiş, o gece Şerif Dale Cooper ile birlikte tüketilen kahvelerin elle yazılmış adisyon fişi bulunuyor.",
+        "church": "Otel resepsiyon bankosunun altındaki kilitli ahşap çekmecenin arkasına sıkıştırılmış, kurban Caleb Miller'ın katilden para sızdırmak için yazdığı tehdit dolu ıslak imzalı not kağıdı duruyor.",
+        "tavern": "Karakoldaki masanın çekmecesinin en dip gözünde, Şerif Dale Cooper ile Donna Perkins'in o gece lokantada olduklarını kanıtlayan imzalı ve mühürlü resmi vardiya defteri kaydı bulunuyor.",
+        "graveyard": "Video oyun salonunun arkasındaki bozuk pinball makinesinin metal bozuk para haznesinin içinde gizlenmiş, kurbana ait eski deri bir cüzdan duruyor.",
+        "crime_scene": "Çamaşırhanenin en arka köşesindeki çalışan çamaşır makinesinin hemen arkasındaki tozlu zeminde, buruşturulup atılmış, kasaba bakkalında satılan ucuz bir şekerleme ambalajı duruyor."
+      },
+      "verificationText": "Lokantada çalışan Donna Perkins, cinayet gecesi çamaşırhanenin arka sokağında üzerinden ağır bir tütün kokusu yayılan, kalın siyah yün montlu birinin hızla uzaklaştığını gördü.",
+      "witnessDescription": "kalın siyah yün montlu, ağır tütün kokan biri"
+    },
+    "facts": {
+      "alibis": {
+        "mill": "Donna Perkins, cinayet saatinde kasaba lokantasının mutfağında Şerif Dale Cooper ile birlikte hesapları kontrol ediyordu.",
+        "tavern": "Şerif Dale Cooper, cinayet saatinde kasaba lokantasında Donna Perkins ile birlikte resmi evrakları düzenliyor ve arşiv defterini güncelliyordu.",
+        "graveyard": "Randy Kowalski, cinayet saatinde video oyun salonunun arka odasındaki bozuk atari makinelerini tamir etmekle meşguldü."
+      },
+      "motive": "FEAR",
+      "victim": {
+        "name": "Caleb Miller",
+        "profession": "Serbest Muhasebeci"
+      },
+      "version": 1,
+      "weaponId": "baseball_bat",
+      "culpritId": "church",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "tavern",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "laundromat",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "mill",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "graveyard"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "mill"
+        },
+        "witnessDescriptionFits": [
+          "church",
+          "tavern"
+        ]
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "seker_ambalaji",
+        "poolClueText": "Yerde buruşturulup atılmış, kasaba bakkalında satılan ucuz bir şekerleme ambalajı.",
+        "eliminatedNpcIds": [
+          "tavern"
+        ],
+        "implicatedNpcIds": [
+          "graveyard",
+          "mill",
+          "church"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 6
+      },
+      "verificationText": "Lokantada çalışan Donna Perkins, cinayet gecesi çamaşırhanenin arka sokağında üzerinden ağır bir tütün kokusu yayılan, kalın siyah yün montlu birinin hızla uzaklaştığını gördü.",
+      "crimeSceneClueText": "Çamaşırhanenin en arka köşesindeki çalışan çamaşır makinesinin hemen arkasındaki tozlu zeminde, buruşturulup atılmış, kasaba bakkalında satılan ucuz bir şekerleme ambalajı duruyor.",
+      "witnessDescription": "kalın siyah yün montlu, ağır tütün kokan biri"
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "modern",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "truthReveal alanında bahsedilen otel odasındaki tehdit notu hiçbir locationClues alanında veya kanıt metninde geçmemektedir.",
+          "field": "truthReveal",
+          "quote": "otel odasındaki gizli defterde bulunan tehdit notu cinayeti aydınlattı",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "HUMAN"
+    },
+    "tokens": {
+      "review": 3676,
+      "generation": 9515
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:05.329Z",
+      "by": "Enes",
+      "note": "Randy'nin rolünde itiraf talimatı ('cesedi ilk gördüğün saati anlatacaksın') ve kişi karışıklığı; 'cebinden beyzbol sopası'; tanık Donna lokantadayken çamaşırhane arkasında birini görüyor; tehdit notunun yeri gerçek metninde otel odası, ipucunda resepsiyon.",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:19:56.499Z"
+  }
+}

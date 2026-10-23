@@ -1,0 +1,188 @@
+{
+  "id": "680542f9-d234-4b9b-bf6f-8153ee5de5ea",
+  "universe": "medieval",
+  "difficulty": "easy",
+  "status": "REJECTED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:19:12.285Z",
+  "updatedAt": "2026-10-23T18:02:49.269Z",
+  "content": {
+    "plan": {
+      "motive": "DEBT",
+      "weaponId": "candlestick",
+      "culpritId": "mill",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "watchtower",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "graveyard"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "church": "Peder Malachar, cinayet saatinde Kardeş Aldric ile birlikte kilisenin bodrum katında eski dini metinleri mum ışığında tasnif ediyordu.",
+        "tavern": "Kardeş Aldric, cinayet saatinde Peder Malachar ile birlikte kilisenin bodrum katında eski dini metinleri mum ışığında tasnif ediyordu.",
+        "graveyard": "İhtiyar Silas, cinayet saatinde mezarlığın girişindeki kulübesinde uyuyordu ve sabaha karşı yeni kazılacak mezarların tahtalarını hazırlıyordu."
+      },
+      "victim": {
+        "name": "Marcus Vance",
+        "profession": "Gezgin Tüccar"
+      },
+      "scenario": "Ashenmoor’un sisli ve buz tutmuş sokaklarında, şafak sökmeden önce işlenen karanlık bir cinayetin haberi çan kulelerinden yankılandı. Yıkık Gözcü Kulesi'nin taş zemininde bulunan cansız beden, bu kasvetli köyün derinliklerinde saklanan sırların su yüzüne çıkmasına neden oldu. Soruşturma için yetki, adalet arayan kıdemli bir sorgucuya devredildi; şimdi kasabanın dört farklı köşesindeki ruhlar, bu kanlı gecenin ardındaki gerçeği aydınlatmak ya da gizlemek için sorguyu bekliyor.",
+      "culpritId": "mill",
+      "npcPrompts": {
+        "mill": "Sen Değirmenci Giles'sın, Ashenmoor'un değirmencisisin. Marcus Vance'e olan borçların boğazına dayandığı için onu Yıkık Gözcü Kulesi'nde pirinç şamdanla katlettin. Suçu İhtiyar Silas'ın üzerine yıkmak için onun eşyasını olay yerine bıraktın. Sorguda soğukkanlılığını korumaya çalışıyorsun.",
+        "church": "Sen Peder Malachar'sın, Ashenmoor'un rahibisin. Tamamen masumsun ve gizleyecek hiçbir utanç verici sırrın yok. Cinayet saatinde Kardeş Aldric ile birlikte kilisenin bodrum katında eski dini metinleri düzenliyordun; bunu sorguda açıkça ve dürüstçe dile getiriyorsun.",
+        "tavern": "Sen Kardeş Aldric'sin, Ashenmoor tavernasının işletmecisiyiz. Cinayet gecesi Peder Malachar ile birlikte kilisenin bodrumunda çalıştığını biliyorsun ve bunu açıkça söylüyorsun. Ayrıca olaydan hemen önce İhtiyar Silas'ın yerinden kapüşonlu biri tarafından bir eşyanın alındığını gördün ancak karanlık olduğu için kim olduğunu asla fark edemedin.",
+        "graveyard": "Sen İhtiyar Silas'sın, Ashenmoor'un yaşlı mezarcısısın. Cinayet silahı olan pirinç şamdanı olaydan kısa süre önce Değirmenci Giles'a verdiğini çok iyi biliyorsun ve bunu saklamıyorsun; ancak onun cinayette kullanılacağından haberin yoktu. Cinayet saatinde kulübene çekilmiştin."
+      },
+      "truthReveal": "Ashenmoor’un sisleri arasında işlenen cinayetin arkasındaki karanlık perde nihayet aralandı. Kurban, gezgin tüccar Marcus Vance idi. Gerçek katil ise Değirmenci Giles'tan başka biri değildi; Giles, Marcus'a olan ağır borcunu ödeyemediği ve değirmenine el konulma tehlikesiyle karşı karşıya kaldığı için cinayeti önceden planlamıştı. Şafaktan hemen önce Marcus'u Yıkık Gözcü Kulesi'ne çağırarak pirinç şamdanla kafasına vura vura öldürdü. Olay yerindeki dağınıklık ve mücadele izleri tamamen tasarlanmıştı; katil, şüpheyi İhtiyar Silas'ın üzerine yıkmak için olay mahalline İhtiyar Silas'a ait olan ve sadece onun kullandığı pirinç şamdanı bıraktı. Kardeş Aldric, o gece İhtiyar Silas'ın kulübesinden bu şamdanın kapüşonlu biri tarafından alındığını karanlıkta görmüş ancak yüzünü seçememişti. İhtiyar Silas, soruşturma sırasında pirinç şamdanı olaydan kısa süre önce Değirmenci Giles'a ödünç verdiğini itiraf etti ancak ne için kullanılacağını bilmiyordu. Peder Malachar ve Kardeş Aldric, cinayet saatinde kilisenin bodrumunda eski kutsal metinleri düzenliyorlardı ve tamamen masumdular; kilise sunak masasının arkasındaki gizli tahta bölmede bulunan imzalı mumlu envanter defteri bu ortak alibiyi doğrulamaktadır. Mezarlıkta bulunan eski defter sayfasında ise pirinç şamdanın İhtiyar Silas tarafından adı yazılmamış bir alıcıya verildiği kayıtlıdır. Değirmen odasında bulunan un çuvalının arkasındaki hesap defteri ise katilin tüccarla olan büyük borç krizini ve motive edici baskıyı gözler önüne seren önemli bir detaydır.",
+      "locationClues": {
+        "mill": "Değirmen taşının hemen arkasındaki gizli çuval yığınlarının arasına sıkıştırılmış, üzerinde Giles'ın tüccar Marcus Vance'a olan borç miktarını ve ödeme tarihlerini karaladığı ıslanıp kurımaktan buruşmuş hesap defteri.",
+        "church": "Kilise sunak masasının arkasındaki gizli tahta bölmede duran, o gece Kardeş Aldric ile birlikte olduklarını kanıtlayan imzalı mumlu envanter defteri.",
+        "tavern": "Tezgahın arkasındaki ahşap kasanın en dip gözünde saklı duran, Kardeş Aldric'in o gece kilisede Peder Malachar ile yazdığı ortak çalışma günlüğü.",
+        "graveyard": "Mezarlık kulübesinin tahta masasının çekmecesinde duran ve pirinç şamdanın 'adı yazılmamış bir alıcıya' ödünç verildiğini gösteren eski defter sayfası.",
+        "crime_scene": "Kaba keten örtünün hemen altında, toprak zeminin üzerinde maktulün kanıyla lekelenmiş olan ve İhtiyar Silas'a ait olduğu bilinen pirinç şamdan."
+      },
+      "verificationText": "Kardeş Aldric, o gece karanlıkta kapüşonlu bir suretin İhtiyar Silas'ın kulübesinden pirinç şamdanı alıp götürdüğünü ancak yüzünü ve kimliğini asla göremediğini, zira ortalığın zifiri karanlık olduğunu belirtmektedir."
+    },
+    "facts": {
+      "alibis": {
+        "church": "Peder Malachar, cinayet saatinde Kardeş Aldric ile birlikte kilisenin bodrum katında eski dini metinleri mum ışığında tasnif ediyordu.",
+        "tavern": "Kardeş Aldric, cinayet saatinde Peder Malachar ile birlikte kilisenin bodrum katında eski dini metinleri mum ışığında tasnif ediyordu.",
+        "graveyard": "İhtiyar Silas, cinayet saatinde mezarlığın girişindeki kulübesinde uyuyordu ve sabaha karşı yeni kazılacak mezarların tahtalarını hazırlıyordu."
+      },
+      "motive": "DEBT",
+      "victim": {
+        "name": "Marcus Vance",
+        "profession": "Gezgin Tüccar"
+      },
+      "version": 1,
+      "weaponId": "candlestick",
+      "culpritId": "mill",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard"
+      ],
+      "murderStyle": "PLANNED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "watchtower",
+      "involvements": [
+        {
+          "kind": "WITNESS",
+          "npcId": "tavern"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "mill"
+        }
+      ],
+      "verification": {
+        "kind": "FLAW",
+        "placement": {
+          "type": "TESTIMONY",
+          "npcId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": false,
+        "poolClueId": null,
+        "poolClueText": null,
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "graveyard"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 6,
+        "graveyard": 8
+      },
+      "verificationText": "Kardeş Aldric, o gece karanlıkta kapüşonlu bir suretin İhtiyar Silas'ın kulübesinden pirinç şamdanı alıp götürdüğünü ancak yüzünü ve kimliğini asla göremediğini, zira ortalığın zifiri karanlık olduğunu belirtmektedir.",
+      "crimeSceneClueText": "Kaba keten örtünün hemen altında, toprak zeminin üzerinde maktulün kanıyla lekelenmiş olan ve İhtiyar Silas'a ait olduğu bilinen pirinç şamdan."
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "medieval",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 3877,
+      "generation": 10723
+    },
+    "decision": {
+      "at": "2026-10-23T18:02:49.262Z",
+      "by": "Enes",
+      "note": "Silas şamdanı Giles'a verdiğini saklamıyor (kolay vaka tek soruda çözülüyor); Aldric şamdanın kulübeden alındığını görüyor, Silas ödünç verdiğini söylüyor (çalındı/ödünç çelişkisi).",
+      "status": "REJECTED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:19:12.282Z"
+  }
+}

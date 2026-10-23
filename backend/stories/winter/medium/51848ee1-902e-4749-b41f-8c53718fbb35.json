@@ -1,0 +1,210 @@
+{
+  "id": "51848ee1-902e-4749-b41f-8c53718fbb35",
+  "universe": "winter",
+  "difficulty": "medium",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T18:22:26.948Z",
+  "updatedAt": "2026-10-23T18:23:19.151Z",
+  "content": {
+    "plan": {
+      "motive": "REVENGE",
+      "weaponId": "hunting_knife",
+      "culpritId": "farm",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "frozen_lake",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "church"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "farm"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "avci_ok_ucu",
+        "poolClueText": "Karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "farm",
+          "tavern",
+          "church",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 8,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "mill": "Madenci Durn akşam, hava karardıktan sonra Terk Edilmiş Maden'in ana şaftında kömür sevkiyatı hesaplarını inceliyordu.",
+        "church": "Kahin Valda akşam, hava karardıktan sonra Kış Hanı'nın kilerinde Torstein ile birlikte şarap stoklarını sayıyordu.",
+        "tavern": "Torstein akşam, hava karardıktan sonra Kış Hanı'nın kilerinde Kahin Valda ile birlikte şarap stoklarını sayıyordu.",
+        "graveyard": "Komutan Bjorn akşam, hava karardıktan sonra Gözcü Kalesi'nin ana kulesinde nöbet defterini güncelliyordu."
+      },
+      "victim": {
+        "name": "Varis Thorne",
+        "profession": "Kâtip"
+      },
+      "scenario": "Buz tutmuş kuzey kalesi Donmuştut'un keskin ayazında, gecenin karanlığı dehşet verici bir sırrı örttü. Karanlık çam ağaçlarının çevrelediği donmuş gölün kıyısında cansız bir beden bulundu. Dış dünya ile tüm bağlantıların kar fırtınasıyla kesildiği bu ıssız diyarda, herkes birbirinin yüzüne şüpheyle bakarken, keskin kılıçların ve yanan şöminelerin ardında gizlenen karanlık niyetler gün yüzüne çıkmayı bekliyor.",
+      "culpritId": "farm",
+      "npcPrompts": {
+        "farm": "Sen surların muhafızı Einar'sın. Varis Thorne'dan duyduğun derin intikam hırsıyla, plan yapmadan, tamamen bir anlık öfkeyle onu göl kenarında bıçaklayarak katlettin. İzleri örtbas etmeye çalışıyorsun ve suçunu kesinlikle reddediyorsun.",
+        "mill": "Sen Terk Edilmiş Maden'in başı Madenci Durn'sün. Kurbana karşı geçmişten gelen kişisel bir kinin vardı ve bu seni herkesin gözünde şüpheli kılıyor. Ancak bu nefreti umursamadığını ve akşam, hava karardıktan sonra madende hesap defterlerini incelediğini söylüyorsun.",
+        "church": "Sen Kutsal Yürek Ağacı'nın bekçisi Kahin Valda'sın. Cinayeti işlemedin; ancak cesedi ilk sen buldun ve kurbana ait gümüş bir muskayı dehşetle alıp tapınaktaki mihrabın altına sakladın. Torstein'ın akşam, hava karardıktan sonra seninle birlikte kilerde olduğunu biliyorsun ve bunu doğruluyorsun.",
+        "tavern": "Sen Kış Hanı'nın hancısı Torstein'sın. Tamamen masumsun; cinayetle hiçbir alakan ve saklayacak utanç verici bir sırrın yok. Akşam, hava karardıktan sonra Kahin Valda ile birlikte hanın kilerindeydin ve bunu açıkça dile getiriyorsun.",
+        "graveyard": "Sen Gözcü Kalesi'nin komutanı Bjorn'sün. Cinayeti işlemedin ancak akşam, hava karardıktan hemen önce olayda kullanılan av bıçağını kime verdiğini çok iyi biliyor lakin bunu kendi kendine saklıyorsun. Cinayet aletini kime verdiğini biliyorsun: Einar. Bunu kendine saklıyorsun."
+      },
+      "truthReveal": "Kurban, Donmuştut kalesinin eski kâtiplerinden Varis Thorne idi. Katil, surların muhafızı Einar'dı. Einar, geçmişte aile topraklarını elinden alıp kendisini mahveden Varis Thorne'a karşı yıllardır içten içe büyüyen bir intikam ateşi besliyordu. Akşam, hava karardıktan sonra avlanma bahanesiyle göl kenarına giden Einar, kurbanla karşılaşınca aniden öfkeye kapılarak aceleyle, Gözcü Kalesi'nden Komutan Bjorn'den kısa süre önce temin ettiği av bıçağıyla kurbanı katletti. Olay yeri tamamen dağınıktı ve mücadele izleriyle doluydu. Olay yerinde karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu kazara kaldı; ceset ise daha sonra bulanlar tarafından kalın gri bir kürk battaniyeyle örtülmüştü. Einar'ın surlardaki kulübesinde, olay yerindeki ok ucunun birebir aynısı olan ikinci bir çentikli kemik ok ucu ele geçirildi; bu fiziksel kanıt onun suçunu kesin olarak ortaya koydu. Kutsal Yürek Ağacı'nın koruyucusu Kahin Valda cesedi ilk bulan kişiydi ve kurbana ait gümüş bir muskayı kimseye bildirmeden alıp gizlemişti, ancak cinayetle ilgisi yoktu; o sırada hancısı Torstein ile birlikte şarap fıçıları sayımıyla meşguldü. Madenci Durn ise kurbana karşı başka bir eski husumeti yüzünden şüpheli duruma düşmüştü fakat o da cinayet saatinde maden ocağında hesap defterlerini inceliyordu. Komutan Bjorn ise cinayet silahı olan bıçağı Einar'a sattığını biliyor lakin bunu sorguda saklıyordu; fakat cinayeti o işlemediği gibi alibisi de yerindeydi.",
+      "locationClues": {
+        "farm": "Surlar içerisindeki muhafız kulübesinin zemin tahtalarının arasında saklanmış, olay yerindekinin eşi olan yivli avcı yaylarına uygun ikinci çentikli kemik ok ucu.",
+        "mill": "Terk Edilmiş Maden'in ana şaftındaki masanın üzerinde duran, akşam, hava karardıktan sonra Durn'ün kömür sevkiyatı hesaplarını incelediğini gösteren mühürlü teslimat defteri.",
+        "church": "Yürek ağacının köklerinin altındaki toprak çukurda gizlenmiş, kurbana ait gümüş muska.",
+        "tavern": "Kış Hanı'nın kilerindeki fıçıların üzerinde duran, akşam, hava karardıktan sonra Torstein ile Kahin Valda'nın birlikte sayım yaptığını doğrulayan imzalı han kayıt defteri.",
+        "graveyard": "Komutan Bjorn'ün çalışma masasının çekmecesindeki kilitli demir kutuda saklanan, av bıçağının kime verildiği yazılmadan işlendiğini gösteren mühürlü satış kaydı.",
+        "crime_scene": "Karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu."
+      },
+      "verificationText": "Einar'ın surlardaki kulübesinin zemin tahtalarının arasında, olay yerinde bulunanla tamamen aynı özelliklere sahip yivli avcı yaylarına uygun ikinci bir çentikli kemik ok ucu ele geçirildi."
+    },
+    "facts": {
+      "alibis": {
+        "mill": "Madenci Durn akşam, hava karardıktan sonra Terk Edilmiş Maden'in ana şaftında kömür sevkiyatı hesaplarını inceliyordu.",
+        "church": "Kahin Valda akşam, hava karardıktan sonra Kış Hanı'nın kilerinde Torstein ile birlikte şarap stoklarını sayıyordu.",
+        "tavern": "Torstein akşam, hava karardıktan sonra Kış Hanı'nın kilerinde Kahin Valda ile birlikte şarap stoklarını sayıyordu.",
+        "graveyard": "Komutan Bjorn akşam, hava karardıktan sonra Gözcü Kalesi'nin ana kulesinde nöbet defterini güncelliyordu."
+      },
+      "motive": "REVENGE",
+      "victim": {
+        "name": "Varis Thorne",
+        "profession": "Kâtip"
+      },
+      "version": 1,
+      "weaponId": "hunting_knife",
+      "culpritId": "farm",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "church",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "frozen_lake",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "church"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "graveyard",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        },
+        {
+          "kind": "SCAVENGER",
+          "npcId": "church"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "farm"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "avci_ok_ucu",
+        "poolClueText": "Karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "farm",
+          "tavern",
+          "church",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 8,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Einar'ın surlardaki kulübesinin zemin tahtalarının arasında, olay yerinde bulunanla tamamen aynı özelliklere sahip yivli avcı yaylarına uygun ikinci bir çentikli kemik ok ucu ele geçirildi.",
+      "crimeSceneClueText": "Karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu."
+    },
+    "gameMode": "standard",
+    "difficulty": "medium",
+    "scenarioType": "winter",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 4611,
+      "generation": 10113
+    },
+    "decision": {
+      "at": "2026-10-23T18:23:19.139Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Kasaba adı 'Donmuştut' (diğer kış hikâyelerinde Frosthold); Valda'nın rolünde muska mihrabın altında, ipucunda Yürek Ağacı'nın köklerinde; bıçakla işlenen cinayette olay yerinde ok ucu (av bahanesiyle açıklanıyor).",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T18:22:26.942Z"
+  }
+}

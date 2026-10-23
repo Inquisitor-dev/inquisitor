@@ -1,0 +1,241 @@
+{
+  "id": "f3a14c7c-9551-4603-88b9-3dbb58316947",
+  "universe": "cyberpunk",
+  "difficulty": "hard",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:21:09.941Z",
+  "updatedAt": "2026-10-23T18:03:31.145Z",
+  "content": {
+    "plan": {
+      "motive": "JEALOUSY",
+      "weaponId": "monoblade",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "metro",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "clinic",
+          "aboutNpcId": "tavern"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sentetik_yag",
+        "poolClueText": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı.",
+        "eliminatedNpcIds": [
+          "church",
+          "farm"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill",
+          "clinic"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 7,
+        "clinic": 8,
+        "tavern": 7,
+        "graveyard": 8
+      }
+    },
+    "draft": {
+      "alibis": {
+        "farm": "Şafak sökmeden hemen önce Sokak Pazarı'ndaki tezgahımın arkasında AURA-9 ile birlikte ana jeneratörün bakımını yapıyorduk.",
+        "mill": "Cinayet saatinde Sokak Pazarı'nda Ash ile birlikte ana jeneratörün aşırı ısınan soğutma borularını onarıyorduk.",
+        "church": "Cinayet saatinde Lokanta'nın arka mutfağında yeni sipariş edilen sentetik pirinç stoklarını saymakla meşguldüm.",
+        "clinic": "Cinayet saatinden hemen önce Velvet Static'in arka locasında son müşterimle hesap yapıp camı siliyordum.",
+        "graveyard": "Şafaktan hemen önce alt sokaktaki hurdalıkta arızalanmış bir sinir-ağ tarayıcısını kalibre ediyordum."
+      },
+      "victim": {
+        "name": "Orkun Demir",
+        "profession": "Veri Brokeri"
+      },
+      "scenario": "Neon Prime'ın sodyum buharlı sokaklarında asit yağmurları inerken, terk edilmiş bir maglev metro platformunda cansız bir beden bulundu. Şehrin donuk ışıkları altında, kimliği henüz belirlenemeyen bir kurban, soğuk betonun üzerine serilmiş, mühürlü siyah bir ceset torbasının içinde sessizliği bekliyor. Bu karanlık mega-şehirde herkesin sakladığı sırlar, neon tabelaların titrek ışıklarında parlıyor. Müfettiş, bu labirentte gerçeği ortaya çıkarmak için polisten sokağın dibindeki yasa dışı kliniklere kadar uzanan bu ölümcül ağın iplerini çözmek zorunda.",
+      "culpritId": "tavern",
+      "npcPrompts": {
+        "farm": "Sen Ash'sin. Sokak Pazarı'ndaki tezgahın başında satıcı ve bilgi simsarısın. AURA-9 o sırada benimle birlikteydi. Hiçbir yasa dışı sırrın, hırsızlık veya kaçakçılık geçmişin yoktur. Cinayet saatinde AURA-9 ile birlikte pazardaki jeneratörü tamir ediyordun. Sorguda bunu açıkça söyler ve AURA-9'un seninle olduğunu doğrularsın.",
+        "mill": "Sen AURA-9'sun. Otonom teknisyen bir androidsin. Cinayet saatinde Ash ile birlikte Sokak Pazarı'nda ana jeneratörün soğutma borularını onarıyordun. Ash o sırada benimle birlikteydi. Hiçbir karanlık sırrın veya suçla bağlantın yoktur. Sorguda her şeyi dürüstçe anlatır ve Ash ile birlikte olduğunuzu onaylarsın.",
+        "church": "Sen Mirel Sato'sun. Lokanta adlı all-night noodle restoranının sahibisin. Cinayetten kısa bir süre önce, adı yazılmamış bir alıcıya (memur Kael Voss olduğunu biliyorsun ama saklıyorsun) bir monobıçak verdin/sattın. Bu bıçağın cinayette kullanılacağını asla bilmiyordun. Sorguda bu ticareti hatırlar ancak alıcının adını kimseye vermezsin; kendi alibin ise mutfakta stok saydığındır.",
+        "clinic": "Sen Vera Nyx'sin. Bar'da barmensin. Kurbanla cinayetten hemen önce uzun bir konuşma yaptın; kurban kıskançlık krizleri yüzünden son derece tedirgindi ve bunu seninle paylaştı. Sorguda kurbanla ne konuştuğunu soranlara dürüstçe aktarırsın.",
+        "tavern": "Sen Memur Kael Voss'sun. Karakol'daki masanda oturur, şehrin suç ağını kendi çıkarların için yönetirsin. Orkun Demir'i kıskançlık krizine kapılarak planlamadan, ani bir öfkeyle terk edilmiş Metro Peronu'nda öldürdün. Olay yerinde siberik eklemlerinden damlayan mavi sentetik yağı unuttun. Bu delili karakoldaki masanın çekmecesinde saklıyorsun ve sorguda soğukkanlılığını koruyarak suçunu gizlemeye çalışırsın.",
+        "graveyard": "Sen Brakk Coil'sin. Klinik'in yeraltı siber-cerrahısın. Kurbana karşı geçmişten gelen kişisel bir kinin ve nefretin vardı; bunu herkes bilir. Ancak cinayet saatinde alt sokaktaki hurdalıkta bir sinir-ağ tarayıcısını kalibre ediyordun. Sorguda kurbana olan kinini reddetmez, ancak cinayetle uzaktan yakından alakan olmadığını savunursun."
+      },
+      "truthReveal": "Neon Prime'ın sodyum buharlı sokaklarında, kurban Orkun Demir adında hırslı bir veri brokeriydi. Olay, şafaktan hemen önce terk edilmiş Metro Peronu'nda gerçekleşti. Kurbanın kalbini kıskançlık hırsıyla mühürleyen katil, Memur Kael Voss'tan başkası değildi. Kael Voss, Orkun'un şehrin en büyük veri ağına sızma planlarını ve kendisini geride bırakma ihtimalini sindirememiş, ani bir panik ve öfkeyle üzerindeki monobıçağı çekerek kurbanı kesici alet yaralarıyla öldürmüştü. Olay yerinde hiçbir boğuşma izi yoktu; son derece derli toplu görünen olay yerinde katilin geride bıraktığı tek gerçek delil, yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağıydı. Bu mavi damlalar, katilin siber-biyolojik yapısından sızmıştı. Kael Voss bu delili karakoldaki masasının çekmecesinde sakladığı aynı türden sentetik eklem yağı şişesiyle ele verdi. Olay gecesi Mirel Sato, karanlık işlerden habersiz bir şekilde katile monobıçağı satmış ya da ödünç vermişti ve bunu saklıyordu; Brakk Coil kurbana karşı eski bir kin besliyordu ancak cinayetle ilgisi yoktu; AURA-9 ve Ash şafaktan önce sokak pazarındaki eski bir jeneratörü tamir etmekle meşgul olduklarını kanıtlayan log kayıtlarıyla birlikteydiler; Vera Nyx ise barda kurbanla son konuşmasını yapmış, kurbanın içindeki paranoyayı ve kıskançlık krizlerini dinlemişti. Herkesin sırrı çözüldüğünde, geriye sadece Karakol'daki o masada parlayan mavi damlalar ve katilin soğuk itaatsizliği kaldı.",
+      "locationClues": {
+        "farm": "Sokak Pazarı'ndaki tezgahın tahta çekmecesinin köşesinde duran, şafak vakti AURA-9 ile ortak imzalanmış jeneratör parça teslim fişi.",
+        "mill": "Tamirhane'nin ana tezgahının üzerindeki dijital terminalde açık duran, Sokak Pazarı'ndaki şafak vakti jeneratör onarımına dair çalışma günlüğü.",
+        "church": "Lokanta'nın mutfak tezgahının altındaki paslı çelik kasanın içinde duran monobıçak satış defteri.",
+        "clinic": "Bar'ın tezgahının arkasındaki kasa defterinin arasına sıkıştırılmış, kurbanla yapılan son sohbetin saatini ve konusunu belirten garson notu.",
+        "tavern": "Karakol'daki kayıt masasının sağ çekmecesinin tabanına yapışmış durumdaki boş sentetik eklem yağı şişesi.",
+        "graveyard": "Klinik'in ameliyat masasının altındaki metal zeminli ızgaraya sıkışmış, şafak vakti orada çalıştığını gösteren hurdalık bakım tutanağı.",
+        "crime_scene": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı."
+      },
+      "verificationText": "Karakol'daki masanın sağ çekmecesinin tabanına yapışmış durumdaki boş sentetik eklem yağı şişesi, olay yerinde bulunan parlayan mavi damlalarla birebir aynı kimyasal bileşime sahiptir."
+    },
+    "facts": {
+      "alibis": {
+        "farm": "Şafak sökmeden hemen önce Sokak Pazarı'ndaki tezgahımın arkasında AURA-9 ile birlikte ana jeneratörün bakımını yapıyorduk.",
+        "mill": "Cinayet saatinde Sokak Pazarı'nda Ash ile birlikte ana jeneratörün aşırı ısınan soğutma borularını onarıyorduk.",
+        "church": "Cinayet saatinde Lokanta'nın arka mutfağında yeni sipariş edilen sentetik pirinç stoklarını saymakla meşguldüm.",
+        "clinic": "Cinayet saatinden hemen önce Velvet Static'in arka locasında son müşterimle hesap yapıp camı siliyordum.",
+        "graveyard": "Şafaktan hemen önce alt sokaktaki hurdalıkta arızalanmış bir sinir-ağ tarayıcısını kalibre ediyordum."
+      },
+      "motive": "JEALOUSY",
+      "victim": {
+        "name": "Orkun Demir",
+        "profession": "Veri Brokeri"
+      },
+      "version": 1,
+      "weaponId": "monoblade",
+      "culpritId": "tavern",
+      "sceneState": "TIDY",
+      "innocentIds": [
+        "church",
+        "graveyard",
+        "mill",
+        "farm",
+        "clinic"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "BEFORE_DAWN",
+      "crimeSceneId": "metro",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "farm",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "NONE",
+          "npcId": "mill",
+          "aboutNpcId": "farm"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "graveyard"
+        },
+        {
+          "kind": "UNWITTING_HELP",
+          "npcId": "church",
+          "aboutNpcId": "tavern"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "clinic",
+          "aboutNpcId": "tavern"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "tavern"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "sentetik_yag",
+        "poolClueText": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı.",
+        "eliminatedNpcIds": [
+          "church",
+          "farm"
+        ],
+        "implicatedNpcIds": [
+          "tavern",
+          "graveyard",
+          "mill",
+          "clinic"
+        ]
+      },
+      "fearThresholds": {
+        "farm": 6,
+        "mill": 6,
+        "church": 7,
+        "clinic": 8,
+        "tavern": 7,
+        "graveyard": 8
+      },
+      "verificationText": "Karakol'daki masanın sağ çekmecesinin tabanına yapışmış durumdaki boş sentetik eklem yağı şişesi, olay yerinde bulunan parlayan mavi damlalarla birebir aynı kimyasal bileşime sahiptir.",
+      "crimeSceneClueText": "Yere damlamış, mavi renkte parlayan birkaç damla sentetik eklem yağı."
+    },
+    "gameMode": "standard",
+    "difficulty": "hard",
+    "scenarioType": "cyberpunk",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [
+        {
+          "note": "Mirel Sato'nun gerçeğe göre bilmeden yardım ettiği belirtilmesine rağmen truthReveal metnindeki ifade alibi çelişkisi yaratmaktadır.",
+          "field": "truthReveal",
+          "quote": "Mirel Sato, karanlık işlerden habersiz bir şekilde katile monobıçağı satmış ya da ödünç vermişti",
+          "source": "JUDGE",
+          "category": "TRUTH",
+          "severity": "DOUBT"
+        }
+      ],
+      "judged": true,
+      "verdict": "HUMAN"
+    },
+    "tokens": {
+      "review": 5031,
+      "generation": 11656
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:31.136Z",
+      "by": "Enes",
+      "note": "Hakemin Mirel şüphesi yersiz. Mirel'in rolünde 'all-night' (İngilizce sızıntı) ve 'verdin/sattın'.",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:21:09.940Z"
+  }
+}

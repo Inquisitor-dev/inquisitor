@@ -1,0 +1,192 @@
+{
+  "id": "693b5a2a-4b36-43c1-9405-811f56dc27fe",
+  "universe": "china",
+  "difficulty": "easy",
+  "status": "APPROVED",
+  "wildcardCount": 0,
+  "gameMode": "standard",
+  "ruleVersion": 2,
+  "createdAt": "2026-10-23T17:21:22.835Z",
+  "updatedAt": "2026-10-23T18:03:36.513Z",
+  "content": {
+    "plan": {
+      "motive": "GREED",
+      "weaponId": "short_sword",
+      "culpritId": "church",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "bamboo_grove",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "graveyard",
+          "aboutNpcId": "church"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "church"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "muhur_mumu",
+        "poolClueText": "Yere damlamış, üzerinde resmi bürokrasi mührü izi taşıyan kırmızı balmumu damlaları.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "church",
+          "tavern",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 7
+      }
+    },
+    "draft": {
+      "alibis": {
+        "mill": "Cinayet akşamı Usta Guan, Demirci Ocağı'nda Lin Feng ile birlikte yeni sipariş edilen tarım aletlerinin kayıt defterini inceliyordu.",
+        "tavern": "Cinayet akşamı hava karardıktan sonra, Lin Feng Demirci Ocağı'nda Usta Guan ile birlikte çay stoklarını ve demir siparişlerini hesaplıyordu.",
+        "graveyard": "Cinayet akşamı Keşiş Huikang, Kadim Tapınak'ın ana ibadet salonunda sabaha kadar tütsü yakıp dua ediyordu."
+      },
+      "victim": {
+        "name": "Bailu Fang",
+        "profession": "Tüccar ve Tefeci"
+      },
+      "scenario": "Jinling şehrinin kadim sokakları sis manttısıyla örtülmüşken, bambu koridorlarının derinliklerinde sessiz bir çığlık yankılandı. Hanedanın ihtişamlı fenerleri henüz sönmüştü ki, sabah ayazında bir beden bulundu; üzerinde sadece beyaz bir yas bezi vardı. Adaletin keskin kılıcı şimdi Jinling'in dört bir yanındaki şüphelilerin, tüccarların, rahiplerin ve demircilerin üzerine çevrildi.",
+      "culpritId": "church",
+      "npcPrompts": {
+        "mill": "Sen Usta Guan, Demirci Ocağı'nın ustasısın. Kurbana karşı geçmişten gelen kişisel bir kinin ve borç davası husunetin vardı, bu yüzden şüpheli görünüyorsun; ancak cinayet saatinde Lin Feng ile birlikte demirci ocağındaydın ve bu suçla hiçbir ilgin yoktur.",
+        "church": "Sen Komutan Zhao, Muhafız Karargahı'nın başındaki kişisin. Kurbanın mal varlığına ve miras tapularına göz diktiğin için açgözlülükle onu Bambu Korusu'nda kısa kılıçla öldürdün. Suçunu örtbas etmek için ellerinden geleni yapıyorsun ve delilleri saklıyorsun.",
+        "tavern": "Sen Lin Feng, Altın Lotus Çay Evi'nin sahibisin. Tamamen masumsun, hiçbir gizli suçun yok. Cinayet gecesi Usta Guan ile birlikte ocağın başındaydın ve bunu açıkça dile getiriyorsun.",
+        "graveyard": "Sen Keşiş Huikang, Kadim Tapınak'ın yaşlı keşişisin. Kurban ölümünden hemen önce seninle görüşüp miras meselesi hakkında endişelerini paylaşmıştı. Kendi namına suçsuzsun ve bu son konuşmayı dürüstçe anlatırsın."
+      },
+      "truthReveal": "Jinling'in sisli şafağında, tüccar ve tefeci Bailu Fang, imparatorluk hazinesinden kalan arazilerin miras tapularını ele geçirmek amacıyla açgözlülüğe yenik düşmüş ve Muhafız Karargahı'nın başındaki Komutan Zhao ile karşı karşıya gelmiştir. Olay akşamı, acımasız bir hırsla Bambu Korusu'nda sıkıştırdığı kurbana kısa kılıç ile saldıran Komutan Zhao, korku ve panik içinde cinayeti işlemiş, kaçarken de resmi bürokrasi mührü izi taşıyan kırmızı balmumu damlalarını yere düşürmüştür. Olay yerindeki kargaşa ve boğuşma izleri bu ani cinayetin izlerini taşırken, Çay Evi Sahibi Lin Feng ile Demirci Usta Guan olay saatinde birlikte demirci ocağında imha işleriyle meşguldürler ve tamamen masumdurler. Keşiş Huikang ise kurbanla ölümünden hemen önce tapınakta görüşmüş, kurbanın miras kavgalarından duyduğu endişeyi dinlemiştir. Muhafız Karargahı'ndaki aramada, olay yerinde bulunan kırmızı balmumu mühürlü belgenin eşi ve suç delili açıkça ele geçirilmiştir.",
+      "locationClues": {
+        "mill": "Demirci Ocağı'nın körük tezgahının arkasındaki tahta sandığın içinde, o akşam Lin Feng ile birlikte çalıştıklarını kanıtlayan imzalı demir sipariş tutanağı.",
+        "church": "Muhafız Karargahı'nın çalışma masasının altındaki demir çekmecede saklı, olay yerindeki balmumu damgasıyla mühürlenmiş gizli tapu devir sözleşmesi.",
+        "tavern": "Çay Evi'nin ikinci katındaki sedirin minderinin altına sıkıştırılmış, üzerinde o gece ocağın başında Usta Guan ile ortak imzaların bulunduğu hesap defteri sayfası.",
+        "graveyard": "Kadim Tapınak'ın sunağının arkasındaki taş oyukta duran, kurbanın bağış yaparken bıraktığı ve endişelerini anlatan mühürlü ibadet mektubu.",
+        "crime_scene": "Dar taş patikanın tam ortasında, ezilmiş bambu yapraklarının üzerine damlamış, üzerinde resmi bürokrasi mührü izi taşıyan kırmızı balmumu damlaları."
+      },
+      "verificationText": "Muhafız Karargahı'nın gizli bölmesinde, olay yerinde düşen kırmızı balmumu mühür damgasının aynısını taşıyan kanlı bir resmi emirname ele geçirilmiştir."
+    },
+    "facts": {
+      "alibis": {
+        "mill": "Cinayet akşamı Usta Guan, Demirci Ocağı'nda Lin Feng ile birlikte yeni sipariş edilen tarım aletlerinin kayıt defterini inceliyordu.",
+        "tavern": "Cinayet akşamı hava karardıktan sonra, Lin Feng Demirci Ocağı'nda Usta Guan ile birlikte çay stoklarını ve demir siparişlerini hesaplıyordu.",
+        "graveyard": "Cinayet akşamı Keşiş Huikang, Kadim Tapınak'ın ana ibadet salonunda sabaha kadar tütsü yakıp dua ediyordu."
+      },
+      "motive": "GREED",
+      "victim": {
+        "name": "Bailu Fang",
+        "profession": "Tüccar ve Tefeci"
+      },
+      "version": 1,
+      "weaponId": "short_sword",
+      "culpritId": "church",
+      "sceneState": "MESSY",
+      "innocentIds": [
+        "tavern",
+        "graveyard",
+        "mill"
+      ],
+      "murderStyle": "HURRIED",
+      "timeOfDeath": "EVENING",
+      "crimeSceneId": "bamboo_grove",
+      "involvements": [
+        {
+          "kind": "NONE",
+          "npcId": "tavern",
+          "aboutNpcId": "mill"
+        },
+        {
+          "kind": "SHARED_MOTIVE",
+          "npcId": "mill"
+        },
+        {
+          "kind": "LAST_CONVERSATION",
+          "npcId": "graveyard",
+          "aboutNpcId": "church"
+        }
+      ],
+      "verification": {
+        "kind": "CORROBORATION",
+        "placement": {
+          "type": "LOCATION",
+          "locationId": "church"
+        }
+      },
+      "crimeSceneClue": {
+        "authentic": true,
+        "poolClueId": "muhur_mumu",
+        "poolClueText": "Yere damlamış, üzerinde resmi bürokrasi mührü izi taşıyan kırmızı balmumu damlaları.",
+        "eliminatedNpcIds": [
+          "graveyard"
+        ],
+        "implicatedNpcIds": [
+          "church",
+          "tavern",
+          "mill"
+        ]
+      },
+      "fearThresholds": {
+        "mill": 6,
+        "church": 8,
+        "tavern": 8,
+        "graveyard": 7
+      },
+      "verificationText": "Muhafız Karargahı'nın gizli bölmesinde, olay yerinde düşen kırmızı balmumu mühür damgasının aynısını taşıyan kanlı bir resmi emirname ele geçirilmiştir.",
+      "crimeSceneClueText": "Dar taş patikanın tam ortasında, ezilmiş bambu yapraklarının üzerine damlamış, üzerinde resmi bürokrasi mührü izi taşıyan kırmızı balmumu damlaları."
+    },
+    "gameMode": "standard",
+    "difficulty": "easy",
+    "scenarioType": "china",
+    "wildcardCount": 0
+  },
+  "reviewResults": {
+    "review": {
+      "issues": [],
+      "judged": true,
+      "verdict": "PASS"
+    },
+    "tokens": {
+      "review": 3469,
+      "generation": 8832
+    },
+    "decision": {
+      "at": "2026-10-23T18:03:36.506Z",
+      "by": "Enes",
+      "note": "Pilot için yeterli. Açılışta 'manttısıyla', Guan'ın rolünde 'husunetin'; gerçek metninde dilbilgisi hataları ('masumdurler').",
+      "status": "APPROVED"
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    "generatedAt": "2026-10-23T17:21:22.835Z"
+  }
+}
