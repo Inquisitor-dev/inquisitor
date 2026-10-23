@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   StoryCriteria,
   StoryPackage,
+  isV2StoryPackage,
   parseStoryPackage,
 } from './story-package';
 
@@ -36,6 +37,11 @@ export class StoryPoolService {
           ? { wildcardCount: criteria.wildcardCount }
           : {}),
         ...(criteria.gameMode ? { gameMode: criteria.gameMode } : {}),
+        ...(criteria.ruleVersion !== undefined
+          ? { ruleVersion: criteria.ruleVersion }
+          : criteria.minRuleVersion !== undefined
+            ? { ruleVersion: { gte: criteria.minRuleVersion } }
+            : {}),
         status: 'APPROVED',
         NOT: {
           sessions: {
@@ -75,12 +81,14 @@ export class StoryPoolService {
 
   /**
    * Üretilen bir hikâye paketini taslak (DRAFT) olarak veritabanına kaydeder.
+   * v2 paketi ise varsayılan ruleVersion 2 yapılır.
    */
   async saveDraft(
     criteria: StoryCriteria,
     pkg: StoryPackage,
-    ruleVersion: number = 1,
+    ruleVersion?: number,
   ) {
+    const version = ruleVersion ?? (isV2StoryPackage(pkg) ? 2 : 1);
     return this.prisma.story.create({
       data: {
         universe: criteria.universe,
@@ -89,7 +97,7 @@ export class StoryPoolService {
         gameMode: criteria.gameMode ?? 'standard',
         content: pkg as unknown as Prisma.InputJsonValue,
         status: 'DRAFT',
-        ruleVersion,
+        ruleVersion: version,
       },
     });
   }

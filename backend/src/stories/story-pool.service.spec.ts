@@ -210,4 +210,120 @@ describe('StoryPoolService', () => {
       });
     });
   });
+
+  describe('Vaka Motoru v2 biçimi ve tipleri', () => {
+    const v2Package: StoryPackage = {
+      scenarioType: 'medieval',
+      difficulty: 'easy',
+      wildcardCount: 0,
+      gameMode: 'standard',
+      plan: {
+        culpritId: 'mill',
+        innocentIds: ['tavern', 'church'],
+        murderStyle: 'PLANNED',
+        sceneState: 'TIDY',
+        crimeSceneId: 'crime_scene',
+        crimeSceneClue: {
+          poolClueId: 'mum',
+          poolClueText: 'Mum damlası',
+          authentic: true,
+          implicatedNpcIds: ['mill'],
+          eliminatedNpcIds: ['tavern', 'church'],
+        },
+        verification: {
+          kind: 'CORROBORATION',
+          placement: { type: 'LOCATION', locationId: 'mill' },
+        },
+        weaponId: 'candlestick',
+        motive: 'DEBT',
+        timeOfDeath: 'MIDNIGHT',
+        involvements: [
+          { npcId: 'tavern', kind: 'SHARED_MOTIVE', aboutNpcId: 'mill' },
+          { npcId: 'church', kind: 'FULLY_INNOCENT' },
+        ],
+        fearThresholds: {
+          mill: 8,
+          tavern: 7,
+          church: 6,
+        },
+      } as any,
+      facts: {
+        culpritId: 'mill',
+        innocentIds: ['tavern', 'church'],
+        crimeSceneClueText: 'Mum damlası',
+        verificationText: 'İzi doğrulayan kanıt',
+        victim: { name: 'Kurban', profession: 'Tüccar' },
+        alibis: { tavern: 'Meyhanedeydi', church: 'Kilisedeydi' },
+        weaponId: 'candlestick',
+        motive: 'DEBT',
+        timeOfDeath: 'MIDNIGHT',
+        involvements: [
+          { npcId: 'tavern', kind: 'SHARED_MOTIVE', aboutNpcId: 'mill' },
+          { npcId: 'church', kind: 'FULLY_INNOCENT' },
+        ],
+        fearThresholds: {
+          mill: 8,
+          tavern: 7,
+          church: 6,
+        },
+      } as any,
+      draft: {
+        scenario: 'Bir cinayet işlendi.',
+        truthReveal: 'Değirmenci yaptı.',
+        culpritId: 'mill',
+        npcPrompts: { mill: 'Sen katilsin.', tavern: 'Masumsun.' },
+        locationClues: { crime_scene: 'Mum damlası.' },
+      },
+    };
+
+    it('v2 paketi isV2StoryPackage tarafından tanınır', () => {
+      const { isV2StoryPackage } = require('./story-package');
+      expect(isV2StoryPackage(v2Package)).toBe(true);
+      expect(isV2StoryPackage(samplePackage)).toBe(false);
+    });
+
+    it('validateV2StoryPackage v2 alanlarını doğrular ve eksikleri listeler', () => {
+      const { validateV2StoryPackage } = require('./story-package');
+      const validCheck = validateV2StoryPackage(v2Package);
+      expect(validCheck.valid).toBe(true);
+      expect(validCheck.errors).toHaveLength(0);
+
+      const invalidCheck = validateV2StoryPackage(samplePackage);
+      expect(invalidCheck.valid).toBe(false);
+      expect(invalidCheck.errors.some((e: string) => e.includes('weaponId'))).toBe(true);
+      expect(invalidCheck.errors.some((e: string) => e.includes('involvements'))).toBe(true);
+    });
+
+    it('saveDraft v2 paketi verildiğinde otomatik ruleVersion: 2 olarak kaydeder', async () => {
+      mockPrisma.story.create.mockResolvedValue({ id: 'v2-story' });
+      await service.saveDraft({ universe: 'medieval', difficulty: 'easy' }, v2Package);
+
+      expect(mockPrisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          ruleVersion: 2,
+        }),
+      });
+    });
+
+    it('findAvailableStory minRuleVersion filtresini doğru uygular', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([{ id: 'v2-story' }]);
+      mockPrisma.story.findUnique.mockResolvedValue({
+        id: 'v2-story',
+        content: v2Package,
+      });
+
+      await service.findAvailableStory('user-1', {
+        universe: 'medieval',
+        difficulty: 'easy',
+        minRuleVersion: 2,
+      });
+
+      expect(mockPrisma.story.findMany).toHaveBeenCalledWith({
+        where: expect.objectContaining({
+          ruleVersion: { gte: 2 },
+        }),
+        select: { id: true },
+      });
+    });
+  });
 });
