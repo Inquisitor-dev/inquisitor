@@ -64,7 +64,7 @@ describe('StoryPoolService', () => {
         groupBy: jest.fn(),
       },
     };
-    service = new StoryPoolService(mockPrisma);
+    service = new StoryPoolService(mockPrisma as unknown as PrismaService);
   });
 
   afterEach(() => {
