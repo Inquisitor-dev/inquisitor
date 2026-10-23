@@ -5,9 +5,10 @@ import { getScenarioDefinition } from '@/config/scenarioRegistry';
 // Adımın düştüğü an döngünün başına denk gelmiyorsa buradan kaydırılır (0–1, döngü kesri)
 const FOOTSTEP_PHASE_OFFSET = 0;
 // İki adım sesi arasındaki asgari süre (ms). Karakter hızlı yürüse veya kare atlasa bile
-// seslerin arka arkaya komik şekilde üst üste binmesini engeller. Yürüme hızlandığı için
-// (useMapWalking) adımlar sıklaştı; eşik gerçek adım aralığının altında tutulur ki adım atlanmasın.
-const MIN_STEP_INTERVAL_MS = 160;
+// seslerin arka arkaya komik şekilde üst üste binmesini engeller. Ses her ikinci adımda
+// çalındığı için (aşağıda) tipik ses aralığı ~250–400 ms'dir; eşik en hızlı yürüyüşteki
+// aralığın (~120 ms) altında tutulur ki ses yutulmasın.
+const MIN_STEP_INTERVAL_MS = 100;
 
 /**
  * Bir önceki çalınan sesle AYNI OLMAYACAK şekilde rastgele bir sonraki sesi seçer.
@@ -87,6 +88,13 @@ export function useFootsteps(walking: boolean, walkPhase: number, scenarioType?:
     // Bir yürüme döngüsünde 2 adım atılır (faz 0.5 aralıklarla tetiklenir)
     const step = Math.floor(walkPhase * 2 + FOOTSTEP_PHASE_OFFSET * 2);
     if (lastStepRef.current === step) return;
+
+    // Yürüyüş hızlı olduğundan ses her ikinci adımda (döngü başına bir kez) çalınır;
+    // aksi halde saniyede 6'dan fazla ses çıkar
+    if (step % 2 !== 0) {
+      lastStepRef.current = step;
+      return;
+    }
 
     // Minimum adım aralığı koruması: hızlı yürüyüşte veya ani faz atlamalarında
     // seslerin üst üste binip makinalı tüfek gibi komik duyulmasını engeller
