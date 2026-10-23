@@ -112,6 +112,20 @@ Kovalar (evren × zorluk) sırayla birer birer doldurulur ve var olan reddedilme
 
 Bu ikisi üretimde düzeltilebilir (senaryo istemi ya da yeni bir onarım adımı); hakem yakalamaya devam eder.
 
+## İnsan onayı
+
+`npm run stories:approve` (backend/):
+
+| Komut | Ne yapar? |
+|---|---|
+| `-- --list [--status DRAFT\|REJECTED\|APPROVED\|all]` | Hikâyeleri kod doğrulaması, hakem kararı, bulgu sayısı ve verilen kararla listeler (varsayılan: onay bekleyen taslaklar). |
+| `-- --show <id>` | Hikâyeyi okunur halde gösterir: vaka gerçekleri, oyuncunun okuyacağı metinler, her karakterin rolü ve mazereti, mekân ipuçları, doğrulayan kanıt, kodun ve hakemin notları, maliyet. |
+| `-- --approve <id> [--note ".."]` | Onaylar; hikâye havuzda oynanabilir olur. Hakemin reddettiği hikâye yalnızca `--force` ile onaylanır; kod doğrulamasından kalan hiçbir zaman onaylanmaz. |
+| `-- --reject <id> --note ".."` | Reddeder (not zorunlu); onaylı hikâyeyi de havuzdan çeker. |
+| `-- --stats` | Kovaların durumu (evren × zorluk × taslak/onaylı/reddedilen). |
+
+`<id>` yerine listedeki ilk 8 karakter yeter. Karar (durum, kişi, not, zaman) `reviewResults.decision`'a yazılır. Oyun yalnızca onaylı hikâyeleri seçer (`STORY_POOL_ENABLED=true`).
+
 ## Onay kuralları (Faz 0 kararı, 22–23 Ekim 2026)
 
 - **Hakemin geçme eşiği:** kesin hata (`CERTAIN`) varsa red, yalnızca şüphe (`DOUBT`) varsa ya da hakem çalışmadıysa insana, bulgu yoksa geçer. Kararı kod verir (`decideStoryReview`).

@@ -1,3 +1,5 @@
+> **Geçersiz (23 Ekim 2026):** Hikâye havuzu artık dış bir agent'la değil, kodun içinden üretiliyor: `npm run stories:generate` (bkz. `docs/hikaye-hakemi.md`). Dışarıda üretilen hikâyeler çözücüden, onarım adımlarından ve kod doğrulamasından geçmediği için havuza bu şablonla hikâye eklenmemeli. Belge, 1. bölümdeki kod tabanı düzeltmelerinin kaydı olarak duruyor.
+
 # Inquisitor — Dış Agent Hikâye Üretimi İçin NİHAİ PROMPT İSKELETİ
 
 ## 1. Giderilen Hata, Çakışma ve Eksikler (Kod Tabanı Düzeltmeleri)

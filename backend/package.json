@@ -24,6 +24,7 @@
     "usage:report": "ts-node -r tsconfig-paths/register prisma/llm-usage-report.ts",
     "stories:review": "ts-node -r tsconfig-paths/register prisma/story-review.ts",
     "stories:generate": "ts-node -r tsconfig-paths/register prisma/story-generate.ts",
+    "stories:approve": "ts-node -r tsconfig-paths/register prisma/story-approve.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
