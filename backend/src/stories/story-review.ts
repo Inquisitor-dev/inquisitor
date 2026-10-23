@@ -3,14 +3,17 @@ import {
   INVOLVEMENT_LABELS,
   MOTIVES,
   TEMPERAMENT_THRESHOLD,
+  TIME_OF_DEATH_LABELS,
   TIMES_OF_DEATH,
+  TimeOfDeath,
 } from '../scenarios/case-catalog';
 import { foldTurkish } from '../npcs/prompt-guard';
+import { isConfessionInstruction } from '../llm/prompts/confession-instructions';
 
 // Hikâye hakemi: havuza girecek bir vakanın metinlerini onaydan önce denetler. Kesin kurallar
 // (katilin ipucunda kan/silah, tuzak izin herkesi göstermesi, adıyla sızıntı, masum eşlerin yeri)
 // üretim sırasında kodla onarılır (llm.service.ts repair*). Burada ikisi kalır: kodla bedavaya
-// bulunabilenler (iç kimlikler, Türkçe karakterleri eksik cümleler) ve yalnızca okuyarak görülebilen
+// bulunabilenler (iç kimlikler, Türkçe karakterleri eksik cümleler, rol metninde itiraf talimatı) ve yalnızca okuyarak görülebilen
 // serbest metin kaymaları (yapay zekâ hakemi).
 
 export type StoryIssueCategory =
@@ -198,6 +201,63 @@ export function findMissingDiacritics(
   return issues;
 }
 
+// Rol metninde kalan itiraf talimatı ("Sorguda bunu itiraf edeceksin"). Üretim bu cümleleri siliyor
+// (removeConfessionInstructions); bu kontrol havuzdaki eski hikâyeler ve kaçan cümleler için. Hakem
+// istemi uzadıkça bu talimatı ara sıra atlıyordu; kod her seferinde aynı sonucu verir.
+export function findConfessionInstructions(
+  fields: Record<string, string>,
+): StoryIssue[] {
+  const issues: StoryIssue[] = [];
+  for (const [field, text] of Object.entries(fields)) {
+    if (!field.startsWith('npcPrompts.')) continue;
+    for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+      if (!isConfessionInstruction(sentence)) continue;
+      issues.push({
+        category: 'ROLE',
+        severity: 'CERTAIN',
+        field,
+        quote: sentence.trim(),
+        note: 'Rol metni karaktere ne zaman itiraf edeceğini söylüyor; itirafı oyun verir.',
+        source: 'CODE',
+      });
+    }
+  }
+  return issues;
+}
+
+// Mazeret ölüm saatini kapsar; gecenin başka bir vaktini söyleyen mazeret ("gece yarısı tütsülerini
+// yakıyordu", ölüm akşam) hakemin gözünden kaçabiliyor. Yalnızca başka vakti açıkça gösteren ifadelere
+// bakılır: "cinayet akşamı" (o gece), "sabaha kadar" ve "gece yarısından sonra" (şafaktan önce) sayılmaz.
+// Tahmin olduğu için şüphe sayılır.
+const EVENING_SIGNS =
+  /(aksam ?ustu|aksam karanlig|aksam saatleri|gun batimi|hava (yeni )?karar)/;
+const OTHER_TIMES: Record<TimeOfDeath, RegExp> = {
+  EVENING: /(gece yarisi|sabaha karsi|safak)/,
+  MIDNIGHT: new RegExp(`${EVENING_SIGNS.source}|sabaha karsi|safak`),
+  BEFORE_DAWN: new RegExp(`${EVENING_SIGNS.source}|gece yarisi(?!ndan sonra)`),
+};
+
+export function findOffTimeAlibis(
+  fields: Record<string, string>,
+  timeOfDeath: TimeOfDeath | undefined,
+): StoryIssue[] {
+  if (!timeOfDeath) return [];
+  const issues: StoryIssue[] = [];
+  for (const [field, text] of Object.entries(fields)) {
+    if (!field.startsWith('alibis.')) continue;
+    if (!OTHER_TIMES[timeOfDeath].test(foldTurkish(text))) continue;
+    issues.push({
+      category: 'LOGIC',
+      severity: 'DOUBT',
+      field,
+      quote: text.trim(),
+      note: `Mazeret ölüm saatinden (${TIME_OF_DEATH_LABELS[timeOfDeath]}) başka bir vakit söylüyor olabilir.`,
+      source: 'CODE',
+    });
+  }
+  return issues;
+}
+
 // Modelin eklediği tırnak, üç nokta ve boşluk farkları karşılaştırmaya katılmaz
 const normalizeQuote = (text: string) =>
   foldTurkish(text)
@@ -229,6 +289,8 @@ export async function reviewStory(
   const codeIssues = [
     ...findInternalIds(fields),
     ...findMissingDiacritics(fields),
+    ...findConfessionInstructions(fields),
+    ...findOffTimeAlibis(fields, input.facts.timeOfDeath),
   ];
   const judgeIssues = judge ? await judge(input, fields) : null;
   const issues = [...codeIssues, ...(judgeIssues ?? [])];

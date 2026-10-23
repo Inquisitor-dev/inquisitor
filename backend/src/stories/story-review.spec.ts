@@ -1,8 +1,10 @@
 import {
   StoryIssue,
   decideStoryReview,
+  findConfessionInstructions,
   findInternalIds,
   findMissingDiacritics,
+  findOffTimeAlibis,
   quoteIn,
   reviewStory,
   storyReviewFields,
@@ -65,6 +67,77 @@ describe('findInternalIds', () => {
     expect(
       findInternalIds({ a: 'Millfield kasabası, farmasötik bir koku.' }),
     ).toEqual([]);
+  });
+});
+
+describe('findConfessionInstructions', () => {
+  it('temiz vakada bulgu çıkmaz', () => {
+    expect(
+      findConfessionInstructions(storyReviewFields(CLEAN_REVIEW_CASE)),
+    ).toEqual([]);
+  });
+
+  it('yalnızca rol metinlerindeki itiraf talimatını kesin hata sayar', () => {
+    const issues = findConfessionInstructions({
+      'npcPrompts.graveyard':
+        'Sen İhtiyar Silas’sın. Saatini mezarlığa sakladın. Sorguda bunu itiraf edeceksin.',
+      'npcPrompts.church':
+        'Gördüğünü sana sorulduğunda anlatırsın. Kimseye söylemezsin.',
+      truthReveal: 'Silas sorguda itiraf edersin diye düşündü.',
+    });
+    expect(
+      issues.map((i) => [i.field, i.quote, i.category, i.severity]),
+    ).toEqual([
+      [
+        'npcPrompts.graveyard',
+        'Sorguda bunu itiraf edeceksin.',
+        'ROLE',
+        'CERTAIN',
+      ],
+    ]);
+  });
+});
+
+describe('findOffTimeAlibis', () => {
+  it('temiz vakada bulgu çıkmaz', () => {
+    expect(
+      findOffTimeAlibis(
+        storyReviewFields(CLEAN_REVIEW_CASE),
+        CLEAN_REVIEW_CASE.facts.timeOfDeath,
+      ),
+    ).toEqual([]);
+  });
+
+  it('gecenin başka vaktini söyleyen mazereti şüphe olarak işaretler', () => {
+    const fields = {
+      'alibis.temple':
+        'Keşiş Huikang, cinayet saatinde ana sunak odasında gece yarısı tütsülerini yakıyordu.',
+      'alibis.smith':
+        'Cinayet akşamı Usta Guan, Demirci Ocağı’nda sabaha kadar çalıştı.',
+      truthReveal: 'Gece yarısı herkes uyuyordu.',
+    };
+    expect(
+      findOffTimeAlibis(fields, 'EVENING').map((i) => [
+        i.field,
+        i.category,
+        i.severity,
+      ]),
+    ).toEqual([['alibis.temple', 'LOGIC', 'DOUBT']]);
+  });
+
+  it('şafaktan önce ölümde "gece yarısından sonra" uyar, akşam uymaz', () => {
+    expect(
+      findOffTimeAlibis(
+        { 'alibis.a': 'Gece yarısından sonra hurdalıkta çalışıyordum.' },
+        'BEFORE_DAWN',
+      ),
+    ).toEqual([]);
+    expect(
+      findOffTimeAlibis(
+        { 'alibis.a': 'Akşam karanlığında pazardaydım.' },
+        'BEFORE_DAWN',
+      ),
+    ).toHaveLength(1);
   });
 });
 
@@ -181,6 +254,8 @@ describe('review-fixtures', () => {
       const found = [
         ...findInternalIds(fields),
         ...findMissingDiacritics(fields),
+        ...findConfessionInstructions(fields),
+        ...findOffTimeAlibis(fields, fixture.input.facts.timeOfDeath),
       ];
       expect(found.map((i) => i.field)).toContain(fixture.field);
     }

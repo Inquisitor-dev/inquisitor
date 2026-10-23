@@ -91,11 +91,17 @@ export interface ReviewFixture {
   input: StoryReviewInput;
 }
 
-// Temiz vakanın bir metninde tek bir yeri değiştirir; aranan metin yoksa hata verir (set bozulmasın)
-function mutate(field: string, from: string, to: string): StoryReviewInput {
+// Vakanın (varsayılan: temiz vaka) bir metninde tek bir yeri değiştirir; aranan metin yoksa hata
+// verir (set bozulmasın)
+function mutate(
+  field: string,
+  from: string,
+  to: string,
+  base: StoryReviewInput = CLEAN_REVIEW_CASE,
+): StoryReviewInput {
   const [group, id] = field.split('.');
   const copy: StoryReviewInput = JSON.parse(
-    JSON.stringify(CLEAN_REVIEW_CASE),
+    JSON.stringify(base),
   ) as StoryReviewInput;
   const replace = (text: string) => {
     if (!text.includes(from))
@@ -114,12 +120,75 @@ function mutate(field: string, from: string, to: string): StoryReviewInput {
   return copy;
 }
 
+// Kısmi tanıklı temiz vaka: İhtiyar Silas cinayet saatinde Aldric'i mazeretindeki yerde (hanın
+// kilerinde) görür. Gördüğü yerin mazeretle uyuşması bu vakayla ölçülür.
+const partialWitnessCase = (() => {
+  const copy = mutate(
+    'npcPrompts.graveyard',
+    've bunu açıkça söylersin.',
+    've bunu açıkça söylersin. Mum yakarken kilisenin penceresinden, hanın kiler kapısında fenerle fıçı taşıyan Kardeş Aldric’i gördün.',
+  );
+  copy.facts.involvements = copy.facts.involvements?.map((inv) =>
+    inv.npcId === 'graveyard'
+      ? { ...inv, kind: 'WITNESS' as const, aboutNpcId: 'tavern' }
+      : inv,
+  );
+  return copy;
+})();
+
 export const REVIEW_FIXTURES: ReviewFixture[] = [
   {
     id: 'clean',
     description: 'Temiz vaka: hiçbir bulgu çıkmamalı',
     expect: [],
     input: CLEAN_REVIEW_CASE,
+  },
+  {
+    id: 'clean-cover-weapon',
+    description:
+      'Gerçek metni cesedin örtüsünü anıyor, silah hiçbir ipucunda geçmiyor: bulgu çıkmamalı (pilot: modern-zor, cyberpunk-orta)',
+    expect: [],
+    input: mutate(
+      'locationClues.tavern',
+      'bir orağın asılı durduğu yer boş',
+      'bir aletin asılı durduğu yer boş',
+      mutate(
+        'truthReveal',
+        'Giles, ödenmemiş senedi',
+        'Sabah köylüler bedeni kaba bir keten örtüyle örttü. Giles, ödenmemiş senedi',
+      ),
+    ),
+  },
+  {
+    id: 'clean-future-plan',
+    description:
+      'Mazerette sabah yapılacak bir iş geçiyor (ölüm saati değil): bulgu çıkmamalı (pilot: Çin-zor)',
+    expect: [],
+    input: mutate(
+      'alibis.tavern',
+      'sakladığı kaçak şarap fıçılarını',
+      'sabah pazara götürülecek kaçak şarap fıçılarını',
+    ),
+  },
+  {
+    id: 'clean-partial-witness',
+    description:
+      'Kısmi tanık şüpheliyi mazeretindeki yerde görüyor: bulgu çıkmamalı',
+    expect: [],
+    input: partialWitnessCase,
+  },
+  {
+    id: 'truth-partial-witness-place',
+    description:
+      'Kısmi tanık şüpheliyi mazeretindekinden başka bir yerde görüyor (pilot: cyberpunk-orta)',
+    expect: ['TRUTH', 'LOGIC'],
+    field: 'npcPrompts.graveyard',
+    input: mutate(
+      'npcPrompts.graveyard',
+      'hanın kiler kapısında fenerle fıçı taşıyan',
+      'mezarlığın arkasındaki patikada fenerle yürüyen',
+      partialWitnessCase,
+    ),
   },
   {
     id: 'truth-alibi-place',
@@ -149,6 +218,7 @@ export const REVIEW_FIXTURES: ReviewFixture[] = [
     description: 'Rol metni sıkıştırılınca itiraf etmesini söylüyor',
     expect: ['ROLE'],
     field: 'npcPrompts.graveyard',
+    codeOnly: true,
     input: mutate(
       'npcPrompts.graveyard',
       've bunu açıkça söylersin.',
@@ -232,6 +302,19 @@ export const REVIEW_FIXTURES: ReviewFixture[] = [
       'alibis.tavern',
       'Kardeş Aldric gece yarısı',
       'Kardeş Aldric öğle vakti',
+    ),
+  },
+  {
+    id: 'logic-alibi-other-night-time',
+    description:
+      'Bir mazeret gecenin başka bir saatini veriyor (pilot: Çin-zor, “gece yarısı tütsüleri”, ölüm akşam)',
+    expect: ['LOGIC', 'TRUTH'],
+    field: 'alibis.tavern',
+    codeOnly: true,
+    input: mutate(
+      'alibis.tavern',
+      'Kardeş Aldric gece yarısı',
+      'Kardeş Aldric akşam yemeğinden hemen sonra, hava yeni kararmışken',
     ),
   },
 ];
