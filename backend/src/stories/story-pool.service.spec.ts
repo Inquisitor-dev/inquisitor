@@ -152,6 +152,25 @@ describe('StoryPoolService', () => {
       });
     });
 
+    it('saveDraft verilen durumu ve doğrulama/hakem sonucunu yazar', async () => {
+      mockPrisma.story.create.mockResolvedValue({ id: 'rejected-story' });
+      const reviewResults = { validation: { valid: false } };
+
+      await service.saveDraft(
+        { universe: 'winter', difficulty: 'easy' },
+        samplePackage,
+        2,
+        { status: 'REJECTED', reviewResults },
+      );
+
+      expect(mockPrisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          status: 'REJECTED',
+          reviewResults,
+        }),
+      });
+    });
+
     it('approveStory durumu APPROVED yapar ve inceleme sonucunu ekler', async () => {
       mockPrisma.story.update.mockResolvedValue({
         id: 'story-1',
@@ -290,13 +309,20 @@ describe('StoryPoolService', () => {
 
       const invalidCheck = validateV2StoryPackage(samplePackage);
       expect(invalidCheck.valid).toBe(false);
-      expect(invalidCheck.errors.some((e: string) => e.includes('weaponId'))).toBe(true);
-      expect(invalidCheck.errors.some((e: string) => e.includes('involvements'))).toBe(true);
+      expect(
+        invalidCheck.errors.some((e: string) => e.includes('weaponId')),
+      ).toBe(true);
+      expect(
+        invalidCheck.errors.some((e: string) => e.includes('involvements')),
+      ).toBe(true);
     });
 
     it('saveDraft v2 paketi verildiğinde otomatik ruleVersion: 2 olarak kaydeder', async () => {
       mockPrisma.story.create.mockResolvedValue({ id: 'v2-story' });
-      await service.saveDraft({ universe: 'medieval', difficulty: 'easy' }, v2Package);
+      await service.saveDraft(
+        { universe: 'medieval', difficulty: 'easy' },
+        v2Package,
+      );
 
       expect(mockPrisma.story.create).toHaveBeenCalledWith({
         data: expect.objectContaining({

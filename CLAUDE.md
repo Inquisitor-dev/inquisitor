@@ -29,6 +29,7 @@ Run each in its own directory.
 - `npm run start:dev` — watch mode
 - `npm run prisma:generate` / `npm run prisma:push` — regenerate client / sync schema (no migrations; schema is pushed with `db push`)
 - `npm run seed` — seed base NPCs
+- `npm run stories:generate -- --per-bucket N [--universe a,b] [--difficulty a,b] [--max-tokens N] [--dry-run]` — fill the story pool: each story is generated the way the game does (`generateStoryPackage`), checked by `validateStoryPackage`, reviewed by the judge and saved to `Story` as `DRAFT` (or `REJECTED` when validation fails or the judge finds a certain error), with the validation, judge result and token cost in `reviewResults` (`StoryReviewRecord`, `stories/story-generation.ts`). Buckets (universe × difficulty) are filled round-robin and existing non-rejected stories count, so a stopped run resumes; it stops at the token budget or after 3 failures in a row. Needs the local DB with the `Story` table (`npm run prisma:push`); `--dry-run` needs no DB.
 - `npm run stories:review -- --fixtures | --generate N | --sessions N` — run the story reviewer on its fixture set, freshly generated cases or local DB cases with real Gemini (`prisma/story-review.ts`, `docs/hikaye-hakemi.md`); token usage goes to its report, not the DB.
 - `npm run build`
 - After pulling, run `npm install` and `npm run prisma:generate` (and `prisma:push` against the local DB) when `package.json` or `schema.prisma` changed; a missing package shows up as `Cannot find module` build errors.

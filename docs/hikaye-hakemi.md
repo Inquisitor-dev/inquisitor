@@ -85,6 +85,17 @@ Ucuz model (Flash-Lite) "bul ve yaz" denince metinleri karşılaştırmadan "sor
 | `npm run stories:review -- --sessions 5` | Yerel veritabanındaki son Vaka Motoru v2 vakalarını hakemden geçirir. |
 | `--out sonuc.json` | Bütün sonuçları dosyaya yazar. |
 
+## Havuzu doldurma
+
+`npm run stories:generate -- --per-bucket 2` (backend/, yerel veritabanında `Story` tablosu gerekir: `npm run prisma:push`):
+
+1. Hikâye oyundaki yoldan üretilir (`generateStoryPackage`: plan, çözücü, Gemini, onarımlar).
+2. `validateStoryPackage` ile kod doğrulaması; kalırsa hakeme gönderilmez.
+3. Hakem.
+4. `Story` tablosuna kayıt: doğrulamadan kalan ya da hakemin kesin hata bulduğu hikâye `REJECTED`, diğerleri `DRAFT` (hakem geçirse de insan onayı bekler). `reviewResults`: doğrulama, hakem, token maliyeti.
+
+Kovalar (evren × zorluk) sırayla birer birer doldurulur ve var olan reddedilmemiş hikâyeler sayılır: komut kesilirse yeniden çalıştırınca kaldığı yerden devam eder. Token bütçesi (`--max-tokens`, varsayılan 300.000) dolunca ya da art arda 3 üretim hatasında durur. `--dry-run` veritabanına dokunmadan dener. Deneme: bir Ortaçağ/kolay hikâye ~9.200 üretim + ~3.700 hakem = ~12.900 token.
+
 ## Ölçüm (22 Ekim 2026, gemini-3.5-flash-lite)
 
 | | Sonuç |
