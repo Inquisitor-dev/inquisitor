@@ -44,6 +44,7 @@ import {
 import { StoryPoolService } from '../stories/story-pool.service';
 import {
   StoryCriteria,
+  STORY_RULE_VERSION,
   StoryPackage,
   parseStoryPackage,
 } from '../stories/story-package';
@@ -200,9 +201,11 @@ export class GameSessionsService {
 
     // 1. Havuz açıksa ve test modu değilse havuzdan hazır onaylı hikâye ara
     if (!testMode && this.isPoolEnabled()) {
+      // Yalnızca güncel kurallarla üretilmiş hikâyeler (eskilerinde katilin örtü hikâyesi yok)
       const pooled = await this.findAvailableStoryFromPool(userId, {
         universe: scenarioType,
         difficulty,
+        minRuleVersion: STORY_RULE_VERSION,
       });
 
       if (pooled) {
@@ -330,6 +333,10 @@ export class GameSessionsService {
       // Yanılabilen tanıklık: tarifin uyduğu şüpheliler test modunda açıkça yazılır
       witnessDescription: plan.verification.witnessDescriptionFits
         ? `[TEST MODU] eşkâl: ${plan.verification.witnessDescriptionFits.map(name).join(' ya da ')}`
+        : undefined,
+      // Katil de kırılınca masumlarınki gibi bir "itiraf" anlatır (yalan mazeret)
+      culpritCover: plan.motive
+        ? `[TEST MODU] ${name(plan.culpritId)} cinayet saatinde başka yerdeydi.`
         : undefined,
     };
   }

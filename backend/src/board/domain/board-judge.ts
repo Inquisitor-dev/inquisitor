@@ -60,12 +60,12 @@ export function judgeSuspectLink(
       clears = implicated.includes(suspectId);
     }
   } else if (e.kind === 'CONFESSION') {
-    // İtiraf, itiraf edenin mazeretidir. Tamamen masum o saatte kiminle birlikte olduğunu söyler: o kişiyi de
-    // aklar. Silahı bilmeden verenin itirafı aleti kime verdiğini de söyler.
+    // İtiraf, itiraf edenin kendi anlattığı mazerettir: kendisini aklamaz, çünkü katil de kırılınca yalan bir
+    // mazeret anlatır (örtü hikâyesi). Masumlar bağımsız bir kanıtla aklanır (kendi mekân ipucu, eşinin
+    // doğrulaması, tanık). Tamamen masum o saatte kiminle birlikte olduğunu söyler: o kişiyi aklar.
+    // Silahı bilmeden verenin itirafı aleti kime verdiğini de söyler.
     const own = involvementOf(facts, e.sourceId);
-    clears =
-      e.sourceId === suspectId ||
-      (own?.kind === 'NONE' && own.aboutNpcId === suspectId);
+    clears = own?.kind === 'NONE' && own.aboutNpcId === suspectId;
     implicates = isCulprit && own?.kind === 'UNWITTING_HELP';
   } else if (e.kind === 'TESTIMONY') {
     // Kısmi tanık o saatte birini başka yerde görmüştür: o kişiyi aklar. Son konuşanın ifadesi kimseyi

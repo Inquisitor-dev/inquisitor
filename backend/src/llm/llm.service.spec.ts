@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LlmService, dropWrongSightings } from './llm.service';
+import {
+  LlmService,
+  dropWrongSightings,
+  ensureCulpritCover,
+} from './llm.service';
 import { LlmUsageRecorder } from './usage/llm-usage.recorder';
 import { storyReviewFields } from '../stories/story-review';
 import { CLEAN_REVIEW_CASE } from '../stories/review-fixtures';
@@ -345,12 +349,12 @@ describe('LlmService', () => {
       });
       Object.assign(service, { complete });
       const target = service as unknown as { repairAlibiPlaces: Repair };
-      const repaired = await target.repairAlibiPlaces(
+      const repaired = (await target.repairAlibiPlaces(
         chinaDraft,
         chinaPlan,
         'china',
         chinaNames,
-      );
+      )) as unknown as typeof chinaDraft;
       expect(complete).toHaveBeenCalledTimes(1);
       expect(repaired.alibis.graveyard).toContain('iskelesinde');
       // Leş kargasının mazereti ve sırrını taşıyan ipucu değişmez
@@ -477,5 +481,59 @@ describe('kısmi tanığın gördüğü yer', () => {
     expect(dropWrongSightings(input, culpritPlan, names, 'cyberpunk')).toBe(
       input,
     );
+  });
+});
+
+describe('katilin örtü hikâyesi', () => {
+  const names = { mill: 'Değirmenci Giles', tavern: 'Kardeş Aldric' };
+  const plan = {
+    culpritId: 'mill',
+    motive: 'DEBT' as const,
+    weaponId: 'hammer',
+  };
+  const draft = (culpritCover?: string) => ({
+    scenario: '',
+    truthReveal: '',
+    culpritId: 'mill',
+    npcPrompts: {},
+    locationClues: {},
+    culpritCover,
+  });
+  const fallback = (cover?: string) =>
+    ensureCulpritCover(draft(cover), plan, names, 'medieval').culpritCover;
+
+  it('uygun örtü hikâyesine dokunmaz; olay yerini inkâr etmek serbesttir', () => {
+    for (const cover of [
+      'O gece değirmende tek başıma un çuvallarını sayıyordum. Kurbana borcum vardı, bu yüzden sustum.',
+      'Köy kuyusuna o gece hiç gitmedim; değirmende yalnızdım ve kurbana olan borcumu saklıyordum.',
+    ]) {
+      expect(fallback(cover)).toBe(cover);
+    }
+  });
+
+  it('başka şüpheliyi, kanı ya da cinayet aletini anan ya da boş hikâye koddan sade bir yalanla değişir', () => {
+    for (const bad of [
+      undefined,
+      '',
+      'O gece Kardeş Aldric ile birlikteydim.',
+      'Önlüğümdeki kan tavuk kesmekten.',
+      'Demirci çekicini o gece ödünç verdim.',
+    ]) {
+      const cover = fallback(bad);
+      expect(cover).toContain('Değirmen içinde tek başımaydım');
+      expect(cover).not.toContain('Aldric');
+    }
+  });
+
+  it('eski planda (motif yok) örtü hikâyesi istenmez', () => {
+    const input = draft();
+    expect(
+      ensureCulpritCover(
+        input,
+        { ...plan, motive: undefined },
+        names,
+        'medieval',
+      ),
+    ).toBe(input);
   });
 });

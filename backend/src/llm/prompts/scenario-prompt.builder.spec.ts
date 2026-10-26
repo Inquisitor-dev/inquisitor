@@ -105,6 +105,23 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     expect(brief).not.toContain('"tavern" (Kardeş Aldric) WITNESS');
   });
 
+  it('katilden kırılınca anlatacağı yalan bir örtü hikâyesi ister', () => {
+    expect(brief).toContain("CULPRIT'S COVER STORY");
+    expect(brief).toContain('alone at their own place (Değirmen)');
+    expect(brief).toContain('never with any other suspect');
+    const prompt = buildScenarioPrompt({
+      difficulty: 'hard',
+      scenarioType: 'medieval',
+      worldDescription: '',
+      styleInstruction: '',
+      baseNpcs: config.npcDefinitions,
+      locationDefinitions: config.locationDefinitions,
+      plan,
+      caseBrief: brief,
+    });
+    expect(prompt).toContain('"culpritCover"');
+  });
+
   it('tutarlılık kontrolü eşkâli korur', () => {
     const merged = mergeScenarioDraftWithFallback(
       {

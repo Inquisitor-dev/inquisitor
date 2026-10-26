@@ -169,6 +169,10 @@ export function confessionText(
   nameOf: (id: string) => string,
   scenarioType: string,
 ): string {
+  // Katilin "itirafı" örtü hikâyesidir: masumların itirafı gibi kaydedilir, böylece kimin kırılmadığı katili söylemez
+  if (npcId === caseFacts?.culpritId && caseFacts?.culpritCover) {
+    return caseFacts.culpritCover;
+  }
   const alibi = caseFacts?.alibis?.[npcId] || 'Sakladığı sırrı itiraf etti.';
   const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
   if (own?.kind === 'UNWITTING_HELP' && caseFacts?.culpritId) {

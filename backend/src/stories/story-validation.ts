@@ -111,6 +111,11 @@ export function validateStoryPackage(raw: unknown): StoryValidation {
     errors.push('Tanığın eşkâli (witnessDescription) yok.');
   }
   if (!filled(facts.victim?.profession)) errors.push('Kurbanın mesleği yok.');
+  // Örtü hikâyesi olmayan hikâyede katil kırılmaz; kural sürümü 2 kalır ve oyun onu seçmez
+  if (!filled(facts.culpritCover))
+    warnings.push(
+      'Katilin örtü hikâyesi (culpritCover) yok: katil kırılmaz, oyun bu hikâyeyi havuzdan seçmez.',
+    );
 
   // --- Katilin erken sızması: vaka metni oyunun başında okunur ---
   const scenario = draft.scenario ?? '';

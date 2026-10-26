@@ -102,6 +102,8 @@ export function fearPrompt(
   level: number,
   isCulprit: boolean,
   threshold: number = FEAR_BREAK_THRESHOLD,
+  // Örtü hikâyesi olan katil panikte ona sarılır; "sırrını tutamıyorsun" denince gerçek motifi de söylüyordu
+  hasCoverStory = false,
 ): string {
   const band = fearBand(level, threshold);
   const behaviour: Record<FearBand, string> = {
@@ -110,9 +112,11 @@ export function fearPrompt(
       'You feel uneasy. Small signs show it: you avoid eye contact, fidget, answer a little too quickly.',
     NERVOUS:
       'You are clearly nervous. Your hands tremble, you sweat, you stammer and contradict small details.',
-    PANIC: isCulprit
-      ? 'You are cornered and panicking. Your story is cracking: you make one telling slip, but you NEVER confess to the murder.'
-      : 'You are terrified and can no longer hold back your personal secret.',
+    PANIC: !isCulprit
+      ? 'You are terrified and can no longer hold back your personal secret.'
+      : hasCoverStory
+        ? 'You are terrified and cling to your cover story. You add nothing to it: you never reveal your real motive, the weapon or anything from the true story, and you NEVER confess to the murder.'
+        : 'You are cornered and panicking. Your story is cracking: you make one telling slip, but you NEVER confess to the murder.',
   };
   return `FEAR LEVEL: ${level}/${FEAR_MAX}. ${behaviour[band]}`;
 }

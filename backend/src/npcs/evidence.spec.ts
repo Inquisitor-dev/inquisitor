@@ -94,7 +94,29 @@ describe('evidenceFromTags', () => {
     ]);
   });
 
-  it('katilin "itirafı" kanıt sayılmaz', () => {
+  it('katilin örtü hikâyesi masumların itirafı gibi kaydedilir', () => {
+    const drafts = evidenceFromTags({
+      ...base,
+      tags: new Set(['CONFESSED']),
+      npcId: 'mill',
+      locationId: null,
+      caseFacts: {
+        ...facts({ type: 'LOCATION', locationId: 'mill' }),
+        culpritId: 'mill',
+        culpritCover: 'O gece değirmende tek başımaydım.',
+      },
+    });
+    expect(drafts).toEqual([
+      {
+        kind: 'CONFESSION',
+        category: 'STATEMENT',
+        sourceId: 'mill',
+        text: 'O gece değirmende tek başımaydım.',
+      },
+    ]);
+  });
+
+  it('örtü hikâyesi olmayan eski vakada katilin "itirafı" kanıt sayılmaz', () => {
     const drafts = evidenceFromTags({
       ...base,
       tags: new Set(['CONFESSED']),

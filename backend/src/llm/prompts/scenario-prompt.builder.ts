@@ -25,6 +25,8 @@ export type ScenarioDraft = {
   alibis?: Record<string, string>;
   // Yanılabilen tanıklık: tanığın gördüğü kişinin eşkâli (adı değil)
   witnessDescription?: string;
+  // Katilin örtü hikâyesi: kırıldığında itiraf diye anlattığı yalan mazeret ve küçük sır
+  culpritCover?: string;
 };
 
 // Kodun belirlediği vaka gerçeklerini yapay zekâya talimat olarak anlatır
@@ -99,6 +101,15 @@ function caseDetailsLines(
     );
   }
   const placement = plan.verification.placement;
+  if (plan.motive) {
+    // Katil de eşikte kırılır; kırılmayan tek kişi katil olsaydı korku göstergesi onu söylerdi
+    const ownPlace = getLocalizedLocationLabel(scenarioType, plan.culpritId);
+    const clueAtCulprit =
+      placement.type === 'LOCATION' && placement.locationId === plan.culpritId;
+    lines.push(
+      `- CULPRIT'S COVER STORY: Return "culpritCover": what ${who(plan.culpritId)} tells when the Inquisitor finally breaks them, a prepared lie in one or two Turkish sentences, in the first person. (1) Where they claim they were at the time of death: alone at their own place (${ownPlace}), doing something ordinary; never with any other suspect and never at the murder location. (2) A small shameful secret that explains why they hid it (both parts are required): ${clueAtCulprit ? 'a quarrel, a debt or a hidden deal with the victim' : 'it innocently explains their own location clue (the motive clue), for example a debt, a quarrel or a hidden deal with the victim'}. It never mentions the murder, the weapon, blood, the crime scene or another suspect. truthReveal says this story is a lie. The culprit's npcPrompt does not mention confessing or breaking.`,
+    );
+  }
   const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
   const secretLines = (plan.involvements ?? [])
     .filter((inv) => inv.npcId !== witnessId)
@@ -248,6 +259,10 @@ Return a valid JSON object ONLY, in exactly this format:
     plan.verification.witnessDescriptionFits
       ? '\n  "witnessDescription": "Short Turkish phrase: the visible detail the witness saw",'
       : ''
+  }${
+    plan.motive
+      ? '\n  "culpritCover": "The culprit\'s prepared lie, one or two Turkish sentences, first person",'
+      : ''
   }
   "alibis": {
 ${alibisTemplate}
@@ -311,6 +326,7 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
   "victim": { "name": "...", "profession": "..." },
   "verificationText": "...",
   "witnessDescription": "... (only if the draft has it)",
+  "culpritCover": "... (only if the draft has it)",
   "alibis": { ... },
   "npcPrompts": { ... },
   "locationClues": {
@@ -360,5 +376,6 @@ export function mergeScenarioDraftWithFallback(
     verificationText: reviewed.verificationText || draft.verificationText,
     alibis: { ...(draft.alibis ?? {}), ...(reviewed.alibis ?? {}) },
     witnessDescription: reviewed.witnessDescription || draft.witnessDescription,
+    culpritCover: reviewed.culpritCover || draft.culpritCover,
   };
 }

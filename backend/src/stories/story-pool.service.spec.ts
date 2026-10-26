@@ -1,5 +1,9 @@
 import { StoryPoolService } from './story-pool.service';
-import { StoryCriteria, StoryPackage } from './story-package';
+import {
+  STORY_RULE_VERSION,
+  StoryCriteria,
+  StoryPackage,
+} from './story-package';
 import type { PrismaService } from '../prisma/prisma.service';
 
 describe('StoryPoolService', () => {
@@ -329,6 +333,24 @@ describe('StoryPoolService', () => {
           ruleVersion: 2,
         }),
       });
+    });
+
+    it('örtü hikâyeli v2 paketi güncel kural sürümüyle (3) kaydedilir', async () => {
+      mockPrisma.story.create.mockResolvedValue({ id: 'v3-story' });
+      await service.saveDraft(
+        { universe: 'medieval', difficulty: 'easy' },
+        {
+          ...v2Package,
+          facts: { ...v2Package.facts, culpritCover: 'Yalnızdım.' },
+        },
+      );
+
+      expect(mockPrisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          ruleVersion: STORY_RULE_VERSION,
+        }) as unknown,
+      });
+      expect(STORY_RULE_VERSION).toBe(3);
     });
 
     it('findAvailableStory minRuleVersion filtresini doğru uygular', async () => {

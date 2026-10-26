@@ -4,8 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   StoryCriteria,
   StoryPackage,
-  isV2StoryPackage,
   parseStoryPackage,
+  storyRuleVersion,
 } from './story-package';
 
 @Injectable()
@@ -81,7 +81,7 @@ export class StoryPoolService {
 
   /**
    * Üretilen bir hikâye paketini taslak (DRAFT) olarak veritabanına kaydeder.
-   * v2 paketi ise varsayılan ruleVersion 2 yapılır.
+   * Kural sürümü verilmezse paketten çıkarılır (storyRuleVersion: örtü hikâyeli v2 paketi 3).
    * Üretim komutu (stories:generate) kod doğrulaması ve hakem sonucunu da yazar; doğrulamadan
    * kalan ya da hakemin reddettiği hikâye doğrudan REJECTED kaydedilir.
    */
@@ -91,7 +91,7 @@ export class StoryPoolService {
     ruleVersion?: number,
     options?: { status?: 'DRAFT' | 'REJECTED'; reviewResults?: unknown },
   ) {
-    const version = ruleVersion ?? (isV2StoryPackage(pkg) ? 2 : 1);
+    const version = ruleVersion ?? storyRuleVersion(pkg);
     return this.prisma.story.create({
       data: {
         universe: criteria.universe,
@@ -139,10 +139,14 @@ export class StoryPoolService {
   /**
    * Havuzdaki hikâyelerin durumlarına göre kova doluluk sayılarını döner.
    */
-  async getPoolStats() {
+  // minRuleVersion verilirse yalnızca o kural sürümü ve sonrası sayılır (eski hikâyeler kovayı doldurmaz)
+  async getPoolStats(minRuleVersion?: number) {
     return this.prisma.story.groupBy({
       by: ['universe', 'difficulty', 'status'],
       _count: { id: true },
+      ...(minRuleVersion !== undefined
+        ? { where: { ruleVersion: { gte: minRuleVersion } } }
+        : {}),
     });
   }
 }

@@ -196,8 +196,9 @@ export function buildCaseGraph(
     });
   }
 
-  // Masum, korkusu eşiğe varınca sırrını itiraf eder; itirafı mazeretidir. Tamamen masumun itirafı
-  // birlikte olduğu kişiyi de temize çıkarır (board-judge.ts ile aynı)
+  // Masum, korkusu eşiğe varınca sırrını itiraf eder; itirafı mazeretidir ama kendisini temize çıkarmaz:
+  // katil de kırılınca yalan bir mazeret anlatır (örtü hikâyesi). Tamamen masumun itirafı birlikte olduğu
+  // kişiyi temize çıkarır (board-judge.ts ile aynı)
   for (const npcId of innocentIds) {
     const own = involvements.find((i) => i.npcId === npcId);
     clues.push({
@@ -206,9 +207,7 @@ export function buildCaseGraph(
       requires: [],
       pressures: [],
       eliminates:
-        own?.kind === 'NONE' && own.aboutNpcId
-          ? [npcId, own.aboutNpcId]
-          : [npcId],
+        own?.kind === 'NONE' && own.aboutNpcId ? [own.aboutNpcId] : [],
       // Cesedi bulup eşya alan, ölümün ne zaman olduğunu bilir
       proves: kindOf(npcId) === 'SCAVENGER' ? ['TIME_OF_DEATH'] : undefined,
     });

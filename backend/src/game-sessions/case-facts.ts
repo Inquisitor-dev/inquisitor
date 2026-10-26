@@ -21,5 +21,6 @@ export function buildCaseFacts(
       plan.innocentIds.map((id) => [id, draft.alibis?.[id] ?? '']),
     ),
     witnessDescription: draft.witnessDescription,
+    culpritCover: draft.culpritCover,
   };
 }
