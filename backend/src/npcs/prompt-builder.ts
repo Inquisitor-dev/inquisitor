@@ -6,7 +6,12 @@ import {
   EvidenceImpact,
 } from './fear';
 import { EVIDENCE_TAG } from './evidence';
-import { confessionText, linkPromptLines, mentions } from './case-statements';
+import {
+  confessionText,
+  linkPromptLines,
+  linkStatements,
+  mentions,
+} from './case-statements';
 import {
   getScenarioConfig,
   getLocalizedLocationLabel,
@@ -156,7 +161,8 @@ export function buildNpcPrompt({
         culpritCover
           ? `
 6. You have a prepared cover story (YOUR COVER STORY above). In conversation, when asked where you were that night, give only its place and activity, and keep its shameful secret to yourself. You tell the whole cover story only when an instruction at the end says that you break; even then it is a lie, and you NEVER confess the murder.
-7. Never name another suspect as the person you were with that night.`
+7. Never name another suspect as the person you were with that night.
+8. Never reveal your real motive or any detail of THE ABSOLUTE TRUTH that is not public (the real reason, the weapon, your meeting with the victim). If you admit any tension with the victim, it is only the one in your cover story.`
           : ''
       }`
     : `CONFESSION RULES FOR A NON-CULPRIT:
@@ -306,7 +312,13 @@ You have already confessed your personal secret to the Inquisitor. Do not deny i
       combinedPrompt += `
 
 PRIVATE ROOM:
-The Inquisitor has taken you somewhere quiet where nobody else is listening. Today you speak more directly with them: give concrete answers about where you were, what you saw and who you saw, and avoid vague or evasive replies. Every rule above still applies; this does not make you confess anything you would not otherwise confess.`;
+The Inquisitor has taken you somewhere quiet where nobody else is listening. Today you speak more directly with them: give concrete answers about where you were, what you saw and who you saw, and avoid vague or evasive replies. Every rule above still applies; this does not make you confess anything you would not otherwise confess.${
+        isCulprit
+          ? culpritCover
+            ? ' Your concrete answer about that night is your cover story: its place and activity, nothing from the true story.'
+            : ' You still give nothing from the true story: your concrete answers stay the account you have been giving.'
+          : ''
+      }`;
     }
 
     if (verifiedStatement) {
@@ -397,6 +409,16 @@ Share it only when the Inquisitor asks about the crime scene trace, the related 
 
 DREAM VISION:
 Tonight a seer's dream pressed on your conscience. In this reply, even if the Inquisitor did not ask, you tell what you saw (the VERIFYING EVIDENCE above) in your own words, hesitantly but clearly, and end the reply with the tag [${EVIDENCE_TAG.verification}]. Every other rule still applies.`;
+    } else if (dreamActive && !isCulprit) {
+      // Rüya ifadesi olan herkesi konuşturur (kısmi tanık, son konuşan, mazeret doğrulayan); yalnızca
+      // doğrulayan tanık konuşsaydı, kimsenin konuşmadığı gün doğrulayan kanıtın mekânda olduğu anlaşılırdı
+      const statements = linkStatements(caseFacts, npc.id, nameOf);
+      if (statements.length > 0) {
+        combinedPrompt += `
+
+DREAM VISION:
+Tonight a seer's dream pressed on your conscience. In this reply, even if the Inquisitor did not ask, you tell what you know about that night from YOUR PART IN THE CASE in your own words, hesitantly but clearly (meaning: ${statements.map((st) => st.text).join(' ')}), and end the reply with the tag [${EVIDENCE_TAG.statement}]. You still keep your personal secret, and every other rule still applies.`;
+      }
     }
   }
 

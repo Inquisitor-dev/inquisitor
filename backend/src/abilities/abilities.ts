@@ -64,9 +64,10 @@ export const ABILITIES: AbilityDef[] = [
     target: 'none',
   },
   {
+    // Kimlik eski adıyla kalır (kayıtlı kullanımlar); oyuncuya görünen adı Hakkında Söylenenler
     id: 'archive_summary',
     characterId: 'engizitor_hanim',
-    name: 'Arşiv Özeti',
+    name: 'Hakkında Söylenenler',
     limit: 'DAILY',
     target: 'npc',
   },

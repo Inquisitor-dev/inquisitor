@@ -1,5 +1,5 @@
 import {
-  archiveQuotes,
+  quotesAbout,
   canThinkAgain,
   isDreamActive,
   thoughtLimit,
@@ -70,12 +70,19 @@ describe('Nabız ve Arşiv Özeti', () => {
     ]);
   });
 
-  it('son 3 cevabı kısaltarak alır', () => {
-    const quotes = archiveQuotes(['a', 'b', ' c\n d ', 'x'.repeat(300)]);
-    expect(quotes).toHaveLength(3);
-    expect(quotes[0]).toBe('b');
-    expect(quotes[1]).toBe('c d');
-    expect(quotes[2].endsWith('…')).toBe(true);
+  it('Hakkında Söylenenler: başkalarının o kişiyi andığı cümleleri alır', () => {
+    const quotes = quotesAbout(
+      [
+        { npcId: 'church', message: 'Dua ediyordum. Giles o gece değirmendeydi, ışığı yanıyordu.' },
+        { npcId: 'farm', message: "Bilinen bir şey yok.  Giles'in borcu vardı!" },
+        { npcId: 'tavern', message: 'Giles o gece değirmendeydi, ışığı yanıyordu.' },
+      ],
+      'Değirmenci Giles',
+    );
+    expect(quotes).toEqual([
+      { npcId: 'church', quote: 'Giles o gece değirmendeydi, ışığı yanıyordu.' },
+      { npcId: 'farm', quote: "Giles'in borcu vardı!" },
+    ]);
   });
 });
 

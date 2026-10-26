@@ -93,6 +93,7 @@ function setup(
     sessionNpcState,
     session,
     evidence,
+    dialogueHistory,
     findContradictions,
   };
 }
@@ -194,17 +195,33 @@ describe('AbilitiesService', () => {
     });
   });
 
-  it('Arşiv Özeti son cevapları notlara alıntılar; konuşulmamış kişide hak harcanmaz', async () => {
-    const { service } = setup(
-      { characterId: 'engizitor_hanim' },
-      { replies: ['Bir', 'İki', 'Üç'] },
-    );
+  it('Hakkında Söylenenler başkalarının o kişi hakkında söylediklerini toplar; kimse anmadıysa hak harcanmaz', async () => {
+    const { service, dialogueHistory } = setup({
+      characterId: 'engizitor_hanim',
+    });
+    dialogueHistory.findMany.mockResolvedValue([
+      {
+        npcId: 'tavern',
+        message: 'Giles o gece değirmendeydi. Ben handaydım.',
+      },
+      { npcId: 'church', message: 'Hiçbir şey görmedim.' },
+    ]);
     const { result } = await use(service, {
       abilityId: 'archive_summary',
       npcId: 'mill',
     });
     expect(result.notes).toContain('Eski not');
-    expect(result.notes).toContain('“Bir”\n“İki”\n“Üç”');
+    expect(result.notes).toContain('Hakkında Söylenenler');
+    expect(result.notes).toContain(
+      'Kardeş Aldric: “Giles o gece değirmendeydi.”',
+    );
+    expect(result.notes).not.toContain('Hiçbir şey görmedim');
+    // Kişinin kendi cevapları ve anlatıcılar sayılmaz
+    expect(dialogueHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ npcId: { not: 'mill' } }) as unknown,
+      }),
+    );
 
     const silent = setup({ characterId: 'engizitor_hanim' });
     await expect(
@@ -373,8 +390,20 @@ describe('AbilitiesService', () => {
 });
 
 describe('AbilitiesService — Aşama 4 yetenekleri', () => {
+  // Tanığın ve kısmi tanığın olduğu bir vaka: rüya ifadesi olan herkesi konuşturur
+  const dreamFacts = {
+    verification: {
+      kind: 'CORROBORATION',
+      placement: { type: 'TESTIMONY', npcId: 'tavern' },
+    },
+    involvements: [{ npcId: 'church', kind: 'WITNESS', aboutNpcId: 'farm' }],
+  };
+
   it('Rüya Tabiri o günü işaretler ve kimseyi adlandırmaz', async () => {
-    const { service, session } = setup({ characterId: 'kar_kahini' });
+    const { service, session } = setup({
+      characterId: 'kar_kahini',
+      caseFacts: dreamFacts,
+    });
     const { result } = await use(service, { abilityId: 'dream_reading' });
     expect(result.message).toContain('Rüyanda');
     expect(JSON.stringify(result)).not.toContain('mill');
@@ -384,14 +413,32 @@ describe('AbilitiesService — Aşama 4 yetenekleri', () => {
     });
   });
 
-  it('Rüya Tabiri tanıklık defterdeyse hak harcamadan reddedilir', async () => {
-    const { service, gameSession } = setup(
-      { characterId: 'kar_kahini' },
-      { evidence: [{ kind: 'VERIFICATION', category: 'STATEMENT' }] },
+  it('Rüya Tabiri, tanıklık defterde olsa da anlatılmamış bir ifade varsa kullanılabilir', async () => {
+    const { service } = setup(
+      { characterId: 'kar_kahini', caseFacts: dreamFacts },
+      {
+        evidence: [
+          { kind: 'VERIFICATION', category: 'STATEMENT', sourceId: 'tavern' },
+        ],
+      },
     );
-    await expect(
-      use(service, { abilityId: 'dream_reading' }),
-    ).rejects.toThrow('zaten defterinde');
+    const { result } = await use(service, { abilityId: 'dream_reading' });
+    expect(result.message).toContain('Rüyanda');
+  });
+
+  it('Rüya Tabiri, anlatılabilecek her ifade defterdeyse hak harcamadan reddedilir', async () => {
+    const { service, gameSession } = setup(
+      { characterId: 'kar_kahini', caseFacts: dreamFacts },
+      {
+        evidence: [
+          { kind: 'VERIFICATION', category: 'STATEMENT', sourceId: 'tavern' },
+          { kind: 'TESTIMONY', category: 'STATEMENT', sourceId: 'church' },
+        ],
+      },
+    );
+    await expect(use(service, { abilityId: 'dream_reading' })).rejects.toThrow(
+      'zaten defterinde',
+    );
     expect(gameSession.update).not.toHaveBeenCalled();
   });
 

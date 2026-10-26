@@ -489,9 +489,11 @@ export class NpcsService {
     // eşik aşıldığında ise itiraf her zaman kaydedilir (Not defterine de düşer)
     if (forcedConfession) extracted.tags.add(EVIDENCE_TAG.confession);
     else extracted.tags.delete(EVIDENCE_TAG.confession);
-    // Rüya Tabiri: tanık o gün konuştuysa tanıklık kaydedilir (metin yine vaka kaydından gelir)
+    // Rüya Tabiri: o gün konuşan tanığın tanıklığı, ifadesi olan kişinin ifadesi kaydedilir (metin yine
+    // vaka kaydından gelir; kaydı olmayan kişide etiket bir şey yazmaz)
     if (dreamActive && !isGreetingSignal && !isInjectionAttempt) {
       extracted.tags.add(EVIDENCE_TAG.verification);
+      extracted.tags.add(EVIDENCE_TAG.statement);
     }
     const newEvidence = await recordEvidence(
       this.prisma,

@@ -275,6 +275,77 @@ describe('prompt-builder domain', () => {
       expect(buildNpcPrompt({ ...params, npc: other, dreamActive: true })).not.toContain('DREAM VISION:');
     });
 
+    it('Rüya Tabiri ifadesi olan herkesi konuşturur; ifadesi olmayanı ve katili konuşturmaz', () => {
+      const session = {
+        ...baseSession,
+        caseFacts: {
+          ...baseSession.caseFacts,
+          involvements: [
+            { npcId: 'mill', kind: 'WITNESS' as const, aboutNpcId: 'farm' },
+            { npcId: 'graveyard', kind: 'SCAVENGER' as const },
+          ],
+        },
+      };
+      const params = {
+        scenarioConfig: config,
+        session,
+        fearLevel: 2,
+        hasConfessed: false,
+        dreamActive: true,
+      };
+      const npcOf = (id: string, name: string) => ({
+        id,
+        name,
+        description: '',
+        basePrompt: '',
+      });
+      const witness = buildNpcPrompt({
+        ...params,
+        npc: npcOf('mill', 'Giles'),
+      });
+      expect(witness).toContain('DREAM VISION:');
+      expect(witness).toContain('[STATEMENT_GIVEN]');
+      const scavenger = buildNpcPrompt({
+        ...params,
+        npc: npcOf('graveyard', 'Silas'),
+      });
+      expect(scavenger).not.toContain('DREAM VISION:');
+      const culprit = buildNpcPrompt({
+        ...params,
+        npc: npcOf('church', 'Peder'),
+      });
+      expect(culprit).not.toContain('DREAM VISION:');
+    });
+
+    it('Sessiz Oda katile somut cevabının örtü hikâyesi olduğunu söyler', () => {
+      const session = {
+        ...baseSession,
+        caseFacts: {
+          ...baseSession.caseFacts,
+          culpritCover: 'Kilisede yalnızdım.',
+        },
+      };
+      const params = {
+        scenarioConfig: config,
+        session,
+        fearLevel: 2,
+        hasConfessed: false,
+        quietRoom: true,
+      };
+      const prompt = buildNpcPrompt({
+        ...params,
+        npc: { id: 'church', name: 'Peder', description: '', basePrompt: '' },
+      });
+      expect(prompt).toContain(
+        'Your concrete answer about that night is your cover story',
+      );
+      const innocent = buildNpcPrompt({
+        ...params,
+        npc: { id: 'tavern', name: 'Aldric', description: '', basePrompt: '' },
+      });
+      expect(innocent).not.toContain('cover story');
+    });
+
     it('Teyit okunan sözü gerçek sayar ama sır vermeyi ve katili adlandırmayı yasaklar', () => {
       const npc = { id: 'church', name: 'Peder', description: 'Rahip', basePrompt: '' };
       const prompt = buildNpcPrompt({
@@ -317,6 +388,7 @@ describe('prompt-builder domain', () => {
       expect(calm).toContain('YOUR COVER STORY');
       expect(calm).toContain(cover);
       expect(calm).toContain('keep its shameful secret to yourself');
+      expect(calm).toContain('Never reveal your real motive');
       expect(calm).not.toContain('FEAR BREAK:');
 
       const broken = buildNpcPrompt({
