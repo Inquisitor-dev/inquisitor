@@ -119,11 +119,11 @@ const SCENARIO_SUSPECTS: Record<string, { base: SuspectOption[]; medium?: Suspec
 
 export function getSuspectsForScenario(scenarioType: string = 'medieval', difficulty: string = 'easy'): SuspectOption[] {
   const config = SCENARIO_SUSPECTS[scenarioType] ?? SCENARIO_SUSPECTS.medieval;
+  // Sunucuyla aynı: kolay 5, orta ve zor 6 şüpheli (backend NPC_COUNT). Anahtar adları ("medium",
+  // "hard") eski düzenden kaldı: beşinci ve altıncı şüpheliyi gösterir.
   const list = [...config.base];
-  if ((difficulty === 'medium' || difficulty === 'hard') && config.medium) {
-    list.push(config.medium);
-  }
-  if (difficulty === 'hard' && config.hard) {
+  if (config.medium) list.push(config.medium);
+  if ((difficulty === 'medium' || difficulty === 'hard') && config.hard) {
     list.push(config.hard);
   }
   return list;

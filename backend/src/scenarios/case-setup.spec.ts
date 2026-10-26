@@ -239,8 +239,9 @@ describe('Vaka Motoru v2 planı', () => {
     );
     const planned =
       plans.filter((p) => p.murderStyle === 'PLANNED').length / plans.length;
-    expect(planned).toBeGreaterThan(0.25);
-    expect(planned).toBeLessThan(0.55);
+    // Zorda kurulmuş tuzak daha sık (PLANNED_CHANCE.hard = 0.6)
+    expect(planned).toBeGreaterThan(0.5);
+    expect(planned).toBeLessThan(0.7);
   });
 
   it.each(DIFFICULTIES)('%s: sırlar kurallara uyar', (difficulty) => {
@@ -296,12 +297,19 @@ describe('mizaç', () => {
     },
   );
 
-  it('planın eşikleri karakterlerin mizacından gelir', () => {
-    const config = getScenarioConfig('winter', 'hard');
-    const plan = planCase(config, 'hard', seeded(7));
-    for (const npc of config.npcDefinitions) {
+  it('planın eşikleri karakterlerin mizacından gelir; zorda herkes bir puan geç kırılır (en çok 8)', () => {
+    const medium = getScenarioConfig('winter', 'medium');
+    const plan = planCase(medium, 'medium', seeded(7));
+    for (const npc of medium.npcDefinitions) {
       expect(plan.fearThresholds![npc.id]).toBe(
         TEMPERAMENT_THRESHOLD[npc.temperament!],
+      );
+    }
+    const hard = getScenarioConfig('winter', 'hard');
+    const hardPlan = planCase(hard, 'hard', seeded(7));
+    for (const npc of hard.npcDefinitions) {
+      expect(hardPlan.fearThresholds![npc.id]).toBe(
+        Math.min(8, TEMPERAMENT_THRESHOLD[npc.temperament!] + 1),
       );
     }
   });

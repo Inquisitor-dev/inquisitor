@@ -50,7 +50,7 @@ export const chinaLocations: MapLocation[] = [
     width: '23%',
     height: '30%',
     available: true,
-    minDifficulty: 'hard',
+    minDifficulty: 'medium',
   },
   {
     id: 'mill',
@@ -71,6 +71,5 @@ export const chinaLocations: MapLocation[] = [
     width: '28%',
     height: '31%',
     available: true,
-    minDifficulty: 'medium',
   },
 ];

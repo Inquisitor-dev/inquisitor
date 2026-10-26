@@ -10,7 +10,6 @@ export const modernLocations: MapLocation[] = [
     width: '18%',
     height: '32%',
     available: true,
-    minDifficulty: 'medium',
   },
   {
     id: 'tavern',
@@ -31,7 +30,7 @@ export const modernLocations: MapLocation[] = [
     width: '24%',
     height: '38%',
     available: true,
-    minDifficulty: 'hard',
+    minDifficulty: 'medium',
   },
   {
     id: 'home',

@@ -2,9 +2,9 @@ export const UNIVERSE_IDS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter
 export const DIFFICULTY_IDS = ['easy', 'medium', 'hard'];
 
 export const DIFFICULTY_DETAILS: Record<string, { label: string; level: number; suspects: number; desc: string }> = {
-  easy: { label: 'Kolay', level: 1, suspects: 4, desc: 'Dört şüpheliyle klasik bir soruşturma. İlk vaka için ideal.' },
-  medium: { label: 'Orta', level: 2, suspects: 5, desc: 'Beşinci bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.' },
-  hard: { label: 'Zor', level: 3, suspects: 6, desc: 'Altı şüpheli ve çakışan tanıklıklar. En karmaşık hikâye.' },
+  easy: { label: 'Kolay', level: 1, suspects: 5, desc: 'Beş şüpheliyle klasik bir soruşturma. İlk vaka için ideal.' },
+  medium: { label: 'Orta', level: 2, suspects: 6, desc: 'Altıncı bir şüpheli olaya karışır; ilişkiler ve yalanlar karmaşıklaşır.' },
+  hard: { label: 'Zor', level: 3, suspects: 6, desc: 'Herkesin saklayacak bir şeyi var: daha sık kurulmuş tuzaklar, daha geniş eşkâller, daha geç kırılan şüpheliler.' },
 };
 
 export const STORY_DETAILS: Record<string, { title: string; era: string; desc: string }> = {

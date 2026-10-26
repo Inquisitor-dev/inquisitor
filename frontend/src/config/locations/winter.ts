@@ -40,7 +40,6 @@ export const winterLocations: MapLocation[] = [
     width: '29%',
     height: '37%',
     available: true,
-    minDifficulty: 'medium',
   },
   {
     id: 'tavern',
@@ -71,6 +70,6 @@ export const winterLocations: MapLocation[] = [
     width: '32%',
     height: '34%',
     available: true,
-    minDifficulty: 'hard',
+    minDifficulty: 'medium',
   },
 ];
