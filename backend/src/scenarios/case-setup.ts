@@ -409,6 +409,9 @@ export interface CaseFacts extends CasePlan {
   alibis: Record<string, string>;
   // Yanılabilen tanıklık: tanığın gördüğü kişinin eşkâli (yapay zekâ yazar, kod uyduğu şüphelileri seçer)
   witnessDescription?: string;
+  // Katilin örtü hikâyesi: korkusu eşiğe varınca "itiraf" diye anlattığı yalan mazeret ve küçük sır.
+  // Eskiden yalnızca katil kırılmıyordu; kırılmayan tek kişi olması onu ele veriyordu.
+  culpritCover?: string;
 }
 
 // Oturumun olay yeri id'si; olay yeri seçimi eklenmeden önce açılan vakalarda yoktur

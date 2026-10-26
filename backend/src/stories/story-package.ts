@@ -81,6 +81,18 @@ export function packageToReviewInput(pkg: StoryPackage): StoryReviewInput {
 }
 
 /**
+ * Hikâyelerin kural sürümü. Oyun yalnızca güncel sürümdeki onaylı hikâyeleri seçer; eski hikâyeler
+ * havuzda kalır ama oyuncuya gelmez, yeniden üretilmeleri gerekir.
+ * 1: v2 öncesi vaka · 2: Vaka Motoru v2 · 3: katilin örtü hikâyesi (katil de eşikte kırılır)
+ */
+export const STORY_RULE_VERSION = 3;
+
+export function storyRuleVersion(pkg: StoryPackage): number {
+  if (!isV2StoryPackage(pkg)) return 1;
+  return pkg.facts.culpritCover ? 3 : 2;
+}
+
+/**
  * Bir hikâye paketinin Vaka Motoru v2 biçiminde olup olmadığını kontrol eden Type Guard.
  */
 export function isV2StoryPackage(pkg: StoryPackage): pkg is StoryPackageV2 {

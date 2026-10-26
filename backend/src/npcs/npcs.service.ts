@@ -328,6 +328,7 @@ export class NpcsService {
     const forcedConfession = isForcedConfession({
       isNarrator,
       isCulprit,
+      culpritCover: caseFacts?.culpritCover,
       hasConfessed,
       confrontation,
       fearLevel,

@@ -219,6 +219,19 @@ describe('Vaka Motoru v2 planı', () => {
     },
   );
 
+  it('itiraf itiraf edeni temize çıkarmaz; tamamen masumunki yalnız eşini çıkarır (katil de yalan bir mazeret anlatır)', () => {
+    const config = getScenarioConfig('medieval', 'hard');
+    const plan = planCase(config, 'hard', spread(7));
+    const graph = buildCaseGraph(plan);
+    for (const id of plan.innocentIds) {
+      const confession = graph.clues.find((c) => c.id === `confession:${id}`);
+      const own = plan.involvements?.find((i) => i.npcId === id);
+      expect(confession?.eliminates).toEqual(
+        own?.kind === 'NONE' && own.aboutNpcId ? [own.aboutNpcId] : [],
+      );
+    }
+  });
+
   it('yeniden çekme cinayet tarzının oranını bozmaz', () => {
     const config = getScenarioConfig('medieval', 'hard');
     const plans = Array.from({ length: 300 }, (_, i) =>

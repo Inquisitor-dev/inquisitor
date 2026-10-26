@@ -14,7 +14,7 @@ describe('prompt-builder domain', () => {
       expect(result).toBe(true);
     });
 
-    it('katil için asla zorla itiraf dönmez', () => {
+    it('örtü hikâyesi olmayan (eski) vakada katil kırılmaz', () => {
       const result = isForcedConfession({
         isNarrator: false,
         isCulprit: true,
@@ -23,6 +23,18 @@ describe('prompt-builder domain', () => {
         fearLevel: 10,
       });
       expect(result).toBe(false);
+    });
+
+    it('örtü hikâyesi olan katil de eşikte kırılır: kırılmayan kişi katili söylemez', () => {
+      const result = isForcedConfession({
+        isNarrator: false,
+        isCulprit: true,
+        culpritCover: 'Değirmende tek başımaydım.',
+        hasConfessed: false,
+        confrontation: { impact: 'DECISIVE' },
+        fearLevel: 7,
+      });
+      expect(result).toBe(true);
     });
 
     it('zaten itiraf etmişse tekrar zorla itiraf dönmez', () => {
@@ -277,6 +289,58 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('Aldric');
       expect(prompt).toContain('Gece kiliseye gittim.');
       expect(prompt).toContain('never name the murderer');
+    });
+
+    it('katil örtü hikâyesini bilir, kırılınca onu itiraf gibi anlatır ama cinayeti asla itiraf etmez', () => {
+      const cover =
+        'Gece boyu kilisede tek başımaydım; Lord ile aramızda eski bir borç vardı.';
+      const session = {
+        ...baseSession,
+        caseFacts: {
+          ...baseSession.caseFacts,
+          culpritId: 'church',
+          culpritCover: cover,
+        },
+      };
+      const npc = {
+        id: 'church',
+        name: 'Peder',
+        description: 'Rahip',
+        basePrompt: '',
+      };
+      const params = { scenarioConfig: config, session, npc };
+      const calm = buildNpcPrompt({
+        ...params,
+        fearLevel: 2,
+        hasConfessed: false,
+      });
+      expect(calm).toContain('YOUR COVER STORY');
+      expect(calm).toContain(cover);
+      expect(calm).toContain('keep its shameful secret to yourself');
+      expect(calm).not.toContain('FEAR BREAK:');
+
+      const broken = buildNpcPrompt({
+        ...params,
+        fearLevel: 7,
+        hasConfessed: false,
+        confrontation: { evidenceText: 'Borç senedi.', impact: 'DECISIVE' },
+      });
+      expect(broken).toContain('FEAR BREAK:');
+      expect(broken).toContain(
+        `exactly this, in your own words and nothing more: "${cover}"`,
+      );
+      expect(broken).toContain('you NEVER confess to the murder');
+      // Panikte örtü hikâyesine sarılır; gerçek motifi söylemez
+      expect(broken).toContain('cling to your cover story');
+      expect(broken).not.toContain(
+        'can no longer hold back your personal secret',
+      );
+      const after = buildNpcPrompt({
+        ...params,
+        fearLevel: 10,
+        hasConfessed: true,
+      });
+      expect(after).toContain('never reveal your real motive');
     });
 
     it('sırrı olmayan masum kırılınca kayıtlı itiraf metnini anlatır, kanıtla bağ uydurmaz', () => {

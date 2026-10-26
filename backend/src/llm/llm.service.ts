@@ -139,6 +139,36 @@ export function dropWrongSightings(
   return changed ? { ...draft, npcPrompts } : draft;
 }
 
+// Katilin örtü hikâyesi (kırılınca anlattığı yalan): yalnız, kendi mekânında, cinayetle ilgisiz bir sırla.
+// Başka bir şüpheliyi (eş gösterirse o kişi yalanlar), kanı ya da silahı (bilmemesi gerekir) anarsa ya da
+// hiç yazılmamışsa koddan sade bir yalan konur. "Olay yerine hiç gitmedim" gibi bir inkâr serbesttir.
+// Eski planlarda (motif yok) örtü hikâyesi istenmez, katil eskisi gibi kırılmaz.
+export function ensureCulpritCover(
+  draft: ScenarioDraft,
+  plan: Pick<CasePlan, 'culpritId' | 'motive' | 'weaponId'>,
+  npcNames: Record<string, string>,
+  scenarioType: string,
+): ScenarioDraft {
+  if (!plan.motive) return draft;
+  const cover = draft.culpritCover?.trim() ?? '';
+  const weaponLabel = WEAPONS[normalizeScenarioType(scenarioType)].find(
+    (w) => w.id === plan.weaponId,
+  )?.label;
+  const namesOther = Object.entries(npcNames).some(
+    ([id, name]) => id !== plan.culpritId && mentions(cover, name),
+  );
+  if (cover && !namesOther && !culpritClueGivesAway(cover, weaponLabel)) {
+    return cover === draft.culpritCover
+      ? draft
+      : { ...draft, culpritCover: cover };
+  }
+  const place = getLocalizedLocationLabel(scenarioType, plan.culpritId);
+  return {
+    ...draft,
+    culpritCover: `Cinayet saatinde ${place} içinde tek başımaydım, kendi işimle uğraşıyordum. Bunu saklamamın sebebi kurbanla aramızdaki eski bir mesele; bilinse herkes beni suçlardı.`,
+  };
+}
+
 // Üretilen bütün metinlerdeki iç kimlikler ("'mill' (AURA-9)") karakterin adına çevrilir
 export function cleanDraftIds(
   draft: ScenarioDraft,
@@ -164,6 +194,9 @@ export function cleanDraftIds(
     witnessDescription: draft.witnessDescription
       ? clean(draft.witnessDescription)
       : draft.witnessDescription,
+    culpritCover: draft.culpritCover
+      ? clean(draft.culpritCover)
+      : draft.culpritCover,
   };
 }
 
@@ -354,15 +387,19 @@ export class LlmService {
         npcNames,
         sessionId,
       );
-      const cleaned = cleanDraftIds(
-        dropWrongSightings(
-          ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
-          plan,
-          npcNames,
-          scenarioType,
-        ),
+      const sighted = dropWrongSightings(
+        ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
+        plan,
         npcNames,
+        scenarioType,
       );
+      const covered = ensureCulpritCover(sighted, plan, npcNames, scenarioType);
+      if (covered.culpritCover !== sighted.culpritCover?.trim()) {
+        this.logger.warn(
+          `Culprit cover story rejected, using a plain one: ${sighted.culpritCover ?? '(none)'}`,
+        );
+      }
+      const cleaned = cleanDraftIds(covered, npcNames);
       // İtirafı oyun verir: rol metinlerinde "sorguda itiraf edeceksin" gibi talimat kalmaz
       return {
         ...cleaned,

@@ -32,6 +32,8 @@ import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 export interface ForcedConfessionCheckParams {
   isNarrator: boolean;
   isCulprit: boolean;
+  // Katilin örtü hikâyesi varsa (v2) katil de eşikte kırılır ve onu anlatır
+  culpritCover?: string;
   hasConfessed: boolean;
   confrontation?: { impact: EvidenceImpact };
   fearLevel: number;
@@ -42,6 +44,7 @@ export interface ForcedConfessionCheckParams {
 export function isForcedConfession({
   isNarrator,
   isCulprit,
+  culpritCover,
   hasConfessed,
   confrontation,
   fearLevel,
@@ -49,7 +52,7 @@ export function isForcedConfession({
 }: ForcedConfessionCheckParams): boolean {
   return (
     !isNarrator &&
-    !isCulprit &&
+    (!isCulprit || !!culpritCover) &&
     !hasConfessed &&
     !!confrontation &&
     FEAR_GAIN[confrontation.impact] > 0 &&
@@ -140,13 +143,22 @@ export function buildNpcPrompt({
     session.caseFacts as Partial<CaseFacts> | null
   )?.involvements?.find((i) => i.npcId === npc.id);
   const hasNoSecret = ownInvolvement?.kind === 'NONE';
+  const culpritCover = isCulprit
+    ? (session.caseFacts as Partial<CaseFacts> | null)?.culpritCover
+    : undefined;
   const confrontationRules = isCulprit
     ? `CONFESSION RULES FOR THE CULPRIT:
 1. You are the real culprit of the main crime.
 2. You must NEVER openly confess to committing the murder/main crime, even if the player accurately describes what happened.
 3. You may panic, deflect, attack the player's credibility, partially explain innocent-looking details, or mix truth with lies.
 4. You may admit minor shameful details only if they help you avoid admitting the murder itself.
-5. Stay resistant until the very end.`
+5. Stay resistant until the very end.${
+        culpritCover
+          ? `
+6. You have a prepared cover story (YOUR COVER STORY above). In conversation, when asked where you were that night, give only its place and activity, and keep its shameful secret to yourself. You tell the whole cover story only when an instruction at the end says that you break; even then it is a lie, and you NEVER confess the murder.
+7. Never name another suspect as the person you were with that night.`
+          : ''
+      }`
     : `CONFESSION RULES FOR A NON-CULPRIT:
 1. ${
         hasNoSecret
@@ -197,6 +209,7 @@ The murder happened ${TIME_OF_DEATH_LABELS[caseFacts.timeOfDeath].toLocaleLowerC
   const forcedConfession = isForcedConfession({
     isNarrator,
     isCulprit,
+    culpritCover: caseFacts?.culpritCover,
     hasConfessed,
     confrontation,
     fearLevel,
@@ -258,7 +271,14 @@ ${publicCaseFacts(session.scenarioType, caseFacts)}
       combinedPrompt += `
 THE ABSOLUTE TRUTH OF THE INCIDENT:
 ${truthRevealText}${timeOfDeathLine}
-`;
+${
+  culpritCover
+    ? `
+YOUR COVER STORY (a lie you prepared; it is not the truth):
+${culpritCover}
+`
+    : ''
+}`;
     } else if (caseFacts?.alibis?.[npc.id]) {
       combinedPrompt += `
 YOUR WHEREABOUTS ON THE NIGHT OF THE MURDER (your secret alibi):
@@ -272,10 +292,13 @@ ${confrontationRules}`;
     combinedPrompt += `
 
 EMOTIONAL STATE:
-${fearPrompt(fearLevel, isCulprit, fearThreshold)}`;
+${fearPrompt(fearLevel, isCulprit, fearThreshold, !!culpritCover)}`;
 
     if (hasConfessed) {
-      combinedPrompt += `
+      combinedPrompt += culpritCover
+        ? `
+You have already told the Inquisitor your cover story as if it were your secret. Keep to it and do not add new admissions: never reveal your real motive, the weapon or anything else from the true story.`
+        : `
 You have already confessed your personal secret to the Inquisitor. Do not deny it again, and do not add new admissions: you have nothing more to confess.`;
     }
 
@@ -340,14 +363,19 @@ This evidence alone does NOT break you. Do NOT confess your personal secret in t
     if (forcedConfession) {
       // Sırrı olmayan (tanık, tamamen masum) biri "sırrını itiraf et" denince gösterilen kanıtla ilgili bir suç
       // uyduruyordu (oyun testinde görüldü). İtiraf, Not Defteri'ne kaydedilen metinle aynı olsun.
-      const confession = caseFacts?.alibis?.[npc.id]
-        ? confessionText(caseFacts, npc.id, nameOf, session.scenarioType)
-        : null;
-      combinedPrompt += confession
+      const confession =
+        caseFacts?.alibis?.[npc.id] || culpritCover
+          ? confessionText(caseFacts, npc.id, nameOf, session.scenarioType)
+          : null;
+      combinedPrompt += culpritCover
         ? `
+FEAR BREAK: You can no longer hold out. In this reply you break down, following the emotional sequence of the confession rules, and tell your cover story as if it were the shameful truth you have been hiding. What you say is exactly this, in your own words and nothing more: "${culpritCover}"
+It is a lie: you NEVER confess to the murder, never mention the weapon, the body or the crime scene, and never name anyone who was with you.`
+        : confession
+          ? `
 FEAR BREAK: You can no longer hold out. In this reply you break down and tell the truth you have been holding back, following the emotional sequence of the confession rules. What you confess is exactly this, in your own words and nothing more: "${confession}"
 If that is nothing shameful (you had nothing to hide), you break by nervously telling exactly that plain truth. Never invent a theft, a link to the evidence shown, or any other act or fact that is not written there. You still NEVER confess to the murder.`
-        : `
+          : `
 FEAR BREAK: You can no longer hold out. In this reply you break down and confess your personal secret, following the emotional sequence of the confession rules. You still NEVER confess to the murder.`;
     }
 

@@ -134,7 +134,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
         rules: [
           'Etki o günün sonunda biter.',
           'Her şüpheliye aynı uygulanır; suçlu da masum da daha doğrudan konuşur.',
-          'Suçlu yine de itiraf etmez; yalnızca daha az kaçamak cevap verir.',
+          'Kimseyi itiraf ettirmez; yalnızca daha az kaçamak cevap verirler.',
         ],
       },
     ],
@@ -155,7 +155,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
           'Korkuyu en çok itiraf eşiğinin bir altına çıkarır; tek başına kimseyi itiraf ettiremez.',
           'İtiraf eşiği kişiden kişiye değişir (6–8); dayanıklı biri daha geç kırılır.',
           'Eşiği aşmak için yine bir delil göstermen gerekir.',
-          'Suçlu yalnızca panikler, itiraf etmez. Aynı gün tekrar kullanılamaz.',
+          'Kırılan herkes bir itiraf anlatır; itiraf doğru da olabilir yalan da, onu kanıtlarla sına. Aynı gün tekrar kullanılamaz.',
         ],
       },
     ],

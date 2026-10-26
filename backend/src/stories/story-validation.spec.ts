@@ -48,6 +48,7 @@ function draftFor(plan: CasePlan): ScenarioDraft {
     witnessDescription: plan.verification.witnessDescriptionFits
       ? 'iri yarı biri'
       : undefined,
+    culpritCover: 'Gece yarısı kendi yerimde tek başımaydım.',
   };
 }
 
@@ -75,6 +76,16 @@ describe('validateStoryPackage', () => {
       errors: [],
       warnings: [],
     });
+  });
+
+  it('katilin örtü hikâyesi yoksa uyarır: katil kırılmaz, oyun hikâyeyi seçmez', () => {
+    const pkg = valid();
+    delete pkg.facts.culpritCover;
+    const result = validateStoryPackage(pkg);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([
+      expect.stringContaining('örtü hikâyesi (culpritCover) yok'),
+    ]);
   });
 
   it('Vaka Motoru v2 alanı eksikse alan hatalarını döndürür', () => {

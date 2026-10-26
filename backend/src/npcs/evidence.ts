@@ -170,8 +170,10 @@ export function evidenceFromTags(params: {
 
   if (npcId) {
     const nameOf = params.nameOf ?? ((id: string) => id);
-    // Sadece masumların itirafı kanıttır: sırları aynı zamanda mazeretleridir
-    if (tags.has(EVIDENCE_TAG.confession) && npcId !== culpritId) {
+    // Masumun itirafı mazeretidir; katilinki örtü hikâyesidir (yalan bir mazeret). Örtü hikâyesi olmayan
+    // eski vakalarda katil kırılmaz, itirafı da kaydedilmez.
+    const canConfess = npcId !== culpritId || !!caseFacts?.culpritCover;
+    if (tags.has(EVIDENCE_TAG.confession) && canConfess) {
       drafts.push({
         kind: 'CONFESSION',
         category: 'STATEMENT',

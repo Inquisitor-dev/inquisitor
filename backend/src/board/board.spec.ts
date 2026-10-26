@@ -140,10 +140,10 @@ describe('judgeBoard: şüpheli ↔ kanıt', () => {
     );
   });
 
-  it('itiraf sadece itiraf edeni aklar', () => {
+  it('itiraf tek başına kimseyi aklamaz: katil de kırılınca yalan bir mazeret anlatır', () => {
     expect(
       verdictOf(genuineFacts, 's-tavern', 'c-e-conf-tavern', 'CLEARS'),
-    ).toBe('CORRECT');
+    ).toBe('WRONG');
     expect(verdictOf(genuineFacts, 's-mill', 'c-e-conf-tavern', 'CLEARS')).toBe(
       'WRONG',
     );
@@ -526,16 +526,15 @@ describe('judgeBoard: Vaka Motoru v2 kanıtları', () => {
     expect(judge('s-tavern', 'c-b', 'IMPLICATES')).toBe('WRONG');
     expect(judge('s-mill', 'c-b', 'IMPLICATES')).toBe('WRONG');
     expect(judge('c-b', 'c-h', 'SUPPORTS')).toBe('CORRECT');
-    // Silahı verenin itirafı, aleti alan katili gösterir ve itiraf edeni aklar
+    // Silahı verenin itirafı aleti alan katili gösterir; itiraf edeni ise tek başına aklamaz
     expect(judge('s-mill', 'c-h', 'IMPLICATES')).toBe('CORRECT');
-    expect(judge('s-tavern', 'c-h', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-tavern', 'c-h', 'CLEARS')).toBe('WRONG');
   });
 
-  it('tamamen masumun itirafı birlikte olduğu kişiyi de aklar', () => {
-    expect(judge('s-graveyard', 'c-g', 'CLEARS')).toBe('CORRECT');
+  it('tamamen masumun itirafı birlikte olduğu kişiyi aklar, kendini değil', () => {
     expect(judge('s-farm', 'c-g', 'CLEARS')).toBe('CORRECT');
+    expect(judge('s-graveyard', 'c-g', 'CLEARS')).toBe('WRONG');
     expect(judge('s-tavern', 'c-g', 'CLEARS')).toBe('WRONG');
-    // Silahı verenin itirafı yalnız kendini aklar
     expect(judge('s-mill', 'c-h', 'CLEARS')).toBe('WRONG');
   });
 

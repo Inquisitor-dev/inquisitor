@@ -26,6 +26,11 @@ describe('buildStoryReviewPrompt', () => {
     );
   });
 
+  it('"cinayet gecesi" gibi gecenin kendisini anan ifadeleri saat çelişkisi saymaz (pilotta haksız ret)', () => {
+    expect(prompt).toContain('"cinayet gecesi"');
+    expect(prompt).toContain('fits every time of death');
+  });
+
   it('bütün metinleri alan anahtarıyla verir', () => {
     for (const [field, text] of Object.entries(fields)) {
       expect(prompt).toContain(`[${field}]\n${text}`);

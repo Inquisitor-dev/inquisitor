@@ -20,6 +20,7 @@ import {
 import { GameSessionsService } from '../src/game-sessions/game-sessions.service';
 import { StoryPoolService } from '../src/stories/story-pool.service';
 import {
+  STORY_RULE_VERSION,
   StoryPackage,
   packageToReviewInput,
 } from '../src/stories/story-package';
@@ -53,9 +54,17 @@ function option(name: string): string | undefined {
 const list = (name: string, fallback: string[]) =>
   option(name)?.split(',').filter(Boolean) ?? fallback;
 
+// Verilmeyen seçenek varsayılanı alır; verilip geçersiz olan (0, eksi, sayı değil) komutu durdurur.
+// Eskiden varsayılana dönüyordu: "--per-bucket 0" bütün kovalar için üretim başlatıp kota harcadı.
 const count = (name: string, fallback: number) => {
-  const value = Number(option(name));
-  return Number.isInteger(value) && value > 0 ? value : fallback;
+  const raw = option(name);
+  if (raw === undefined) return fallback;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0) {
+    console.error(`--${name} pozitif bir tam sayı olmalı (verilen: "${raw}").`);
+    process.exit(1);
+  }
+  return value;
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -93,10 +102,10 @@ interface GeneratedStory {
   package?: StoryPackage;
 }
 
-// Kovalardaki reddedilmemiş hikâyeler (DRAFT + APPROVED)
+// Kovalardaki reddedilmemiş, güncel kural sürümündeki hikâyeler (DRAFT + APPROVED)
 async function existingCounts(): Promise<Record<string, number>> {
   if (dryRun) return {};
-  const stats = await pool.getPoolStats();
+  const stats = await pool.getPoolStats(STORY_RULE_VERSION);
   const counts: Record<string, number> = {};
   for (const row of stats) {
     if (row.status === 'REJECTED') continue;
