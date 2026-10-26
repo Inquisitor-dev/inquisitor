@@ -29,7 +29,7 @@ export async function recordEvidence(
 }
 
 // Hızlı notların (GameSession.notes) sonuna paragraf paragraf ekler ve son hâlini döndürür.
-// Yeteneklerin sonuçları (Arşiv Özeti, Muhbir, Çelişki Taraması) buraya yazılır.
+// Yeteneklerin sonuçları (Hakkında Söylenenler, Muhbir, Çelişki Taraması) buraya yazılır.
 export async function appendToNotes(
   prisma: PrismaService,
   sessionId: string,

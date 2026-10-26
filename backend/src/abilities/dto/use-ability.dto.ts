@@ -14,7 +14,7 @@ export class UseAbilityDto {
   })
   abilityId: string;
 
-  // Şüpheli hedefli yeteneklerde (Tehdit, Sessiz Oda, Arşiv Özeti…)
+  // Şüpheli hedefli yeteneklerde (Tehdit, Sessiz Oda, Hakkında Söylenenler…)
   @IsOptional()
   @IsString()
   @MaxLength(60)

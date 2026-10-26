@@ -46,13 +46,14 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
   engizitor_hanim: {
     abilities: [
       {
-        name: 'Arşiv Özeti',
-        summary: 'Konuştuğun bir şüphelinin son 3 cevabını alıntı olarak defterine ekler.',
+        name: 'Hakkında Söylenenler',
+        summary: 'Bir şüpheli seç; öteki şüphelilerin sana onun hakkında söylediklerini defterine derler.',
         usage: 'Günde 1 kez',
         rules: [
-          'Hedef, daha önce konuştuğun bir kişi olmalı.',
-          'Yeni bilgi üretmez; yalnızca senin zaten duyduğun cevapları derler.',
-          'Alıntılar notlarına eklenir, çelişkileri yakalamak için işine yarar.',
+          'Yalnızca senin zaten duyduğun cevaplara bakar; yeni bilgi üretmez.',
+          'O kişinin adının geçtiği cümleler, kimin söylediğiyle birlikte notlarına eklenir.',
+          'Kimse sana o kişiden söz etmediyse hakkın harcanmaz.',
+          'Kimin kime kefil olduğunu, kimin kimi suçladığını yan yana görmene yarar.',
         ],
       },
     ],
@@ -281,13 +282,13 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
     abilities: [
       {
         name: 'Rüya Tabiri',
-        summary: 'O gün tanıklık edebilecek biri varsa, onunla konuştuğunda kimse sormadan gördüğünü anlatır.',
+        summary: 'O gün, o gece hakkında anlatacak bir şeyi olan herkes, onunla konuştuğunda kimse sormadan anlatır.',
         usage: 'Günde 1 kez',
         rules: [
-          'Etki gün sonuna kadar sürer; tanığın kim olduğunu söylemez.',
-          'Vakada tanık yoksa ya da onunla konuşmazsan hiçbir şey olmaz.',
-          'Tanığın anlattıkları defterine kayıt kartı olarak eklenir. Gece kullanılamaz.',
-          'Tanığın anlattıkları zaten defterindeyse kullanılamaz; hakkın harcanmaz.',
+          'Etki gün sonuna kadar sürer; kimin anlatacağını söylemez.',
+          'Tanıklar, kurbanla son konuşan ve birinin mazeretini doğrulayanlar anlatır; sırrını kimse söylemez.',
+          'Anlatılanlar defterine kayıt kartı olarak eklenir. Gece kullanılamaz.',
+          'Anlatılabilecek her şey zaten defterindeyse kullanılamaz; hakkın harcanmaz.',
         ],
       },
     ],

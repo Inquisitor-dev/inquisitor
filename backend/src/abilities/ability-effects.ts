@@ -1,4 +1,6 @@
 import { FEAR_BREAK_THRESHOLD } from '../npcs/fear';
+import { linkStatements, mentions } from '../npcs/case-statements';
+import type { CaseFacts } from '../scenarios/case-setup';
 import { AbilityState } from './abilities';
 
 // Derin Tefekkür (Ak Turna): panoda günde 2 kez düşünülür, diğerlerinde 1
@@ -92,18 +94,37 @@ export function pulseReport(
   });
 }
 
-// Arşiv Özeti (Engizitör Hanım): şüphelinin son 3 cevabı
-export const ARCHIVE_QUOTES = 3;
+// Hakkında Söylenenler (Engizitör Hanım): öteki şüphelilerin bir kişi hakkında oyuncuya söyledikleri.
+// Yalnızca oyuncunun duyduğu cevaplara bakar; kişinin adının geçtiği cümleler alıntılanır. Eskiden
+// "Arşiv Özeti" bir şüphelinin son 3 cevabını kopyalıyordu; konuşma geçmişi zaten açılabildiği için
+// yeni bir şey vermiyordu.
+export const ABOUT_QUOTES = 6;
 const QUOTE_LENGTH = 240;
 
-export function archiveQuotes(replies: string[]): string[] {
-  return replies
-    .map((reply) => reply.replace(/\s+/g, ' ').trim())
-    .filter(Boolean)
-    .slice(-ARCHIVE_QUOTES)
-    .map((reply) =>
-      reply.length > QUOTE_LENGTH ? `${reply.slice(0, QUOTE_LENGTH)}…` : reply,
-    );
+export function quotesAbout(
+  replies: { npcId: string; message: string }[],
+  targetName: string,
+): { npcId: string; quote: string }[] {
+  const seen = new Set<string>();
+  const quotes: { npcId: string; quote: string }[] = [];
+  for (const reply of replies) {
+    const sentences = reply.message
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(/(?<=[.!?…])\s+/);
+    for (const sentence of sentences) {
+      if (!mentions(sentence, targetName) || seen.has(sentence)) continue;
+      seen.add(sentence);
+      quotes.push({
+        npcId: reply.npcId,
+        quote:
+          sentence.length > QUOTE_LENGTH
+            ? `${sentence.slice(0, QUOTE_LENGTH)}…`
+            : sentence,
+      });
+    }
+  }
+  return quotes.slice(-ABOUT_QUOTES);
 }
 
 // Muhbir (Şehir Dedektifi): aranmamış mekânlardan rastgele birinin adı. Vaka gerçeklerine
@@ -121,4 +142,32 @@ export function informantLocation(params: {
   if (unsearched.length === 0) return null;
   const rng = params.rng ?? Math.random;
   return unsearched[Math.floor(rng() * unsearched.length)];
+}
+
+// Rüya Tabiri (Kar Kâhini): vakada henüz deftere girmemiş bir ifade kaldı mı? Rüya o gün ifadesi olan
+// herkesi konuşturur: doğrulayan tanık, kısmi tanık, son konuşan, mazeret doğrulayan. Eskiden yalnızca
+// doğrulayan tanığı konuşturuyordu; o gün kimse anlatmazsa oyuncu doğrulayan kanıtın bir mekânda
+// (çoğu vakada katilinkinde) olduğunu öğreniyordu.
+export function hasUntoldStatement(
+  caseFacts: Partial<CaseFacts> | null,
+  npcIds: string[],
+  recorded: { kind: string; category: string; sourceId: string }[],
+): boolean {
+  const told = new Set(
+    recorded
+      .filter((e) => e.category === 'STATEMENT')
+      .map((e) => `${e.kind}:${e.sourceId}`),
+  );
+  const placement = caseFacts?.verification?.placement;
+  const expected = [
+    ...(placement?.type === 'TESTIMONY'
+      ? [`VERIFICATION:${placement.npcId}`]
+      : []),
+    ...npcIds.flatMap((id) =>
+      linkStatements(caseFacts, id, (other) => other).map(
+        (s) => `${s.kind}:${s.npcId}`,
+      ),
+    ),
+  ];
+  return expected.some((key) => !told.has(key));
 }

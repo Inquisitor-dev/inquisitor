@@ -27,9 +27,10 @@ import {
   recordUse,
 } from './abilities';
 import {
-  archiveQuotes,
+  hasUntoldStatement,
   informantLocation,
   pulseReport,
+  quotesAbout,
   threatenedFear,
 } from './ability-effects';
 import { UseAbilityDto } from './dto/use-ability.dto';
@@ -286,25 +287,32 @@ export class AbilitiesService {
       }
 
       case 'archive_summary': {
+        // Hakkında Söylenenler: seçilen kişi hakkında öteki şüphelilerin sana söyledikleri
         const npcId = suspect();
         const replies = await this.prisma.dialogueHistory.findMany({
-          where: { sessionId: session.id, npcId, speaker: 'NPC' },
-          orderBy: { createdAt: 'desc' },
-          take: 3,
-          select: { message: true },
+          where: {
+            sessionId: session.id,
+            speaker: 'NPC',
+            npcId: { not: npcId },
+            NOT: { npcId: { startsWith: 'narrator_' } },
+          },
+          orderBy: { createdAt: 'asc' },
+          select: { npcId: true, message: true },
         });
-        const quotes = archiveQuotes(replies.reverse().map((r) => r.message));
+        const quotes = quotesAbout(replies, nameOf(npcId));
         if (quotes.length === 0)
           throw new BadRequestException(
-            `${nameOf(npcId)} ile henüz konuşmadın.`,
+            `Kimse sana henüz ${nameOf(npcId)} hakkında bir şey söylemedi.`,
           );
         const notes = await appendToNotes(this.prisma, session.id, [
-          `[${day}. gün · Arşiv Özeti · ${nameOf(npcId)}]\n${quotes.map((q) => `“${q}”`).join('\n')}`,
+          `[${day}. gün · Hakkında Söylenenler · ${nameOf(npcId)}]\n${quotes
+            .map((q) => `${nameOf(q.npcId)}: “${q.quote}”`)
+            .join('\n')}`,
         ]);
         return {
           state,
           result: {
-            message: `${nameOf(npcId)} ile konuşmaların defterine geçti.`,
+            message: `${nameOf(npcId)} hakkında söylenenler defterine geçti.`,
             notes,
           },
         };
@@ -416,16 +424,18 @@ export class AbilitiesService {
       case 'dream_reading': {
         const evidence = await this.prisma.evidence.findMany({
           where: { sessionId: session.id },
-          select: { kind: true, category: true },
+          select: { kind: true, category: true, sourceId: true },
         });
-        // Tanıklık zaten defterdeyse yetenek yeni bir şey vermez; hak harcanmaz
+        // Anlatılabilecek her ifade zaten defterdeyse rüya yeni bir şey vermez; hak harcanmaz
         if (
-          evidence.some(
-            (e) => e.kind === 'VERIFICATION' && e.category === 'STATEMENT',
+          !hasUntoldStatement(
+            caseFactsOf(session),
+            config.npcDefinitions.map((npc) => npc.id),
+            evidence,
           )
         ) {
           throw new BadRequestException(
-            'Tanığın anlattıkları zaten defterinde.',
+            'Rüyanın gösterebileceği her şey zaten defterinde.',
           );
         }
         // Sonuç tanık olsa da olmasa da aynıdır; kimse adlandırılmaz
