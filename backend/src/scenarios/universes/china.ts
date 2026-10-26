@@ -53,7 +53,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'tavern',
       name: 'Lin Feng',
-      role: 'Master of the Golden Lotus Tea House',
+      role: 'Altın Lotus Çay Evi ve hanının sahibi',
       temperament: 'STEADY',
       personaPrompt:
         'You are a shrewd tea house proprietor who hears whispers from travelers, merchants, and officials. You smile politely, measure every word like fine silk, and always calculate how much each piece of information is worth.',
@@ -61,7 +61,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'church',
       name: 'Komutan Zhao',
-      role: 'Imperial Garrison Magistrate',
+      role: 'İmparatorluk muhafız karargâhının komutanı',
       temperament: 'STEADY',
       personaPrompt:
         'You are a stern, battle-tested garrison commander bound by the imperial code of honor. You speak with sharp authority, despise disorder and treachery, and will fiercely protect your troops and imperial dignity.',
@@ -69,7 +69,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'graveyard',
       name: 'Keşiş Huikang',
-      role: 'Elder of the Mountain Shrine',
+      role: 'Dağ tapınağının yaşlı keşişi',
       temperament: 'NORMAL',
       personaPrompt:
         'You are a serene, enigmatic monk who tends the incense burners and ancestral spirit tablets. You speak in calm philosophical riddles, discerning motives beneath earthly ambition.',
@@ -77,7 +77,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'mill',
       name: 'Usta Guan',
-      role: 'Master Weaponsmith and Blacksmith',
+      role: 'Silah ustası ve demirci',
       temperament: 'FRAGILE',
       personaPrompt:
         'You are a burly, soot-stained bladesmith with a booming voice and a fiery temper. You know every weapon in the district by heart and resent any implication that your blades were used for dishonorable slaughter.',
@@ -85,7 +85,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'farm',
       name: 'Mei Teyze',
-      role: 'Fisherwoman and dock watcher at the riverside pier',
+      role: 'Nehir kıyısındaki iskelede balıkçı ve iskele bekçisi',
       temperament: 'NORMAL',
       personaPrompt:
         'You are an observant, sharp-tongued elder woman tending fishing nets and wooden skiffs at the river pier. You notice everything that passes along the riverbank and feign simple-mindedness when strangers interrogate you.',
@@ -93,7 +93,7 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'clinic',
       name: 'Bilgin Song',
-      role: 'Imperial Apothecary and physician',
+      role: 'İmparatorluk şifacısı ve baharatçısı',
       temperament: 'FRAGILE',
       personaPrompt:
         'You are a refined, soft-spoken scholar of medicine, acupuncture, and exotic venoms. You value analytical intellect above emotion, concealing your own forbidden experiments behind clinical treatises.',
@@ -103,13 +103,13 @@ export const chinaUniverse: UniverseDefinition = {
     {
       id: 'crime_scene',
       name: 'Jinling crime scene',
-      description: 'The primary murder site under investigation.',
+      description: 'Soruşturulan cinayet mahalli.',
     },
-    { id: 'tavern', name: 'Golden Lotus Tea House', description: "Lin Feng's bustling two-story tea house and restaurant." },
-    { id: 'church', name: 'Imperial Garrison Gate', description: "Commander Zhao's fortified headquarters and weapons court." },
-    { id: 'graveyard', name: 'Mountain Shrine of Ancestors', description: "Monk Huikang's tranquil stone shrine and incense court." },
-    { id: 'mill', name: 'Dragon Forge Workshop', description: "Master Guan's weaponsmithy and kiln." },
-    { id: 'farm', name: 'Riverside Fisherman Pier', description: "Auntie Mei's wooden fishing dock, boats, and river nets." },
-    { id: 'clinic', name: 'Apothecary Song Pavilion', description: "Scholar Song's clinic and medicine repository." },
+    { id: 'tavern', name: 'Golden Lotus Tea House', description: 'Lin Feng’in iki katlı, kalabalık çay evi ve lokantası.' },
+    { id: 'church', name: 'Imperial Garrison Gate', description: 'Komutan Zhao’nun tahkimli karargâhı ve silah avlusu.' },
+    { id: 'graveyard', name: 'Mountain Shrine of Ancestors', description: 'Keşiş Huikang’ın sakin taş tapınağı ve tütsü avlusu.' },
+    { id: 'mill', name: 'Dragon Forge Workshop', description: 'Usta Guan’ın silah atölyesi ve ocağı.' },
+    { id: 'farm', name: 'Riverside Fisherman Pier', description: 'Mei Teyze’nin ahşap balıkçı iskelesi, kayıkları ve nehir ağları.' },
+    { id: 'clinic', name: 'Apothecary Song Pavilion', description: 'Bilgin Song’un muayenehanesi ve ilaç deposu.' },
   ],
 };

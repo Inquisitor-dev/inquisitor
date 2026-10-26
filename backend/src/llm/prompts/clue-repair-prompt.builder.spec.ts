@@ -100,13 +100,50 @@ describe('mazeretteki mekânlar', () => {
     farm: 'Sokak Pazarı',
   };
   it('mekân adı kelime başında geçiyorsa sayılır; çok kelimeli adın hepsi gerekir', () => {
-    expect([
-      ...placesIn('Revirin arka odasındaydık.', labels, mentions),
-    ]).toEqual(['clinic']);
-    expect([
-      ...placesIn("Sokak Pazarı'nda hesap yaptık.", labels, mentions),
-    ]).toEqual(['farm']);
+    expect([...placesIn('Revirin arka odasındaydık.', labels)]).toEqual([
+      'clinic',
+    ]);
+    expect([...placesIn("Sokak Pazarı'nda hesap yaptık.", labels)]).toEqual([
+      'farm',
+    ]);
     // Yalnız "sokak" yetmez
-    expect(placesIn('Sokakta yürüyordum.', labels, mentions).size).toBe(0);
+    expect(placesIn('Sokakta yürüyordum.', labels).size).toBe(0);
+  });
+
+  it('tamlama ekini ve ünsüz yumuşamasını tanır (pilotta kaçan çelişki)', () => {
+    const china = {
+      graveyard: 'Kadim Tapınak',
+      farm: 'Balıkçı İskelesi',
+      mill: 'Demirci Ocağı',
+      church: 'Muhafız Karargahı',
+      tavern: 'Çay Evi & Han',
+    };
+    expect([
+      ...placesIn(
+        'Kadim tapınağın ana sunağının önünde birlikte dua ediyorduk.',
+        china,
+      ),
+    ]).toEqual(['graveyard']);
+    expect([
+      ...placesIn('Nehir kenarındaki balıkçı iskelemde ağ onarıyordum.', china),
+    ]).toEqual(['farm']);
+    expect([...placesIn('Demirci ocakta körüğü harlıyordu.', china)]).toEqual([
+      'mill',
+    ]);
+    // Unvan olan kelimeler de mekân adında sayılır
+    expect([
+      ...placesIn('Muhafız karargâhında mühürleri sayıyorduk.', china),
+    ]).toEqual(['church']);
+    expect([...placesIn('Çay evinde oturuyordum.', china)]).toEqual(['tavern']);
+  });
+
+  it('kısa adlar başka bir kelimenin başı olunca sayılmaz', () => {
+    const labels = { clinic: 'Bar', farm: 'Sur' };
+    expect([...placesIn("Bar'da içiyordum.", labels)]).toEqual(['clinic']);
+    expect(placesIn('Barınakta uyuyordum.', labels).size).toBe(0);
+    expect([...placesIn('Surun dibinde nöbetteydim.', labels)]).toEqual([
+      'farm',
+    ]);
+    expect(placesIn('Suratını gördüm.', labels).size).toBe(0);
   });
 });

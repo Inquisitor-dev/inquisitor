@@ -81,6 +81,64 @@ export function ensureHelperKnowsBuyer(
   return changed ? { ...draft, npcPrompts } : draft;
 }
 
+// Metinde geçen mekânlar; karakter adları mekân sayılmaz ("Değirmenci Giles" değirmen değildir)
+function placesNamed(
+  text: string,
+  npcNames: Record<string, string>,
+  labels: Record<string, string>,
+): Set<string> {
+  const withoutNames = Object.values(npcNames).reduce(
+    (acc, name) => acc.split(name).join(' '),
+    text,
+  );
+  return placesIn(withoutNames, labels);
+}
+
+// Kısmi tanık gördüğü kişiyi o kişinin mazeretindeki yerde gördü; oyunda bu yer tanığa koddan verilir
+// (linkPromptLines). Gemini rol metnine yine de başka bir yer yazabiliyor (denemede 8 vakanın 2'sinde
+// "kliniğin arka kapısında"), o zaman masumun mazereti tanıkla çelişir. Görülen kişinin adını ve
+// mazeretinde olmayan bir mekânı birlikte anan cümle rol metninden çıkar; doğru yeri kod söyler.
+export function dropWrongSightings(
+  draft: ScenarioDraft,
+  plan: Pick<CasePlan, 'culpritId' | 'involvements'>,
+  npcNames: Record<string, string>,
+  scenarioType: string,
+): ScenarioDraft {
+  const labels = Object.fromEntries(
+    Object.keys(npcNames).map((id) => [
+      id,
+      getLocalizedLocationLabel(scenarioType, id),
+    ]),
+  );
+  const npcPrompts = { ...draft.npcPrompts };
+  let changed = false;
+  for (const inv of plan.involvements ?? []) {
+    const seenId = inv.aboutNpcId;
+    if (inv.kind !== 'WITNESS' || !seenId || seenId === plan.culpritId) {
+      continue;
+    }
+    const alibiPlaces = placesNamed(
+      draft.alibis?.[seenId] ?? '',
+      npcNames,
+      labels,
+    );
+    const prompt = npcPrompts[inv.npcId];
+    if (!prompt || alibiPlaces.size === 0) continue;
+    const seenName = npcNames[seenId] ?? seenId;
+    const sentences = prompt.split(/(?<=[.!?])\s+/);
+    const kept = sentences.filter((sentence) => {
+      if (!mentions(sentence, seenName)) return true;
+      const places = placesNamed(sentence, npcNames, labels);
+      return places.size === 0 || [...places].some((p) => alibiPlaces.has(p));
+    });
+    if (kept.length !== sentences.length) {
+      npcPrompts[inv.npcId] = kept.join(' ');
+      changed = true;
+    }
+  }
+  return changed ? { ...draft, npcPrompts } : draft;
+}
+
 // Üretilen bütün metinlerdeki iç kimlikler ("'mill' (AURA-9)") karakterin adına çevrilir
 export function cleanDraftIds(
   draft: ScenarioDraft,
@@ -297,7 +355,12 @@ export class LlmService {
         sessionId,
       );
       const cleaned = cleanDraftIds(
-        ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
+        dropWrongSightings(
+          ensureHelperKnowsBuyer(placesRepaired, plan, npcNames),
+          plan,
+          npcNames,
+          scenarioType,
+        ),
         npcNames,
       );
       // İtirafı oyun verir: rol metinlerinde "sorguda itiraf edeceksin" gibi talimat kalmaz
@@ -481,19 +544,17 @@ export class LlmService {
     );
     const done = new Set<string>();
     let changed = false;
-    // Karakter adları mekân sayılmasın ("Değirmenci Giles" değirmen değildir)
-    const withoutNames = (text: string) =>
-      Object.values(npcNames).reduce(
-        (acc, name) => acc.split(name).join(' '),
-        text,
-      );
-    const placesOf = (text: string) =>
-      placesIn(withoutNames(text), labels, mentions);
+    const placesOf = (text: string) => placesNamed(text, npcNames, labels);
 
+    const kindOf = (id: string) =>
+      plan.involvements?.find((i) => i.npcId === id)?.kind;
     for (const inv of plan.involvements ?? []) {
       if (inv.kind !== 'NONE' || !inv.aboutNpcId) continue;
-      const anchorId = inv.npcId;
-      const partnerId = inv.aboutNpcId;
+      // Tek tamamen masumun eşi başka bir roldeyse (ör. leş kargası) eşin mazereti ve ipucu o rolün
+      // sırrını taşır; onarılan taraf tamamen masum olandır (pilotta Çin-orta: Huikang/Mei Teyze)
+      const partnerIsNone = kindOf(inv.aboutNpcId) === 'NONE';
+      const anchorId = partnerIsNone ? inv.npcId : inv.aboutNpcId;
+      const partnerId = partnerIsNone ? inv.aboutNpcId : inv.npcId;
       const key = [anchorId, partnerId].sort().join('|');
       if (done.has(key)) continue;
       done.add(key);

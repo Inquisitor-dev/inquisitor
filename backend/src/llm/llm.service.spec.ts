@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LlmService } from './llm.service';
+import { LlmService, dropWrongSightings } from './llm.service';
 import { LlmUsageRecorder } from './usage/llm-usage.recorder';
 import { storyReviewFields } from '../stories/story-review';
 import { CLEAN_REVIEW_CASE } from '../stories/review-fixtures';
@@ -304,6 +304,59 @@ describe('LlmService', () => {
       const repaired = await result;
       expect(repaired.alibis.mill).toBe(draft.alibis.clinic);
     });
+
+    it('eşi leş kargasıysa onarılan tamamen masumdur; leş kargasının ipucu korunur (pilot, Çin-orta)', async () => {
+      const chinaPlan = {
+        involvements: [
+          { npcId: 'graveyard', kind: 'NONE', aboutNpcId: 'farm' },
+          { npcId: 'farm', kind: 'SCAVENGER' },
+        ],
+      };
+      const chinaNames = {
+        graveyard: 'Keşiş Huikang',
+        farm: 'Mei Teyze',
+        church: 'Komutan Zhao',
+      };
+      const chinaDraft = {
+        ...draft,
+        locationClues: {
+          graveyard: 'Tapınakta bir tütsü çubuğu.',
+          farm: 'İskelede ağların altına saklanmış gümüş bir tarak.',
+        },
+        alibis: {
+          graveyard:
+            'Kadim tapınağın ana sunağının önünde Mei Teyze ile birlikte akşam tütsülerini yakıp dua ediyordum.',
+          farm: 'Nehir kenarındaki balıkçı iskelemde ağlarımı onarıyor ve günün son avını tuzluyordum.',
+        },
+      };
+      const complete = jest.fn().mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                alibi:
+                  'Balıkçı iskelesinde Mei Teyze ile birlikte ağları onarıp dua ediyordum.',
+                clue: 'Tapınakta, iskelede geçen geceyi anlatan bir not.',
+                truthReveal: 'Huikang ile Mei Teyze iskeledeydi.',
+              }),
+            },
+          },
+        ],
+      });
+      Object.assign(service, { complete });
+      const target = service as unknown as { repairAlibiPlaces: Repair };
+      const repaired = await target.repairAlibiPlaces(
+        chinaDraft,
+        chinaPlan,
+        'china',
+        chinaNames,
+      );
+      expect(complete).toHaveBeenCalledTimes(1);
+      expect(repaired.alibis.graveyard).toContain('iskelesinde');
+      // Leş kargasının mazereti ve sırrını taşıyan ipucu değişmez
+      expect(repaired.alibis.farm).toBe(chinaDraft.alibis.farm);
+      expect(repaired.locationClues.farm).toBe(chinaDraft.locationClues.farm);
+    });
   });
 
   describe('hikâye hakemi', () => {
@@ -360,5 +413,69 @@ describe('LlmService', () => {
       const complete = jest.fn().mockRejectedValue(new Error('429'));
       expect(await reviewWith(complete)).toBeNull();
     });
+  });
+});
+
+describe('kısmi tanığın gördüğü yer', () => {
+  // Gemini denemesinden (cyberpunk): tanık Brakk Coil, AURA-9'u kendi kliniğinde gördüğünü yazdı
+  const names = {
+    graveyard: 'Brakk Coil',
+    mill: 'AURA-9',
+    clinic: 'Vera Nyx',
+    church: 'Mirel Sato',
+    farm: 'Ash',
+  };
+  const plan = {
+    culpritId: 'farm',
+    involvements: [
+      { npcId: 'graveyard', kind: 'WITNESS' as const, aboutNpcId: 'mill' },
+    ],
+  };
+  const draft = (prompt: string) => ({
+    scenario: '',
+    truthReveal: '',
+    culpritId: 'farm',
+    locationClues: {},
+    npcPrompts: { graveyard: prompt },
+    alibis: {
+      mill: 'AURA-9, cinayet saatinde Velvet Static barının bodrum katında Vera Nyx ile birlikte jeneratörü temizliyordu.',
+    },
+  });
+
+  it('görülen kişiyi mazeretinde olmayan bir yerde anan cümle rol metninden çıkar', () => {
+    const result = dropWrongSightings(
+      draft(
+        "Sen bir sokak cerrahısın. Cinayet gecesi siber kliniğin arka kapısının çıkışında AURA-9'u kendi gözlerinle gördün. Kimseye güvenmezsin.",
+      ),
+      plan,
+      names,
+      'cyberpunk',
+    );
+    expect(result.npcPrompts.graveyard).toBe(
+      'Sen bir sokak cerrahısın. Kimseye güvenmezsin.',
+    );
+  });
+
+  it('yer mazeretle uyuşuyorsa ya da hiç yer geçmiyorsa cümle kalır', () => {
+    for (const prompt of [
+      "Cinayet gecesi AURA-9'u barın arka kapısında gördün.",
+      "Cinayet gecesi AURA-9'u uzaktan gördün.",
+    ]) {
+      const input = draft(prompt);
+      expect(dropWrongSightings(input, plan, names, 'cyberpunk')).toBe(input);
+    }
+  });
+
+  it('katili gören doğrulayan tanığa dokunmaz', () => {
+    const input = draft("Ash'i kliniğin arka kapısında gördün.");
+    const culpritPlan = {
+      culpritId: 'farm',
+      involvements: [
+        { npcId: 'graveyard', kind: 'WITNESS' as const, aboutNpcId: 'farm' },
+      ],
+    };
+    expect(dropWrongSightings(input, culpritPlan, names, 'cyberpunk')).toBe(
+      input,
+    );
   });
 });

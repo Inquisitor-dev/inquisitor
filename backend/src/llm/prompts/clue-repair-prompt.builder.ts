@@ -122,18 +122,58 @@ Return only JSON: {"clue": "...", "truthReveal": "..."}`;
 // Tamamen masum eşler aynı yerde birlikteydi; mazeretleri farklı mekân söylerse oyuncu birini yalancı
 // sanır (oyun taramasında: "revirde Giles ile" / "değirmende Harland ile"). Metinde geçen mekânlar,
 // mekân adının bütün kelimeleri kelime başında geçiyorsa sayılır ("Sokak Pazarı" için yalnız "sokak" yetmez).
+// Ekler ve ünsüz yumuşaması tanınır: pilotta "Kadim Tapınak" → "tapınağın", "Balıkçı İskelesi" →
+// "iskelemde" yakalanmadığı için ayrı yer söyleyen eşler onarılmadan geçti.
+const foldPlace = (text: string) =>
+  foldTurkish(text).replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u');
+
+// "bar", "han", "sur" gibi kısa adlar yalnızca kendi başına ya da bir hâl ekiyle sayılır ("barınak" sayılmaz)
+const SHORT_SUFFIX =
+  "(?:'?(?:a|e|i|u|in|un|inin|unun|ina|una|inda|unda|indaki|undaki|indan|undan|ini|unu|da|de|ta|te|dan|den|tan|ten|daki|deki|taki|teki|la|le|ya|ye|nin|nun|na|ne|nda|nde|ndaki|ndeki|ndan|nden|ni|nu|lar|ler))?";
+
+const SOFTENING: Record<string, string> = {
+  k: 'g',
+  g: 'k',
+  p: 'b',
+  b: 'p',
+  t: 'd',
+  d: 't',
+};
+
+function placeWordPattern(word: string): RegExp {
+  // Tamlama eki düşer: "iskelesi" → "iskele", "pazari" → "pazar", "ocagi" → "ocag"
+  let stem = word;
+  if (/(si|su)$/.test(stem) && stem.length - 2 >= 3) stem = stem.slice(0, -2);
+  else if (/[^aeiou][iu]$/.test(stem) && stem.length - 1 >= 3)
+    stem = stem.slice(0, -1);
+  const last = stem.slice(-1);
+  const stems = SOFTENING[last]
+    ? [stem, stem.slice(0, -1) + SOFTENING[last]]
+    : [stem];
+  const body = `(?:${stems.join('|')})`;
+  return stem.length <= 3
+    ? new RegExp(`(^|[^a-z0-9])${body}${SHORT_SUFFIX}(?![a-z0-9])`)
+    : new RegExp(`(^|[^a-z0-9])${body}`);
+}
+
 export function placesIn(
   text: string,
   labels: Record<string, string>,
-  mentions: (text: string, name: string) => boolean,
 ): Set<string> {
+  const folded = foldPlace(text);
   return new Set(
     Object.entries(labels)
+      // "Çay Evi & Han" iki yerin adıdır; biri geçmesi yeter
       .filter(([, label]) =>
-        label
-          .split(/\s+/)
-          .filter((w) => w.replace(/[^\p{L}\p{N}]/gu, '').length >= 3)
-          .every((w) => mentions(text, w)),
+        label.split('&').some((part) => {
+          const words = foldPlace(part)
+            .split(/[^a-z0-9]+/)
+            .filter((w) => w.length >= 3);
+          return (
+            words.length > 0 &&
+            words.every((w) => placeWordPattern(w).test(folded))
+          );
+        }),
       )
       .map(([id]) => id),
   );
