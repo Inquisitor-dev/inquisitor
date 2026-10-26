@@ -7,6 +7,8 @@ import {
 
 export * from './universes';
 
+export const NPC_COUNT: Record<string, number> = { easy: 5, medium: 6, hard: 6 };
+
 export function getScenarioConfig(
   scenarioType: string = 'medieval',
   difficulty: string = 'easy',
@@ -18,7 +20,9 @@ export function getScenarioConfig(
 
   const universe = UNIVERSE_REGISTRY[normalizedScenario];
 
-  const npcCount = normalizedDifficulty === 'easy' ? 4 : normalizedDifficulty === 'medium' ? 5 : 6;
+  // Kolay 5, orta ve zor 6 şüpheli. 4 kişilik mod kalktı: cinayete bağlı sırlara yer kalmıyor, tahmin
+  // şansı yüksekti. Zoru ortadan kişi sayısı değil vaka ayarları ayırır (case-setup.ts)
+  const npcCount = NPC_COUNT[normalizedDifficulty] ?? NPC_COUNT.easy;
   const npcDefinitions = universe.npcs.slice(0, npcCount);
   const crimeScene = universe.crimeScenes.find(
     (scene) => scene.id === crimeSceneId,

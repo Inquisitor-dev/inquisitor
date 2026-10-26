@@ -128,7 +128,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     description: 'Suçluyu bulmak için yeterli ipucu var. Şüpheliler korkak ama yalanları kolay çözülür.',
     price: 0,
     ownedByDefault: true,
-    suspects: 4,
+    suspects: 5,
     dangerLevel: 1,
   },
   {
@@ -136,9 +136,9 @@ export const MARKET_ITEMS: MarketItem[] = [
     category: 'difficulty',
     title: 'Kıdemli Engizitör',
     subtitle: 'Orta',
-    description: 'Yeni bir şüpheli olaya dahil olur. İlişkiler karmaşıklaşır, yalanlar birbirini örter.',
+    description: 'Altıncı bir şüpheli olaya dahil olur. İlişkiler karmaşıklaşır, yalanlar birbirini örter.',
     price: 300,
-    suspects: 5,
+    suspects: 6,
     dangerLevel: 2,
   },
   {

@@ -60,7 +60,7 @@ export const cyberpunkLocations: MapLocation[] = [
     width: '18%',
     height: '34%',
     available: true,
-    minDifficulty: 'hard',
+    minDifficulty: 'medium',
   },
   {
     id: 'farm',
@@ -71,6 +71,5 @@ export const cyberpunkLocations: MapLocation[] = [
     width: '39%',
     height: '42%',
     available: true,
-    minDifficulty: 'medium',
   },
 ];

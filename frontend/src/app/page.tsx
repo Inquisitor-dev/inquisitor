@@ -213,7 +213,7 @@ export default function LandingPage() {
               <div className={styles.price}>Ücretsiz</div>
               <ul className={styles.featuresList}>
                 <li>Ashenmoor evreni ve köy haritası</li>
-                <li>Kolay zorlukta 4 şüpheli</li>
+                <li>Kolay zorlukta 5 şüpheli</li>
                 <li>Günde 2 soruşturma</li>
                 <li>Günde 30 diyalog</li>
                 <li>Oyun sonunda hakikat ve ipucu özeti</li>
@@ -234,7 +234,7 @@ export default function LandingPage() {
               </div>
               <ul className={styles.featuresList}>
                 <li>Günde 5 soruşturma ve 100 diyalog</li>
-                <li>Orta ve Zor zorluklar (5–6 şüpheli)</li>
+                <li>Orta ve Zor zorluklar (6 şüpheli)</li>
                 <li>Oakhaven ve Neon Prime evrenleri</li>
                                 <li>Sunuculara öncelikli erişim</li>
               </ul>

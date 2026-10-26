@@ -100,8 +100,8 @@ export default function StoryTab({
                 value={form.difficulty}
                 onChange={(e) => setForm((prev) => ({ ...prev, difficulty: e.target.value as ScenarioForm['difficulty'] }))}
               >
-                <option value="easy">Kolay — 4 şüpheli, sade bir ilişki ağı</option>
-                <option value="medium">Orta — 5 şüpheli, çapraz ittifaklar</option>
+                <option value="easy">Kolay — 5 şüpheli, sade bir ilişki ağı</option>
+                <option value="medium">Orta — 6 şüpheli, çapraz ittifaklar</option>
                 <option value="hard">Zor — 6 şüpheli, karmaşık bir komplo</option>
               </select>
             </div>

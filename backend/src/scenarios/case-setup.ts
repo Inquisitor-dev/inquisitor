@@ -24,7 +24,7 @@ export type SceneState = 'MESSY' | 'TIDY';
 // sadece ilk adımı atsın diye düşük tutulur.
 export const ELIMINATION_TARGET: Record<string, number> = {
   easy: 1,
-  medium: 1,
+  medium: 2,
   hard: 2,
 };
 
@@ -80,23 +80,42 @@ export interface Involvement {
 }
 
 // Masumların kaçı tamamen masum (cinayetle hiç bağı yok)
+// Zorda tek kişi: tamamen masumların eşleşmesi bedava eleme verir
 export const FULLY_INNOCENT_COUNT: Record<string, number> = {
   easy: 1,
-  medium: 1,
-  hard: 2,
+  medium: 2,
+  hard: 1,
 };
 
 // Tanığın tarifinin uyduğu şüpheli sayısı (katil dahil)
 export const WITNESS_DESCRIPTION_FITS: Record<string, number> = {
   easy: 2,
   medium: 3,
-  hard: 3,
+  hard: 4,
 };
+
+// Kurulmuş tuzak iz (planlı cinayet) olasılığı: zorda daha sık
+export const PLANNED_CHANCE: Record<string, number> = {
+  easy: 0.4,
+  medium: 0.4,
+  hard: 0.6,
+};
+
+// Zorda herkes bir puan daha geç kırılır (en çok 8): kırmak daha çok kanıt ister
+const thresholdFor = (base: number, difficulty: string) =>
+  difficulty === 'hard'
+    ? Math.min(TEMPERAMENT_THRESHOLD.STEADY, base + 1)
+    : base;
+
+const murderStyleFor = (difficulty: string, rng: Rng): MurderStyle =>
+  rng() < (PLANNED_CHANCE[difficulty] ?? PLANNED_CHANCE.easy)
+    ? 'PLANNED'
+    : 'HURRIED';
 
 // Zorluğa göre en az emek: en ucuz çözüm en az bu kadar arama izni istemeli. Çözücü hangi mekânın
 // aranacağını bilerek seçtiği için bu, oyuncunun gerçek emeğinin alt sınırıdır. Zorda 2 izin şartını
-// hiçbir plan karşılayamıyor (her zaman tek izinlik bir yol kalıyor); zoru daha çok şüpheli, daha geniş
-// eşkâl ve iki tamamen masum NPC ayırır.
+// hiçbir plan karşılayamıyor (her zaman tek izinlik bir yol kalıyor); orta ve zor 6 şüphelidir, zoru tek
+// tamamen masum, daha geniş eşkâl, daha sık tuzak iz ve daha yüksek itiraf eşiği ayırır.
 export const MIN_WARRANTS: Record<string, number> = {
   easy: 0,
   medium: 1,
@@ -149,7 +168,7 @@ export function planCase(
   rng: Rng = Math.random,
 ): CasePlan {
   // Cinayet tarzı bir kez seçilir ve sabit kalır: yeniden çekme, sağlam çıkması kolay olan tarzı kayırmasın
-  const murderStyle: MurderStyle = rng() < 0.6 ? 'HURRIED' : 'PLANNED';
+  const murderStyle = murderStyleFor(difficulty, rng);
   let plan: CasePlan | null = null;
   for (let attempt = 0; attempt < MAX_PLAN_ATTEMPTS; attempt++) {
     // Önce aynı temel vaka için sırlar ve ayrıntılar yeniden çekilir, olmazsa temel vaka da yenilenir
@@ -188,7 +207,7 @@ export function planCaseDraft(
   difficulty: string,
   rng: Rng = Math.random,
 ): CasePlan {
-  const murderStyle: MurderStyle = rng() < 0.6 ? 'HURRIED' : 'PLANNED';
+  const murderStyle = murderStyleFor(difficulty, rng);
   const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
   return withCaseDetails(base, scenarioConfig, difficulty, rng);
 }
@@ -215,9 +234,12 @@ function withCaseDetails(
     fearThresholds: Object.fromEntries(
       scenarioConfig.npcDefinitions.map((npc) => [
         npc.id,
-        npc.temperament
-          ? TEMPERAMENT_THRESHOLD[npc.temperament]
-          : DEFAULT_FEAR_THRESHOLD,
+        thresholdFor(
+          npc.temperament
+            ? TEMPERAMENT_THRESHOLD[npc.temperament]
+            : DEFAULT_FEAR_THRESHOLD,
+          difficulty,
+        ),
       ]),
     ),
   };
@@ -266,6 +288,15 @@ export function planInvolvements(
     FULLY_INNOCENT_COUNT[difficulty] ?? FULLY_INNOCENT_COUNT.easy,
     rest.length,
   );
+  // Doğrulayan kanıtın konduğu mekânın sahibi mekâna bağlı bir sır alamaz; seçenekleri azken iki kişiye
+  // aynı bağ düşmesin diye sır seçen masumlardan ilki odur
+  const verificationOwner =
+    placement.type === 'LOCATION' ? placement.locationId : null;
+  const ownerIndex = verificationOwner ? rest.indexOf(verificationOwner) : -1;
+  if (ownerIndex > noneCount) {
+    rest.splice(ownerIndex, 1);
+    rest.splice(noneCount, 0, verificationOwner!);
+  }
   const others = (id: string) => innocentIds.filter((other) => other !== id);
   let kinds = sample(LINKED_KINDS, LINKED_KINDS.length, rng);
 

@@ -60,7 +60,7 @@ export const medievalLocations: MapLocation[] = [
     width: '17%',
     height: '26%',
     available: true,
-    minDifficulty: 'hard',
+    minDifficulty: 'medium',
   },
   {
     id: 'farm',
@@ -71,6 +71,5 @@ export const medievalLocations: MapLocation[] = [
     width: '28%',
     height: '34%',
     available: true,
-    minDifficulty: 'medium',
   },
 ];
