@@ -51,7 +51,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'tavern',
       name: 'Torstein',
-      role: 'Innkeeper of the Hearthfire Tavern',
+      role: 'Kış Hanı’nın hancısı',
       temperament: 'NORMAL',
       personaPrompt:
         'You are a rugged, bearded host who keeps the hearth fires burning in the brutal cold. You serve mulled ale to cold travelers, know who arrived before the snowstorm shut the mountain pass, and protect your patrons fiercely.',
@@ -59,7 +59,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'church',
       name: 'Kahin Valda',
-      role: 'Keeper of the ancient Heart Tree',
+      role: 'Kadim Kutsal Yürek Ağacı’nın bekçisi',
       temperament: 'STEADY',
       personaPrompt:
         'You are a quiet, mystical guardian who reads the frozen omens carved in the blood-red leaves of the ancient weirwood tree. You speak in cold, prophetic whispers and regard worldly crimes through the lens of ancient deities.',
@@ -67,7 +67,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'graveyard',
       name: 'Komutan Bjorn',
-      role: 'Castellan of the Frosthold Keep',
+      role: 'Frosthold Gözcü Kalesi’nin komutanı',
       temperament: 'STEADY',
       personaPrompt:
         'You are a grim fortress commander wrapped in thick wolf pelts. You maintain iron discipline among the watchmen, treat every outsider as a potential infiltrator, and despise weakness or deceit in times of winter siege.',
@@ -75,7 +75,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'mill',
       name: 'Madenci Durn',
-      role: 'Foreman of the abandoned iron mine',
+      role: 'Terk edilmiş demir madeninin ustabaşısı',
       temperament: 'FRAGILE',
       personaPrompt:
         'You are a grizzled, suspicious miner who spends your days in the freezing shafts and stone quarries. You speak with coarse bluntness, hide contraband in the frozen tunnels, and trust nobody from outside the clan.',
@@ -83,7 +83,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'farm',
       name: 'Einar',
-      role: 'Wall sentinel and outer gatekeeper of Frosthold',
+      role: 'Frosthold surlarının nöbetçisi ve dış kapı bekçisi',
       temperament: 'FRAGILE',
       personaPrompt:
         'You are a sharp-eyed scout and sentinel stationed at the high stone rampart gate. You endure the bitter freezing winds, watch every movement across the frozen mountain pass, and distrust anyone seeking passage through the wall.',
@@ -91,7 +91,7 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'clinic',
       name: 'Muhafız Kenneth',
-      role: 'Overseer of the execution grounds',
+      role: 'İnfaz meydanının gözetmeni',
       temperament: 'NORMAL',
       personaPrompt:
         'You are a cold-eyed warden who oversees the gallows, stocks, and military tribunal courtyard. You believe fear is the only force keeping the freezing garrison from mutiny, and you measure guilt with ruthless certainty.',
@@ -101,13 +101,13 @@ export const winterUniverse: UniverseDefinition = {
     {
       id: 'crime_scene',
       name: 'Frosthold crime scene',
-      description: 'The primary murder site under investigation.',
+      description: 'Soruşturulan cinayet mahalli.',
     },
-    { id: 'tavern', name: 'Hearthfire Tavern', description: "Torstein's warm timber tavern and stables." },
-    { id: 'church', name: 'Ancient Heart Tree Grove', description: "Seer Valda's mystical weirwood shrine and frozen pool." },
-    { id: 'graveyard', name: 'Frosthold Watchtower Keep', description: "Commander Bjorn's stone fortress and ramparts." },
-    { id: 'mill', name: 'Abandoned Iron Quarry', description: "Durn's mining shaft, crane, and ore carts." },
-    { id: 'farm', name: 'Frosthold Rampart Wall', description: "Einar's reinforced stone wall gate, barricades, and outer sentry posts." },
-    { id: 'clinic', name: 'Execution Courtyard', description: "Warden Kenneth's gallows platform and watch enclosure." },
+    { id: 'tavern', name: 'Hearthfire Tavern', description: 'Torstein’ın sıcak ahşap hanı ve ahırları.' },
+    { id: 'church', name: 'Ancient Heart Tree Grove', description: 'Kâhin Valda’nın gizemli kutsal ağaç sunağı ve donmuş havuzu.' },
+    { id: 'graveyard', name: 'Frosthold Watchtower Keep', description: 'Komutan Bjorn’un taş kalesi ve siperleri.' },
+    { id: 'mill', name: 'Abandoned Iron Quarry', description: 'Durn’un maden kuyusu, vinci ve cevher arabaları.' },
+    { id: 'farm', name: 'Frosthold Rampart Wall', description: 'Einar’ın güçlendirilmiş taş sur kapısı, barikatları ve dış nöbet yerleri.' },
+    { id: 'clinic', name: 'Execution Courtyard', description: 'Muhafız Kenneth’in darağacı platformu ve gözetleme alanı.' },
   ],
 };
