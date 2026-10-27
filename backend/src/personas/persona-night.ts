@@ -310,7 +310,7 @@ function nightRecords(
       return event.locationId
         ? [
             card(
-              `Gece ${ctx.placeName(event.locationId)} zorla açılmış. Sahibi bugün kapıyı kapalı tutuyor.`,
+              `${ctx.placeName(event.locationId)}: gece biri zorla girmiş. Sahibi bugün kimseyi kabul etmiyor.`,
             ),
           ]
         : [];
@@ -409,7 +409,7 @@ export function detentionPromptLines(
     return [
       day === d.day + 1
         ? '- Yesterday the Inquisitor had you held overnight; you were released this morning. You are resentful, curt and cold with them today, but it changes nothing about what you know or how fear works on you.'
-        : `- On day ${d.day} the Inquisitor had you held overnight. You have not forgotten it.`,
+        : '- A few nights ago the Inquisitor had you held overnight. You have not forgotten it.',
     ];
   }
   return [
@@ -428,21 +428,29 @@ export function publicNightLines(
   ctx: Pick<NightContext, 'scenarioType' | 'placeName'>,
 ): string[] {
   const investigator = newspaperTextsFor(ctx.scenarioType).investigator;
+  // Gün numarası yerine göreli zaman: Gemini denemesinde "In the night after day 2" yazınca
+  // hancı "ikinci günün gecesinde" diye sayaç diliyle konuştu
+  const when = (night: number) =>
+    day - night <= 1
+      ? 'Last night'
+      : day - night === 2
+        ? 'Two nights ago'
+        : 'A few nights ago';
   const lines = state.happened.flatMap((e) => {
     switch (e.kind) {
       case 'THREAT_LETTER':
         return [
-          `- In the night after day ${e.night}, someone slipped an unsigned threatening letter under the ${investigator}'s door. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who wrote it.`,
+          `- ${when(e.night)}, someone slipped an unsigned threatening letter under the ${investigator}'s door. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who wrote it.`,
         ];
       case 'BREAK_IN':
         return e.locationId
           ? [
-              `- In the night after day ${e.night}, someone broke into "${ctx.placeName(e.locationId)}". It stayed closed the next day. Nobody saw who did it.`,
+              `- ${when(e.night)}, someone broke into "${ctx.placeName(e.locationId)}"${day === e.night + 1 ? '; it is closed today' : '; it stayed closed the next day'}. The whole town, you included, has heard about it; if asked what is new, mention it. Nobody saw who did it.`,
             ]
           : [];
       case 'RAID':
         return [
-          `- In the night after day ${e.night}, someone broke into the ${investigator}'s own home. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who it was.`,
+          `- ${when(e.night)}, someone broke into the ${investigator}'s own home. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who it was.`,
         ];
       default:
         return [];
@@ -452,7 +460,9 @@ export function publicNightLines(
   const town = paper?.items.filter((i) => i.kind === 'TOWN') ?? [];
   if (town.length > 0) {
     lines.push(
-      `- Today's town paper also reports: ${town.map((i) => `"${i.headline}" (${i.body})`).join('; ')}. Do not bring it up yourself; mention it only if the Inquisitor asks what is new in town.`,
+      // Gemini denemesinde "kasabada ne konuşuluyor" sorusuna şüpheliler yalnızca bu küçük haberi
+      // anlatıp "başka büyük bir laf yok" dedi; cinayeti ve gecenin olayını hiç anmadı
+      `- Today's town paper also reports: ${town.map((i) => `"${i.headline}" (${i.body})`).join('; ')}. These are small matters. Do not bring them up yourself. If the Inquisitor asks what is new or what people are talking about, the murder${lines.length > 0 ? ' and the night events above are' : ' is'} what the whole town talks about first; add the paper's small news only after that, if at all.`,
     );
   }
   return lines;

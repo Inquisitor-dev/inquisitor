@@ -80,6 +80,28 @@ const stems = (text: string) =>
 // Tanığın cevabı kayıtlı tanıklıkla örtüşüyorsa en az bu kadar ortak kelime kökü olmalı (adlar hariç)
 const TESTIMONY_MIN_SHARED_STEMS = 4;
 
+// Her konuşmada geçebilen genel kökler sayılmaz. Gemini denemesinde tanık "kasabada ne konuşuluyor"
+// sorusuna cinayeti ve gece olaylarını anlattı ("Donmuş Geçit", "gecenin bir yarısı", "birinin",
+// "dolaşıyor"); bunlar tanıklıkla 4 kök paylaştığı için duyulmamış tanıklık deftere düştü.
+const COMMON_STEMS = new Set([
+  'gece',
+  'gecen',
+  'geces',
+  'yaris',
+  'birin',
+  'biris',
+  'sonra',
+  'kadar',
+  'zaman',
+  'olan',
+  'gibi',
+  'orada',
+  'burad',
+  'dolas',
+  'kimse',
+  'herke',
+]);
+
 import { NAME_TITLES } from './warrant';
 
 // Yapay zekâ tanıklığı anlatıp etiketi unutabiliyor (gerçek Gemini denemesinde görüldü). Bu yüzden
@@ -115,7 +137,7 @@ export function sharesTestimony(params: {
 
   const nameStems = stems(`${witnessName} ${culpritName}`);
   const expected = [...stems(verificationText)].filter(
-    (stem) => !nameStems.has(stem),
+    (stem) => !nameStems.has(stem) && !COMMON_STEMS.has(stem),
   );
   if (expected.length === 0) return false;
   const said = stems(reply);

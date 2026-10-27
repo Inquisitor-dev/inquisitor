@@ -25,8 +25,8 @@ const MEDIEVAL: NewspaperTexts = {
     body: 'Gece Engizitörün kapısının altına imzasız bir mektup bırakılmış. Köy halkı ne yazdığını fısıldaşıyor; kimin bıraktığını bilen yok.',
   },
   breakIn: (place) => ({
-    headline: `${place} gece zorla açıldı`,
-    body: `${place} kapısı gece kırılmış, içerisi dağıtılmış. Sahibi bugün kapıyı kapalı tutacak.`,
+    headline: `${place}: gece zorla girildi`,
+    body: `Dün gece biri zorla içeri girip ortalığı dağıtmış. Sahibi bugün kapısını kimseye açmayacak.`,
   }),
   fillers: [
     {
@@ -64,8 +64,8 @@ const MODERN: NewspaperTexts = {
     body: 'Kasabaya gelen dedektifin kapısının altına gece imzasız bir mektup bırakıldı. Şerif ofisi yorum yapmadı.',
   },
   breakIn: (place) => ({
-    headline: `${place} soyuldu mu?`,
-    body: `${place} gece zorla açıldı. Sahibi bugün kapıları kapalı tutacağını söyledi.`,
+    headline: `${place}: gece hırsız girdi`,
+    body: `Dün gece biri zorla içeri girdi, içerisi dağıtılmış. Sahibi bugün kimseyi almayacağını söyledi.`,
   }),
   fillers: [
     {
@@ -103,8 +103,8 @@ const CYBERPUNK: NewspaperTexts = {
     body: 'Dedektifin kapsül dairesinin kapısına gece kâğıda yazılmış imzasız bir mesaj bırakıldı. Kaynağı belirlenemedi.',
   },
   breakIn: (place) => ({
-    headline: `${place} güvenlik ihlali`,
-    body: `${place} kilidi gece kırıldı. Sahibi bugün kapıyı kapalı tutuyor.`,
+    headline: `${place}: güvenlik ihlali`,
+    body: `Gece kilit sistemi kırıldı, biri girip her şeyi karıştırdı. Sahibi bugün kimseyi almıyor.`,
   }),
   fillers: [
     {
@@ -139,11 +139,11 @@ const CHINA: NewspaperTexts = {
   }),
   letter: {
     headline: 'Müfettişe imzasız mektup',
-    body: 'Gece müfettişin avlu kapısına mühürsüz bir mektup sıkıştırılmış. Kimin bıraktığını gören yok.',
+    body: 'Gece müfettişin kapısının altına mühürsüz bir mektup bırakılmış. Kimin bıraktığını gören yok.',
   },
   breakIn: (place) => ({
-    headline: `${place} gece zorlandı`,
-    body: `${place} kapısı gece zorla açılmış. Sahibi bugün kapıyı açmayacak.`,
+    headline: `${place}: gece zorla girildi`,
+    body: `Dün gece biri zorla girip eşyaları karıştırmış. Sahibi bugün kimseyi kabul etmeyecek.`,
   }),
   fillers: [
     {
@@ -178,11 +178,11 @@ const WINTER: NewspaperTexts = {
   }),
   letter: {
     headline: 'Müfettişe tehdit mektubu',
-    body: 'Gece müfettişin kulübe kapısına imzasız bir mektup çivilenmiş. Kardaki izler çabucak örtülmüş.',
+    body: 'Gece müfettişin kapısının altına imzasız bir mektup bırakılmış. Kardaki izler çabucak örtülmüş.',
   },
   breakIn: (place) => ({
-    headline: `${place} gece kırıldı`,
-    body: `${place} kapısı gece zorla açılmış. Sahibi bugün kapıyı kapalı tutacak.`,
+    headline: `${place}: gece zorla girildi`,
+    body: `Fırtınalı gecede biri zorla girip ortalığı dağıtmış. Sahibi bugün kimseyi kabul etmeyecek.`,
   }),
   fillers: [
     {

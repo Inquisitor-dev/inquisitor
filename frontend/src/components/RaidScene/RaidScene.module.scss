@@ -5,10 +5,13 @@ $parchment: #e8dcc4;
 $muted: #8a7f72;
 $blood: #8a0303;
 
+// Başlık üstte, panel altta akışta: kısa ekranda panel başlığın üstüne binmez, sayfa kayar
 .scene {
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
   background-color: #050403;
   background-size: cover;
   background-position: center;
@@ -18,7 +21,7 @@ $blood: #8a0303;
 
 // Gece: koyu mavi bir örtü
 .darkness {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: radial-gradient(ellipse at 50% 60%, rgba(6, 10, 22, 0.78), rgba(2, 3, 8, 0.96) 75%);
   transition: opacity 0.6s ease;
@@ -28,9 +31,14 @@ $blood: #8a0303;
   opacity: 0.55;
 }
 
+// Kapı önünde elindeki lamba sokağı aydınlatmaz: gece örtüsü koyu kalır, yalnızca ışık halkası görünür
+.lit.outdoor .darkness {
+  opacity: 0.9;
+}
+
 // Kandilin ışığı (yalnızca opaklık; sürekli oynayan bir animasyon yok)
 .lampGlow {
-  position: absolute;
+  position: fixed;
   left: 50%;
   top: 55%;
   width: 70vmin;
@@ -91,17 +99,15 @@ $blood: #8a0303;
 }
 
 .panel {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
+  position: relative;
   z-index: 2;
   width: min(720px, calc(100% - 32px));
+  margin: auto auto 24px;
   padding: 18px 20px;
   background: rgba(10, 8, 6, 0.9);
   border: 1px solid rgba($gold, 0.22);
   border-radius: 10px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
-  transform: translateX(-50%);
 }
 
 .log {
@@ -201,7 +207,7 @@ $blood: #8a0303;
   }
 
   .panel {
-    bottom: 12px;
+    margin-bottom: 12px;
     padding: 14px;
   }
 

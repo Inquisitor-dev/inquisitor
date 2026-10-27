@@ -98,7 +98,7 @@ export default function RaidScene() {
 
   return (
     <main
-      className={`${styles.scene} ${view.light ? styles.lit : ''}`}
+      className={`${styles.scene} ${view.light ? styles.lit : ''} ${view.room === 'DOORSTEP' ? styles.outdoor : ''}`}
       style={{
         backgroundImage: roomImage ? `url(${roomImage})` : undefined,
       }}

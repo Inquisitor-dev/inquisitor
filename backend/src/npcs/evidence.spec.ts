@@ -173,6 +173,35 @@ describe('evidenceFromTags', () => {
   });
 });
 
+describe('sharesTestimony: kasaba haberleri', () => {
+  // Gemini denemesinden: tanık kasabada konuşulanları anlattı, tanıklığını anlatmadı
+  it('cinayeti ve gece olaylarını anlatan cevabı tanıklık saymaz', () => {
+    expect(
+      sharesTestimony({
+        verificationText:
+          'Torstein gece yarısı donmuş geçidin yakınlarında uzun boylu, deri önlüklü birinin dolaştığını görmüştür.',
+        witnessName: 'Torstein',
+        culpritName: 'Muhafız Kenneth',
+        reply:
+          "Herkes o Donmuş Geçit'te bulunan zavallı Altan Demirci'yi konuşuyor. Bir de üstüne, gecenin bir yarısı Sur'a birinin zorla girdiği söylentisi yayıldı. Kapının altına bırakılan o imzasız tehdit mektubu dilden dile dolaşıyor.",
+      }),
+    ).toBe(false);
+  });
+
+  it('aynı tanıklığı anlatınca tanır', () => {
+    expect(
+      sharesTestimony({
+        verificationText:
+          'Torstein gece yarısı donmuş geçidin yakınlarında uzun boylu, deri önlüklü birinin dolaştığını görmüştür.',
+        witnessName: 'Torstein',
+        culpritName: 'Muhafız Kenneth',
+        reply:
+          'Gece yarısına doğru geçidin yakınında uzun boylu, deri önlük giymiş birini gördüm; karanlıkta dolaşıp duruyordu.',
+      }),
+    ).toBe(true);
+  });
+});
+
 describe('sharesTestimony', () => {
   // Gerçek Gemini denemesinden: tanık doğru şeyi söyledi ama etiketi koymadı
   const verificationText =

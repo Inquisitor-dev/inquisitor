@@ -29,7 +29,7 @@ export function closedMessage(
     return `${place} bugün kapalı: sahibi nezarette. Yarın sabah çıkacak.`;
   }
   if (closure.reason === 'BREAK_IN') {
-    return `${place} bugün kapalı: gece zorla açılmış, sahibi içeriyi topluyor. Yarın yeniden açılacak.`;
+    return `${place} bugün kapalı: gece biri zorla girmiş, sahibi ortalığı topluyor. Yarın yeniden açılacak.`;
   }
   const name =
     getScenarioConfig(session.scenarioType, 'hard').npcDefinitions.find(
