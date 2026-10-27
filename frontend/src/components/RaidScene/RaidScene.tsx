@@ -6,17 +6,17 @@ import { Flame, Hand, Moon, Skull, Sun } from 'lucide-react';
 import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
-import { getPlayerHome } from '@/config/homeConfig';
+import { getHomeRoomImage, type HomeRoom } from '@/config/homeConfig';
 import type { RaidActResponse, RaidView } from '@/features/raid/raidTypes';
 import styles from './RaidScene.module.scss';
 
-// Oda görselleri gelene kadar her oda bugünkü ev görseliyle gösterilir (docs/ev-odalari-gorselleri.md);
+// Her odanın kendi görseli var (docs/ev-odalari-gorselleri.md); görseller gündüz çizildi,
 // gece CSS ile karartılır, kandil yanınca sıcak bir ışık halkası çıkar
-const ROOM_FOCUS: Record<string, string> = {
-  BEDROOM: '20% 60%',
-  KITCHEN: '45% 55%',
-  HALLWAY: '80% 45%',
-  DOORSTEP: '95% 40%',
+const ROOM_IMAGE_KEY: Record<string, HomeRoom> = {
+  BEDROOM: 'bedroom',
+  KITCHEN: 'kitchen',
+  HALLWAY: 'hallway',
+  DOORSTEP: 'doorstep',
 };
 
 const OUTCOME_COPY: Record<string, { title: string; body: string }> = {
@@ -46,7 +46,6 @@ export default function RaidScene() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
-  const home = getPlayerHome(scenarioType || 'medieval');
 
   useEffect(() => {
     if (!hasHydrated || !sessionId) return;
@@ -95,13 +94,13 @@ export default function RaidScene() {
 
   const outcome = view.outcome ? OUTCOME_COPY[view.outcome] : null;
   const turnsLeft = (view.maxTurns ?? 6) - (view.turn ?? 0);
+  const roomImage = getHomeRoomImage(scenarioType || 'medieval', ROOM_IMAGE_KEY[view.room ?? 'BEDROOM'] ?? 'bedroom');
 
   return (
     <main
       className={`${styles.scene} ${view.light ? styles.lit : ''}`}
       style={{
-        backgroundImage: home ? `url(${home.backgroundImage})` : undefined,
-        backgroundPosition: ROOM_FOCUS[view.room ?? 'BEDROOM'],
+        backgroundImage: roomImage ? `url(${roomImage})` : undefined,
       }}
     >
       <div className={styles.darkness} aria-hidden />
