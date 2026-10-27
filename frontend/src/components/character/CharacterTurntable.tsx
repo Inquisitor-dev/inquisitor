@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } fr
 import dynamic from 'next/dynamic';
 import { useCharacterManifest, type CharacterManifest } from './characterManifest';
 import styles from './CharacterTurntable.module.scss';
+import { isCoveredByModal } from './modalCover';
 
 // three.js yalnızca 3D model gösterilecekse yüklensin
 const CharacterModelView = dynamic(() => import('./CharacterModelView'), { ssr: false });
@@ -41,8 +42,15 @@ function supportsWebGL(): boolean {
 // Manifest'te 3D model varsa gerçek zamanlı gösterilir; yoksa (ya da WebGL yoksa) sprite dönüşüne düşer.
 // Boyut `className` ile verilir (yükseklik); genişlik karenin oranından gelir.
 export default function CharacterTurntable({ outfitId, className = '', alt = 'Karakter' }: Props) {
-  const manifest = useCharacterManifest(outfitId, 'turntable');
+  const loadedManifest = useCharacterManifest(outfitId, 'turntable');
   const [failedModel, setFailedModel] = useState<string | null>(null);
+  // Yeni karakterin manifest'i yüklenirken önceki 3D model ekranda kalır: arada yedek görünüme düşülse
+  // 3D sahne sökülüp yeniden kuruluyordu (karakter değiştirirken takılma)
+  const [lastModelManifest, setLastModelManifest] = useState<CharacterManifest | null>(null);
+  if (loadedManifest?.model && loadedManifest !== lastModelManifest) {
+    setLastModelManifest(loadedManifest);
+  }
+  const manifest = loadedManifest ?? (outfitId ? lastModelManifest : null);
 
   if (manifest?.model && failedModel !== manifest.model && supportsWebGL()) {
     const model = manifest.model;
@@ -65,6 +73,7 @@ function SpriteTurntable({
   const frameRef = useRef(0);
   const drag = useRef<{ x: number; frame: number } | null>(null);
   const resumeAt = useRef(0);
+  const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!turntable) return;
@@ -74,7 +83,8 @@ function SpriteTurntable({
     const tick = (now: number) => {
       const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
       last = now;
-      if (!drag.current && now >= resumeAt.current) {
+      const covered = !!elementRef.current && isCoveredByModal(elementRef.current);
+      if (!drag.current && !covered && now >= resumeAt.current) {
         frameRef.current = (frameRef.current + (dt * turntable.frames) / AUTO_TURN_SECONDS) % turntable.frames;
         setFrame(frameRef.current);
       }
@@ -119,6 +129,7 @@ function SpriteTurntable({
 
   return (
     <div
+      ref={elementRef}
       className={`${styles.turntable} ${styles.ready} ${className}`}
       style={style}
       role="img"
