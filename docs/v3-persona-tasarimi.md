@@ -125,3 +125,11 @@ Zor bir kış vakası (Psikopat, 2. gece mektup) gerçek Gemini ile dört gün o
 - Baskın sahnesi: kısa ekranda eylem paneli oda başlığının üstüne biniyordu (artık akışta, gerekirse sayfa kayar); kapı önünde lamba yanınca bütün sokak gündüz gibi aydınlanıyordu (dışarıda gece örtüsü koyu kalır).
 
 Doğru çalışanlar: mektup izi kod havuzundan ve üç şüpheliye uyuyor; katil gece olaylarını kendiliğinden açmıyor; nezarete alınan ertesi gün kırgın; gazete baskını ve nezareti yazıyor; kapanan mekânla konuşma engelleniyor. Hikâye havuzu kural sürümü 4 zaten etkin.
+
+## 9. Kural gerekçeleri
+
+CLAUDE.md'deki persona kurallarının arkasındaki gözlemler:
+
+- **Mektubun izi koddan seçilir (`LETTER_TRACES`):** Gemini'den "birkaç şüpheliye uyan bir iz" istendiğinde, 3 denemenin 2'sinde yalnızca katilin mesleğine uyan bir iz yazdı.
+- **Kasaba olayında sahibin planı istemin en sonunda, kendi "YOUR SCHEDULE" bölümünde:** plan kasaba bilgilerinin arasına gömülüyken, rolü "hep kilisede" diyen bir rahip, ertesi gün kasabada olmayacakken bir gün önce oyuncuya "yarın buradayım" dedi.
+- **"Ne var ne yok?" sorusunda önce cinayet ve gece olayları:** denemelerde şüpheliler gazetenin sıradan haberini (tuz fiyatı) ilgisiz cevaplara sıkıştırdı; haber sorulunca da yalnızca bu dolgu haberi anlattı (ayrıca §8).
