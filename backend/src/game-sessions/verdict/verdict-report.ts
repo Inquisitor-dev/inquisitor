@@ -84,6 +84,8 @@ export function isSupportingEvidence(
   e: BoardEvidence,
   facts: CaseFacts,
 ): boolean {
+  // Tehdit mektubunun izi birkaç kişiye uyan bir bonus izdir (v3): dayanak sayılmaz
+  if (e.kind === 'LETTER') return false;
   // Tuzak iz katili değil, suçlanmak istenen masumu gösterir: hükmün dayanağı olamaz
   if (
     e.kind === 'CLUE' &&
@@ -159,7 +161,8 @@ export function scoreVerdict({
   const owned = new Map(evidence.map((e) => [e.id, e]));
   const picked = [...new Set(report.evidenceIds ?? [])]
     .map((id) => owned.get(id))
-    .filter((e): e is BoardEvidence => !!e)
+    // Mektup ne puan getirir ne götürür (dayanak değil ama yanlış da değil)
+    .filter((e): e is BoardEvidence => !!e && e.kind !== 'LETTER')
     .slice(0, MAX_REPORT_EVIDENCE);
   const supportingOwned = evidence.filter((e) =>
     isSupportingEvidence(e, facts),

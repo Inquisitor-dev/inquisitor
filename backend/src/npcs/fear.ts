@@ -71,6 +71,13 @@ export function evidenceImpact(params: {
     }
     return targetNpcId === culpritId ? 'IMPLICATING' : 'IRRELEVANT';
   }
+  // Tehdit mektubunun izi de eşkâl tanığı gibi uyduğu herkesi sıkıştırır (yalnız katili değil)
+  if (evidence.kind === 'LETTER') {
+    const fits =
+      caseFacts?.persona?.events.find((e) => e.kind === 'THREAT_LETTER')
+        ?.traceFits ?? [];
+    return fits.includes(targetNpcId) ? 'IMPLICATING' : 'IRRELEVANT';
+  }
   // Yara, aleti bilmeden veren kişiyi tedirgin eder: aletin onun elinden çıktığını anlar
   if (evidence.kind === 'BODY') {
     const helper = caseFacts?.involvements?.find(

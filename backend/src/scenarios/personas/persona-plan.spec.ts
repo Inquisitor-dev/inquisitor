@@ -15,7 +15,11 @@ function seeded(seed: number) {
   };
 }
 
-const input = { suspectLocationIds: ['tavern', 'church', 'mill'] };
+const input = {
+  culpritId: 'mill',
+  suspectIds: ['tavern', 'church', 'mill', 'farm', 'graveyard'],
+  protectedIds: ['church'],
+};
 
 describe('planPersona', () => {
   it('kolayda hiç persona yok', () => {
@@ -63,6 +67,18 @@ describe('planPersona', () => {
       }
       // Gece sırasına göre
       expect([...nights].sort((a, b) => a - b)).toEqual(nights);
+      for (const event of plan.events) {
+        // Kilit kırma vakayı taşıyan kanıtın sahibine dokunmaz
+        if (event.kind === 'BREAK_IN') {
+          expect(event.locationId).toBeDefined();
+          expect(input.protectedIds).not.toContain(event.locationId);
+        }
+        // Mektup izi katil dahil üç kişiye uyar
+        if (event.kind === 'THREAT_LETTER') {
+          expect(event.traceFits).toHaveLength(3);
+          expect(event.traceFits).toContain('mill');
+        }
+      }
     }
   });
 

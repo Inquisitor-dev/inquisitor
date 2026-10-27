@@ -5,7 +5,8 @@ import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 
 export interface NewspaperItem {
-  kind: 'MURDER' | 'PERSONA' | 'TOWN';
+  // NOTICE: kasaba olayının duyurusu (yarın / bugün kapalı)
+  kind: 'MURDER' | 'PERSONA' | 'NOTICE' | 'TOWN';
   headline: string;
   body: string;
 }

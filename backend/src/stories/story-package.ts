@@ -84,12 +84,14 @@ export function packageToReviewInput(pkg: StoryPackage): StoryReviewInput {
  * Hikâyelerin kural sürümü. Oyun yalnızca güncel sürümdeki onaylı hikâyeleri seçer; eski hikâyeler
  * havuzda kalır ama oyuncuya gelmez, yeniden üretilmeleri gerekir.
  * 1: v2 öncesi vaka · 2: Vaka Motoru v2 · 3: katilin örtü hikâyesi (katil de eşikte kırılır)
+ * · 4: v3 personası ve kasaba olayları (planda persona alanı var; sıradan katilde de NONE yazar)
  */
-export const STORY_RULE_VERSION = 3;
+export const STORY_RULE_VERSION = 4;
 
 export function storyRuleVersion(pkg: StoryPackage): number {
   if (!isV2StoryPackage(pkg)) return 1;
-  return pkg.facts.culpritCover ? 3 : 2;
+  if (!pkg.facts.culpritCover) return 2;
+  return pkg.plan.persona ? 4 : 3;
 }
 
 /**

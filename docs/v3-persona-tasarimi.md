@@ -102,8 +102,8 @@ Hepsi gündüz ışığında üretilir; gece etkisi CSS ile verilir. Mektup ve g
 
 | Sıra | İş | Görsel gerekir mi? |
 |---|---|---|
-| 1 | Persona altyapısı: plan alanları, aksiyon havuzu ve gece pencereleri, gece olaylarının işlenmesi, sabah gazetesi, olay kartı, `publicCaseFacts` satırı | Hayır |
-| 2 | Kasaba olayları (planlı kapanış ve önceden sezdirme) ve Psikopatın mektubu ile kundaklaması | Hayır |
+| 1 ✓ | Persona altyapısı: plan alanları, aksiyon havuzu ve gece pencereleri, gece olaylarının işlenmesi, sabah gazetesi, olay kartı, `publicCaseFacts` satırı | Hayır |
+| 2 ✓ | Kasaba olayları (planlı kapanış ve önceden sezdirme) ve Psikopatın mektubu ile kundaklaması | Hayır |
 | 3 | Baskın motoru (saf durum makinesi, `raid-engine.ts`) ve `POST /game-sessions/:id/raid/act`; bütün yolların testleri | Hayır |
 | 4 | Baskın sahnesi, yer tutucu odalarla | Hayır |
 | 5 | Karakter dalları (Mavi Rozet, Kar Kâhini) ve Çatı Geçişi kuralı | Hayır |

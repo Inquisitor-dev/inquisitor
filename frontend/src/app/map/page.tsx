@@ -31,6 +31,8 @@ import MapActionBar from './components/MapActionBar/MapActionBar';
 import MapHud from './components/MapHud/MapHud';
 import NewspaperModal from '@/components/Newspaper/NewspaperModal';
 import { useMorningPaper } from '@/features/newspaper/useMorningPaper';
+import { useClosedToday } from '@/features/newspaper/useClosedToday';
+import { withDative } from '@/shared/lib/turkish';
 import { Home, MapPin } from 'lucide-react';
 import HomeModal from './components/HomeModal/HomeModal';
 import AudioSettingsModal from './components/AudioSettingsModal/AudioSettingsModal';
@@ -140,6 +142,9 @@ export default function MapPage() {
 
   // Sabah gazetesi: gece olayları ve kasabanın haberleri, her sabah bir kez
   const morningPaper = useMorningPaper(sessionId, currentDay, hasHydrated);
+  // Bugün kapalı mekânlar (sahibi şehir dışında ya da gece zorla açılmış)
+  const closedToday = useClosedToday(sessionId, currentDay, hasHydrated);
+  const closedIds = new Set(closedToday.map((c) => c.locationId));
 
   // Karakter yetenekleri. Kulis ve Çatı Geçişi önce "kurulur", bir mekâna girilince kullanılır.
   const abilities = useAbilities(sessionId);
@@ -425,7 +430,8 @@ export default function MapPage() {
       return isNight ? 'Eve Dön (Uyu)' : 'Evime Git';
     }
     const label = getLocationLabel(loc.id, scenarioType);
-    return `${label}'e Git`;
+    if (closedIds.has(loc.id)) return `${label} · Bugün kapalı`;
+    return `${withDative(label)} Git`;
   };
 
   const scenarioName =
@@ -470,7 +476,8 @@ export default function MapPage() {
       >
         {visibleLocations.map((loc) => {
           const isAvailable =
-            (loc.available && (!isNight || canEnterAtNight(loc.id)) && !walkingTo) || (loc.id === 'home' && !walkingTo);
+            (loc.available && !closedIds.has(loc.id) && (!isNight || canEnterAtNight(loc.id)) && !walkingTo) ||
+            (loc.id === 'home' && !walkingTo);
           const npcPortrait = loc.id !== 'home' ? getNpcDialoguePortrait(scenarioType, loc.id) : null;
           const npcConfig = DIALOGUE_CONFIG[scenarioType]?.[loc.id];
 

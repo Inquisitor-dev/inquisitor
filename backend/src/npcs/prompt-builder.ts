@@ -34,10 +34,13 @@ const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
 };
 import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 import {
+  breakInOwnerLines,
   culpritNightLines,
   parsePersonaState,
   publicNightLines,
+  townPromptLines,
 } from '../personas/persona-night';
+import { townEventsOf } from '../scenarios/personas/town-events';
 
 export interface ForcedConfessionCheckParams {
   isNarrator: boolean;
@@ -275,7 +278,7 @@ ${dynamicPromptText}${linkPromptLines(
 
     combinedPrompt += `
 WHAT EVERYONE IN TOWN KNOWS:
-${publicCaseFacts(session.scenarioType, caseFacts)}${nightLines(session, isCulprit)}
+${publicCaseFacts(session.scenarioType, caseFacts)}${nightLines(session, scenarioConfig, npc.id, isCulprit)}
 - Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
 - Do not repeat sentences you already said in this conversation. Mention your whereabouts only when asked about that night, and in different words each time.
 - Fear changes how you speak, never what you know. However scared you are, never confirm an event, a sighting, an object or something another person supposedly said that is not in your own knowledge above. If the Inquisitor claims someone said something about you that is not true, deny it.
@@ -469,14 +472,23 @@ function crimeSceneNarratorRule(
 // Katil, olayları kendisinin yaptığını bilir ama kendiliğinden açmaz.
 function nightLines(
   session: BuildNpcPromptParams['session'],
+  scenarioConfig: ScenarioConfig,
+  npcId: string,
   isCulprit: boolean,
 ): string {
   const state = parsePersonaState(session.personaState);
+  const day = session.currentDay ?? 1;
+  const ctx = {
+    scenarioType: session.scenarioType,
+    placeName: (id: string) =>
+      getLocalizedLocationLabel(session.scenarioType, id),
+    npcName: (id: string) =>
+      scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+  };
   const lines = [
-    ...publicNightLines(state, session.currentDay ?? 1, {
-      scenarioType: session.scenarioType,
-      placeName: (id) => getLocalizedLocationLabel(session.scenarioType, id),
-    }),
+    ...publicNightLines(state, day, ctx),
+    ...townPromptLines(townEventsOf(session.caseFacts), day, npcId, ctx),
+    ...breakInOwnerLines(state, npcId, isCulprit),
     ...(isCulprit ? culpritNightLines(state) : []),
   ];
   return lines.length > 0 ? `\n${lines.join('\n')}` : '';

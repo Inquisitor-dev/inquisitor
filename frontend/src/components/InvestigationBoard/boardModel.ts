@@ -4,6 +4,7 @@ import { getLocationLabel } from '@/config/locationLabels';
 import type { EvidenceItem } from '@/store/useGameStore';
 import type { CrimeSceneInfo } from '@/store/slices/types';
 import { getCrimeSceneImage } from '@/config/crimeScenes';
+import { getPlayerHome } from '@/config/homeConfig';
 
 // Sunucudaki pano modeliyle aynı (backend/src/board/board.ts)
 export type BoardCardKind = 'suspect' | 'evidence' | 'note' | 'scene';
@@ -91,6 +92,8 @@ export function evidencePhoto(
       (scenarioType === 'medieval' ? '/backgrounds/bg_crime_scene.webp' : null)
     );
   }
+  // Tehdit mektubu oyuncunun kapısının altında bulunur
+  if (item.sourceId === 'home') return getPlayerHome(scenarioType)?.backgroundImage ?? null;
   return getInterior(scenarioType, item.sourceId)?.backgroundImage ?? null;
 }
 
@@ -98,6 +101,7 @@ export function evidenceTitle(scenarioType: string, item: EvidenceItem): string 
   if (item.kind === 'CONFESSION') return 'İtiraf';
   if (item.kind === 'ALIBI') return 'Mazeret';
   if (item.kind === 'BODY') return 'Beden İncelemesi';
+  if (item.kind === 'LETTER') return 'Tehdit Mektubu';
   if (item.category === 'STATEMENT') return 'Tanıklık';
   if (item.sourceId === 'crime_scene') return 'Olay Yeri İzi';
   return `Kanıt · ${getLocationLabel(item.sourceId, scenarioType)}`;

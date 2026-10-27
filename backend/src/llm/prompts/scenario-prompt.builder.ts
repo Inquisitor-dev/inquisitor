@@ -27,6 +27,9 @@ export type ScenarioDraft = {
   witnessDescription?: string;
   // Katilin örtü hikâyesi: kırıldığında itiraf diye anlattığı yalan mazeret ve küçük sır
   culpritCover?: string;
+  // Psikopatın tehdit mektubu ve kâğıttaki iz (v3; yalnızca planda mektup varsa)
+  threatLetter?: string;
+  letterTrace?: string;
 };
 
 // Kodun belirlediği vaka gerçeklerini yapay zekâya talimat olarak anlatır
@@ -134,6 +137,12 @@ function caseDetailsLines(
       }
     })
     .filter(Boolean);
+  const letter = plan.persona?.events.find((e) => e.kind === 'THREAT_LETTER');
+  if (letter?.traceFits?.length) {
+    lines.push(
+      `- THREAT LETTER: During the investigation the culprit, obsessed with the Inquisitor, will slip an unsigned threatening letter under the Inquisitor's door. Return "threatLetter": the letter itself, 3–4 short Turkish sentences addressed to the Inquisitor, cold, menacing and unsettling (they are being watched, they should stop digging). No swearing, no slurs, no graphic violence. It never names, describes or hints at any suspect, place owner, the culprit's job or the victim's name. Also return "letterTrace": ONE physical trace on the paper (a smell, a stain, a kind of paper or ink) that is believable for EACH of these suspects given their role and fits nobody else in the cast: ${letter.traceFits.map(who).join(', ')}. A short Turkish phrase, for example "kâğıtta hafif bir mum isi kokusu". truthReveal does not need to mention the letter.`,
+    );
+  }
   if (secretLines.length > 0) {
     lines.push(
       `- INNOCENTS' LINKS TO THE MURDER (each innocent's npcPrompt MUST include their link; these override the usual location clue rule where they say so):\n${secretLines.join('\n')}`,
@@ -263,6 +272,10 @@ Return a valid JSON object ONLY, in exactly this format:
     plan.motive
       ? '\n  "culpritCover": "The culprit\'s prepared lie, one or two Turkish sentences, first person",'
       : ''
+  }${
+    plan.persona?.events.some((e) => e.kind === 'THREAT_LETTER')
+      ? '\n  "threatLetter": "The unsigned threatening letter, 3–4 Turkish sentences",\n  "letterTrace": "Short Turkish phrase: the trace on the paper",'
+      : ''
   }
   "alibis": {
 ${alibisTemplate}
@@ -327,6 +340,8 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
   "verificationText": "...",
   "witnessDescription": "... (only if the draft has it)",
   "culpritCover": "... (only if the draft has it)",
+  "threatLetter": "... (only if the draft has it)",
+  "letterTrace": "... (only if the draft has it)",
   "alibis": { ... },
   "npcPrompts": { ... },
   "locationClues": {
@@ -377,5 +392,7 @@ export function mergeScenarioDraftWithFallback(
     alibis: { ...(draft.alibis ?? {}), ...(reviewed.alibis ?? {}) },
     witnessDescription: reviewed.witnessDescription || draft.witnessDescription,
     culpritCover: reviewed.culpritCover || draft.culpritCover,
+    threatLetter: reviewed.threatLetter || draft.threatLetter,
+    letterTrace: reviewed.letterTrace || draft.letterTrace,
   };
 }

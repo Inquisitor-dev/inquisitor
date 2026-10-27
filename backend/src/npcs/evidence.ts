@@ -22,7 +22,9 @@ export type EvidenceKind =
   | 'TESTIMONY'
   | 'ALIBI'
   // Gece olayının defterdeki kartı (v3 personaları); kanıt değildir
-  | 'EVENT';
+  | 'EVENT'
+  // Psikopatın kapının altına bıraktığı mektup; izi katil dahil birkaç kişiye uyar
+  | 'LETTER';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
 // EVENT: gece olayının kartı; defterde görünür ama gösterilemez, panoya ve Hüküm Dosyası'na girmez.

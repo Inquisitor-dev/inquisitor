@@ -619,6 +619,9 @@ function describeEvidenceOrigin(
   if (evidence.sourceId === 'crime_scene') {
     return 'It was found at the crime scene, where the body was.';
   }
+  if (evidence.sourceId === 'home') {
+    return "It is the unsigned threatening letter someone slipped under the Inquisitor's door at night. Everyone in town has heard of it; it was not found at your place.";
+  }
   if (evidence.sourceId === npcId) return 'It was found at your own place.';
   return `It was found at "${getLocalizedLocationLabel(scenarioType, evidence.sourceId)}".`;
 }

@@ -1,15 +1,16 @@
 // Gece olaylarının işlenmesi ve sabah gazetesi (v3, docs/v3-persona-tasarimi.md). Saf kod: oturum
 // servisi gün kapanırken processNight'ı çağırır, sonucu GameSession.personaState'e yazar.
 import type {
-  PersonaActionKind,
   PersonaEvent,
   PersonaPlan,
 } from '../scenarios/personas/persona-plan';
+import { reasonsFor, type TownEvent } from '../scenarios/personas/town-events';
 import { newspaperTextsFor } from './newspaper-texts';
 
 export interface NewspaperItem {
-  // PERSONA: katilin hamlesi; MURDER: ilk sabahın cinayet haberi; TOWN: kasabanın sıradan haberi
-  kind: 'MURDER' | 'PERSONA' | 'TOWN';
+  // MURDER: ilk sabahın cinayet haberi; PERSONA: katilin hamlesi; NOTICE: kasaba olayının duyurusu
+  // (yarın / bugün kapalı); TOWN: kasabanın sıradan haberi
+  kind: 'MURDER' | 'PERSONA' | 'NOTICE' | 'TOWN';
   headline: string;
   body: string;
 }
@@ -30,13 +31,20 @@ export interface PersonaState {
   papers: Newspaper[];
 }
 
-// Defterdeki olay kartı: kanıt kaydı olarak yazılır (kategori EVENT; Kanıt Göster, pano ve Hüküm
-// Dosyası'nda yer almaz)
-export interface EventCardDraft {
-  kind: 'EVENT';
-  category: 'EVENT';
+// Gecenin bıraktığı kayıtlar. EVENT: defterdeki olay kartı (Kanıt Göster, pano ve Hüküm Dosyası'nda
+// yer almaz). LETTER: kapının altındaki mektup, envantere düşen gerçek bir kanıt (izi birkaç kişiye uyar).
+export interface NightRecordDraft {
+  kind: 'EVENT' | 'LETTER';
+  category: 'EVENT' | 'ITEM';
   sourceId: string;
   text: string;
+}
+
+// Vakanın gece planı: persona, kasaba olayları ve (varsa) mektubun metni
+export interface NightPlan {
+  persona: PersonaPlan;
+  townEvents: TownEvent[];
+  letter?: { text: string; trace: string };
 }
 
 export interface NightContext {
@@ -44,6 +52,7 @@ export interface NightContext {
   // Gazetenin sıradan haberleri her vakada aynı sırayla gelmesin diye oturuma bağlı tohum
   seed: string;
   placeName: (locationId: string) => string;
+  npcName: (npcId: string) => string;
 }
 
 export const emptyPersonaState = (): PersonaState => ({
@@ -98,11 +107,64 @@ function townItems(
 const usedHeadlines = (state: PersonaState) =>
   new Set(state.papers.flatMap((p) => p.items.map((i) => i.headline)));
 
-// İlk sabahın gazetesi: cinayet haberi ve bir sıradan haber
+const reasonOf = (event: TownEvent, scenarioType: string) => {
+  const reasons = reasonsFor(scenarioType);
+  return reasons[event.reasonIndex % reasons.length];
+};
+
+// Kasaba olaylarının duyurusu: bir gün önceden "yarın kapalı", o gün "bugün kapalı"
+function townNotices(
+  townEvents: TownEvent[],
+  day: number,
+  ctx: NightContext,
+): NewspaperItem[] {
+  return townEvents.flatMap((e): NewspaperItem[] => {
+    if (e.kind !== 'AWAY') return [];
+    const place = ctx.placeName(e.npcId);
+    const name = ctx.npcName(e.npcId);
+    if (e.day === day + 1) {
+      return [
+        {
+          kind: 'NOTICE',
+          headline: `Yarın ${place} kapalı`,
+          body: `${name} ${reasonOf(e, ctx.scenarioType)}; ${place} yarın bütün gün kapalı kalacak.`,
+        },
+      ];
+    }
+    if (e.day === day) {
+      return [
+        {
+          kind: 'NOTICE',
+          headline: `${place} bugün kapalı`,
+          body: `${name} bugün kasabada değil; ${place} yarın yeniden açılacak.`,
+        },
+      ];
+    }
+    return [];
+  });
+}
+
+// Gazetenin sıradan haberleri, öbür haberlerle birlikte en az iki haber olacak kadar (en az bir)
+function paperFor(
+  day: number,
+  lead: NewspaperItem[],
+  state: PersonaState,
+  ctx: NightContext,
+): Newspaper {
+  const count = Math.max(1, 2 - lead.length);
+  return {
+    day,
+    title: newspaperTextsFor(ctx.scenarioType).title,
+    items: [...lead, ...townItems(ctx, day, count, usedHeadlines(state))],
+  };
+}
+
+// İlk sabahın gazetesi: cinayet haberi, varsa yarınki kapanışın duyurusu ve bir sıradan haber
 export function firstMorningPaper(
   ctx: NightContext,
   victim: string,
   crimeScene: string,
+  townEvents: TownEvent[] = [],
 ): Newspaper {
   const texts = newspaperTextsFor(ctx.scenarioType);
   return {
@@ -110,6 +172,7 @@ export function firstMorningPaper(
     title: texts.title,
     items: [
       { kind: 'MURDER', ...texts.murder(victim, crimeScene) },
+      ...townNotices(townEvents, 1, ctx),
       ...townItems(ctx, 1, 1, new Set()),
     ],
   };
@@ -125,7 +188,10 @@ const personaItem = (
       return { kind: 'PERSONA', ...texts.letter };
     case 'BREAK_IN':
       return event.locationId
-        ? { kind: 'PERSONA', ...texts.breakIn(ctx.placeName(event.locationId)) }
+        ? {
+            kind: 'PERSONA',
+            ...texts.breakIn(ctx.placeName(event.locationId)),
+          }
         : null;
     default:
       // Baskın gazeteye ayrı yazılır (adım 3)
@@ -133,50 +199,71 @@ const personaItem = (
   }
 };
 
-const EVENT_CARD_TEXT: Partial<Record<PersonaActionKind, string>> = {
-  THREAT_LETTER: 'Gece kapımın altına imzasız bir tehdit mektubu bırakılmış.',
-};
+// Gecenin defter kartı ve (mektupta) envantere düşen kanıt
+function nightRecords(
+  event: PersonaEvent,
+  night: number,
+  plan: NightPlan,
+  ctx: NightContext,
+): NightRecordDraft[] {
+  const card = (text: string): NightRecordDraft => ({
+    kind: 'EVENT',
+    category: 'EVENT',
+    sourceId: `night-${night}-${event.kind}`,
+    text,
+  });
+  switch (event.kind) {
+    case 'THREAT_LETTER': {
+      const records = [
+        card('Gece kapımın altına imzasız bir tehdit mektubu bırakılmış.'),
+      ];
+      if (plan.letter) {
+        records.push({
+          kind: 'LETTER',
+          category: 'ITEM',
+          sourceId: 'home',
+          text: `İmzasız tehdit mektubu: “${plan.letter.text}” Kâğıtta ${plan.letter.trace}.`,
+        });
+      }
+      return records;
+    }
+    case 'BREAK_IN':
+      return event.locationId
+        ? [
+            card(
+              `Gece ${ctx.placeName(event.locationId)} zorla açılmış. Sahibi bugün kapıyı kapalı tutuyor.`,
+            ),
+          ]
+        : [];
+    default:
+      return [];
+  }
+}
 
 // Bir geceyi işler: o gecenin hamleleri gerçekleşir, ertesi sabahın gazetesi yazılır.
 // Aynı gece ikinci kez işlenmez.
 export function processNight(
   state: PersonaState,
-  plan: PersonaPlan,
+  plan: NightPlan,
   night: number,
   ctx: NightContext,
-): { state: PersonaState; happened: PersonaEvent[]; cards: EventCardDraft[] } {
+): {
+  state: PersonaState;
+  happened: PersonaEvent[];
+  records: NightRecordDraft[];
+} {
   if (state.processedNights.includes(night)) {
-    return { state, happened: [], cards: [] };
+    return { state, happened: [], records: [] };
   }
-  const happened = plan.events.filter((e) => e.night === night);
-  const items = happened
-    .map((e) => personaItem(e, ctx))
-    .filter((i): i is NewspaperItem => !!i);
-  // Olaylı sabah bir, olaysız sabah iki sıradan haber: gazete her sabah dolu gelir
-  const town = townItems(
-    ctx,
-    night + 1,
-    items.length > 0 ? 1 : 2,
-    usedHeadlines(state),
-  );
-  const paper: Newspaper = {
-    day: night + 1,
-    title: newspaperTextsFor(ctx.scenarioType).title,
-    items: [...items, ...town],
-  };
-  const cards = happened.flatMap((e): EventCardDraft[] => {
-    const text = EVENT_CARD_TEXT[e.kind];
-    return text
-      ? [
-          {
-            kind: 'EVENT',
-            category: 'EVENT',
-            sourceId: `night-${night}-${e.kind}`,
-            text,
-          },
-        ]
-      : [];
-  });
+  const day = night + 1;
+  const happened = plan.persona.events.filter((e) => e.night === night);
+  const lead = [
+    ...happened
+      .map((e) => personaItem(e, ctx))
+      .filter((i): i is NewspaperItem => !!i),
+    ...townNotices(plan.townEvents, day, ctx),
+  ];
+  const paper = paperFor(day, lead, state, ctx);
   return {
     state: {
       ...state,
@@ -185,7 +272,7 @@ export function processNight(
       papers: [...state.papers.filter((p) => p.day !== paper.day), paper],
     },
     happened,
-    cards,
+    records: happened.flatMap((e) => nightRecords(e, night, plan, ctx)),
   };
 }
 
@@ -209,7 +296,7 @@ export function publicNightLines(
       case 'BREAK_IN':
         return e.locationId
           ? [
-              `- In the night after day ${e.night}, someone broke into "${ctx.placeName(e.locationId)}". Nobody saw who did it.`,
+              `- In the night after day ${e.night}, someone broke into "${ctx.placeName(e.locationId)}". It stayed closed the next day. Nobody saw who did it.`,
             ]
           : [];
       default:
@@ -224,6 +311,56 @@ export function publicNightLines(
     );
   }
   return lines;
+}
+
+// Kasaba olayları önceden sezilir: şehir dışına çıkacak kişi planını bilir ve sorulunca ya da konu
+// açılınca söyler; ötekiler dedikodusunu duymuştur (NPC istemi, İngilizce; gerekçe Türkçe)
+export function townPromptLines(
+  townEvents: TownEvent[],
+  day: number,
+  npcId: string,
+  ctx: Pick<NightContext, 'scenarioType' | 'placeName' | 'npcName'>,
+): string[] {
+  return townEvents.flatMap((e): string[] => {
+    if (e.kind !== 'AWAY') return [];
+    const reason = reasonOf(e, ctx.scenarioType);
+    const place = ctx.placeName(e.npcId);
+    if (e.npcId === npcId) {
+      if (day < e.day) {
+        return [
+          `- YOUR PLANS: on day ${e.day} you will be out of town for the whole day (in Turkish: "${reason}"), so "${place}" will be closed that day. Today is day ${day}. If the Inquisitor says they will come back later or tomorrow, asks about your plans, or the topic comes up, tell them naturally in your own words. It has nothing to do with the murder.`,
+        ];
+      }
+      if (day > e.day) {
+        return [
+          `- On day ${e.day} you were out of town for the whole day (in Turkish: "${reason}") and came back the next morning. Mention it if asked where you were.`,
+        ];
+      }
+      return [];
+    }
+    if (day <= e.day) {
+      return [
+        `- Word in town: ${ctx.npcName(e.npcId)} ${day === e.day ? 'is out of town today' : `will be out of town on day ${e.day}`} (in Turkish: "${reason}"), so "${place}" ${day === e.day ? 'is' : 'will be'} closed that day. You may mention it if it comes up.`,
+      ];
+    }
+    return [];
+  });
+}
+
+// Kilit kırılan mekânın sahibi ertesi gün ne olduğunu anlatır. Katilin kendi mekânıysa bunu kendisi
+// düzenlemiştir ve bir kurban gibi anlatır.
+export function breakInOwnerLines(
+  state: PersonaState,
+  npcId: string,
+  isCulprit: boolean,
+): string[] {
+  return state.happened
+    .filter((e) => e.kind === 'BREAK_IN' && e.locationId === npcId)
+    .map((e) =>
+      isCulprit
+        ? `- In the night after day ${e.night} you broke into your own place yourself so that you would look like a victim. Tell it exactly the way a shocked victim would: the door was forced, things were scattered, you do not know who did it.`
+        : `- In the night after day ${e.night} someone broke into your place: the door was forced and your things were scattered, nothing important seems missing. You do not know who did it and it frightened you. You kept the place closed the next day to set it right. Tell it if asked.`,
+    );
 }
 
 // Katilin istemi: gece hamlelerini kendisi yaptı ama kendiliğinden açmaz

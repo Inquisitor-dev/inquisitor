@@ -13,8 +13,11 @@ export interface PersonaEvent {
   // Hamlenin yapıldığı gece: N. günün gecesi (sabahı N+1. gün)
   night: number;
   kind: PersonaActionKind;
-  // Mekâna yönelik hamlelerde hedef mekân (kundaklama / kilit kırma)
+  // Mekâna yönelik hamlelerde hedef mekân (kilit kırma); mekân ertesi gün kapalıdır
   locationId?: string;
+  // Tehdit mektubundaki izin (mürekkep, koku, kâğıt) uyduğu şüpheliler: katil dahil 2–3 kişi.
+  // Pano bunu eşkâl tanığı gibi yargılar (uyduğu herkesi gösterir, yalnız katili değil).
+  traceFits?: string[];
 }
 
 export interface PersonaPlan {
@@ -49,8 +52,7 @@ export const PERSONA_CHANCE: Record<string, number> = {
 export const PERSONA_POOLS: Record<Exclude<PersonaId, 'NONE'>, ActionDef[]> = {
   PSYCHOPATH: [
     { kind: 'THREAT_LETTER', nights: [1, 2], enabled: true },
-    // Adım 2'de (mekânın gerçekten kapanması) açılacak
-    { kind: 'BREAK_IN', nights: [1, 2], enabled: false },
+    { kind: 'BREAK_IN', nights: [1, 2], enabled: true },
     // Adım 3'te (baskın motoru) açılacak
     { kind: 'RAID', nights: [2, 3], enabled: false },
   ],
@@ -94,9 +96,15 @@ function assignNights(
 }
 
 export interface PersonaPlanInput {
-  // Mekâna yönelik hamlelerin hedef olabileceği mekânlar (şüphelilerin mekânları)
-  suspectLocationIds: string[];
+  culpritId: string;
+  // Şüpheliler (id'leri aynı zamanda mekânlarının id'si)
+  suspectIds: string[];
+  // Vakayı taşıyan kanıtın sahibi kilit kırmanın hedefi olmaz (doğrulayan kanıtın mekânı ya da tanığı)
+  protectedIds: string[];
 }
+
+// Mektup izinin uyduğu kişi sayısı (katil dahil)
+export const LETTER_TRACE_FITS = 3;
 
 // Vakanın personasını ve gece planını seçer. Sıradan katilde (NONE) gece olayı yoktur.
 export function planPersona(
@@ -120,8 +128,18 @@ export function planPersona(
     const events = chosen
       .map((action, i): PersonaEvent => {
         const event: PersonaEvent = { night: nights[i], kind: action.kind };
-        if (action.kind === 'BREAK_IN' && input.suspectLocationIds.length > 0) {
-          event.locationId = pick(input.suspectLocationIds, rng);
+        if (action.kind === 'BREAK_IN') {
+          const targets = input.suspectIds.filter(
+            (id) => !input.protectedIds.includes(id),
+          );
+          if (targets.length > 0) event.locationId = pick(targets, rng);
+        }
+        if (action.kind === 'THREAT_LETTER') {
+          const others = shuffle(
+            input.suspectIds.filter((id) => id !== input.culpritId),
+            rng,
+          ).slice(0, LETTER_TRACE_FITS - 1);
+          event.traceFits = shuffle([input.culpritId, ...others], rng);
         }
         return event;
       })

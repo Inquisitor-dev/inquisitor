@@ -56,7 +56,9 @@ export default function NewspaperModal({ paper, scenarioType, onClose }: Newspap
         </header>
 
         {lead && (
-          <section className={`${styles.lead} ${lead.kind !== 'TOWN' ? styles.leadAlarm : ''}`}>
+          <section
+            className={`${styles.lead} ${lead.kind === 'MURDER' || lead.kind === 'PERSONA' ? styles.leadAlarm : ''}`}
+          >
             <h3 className={styles.leadHeadline}>{lead.headline}</h3>
             <p className={styles.leadBody}>{lead.body}</p>
           </section>
