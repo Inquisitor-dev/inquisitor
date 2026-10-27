@@ -11,6 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CHARACTER_IDS } from '../../abilities/abilities';
+import { RAID_ACTIONS } from '../../personas/raid-engine';
 import { MOTIVES, TIMES_OF_DEATH } from '../../scenarios/case-catalog';
 import {
   MAX_NARRATIVE_LENGTH,
@@ -92,4 +93,11 @@ export class CondemnNpcDto {
 export class ConsumeWarrantDto {
   @IsString()
   location: string;
+}
+
+// Gece baskınında bir aksiyon (personas/raid-engine.ts RaidAction)
+export class RaidActDto {
+  @IsString()
+  @IsIn(RAID_ACTIONS, { message: 'Geçersiz aksiyon.' })
+  action: string;
 }

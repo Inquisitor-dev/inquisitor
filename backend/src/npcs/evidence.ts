@@ -24,7 +24,9 @@ export type EvidenceKind =
   // Gece olayının defterdeki kartı (v3 personaları); kanıt değildir
   | 'EVENT'
   // Psikopatın kapının altına bıraktığı mektup; izi katil dahil birkaç kişiye uyar
-  | 'LETTER';
+  | 'LETTER'
+  // Baskında kaçan saldırganın kapı önünde düşürdüğü iz (aynı kural)
+  | 'RAID_TRACE';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
 // EVENT: gece olayının kartı; defterde görünür ama gösterilemez, panoya ve Hüküm Dosyası'na girmez.

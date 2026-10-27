@@ -6,6 +6,7 @@ import type {
 } from '../scenarios/personas/persona-plan';
 import { reasonsFor, type TownEvent } from '../scenarios/personas/town-events';
 import { newspaperTextsFor } from './newspaper-texts';
+import type { RaidOutcome, RaidState } from './raid-engine';
 
 export interface NewspaperItem {
   // MURDER: ilk sabahın cinayet haberi; PERSONA: katilin hamlesi; NOTICE: kasaba olayının duyurusu
@@ -22,6 +23,14 @@ export interface Newspaper {
   items: NewspaperItem[];
 }
 
+export interface RaidRecord {
+  night: number;
+  state: RaidState;
+  // Oyuncuya anlatılanlar (sırayla)
+  log: string[];
+  outcome: RaidOutcome | null;
+}
+
 export interface PersonaState {
   version: 1;
   // İşlenmiş geceler: aynı gece iki kez işlenmesin
@@ -29,12 +38,17 @@ export interface PersonaState {
   // Gerçekleşen hamleler (kasabada herkes duyar)
   happened: PersonaEvent[];
   papers: Newspaper[];
+  // Gece baskını (sürerken outcome null; bitmeden ertesi gün başlamaz)
+  raid?: RaidRecord;
+  // Baskının kötü sonucu: bu vakanın ödülünden kesinti (0–1) ve çalınan kanıtlar
+  rewardPenalty?: number;
+  stolenEvidenceIds?: string[];
 }
 
 // Gecenin bıraktığı kayıtlar. EVENT: defterdeki olay kartı (Kanıt Göster, pano ve Hüküm Dosyası'nda
 // yer almaz). LETTER: kapının altındaki mektup, envantere düşen gerçek bir kanıt (izi birkaç kişiye uyar).
 export interface NightRecordDraft {
-  kind: 'EVENT' | 'LETTER';
+  kind: 'EVENT' | 'LETTER' | 'RAID_TRACE';
   category: 'EVENT' | 'ITEM';
   sourceId: string;
   text: string;
@@ -45,6 +59,8 @@ export interface NightPlan {
   persona: PersonaPlan;
   townEvents: TownEvent[];
   letter?: { text: string; trace: string };
+  // Baskının sonucu ve kapı önünde kalan izin metni (iyi sonuçta)
+  raid?: { outcome: RaidOutcome; trace: string };
 }
 
 export interface NightContext {
@@ -70,6 +86,11 @@ export function parsePersonaState(raw: unknown): PersonaState {
     processedNights: Array.isArray(s.processedNights) ? s.processedNights : [],
     happened: Array.isArray(s.happened) ? s.happened : [],
     papers: Array.isArray(s.papers) ? s.papers : [],
+    ...(s.raid ? { raid: s.raid } : {}),
+    ...(s.rewardPenalty ? { rewardPenalty: s.rewardPenalty } : {}),
+    ...(Array.isArray(s.stolenEvidenceIds)
+      ? { stolenEvidenceIds: s.stolenEvidenceIds }
+      : {}),
   };
 }
 
@@ -181,6 +202,7 @@ export function firstMorningPaper(
 const personaItem = (
   event: PersonaEvent,
   ctx: NightContext,
+  plan: NightPlan,
 ): NewspaperItem | null => {
   const texts = newspaperTextsFor(ctx.scenarioType);
   switch (event.kind) {
@@ -193,11 +215,55 @@ const personaItem = (
             ...texts.breakIn(ctx.placeName(event.locationId)),
           }
         : null;
+    case 'RAID':
+      return raidPaperItem(plan.raid?.outcome, ctx);
     default:
-      // Baskın gazeteye ayrı yazılır (adım 3)
       return null;
   }
 };
+
+// Tamlayan eki: "Engizitörün", "dedektifin", "müfettişin"
+const genitive = (word: string) => {
+  const vowel = [...word].reverse().find((c) => 'aeıioöuü'.includes(c));
+  const suffix =
+    vowel === 'ö' || vowel === 'ü'
+      ? 'ün'
+      : vowel === 'o' || vowel === 'u'
+        ? 'un'
+        : vowel === 'a' || vowel === 'ı'
+          ? 'ın'
+          : 'in';
+  return `${word}${suffix}`;
+};
+
+// Baskının gazete haberi sonuca göre
+function raidPaperItem(
+  outcome: RaidOutcome | undefined,
+  ctx: NightContext,
+): NewspaperItem {
+  const who = genitive(newspaperTextsFor(ctx.scenarioType).investigator);
+  const Who = who.charAt(0).toLocaleUpperCase('tr-TR') + who.slice(1);
+  switch (outcome) {
+    case 'GOOD':
+      return {
+        kind: 'PERSONA',
+        headline: `${Who} evine gece baskın`,
+        body: `Gece ${who} evine biri girdi. Fark edilince kaçtı; kapı önünde bir iz bıraktı.`,
+      };
+    case 'BAD':
+      return {
+        kind: 'PERSONA',
+        headline: `${Who.replace(/(ün|un|ın|in)$/, '')} evinde baygın bulundu`,
+        body: `Gece ${who} evine giren biri onu bayıltıp evini aradı. Neyin alındığı bilinmiyor.`,
+      };
+    default:
+      return {
+        kind: 'PERSONA',
+        headline: `${Who} evinde gece ayak sesleri`,
+        body: `Gece ${who} evine biri girdi ve karanlıkta sessizce çıkıp gitti. Kim olduğunu gören yok.`,
+      };
+  }
+}
 
 // Gecenin defter kartı ve (mektupta) envantere düşen kanıt
 function nightRecords(
@@ -235,6 +301,27 @@ function nightRecords(
             ),
           ]
         : [];
+    case 'RAID': {
+      const outcome = plan.raid?.outcome;
+      const records = [
+        card(
+          outcome === 'GOOD'
+            ? 'Gece evime biri girdi. Hazır olduğumu fark edince kaçtı; kapı önünde bir iz bıraktı.'
+            : outcome === 'BAD'
+              ? 'Gece evime biri girdi. Beni bayılttı ve evi aradı.'
+              : 'Gece evime biri girdi ve karanlıkta sessizce çıkıp gitti.',
+        ),
+      ];
+      if (outcome === 'GOOD' && plan.raid) {
+        records.push({
+          kind: 'RAID_TRACE',
+          category: 'ITEM',
+          sourceId: 'home',
+          text: `Kaçan saldırganın kapı önünde düşürdüğü buruşuk bir kâğıt parçası. İz: ${plan.raid.trace}.`,
+        });
+      }
+      return records;
+    }
     default:
       return [];
   }
@@ -259,7 +346,7 @@ export function processNight(
   const happened = plan.persona.events.filter((e) => e.night === night);
   const lead = [
     ...happened
-      .map((e) => personaItem(e, ctx))
+      .map((e) => personaItem(e, ctx, plan))
       .filter((i): i is NewspaperItem => !!i),
     ...townNotices(plan.townEvents, day, ctx),
   ];
@@ -299,6 +386,10 @@ export function publicNightLines(
               `- In the night after day ${e.night}, someone broke into "${ctx.placeName(e.locationId)}". It stayed closed the next day. Nobody saw who did it.`,
             ]
           : [];
+      case 'RAID':
+        return [
+          `- In the night after day ${e.night}, someone broke into the ${investigator}'s own home. The whole town has heard about it; nobody knows who it was.`,
+        ];
       default:
         return [];
     }

@@ -41,6 +41,7 @@ import {
   isQuietRoom,
 } from '../abilities/ability-effects';
 import type { VerifiedStatement } from './prompt-builder';
+import { stolenIdsOf } from '../personas/raid-session';
 
 
 // Teyit'te okunan sözün en fazla uzunluğu (karakter)
@@ -98,6 +99,9 @@ export class NpcsService {
     if (!evidence) throw new NotFoundException('Kanıt bulunamadı.');
 
     const state = await this.loadState(sessionId, npcId);
+    if (stolenIdsOf(state.session.personaState).includes(evidence.id)) {
+      throw new BadRequestException('Bu kanıt gece baskınında çalındı.');
+    }
     if (state.shownEvidenceIds.includes(evidence.id)) {
       throw new BadRequestException('Bu kanıtı ona zaten gösterdin.');
     }

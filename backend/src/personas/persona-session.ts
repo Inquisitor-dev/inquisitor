@@ -23,8 +23,12 @@ import { letterTracesFor } from '../scenarios/personas/letter-traces';
 import type { PersonaPlan } from '../scenarios/personas/persona-plan';
 
 // Mektuptaki izin metni (planın seçtiği iz)
-function traceText(persona: PersonaPlan, scenarioType: string): string {
-  const id = persona.events.find((e) => e.kind === 'THREAT_LETTER')?.traceId;
+function traceText(
+  persona: PersonaPlan,
+  scenarioType: string,
+  kind: 'THREAT_LETTER' | 'RAID' = 'THREAT_LETTER',
+): string {
+  const id = persona.events.find((e) => e.kind === kind)?.traceId;
   return (
     (id !== undefined ? letterTracesFor(scenarioType)[id]?.text : undefined) ??
     'kâğıtta belli belirsiz bir leke var'
@@ -48,7 +52,9 @@ export function nightContext(session: {
 export function nightPlanOf(
   caseFacts: unknown,
   scenarioType: string,
+  personaState?: unknown,
 ): NightPlan {
+  const raid = parsePersonaState(personaState).raid;
   const facts = caseFacts as Partial<CaseFacts> | null;
   const persona = personaPlanOf(caseFacts);
   const hasLetter = persona.events.some((e) => e.kind === 'THREAT_LETTER');
@@ -59,6 +65,13 @@ export function nightPlanOf(
       ? {
           text: facts?.threatLetter || fallbackLetter(scenarioType),
           trace: traceText(persona, scenarioType),
+        }
+      : undefined,
+    // Baskının sonucu (biten baskın); iyi sonuçta kapı önünde kalan iz
+    raid: raid?.outcome
+      ? {
+          outcome: raid.outcome,
+          trace: traceText(persona, scenarioType, 'RAID'),
         }
       : undefined,
   };
@@ -107,7 +120,7 @@ export async function runNight(
 ) {
   const result = processNight(
     parsePersonaState(session.personaState),
-    nightPlanOf(session.caseFacts, session.scenarioType),
+    nightPlanOf(session.caseFacts, session.scenarioType, session.personaState),
     night,
     nightContext(session),
   );

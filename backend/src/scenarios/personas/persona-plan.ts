@@ -21,6 +21,8 @@ export interface PersonaEvent {
   // Pano bunu eşkâl tanığı gibi yargılar (uyduğu herkesi gösterir, yalnız katili değil).
   traceId?: number;
   traceFits?: string[];
+  // Baskında saldırganın başladığı oda (yatak odası değil)
+  raidStart?: 'KITCHEN' | 'HALLWAY' | 'DOORSTEP';
 }
 
 export interface PersonaPlan {
@@ -135,7 +137,13 @@ export function planPersona(
           );
           if (targets.length > 0) event.locationId = pick(targets, rng);
         }
-        if (action.kind === 'THREAT_LETTER') {
+        if (action.kind === 'RAID') {
+          event.raidStart = pick(
+            ['KITCHEN', 'HALLWAY', 'DOORSTEP'] as const,
+            rng,
+          );
+        }
+        if (action.kind === 'THREAT_LETTER' || action.kind === 'RAID') {
           // Katile uyan ve vakadaki şüphelilerin dışına çıkmayan izlerden biri
           const traces = letterTracesFor(input.scenarioType)
             .map((trace, id) => ({ trace, id }))
@@ -153,9 +161,51 @@ export function planPersona(
         return event;
       })
       .sort((a, b) => a.night - b.night);
-    return { persona, events };
+    return { persona, events: distinctTraces(events, input, rng) };
   }
   return { persona, events: [] };
+}
+
+// Mektup ve baskın izi aynı olmasın (mümkünse): ikinci iz katile uyan başka bir izden seçilir
+function distinctTraces(
+  events: PersonaEvent[],
+  input: PersonaPlanInput,
+  rng: Rng,
+): PersonaEvent[] {
+  const letter = events.find((e) => e.kind === 'THREAT_LETTER');
+  const raid = events.find((e) => e.kind === 'RAID');
+  if (!letter || !raid || letter.traceId !== raid.traceId) return events;
+  const others = letterTracesFor(input.scenarioType)
+    .map((trace, id) => ({ trace, id }))
+    .filter(
+      ({ trace, id }) =>
+        id !== letter.traceId &&
+        trace.fits.includes(input.culpritId) &&
+        trace.fits.every((f) => input.suspectIds.includes(f)),
+    );
+  if (others.length === 0) return events;
+  const { trace, id } = pick(others, rng);
+  return events.map((e) =>
+    e === raid ? { ...e, traceId: id, traceFits: [...trace.fits] } : e,
+  );
+}
+
+// Birkaç kişiye uyan bonus izlerin (mektup, baskın izi) uyduğu şüpheliler
+export function personaTraceFits(
+  caseFacts: unknown,
+  evidenceKind: string,
+): string[] {
+  const kind =
+    evidenceKind === 'LETTER'
+      ? 'THREAT_LETTER'
+      : evidenceKind === 'RAID_TRACE'
+        ? 'RAID'
+        : null;
+  if (!kind) return [];
+  return (
+    personaPlanOf(caseFacts).events.find((e) => e.kind === kind)?.traceFits ??
+    []
+  );
 }
 
 // Eski vakalarda persona yoktur

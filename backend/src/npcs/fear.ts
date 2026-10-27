@@ -1,4 +1,5 @@
 import { CaseFacts } from '../scenarios/case-setup';
+import { personaTraceFits } from '../scenarios/personas/persona-plan';
 
 // Korku mekaniği: korkuyu yapay zekâ değil kod yönetir. Oyuncu bir karaktere kanıt gösterdiğinde
 // kanıtın o karakterle ilgisi koda göre ölçülür ve korku artar. Korku eşiği geçince masum karakter
@@ -71,12 +72,11 @@ export function evidenceImpact(params: {
     }
     return targetNpcId === culpritId ? 'IMPLICATING' : 'IRRELEVANT';
   }
-  // Tehdit mektubunun izi de eşkâl tanığı gibi uyduğu herkesi sıkıştırır (yalnız katili değil)
-  if (evidence.kind === 'LETTER') {
-    const fits =
-      caseFacts?.persona?.events.find((e) => e.kind === 'THREAT_LETTER')
-        ?.traceFits ?? [];
-    return fits.includes(targetNpcId) ? 'IMPLICATING' : 'IRRELEVANT';
+  // Mektubun ve baskının izi de eşkâl tanığı gibi uyduğu herkesi sıkıştırır (yalnız katili değil)
+  if (evidence.kind === 'LETTER' || evidence.kind === 'RAID_TRACE') {
+    return personaTraceFits(caseFacts, evidence.kind).includes(targetNpcId)
+      ? 'IMPLICATING'
+      : 'IRRELEVANT';
   }
   // Yara, aleti bilmeden veren kişiyi tedirgin eder: aletin onun elinden çıktığını anlar
   if (evidence.kind === 'BODY') {
