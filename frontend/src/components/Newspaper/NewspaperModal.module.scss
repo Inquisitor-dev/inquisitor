@@ -1,0 +1,388 @@
+// Sabah gazetesi: evrene göre parşömen ilan (ortaçağ, Çin, kış), gazete kupürü (modern) ya da tablet
+// (cyberpunk). Görsel kullanılmaz; kâğıt ve ekran CSS ile çizilir.
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  // Haritanın barlarının (1000) üstünde, Hüküm Dosyası'nın (1300) altında
+  z-index: 1250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(0, 0, 0, 0.86);
+}
+
+.paper {
+  --ink: #2b1d12;
+  --ink-soft: #6b5640;
+  --accent: #8a0303;
+  --rule: rgba(60, 40, 20, 0.35);
+
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 28px 32px 22px;
+  color: var(--ink);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  animation: arrive 0.35s ease-out both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(var(--tilt, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paper {
+    animation: none;
+    transform: rotate(var(--tilt, 0deg));
+  }
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+.masthead {
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 3px double var(--ink);
+  text-align: center;
+}
+
+.edition {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 4px 0 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.lead {
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.leadHeadline {
+  margin: 0 0 6px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.leadAlarm .leadHeadline {
+  color: var(--accent);
+}
+
+.leadBody {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px 22px;
+}
+
+.item + .item {
+  // Sütunlar arasında ince çizgi (tek sütunda üstte)
+  border-left: 1px solid var(--rule);
+  padding-left: 22px;
+}
+
+.itemHeadline {
+  margin: 0 0 4px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+}
+
+.itemBody {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.done {
+  padding: 8px 22px;
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ink);
+    color: var(--paper-color, #f3e6c8);
+  }
+}
+
+/* ─── PARŞÖMEN İLAN (ortaçağ, Çin, kış) ─── */
+.parchment {
+  --tilt: -0.6deg;
+  --paper-color: #efe2c4;
+
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(120, 80, 30, 0.25), transparent 70%),
+    linear-gradient(180deg, #efe2c4, #e0cba1);
+  border-radius: 3px;
+  // Yıpranmış kenar
+  box-shadow:
+    inset 0 0 40px rgba(110, 70, 25, 0.35),
+    0 24px 60px rgba(0, 0, 0, 0.8);
+
+  .title {
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+  }
+
+  .masthead {
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+  }
+
+  // Tellalın mühürü
+  &::after {
+    content: '✠';
+    position: absolute;
+    right: 22px;
+    bottom: 16px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #b3262b, #7a0202 70%);
+    color: #e9c9a6;
+    font-size: 1.2rem;
+    transform: rotate(-12deg);
+    pointer-events: none;
+  }
+
+  .item + .item {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+
+.parchment[data-theme='china'] {
+  --accent: #a3141b;
+  --paper-color: #f3e9d2;
+
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.4), transparent 60%),
+    linear-gradient(180deg, #f3e9d2, #e6d4ad);
+
+  // Kare kırmızı mühür
+  &::after {
+    content: '印';
+    border-radius: 4px;
+    background: #b3141b;
+    color: #f8e6c4;
+  }
+}
+
+.parchment[data-theme='winter'] {
+  --ink: #1c2630;
+  --ink-soft: #586773;
+  --accent: #9b1c22;
+  --paper-color: #eef1f2;
+  --tilt: 0.5deg;
+
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5), transparent 60%),
+    linear-gradient(180deg, #eef1f2, #d7dfe4);
+  box-shadow:
+    inset 0 0 40px rgba(60, 90, 120, 0.3),
+    0 24px 60px rgba(0, 0, 0, 0.8);
+}
+
+/* ─── GAZETE KUPÜRÜ (modern) ─── */
+.clipping {
+  --tilt: 0.8deg;
+  --ink: #1b1b1b;
+  --ink-soft: #4a4a4a;
+  --accent: #9b1111;
+  --rule: rgba(0, 0, 0, 0.3);
+  --paper-color: #f2eee3;
+
+  background: linear-gradient(180deg, #f2eee3, #e8e2d2);
+  // Yırtık alt kenar
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    94% 99%,
+    88% 97.5%,
+    80% 99.5%,
+    72% 97.8%,
+    63% 99.3%,
+    55% 97.6%,
+    46% 99.4%,
+    38% 97.7%,
+    29% 99.2%,
+    20% 97.9%,
+    11% 99.5%,
+    4% 97.8%,
+    0 99%
+  );
+  padding-bottom: 34px;
+
+  .title {
+    font-family: 'Old English Text MT', 'UnifrakturMaguntia', 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 400;
+  }
+
+  .leadHeadline {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .leadBody {
+    font-size: 1.02rem;
+  }
+}
+
+/* ─── TABLET (cyberpunk) ─── */
+.tablet {
+  --ink: #d8f6ff;
+  --ink-soft: #8fb3c4;
+  --accent: #ff4fd8;
+  --rule: rgba(0, 229, 255, 0.25);
+  --paper-color: #0b0f1a;
+
+  background: #0b0f1a;
+  border: 10px solid #1a1d26;
+  border-radius: 22px;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 229, 255, 0.25),
+    inset 0 0 40px rgba(0, 229, 255, 0.08),
+    0 0 0 1px #2b2f3a,
+    0 24px 60px rgba(0, 0, 0, 0.85);
+  font-family: ui-monospace, 'Courier New', monospace;
+
+  // Hafif tarama çizgileri (hareketsiz)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.025) 0,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    border-radius: 12px;
+    pointer-events: none;
+  }
+
+  .masthead {
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+  }
+
+  .edition {
+    color: #00e5ff;
+  }
+
+  .title {
+    font-family: ui-monospace, 'Courier New', monospace;
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .leadHeadline,
+  .itemHeadline {
+    font-family: ui-monospace, 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .leadAlarm .leadHeadline {
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(255, 79, 216, 0.5);
+  }
+
+  .leadBody,
+  .itemBody {
+    font-family: ui-monospace, 'Courier New', monospace;
+  }
+
+  .done {
+    border-color: #00e5ff;
+    color: #00e5ff;
+
+    &:hover {
+      background: rgba(0, 229, 255, 0.12);
+      color: #d8f6ff;
+    }
+  }
+
+  .close {
+    color: var(--ink-soft);
+  }
+}
+
+@media (max-width: 560px) {
+  .paper {
+    padding: 22px 18px 18px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .item + .item {
+    border-left: none;
+    padding-left: 0;
+  }
+}

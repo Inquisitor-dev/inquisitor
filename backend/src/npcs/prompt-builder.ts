@@ -33,6 +33,11 @@ const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
   STRANGLE: 'dark marks around the neck from something pulled tight.',
 };
 import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
+import {
+  culpritNightLines,
+  parsePersonaState,
+  publicNightLines,
+} from '../personas/persona-night';
 
 export interface ForcedConfessionCheckParams {
   isNarrator: boolean;
@@ -76,6 +81,9 @@ export interface BuildNpcPromptParams {
     activeWarrants: string[];
     caseFacts?: Partial<CaseFacts> | null;
     locationClues?: Record<string, string> | any | null;
+    // Gece olayları ve sabah gazetesi (v3 personaları; eski vakalarda yok)
+    personaState?: unknown;
+    currentDay?: number;
   };
   npc: {
     id: string;
@@ -267,7 +275,7 @@ ${dynamicPromptText}${linkPromptLines(
 
     combinedPrompt += `
 WHAT EVERYONE IN TOWN KNOWS:
-${publicCaseFacts(session.scenarioType, caseFacts)}
+${publicCaseFacts(session.scenarioType, caseFacts)}${nightLines(session, isCulprit)}
 - Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
 - Do not repeat sentences you already said in this conversation. Mention your whereabouts only when asked about that night, and in different words each time.
 - Fear changes how you speak, never what you know. However scared you are, never confirm an event, a sighting, an object or something another person supposedly said that is not in your own knowledge above. If the Inquisitor claims someone said something about you that is not true, deny it.
@@ -455,6 +463,23 @@ function crimeSceneNarratorRule(
         : '';
   return `
 11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
+}
+
+// Gece olayları kasabada herkesin bildiği gerçeklere eklenir; böylece katilin bilmesi onu ayırmaz.
+// Katil, olayları kendisinin yaptığını bilir ama kendiliğinden açmaz.
+function nightLines(
+  session: BuildNpcPromptParams['session'],
+  isCulprit: boolean,
+): string {
+  const state = parsePersonaState(session.personaState);
+  const lines = [
+    ...publicNightLines(state, session.currentDay ?? 1, {
+      scenarioType: session.scenarioType,
+      placeName: (id) => getLocalizedLocationLabel(session.scenarioType, id),
+    }),
+    ...(isCulprit ? culpritNightLines(state) : []),
+  ];
+  return lines.length > 0 ? `\n${lines.join('\n')}` : '';
 }
 
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında

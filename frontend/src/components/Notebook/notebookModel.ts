@@ -102,7 +102,13 @@ export function spreadCount(currentDay: number, items: NotebookItem[], records: 
 }
 
 export const recordLabel = (record: NotebookRecord) =>
-  record.kind === 'CONFESSION' ? 'İtiraf' : record.kind === 'ALIBI' ? 'Mazeret' : 'Tanıklık';
+  record.kind === 'CONFESSION'
+    ? 'İtiraf'
+    : record.kind === 'ALIBI'
+      ? 'Mazeret'
+      : record.kind === 'EVENT'
+        ? 'Gece Olayı'
+        : 'Tanıklık';
 
 export const MAX_STROKE_POINTS = 120;
 

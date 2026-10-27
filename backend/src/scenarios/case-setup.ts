@@ -13,6 +13,7 @@ import {
 } from './case-catalog';
 import { buildCaseGraph } from './case-graph';
 import { criticalPoints, solveCase } from './case-solver';
+import { planPersona, type PersonaPlan } from './personas/persona-plan';
 
 // Vakanın kodla belirlenen gerçekleri. Yapay zekâ bu kararları değiştirmez, sadece etraflarına
 // hikâye yazar. Hüküm Dosyası ve Kanıt Defteri bu kayda göre puanlayacak/eşleştirecek.
@@ -69,6 +70,8 @@ export interface CasePlan {
   involvements?: Involvement[];
   // Kişiliğe göre itiraf eşiği
   fearThresholds?: Record<string, number>;
+  // Katilin personası ve gece hamleleri (v3; eski vakalarda yok, sıradan katil sayılır)
+  persona?: PersonaPlan;
 }
 
 export interface Involvement {
@@ -175,14 +178,35 @@ export function planCase(
     const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
     for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
       plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
-      if (isPlanSound(plan, difficulty)) return plan;
+      if (isPlanSound(plan, difficulty)) {
+        return withPersona(plan, scenarioConfig, difficulty, rng);
+      }
     }
   }
   // Olmamalı (testler her evren ve zorlukta sağlam plan bulunduğunu garanti eder); olursa görünür olsun
   logger.warn(
     `Sağlam plan bulunamadı (${scenarioConfig.scenarioType}/${difficulty}/${murderStyle}); son taslak kullanılıyor.`,
   );
-  return plan!;
+  return withPersona(plan!, scenarioConfig, difficulty, rng);
+}
+
+// Persona sağlam plan bulunduktan sonra çekilir: önceki rastgele seçimlerin sırası değişmesin
+function withPersona(
+  plan: CasePlan,
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng,
+): CasePlan {
+  return {
+    ...plan,
+    persona: planPersona(
+      difficulty,
+      {
+        suspectLocationIds: scenarioConfig.npcDefinitions.map((npc) => npc.id),
+      },
+      rng,
+    ),
+  };
 }
 
 const DETAIL_ATTEMPTS = 8;

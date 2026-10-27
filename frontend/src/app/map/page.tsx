@@ -29,6 +29,8 @@ import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
 import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
 import MapActionBar from './components/MapActionBar/MapActionBar';
 import MapHud from './components/MapHud/MapHud';
+import NewspaperModal from '@/components/Newspaper/NewspaperModal';
+import { useMorningPaper } from '@/features/newspaper/useMorningPaper';
 import { Home, MapPin } from 'lucide-react';
 import HomeModal from './components/HomeModal/HomeModal';
 import AudioSettingsModal from './components/AudioSettingsModal/AudioSettingsModal';
@@ -135,6 +137,9 @@ export default function MapPage() {
     showScene(homeScene(home));
     router.push('/home');
   }, [scenarioType, router, setIsHomeModalOpen]);
+
+  // Sabah gazetesi: gece olayları ve kasabanın haberleri, her sabah bir kez
+  const morningPaper = useMorningPaper(sessionId, currentDay, hasHydrated);
 
   // Karakter yetenekleri. Kulis ve Çatı Geçişi önce "kurulur", bir mekâna girilince kullanılır.
   const abilities = useAbilities(sessionId);
@@ -603,6 +608,14 @@ export default function MapPage() {
         excludeIds={clearedNpcIds}
         onSubmit={handleCondemn}
       />
+
+      {morningPaper.paper && (
+        <NewspaperModal
+          paper={morningPaper.paper}
+          scenarioType={scenarioType || 'medieval'}
+          onClose={morningPaper.close}
+        />
+      )}
 
       <AudioSettingsModal
         isOpen={isAudioSettingsOpen}

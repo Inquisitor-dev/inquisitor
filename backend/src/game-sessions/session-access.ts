@@ -30,15 +30,24 @@ export function toPublicSession<
     locationClues?: unknown;
     caseFacts?: unknown;
     abilityState?: unknown;
+    personaState?: unknown;
   },
 >(session: T) {
   const crimeScene = publicCrimeScene(session.caseFacts);
   // Vakanın son günü (lastDay) her cevapta gider: İkinci Nefes vakayı uzatabilir
   const lastDay = lastDayOf(session.abilityState);
   if (session.status !== 'ACTIVE') return { ...session, crimeScene, lastDay };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { culpritId, truthReveal, locationClues, caseFacts, ...publicSession } =
-    session;
+  // Gece olaylarının kaydı da gönderilmez: gazete kendi uç noktasından gelir (getNewspaper)
+  const {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    culpritId,
+    truthReveal,
+    locationClues,
+    caseFacts,
+    personaState,
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    ...publicSession
+  } = session;
   return { ...publicSession, crimeScene, lastDay };
 }
 

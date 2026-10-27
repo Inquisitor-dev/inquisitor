@@ -91,8 +91,9 @@ export class NpcsService {
     if (npcId.startsWith('narrator_') || npcId === 'crime_scene') {
       throw new BadRequestException('Kanıt sadece karakterlere gösterilebilir.');
     }
+    // Gece olaylarının kartları kanıt değildir, gösterilemez
     const evidence = await this.prisma.evidence.findFirst({
-      where: { id: evidenceId, sessionId },
+      where: { id: evidenceId, sessionId, category: { not: 'EVENT' } },
     });
     if (!evidence) throw new NotFoundException('Kanıt bulunamadı.');
 
@@ -394,6 +395,8 @@ export class NpcsService {
         activeWarrants: currentState.session.activeWarrants,
         caseFacts,
         locationClues: sessionLocationClues,
+        personaState: currentState.session.personaState,
+        currentDay: currentState.session.currentDay,
       },
       npc: currentState.npc,
       dynamicPrompt: currentState.dynamicPrompt,

@@ -19,6 +19,8 @@ import {
   parseAbilityState,
 } from '../abilities/abilities';
 import { fearAfterNight, morningTimeOfDay } from '../abilities/ability-effects';
+import { initialPersonaState, runNight } from '../personas/persona-session';
+import { paperForDay, parsePersonaState } from '../personas/persona-night';
 
 import { MarketService } from '../market/market.service';
 import {
@@ -149,6 +151,13 @@ export class GameSessionsService {
         locationClues: pkg.draft.locationClues,
         culpritId: pkg.plan.culpritId,
         caseFacts: pkg.facts as unknown as Prisma.InputJsonValue,
+        // İlk sabahın gazetesi cinayeti duyurur; geceler gün kapanırken işlenir
+        personaState: initialPersonaState({
+          id: sessionId,
+          scenarioType: pkg.scenarioType,
+          difficulty: pkg.difficulty,
+          caseFacts: pkg.facts,
+        }) as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
         isTestMode,
         characterId,
@@ -373,6 +382,9 @@ export class GameSessionsService {
       },
     });
 
+    // Katilin o geceki hamleleri ve ertesi sabahın gazetesi
+    await runNight(this.prisma, session, session.currentDay);
+
     for (const state of session.npcStates) {
       // Vizör Kilidi'ndeki şüphelinin korkusu gece azalmaz
       const newFear = fearAfterNight(
@@ -402,6 +414,13 @@ export class GameSessionsService {
     });
 
     return toPublicSession(updatedSession);
+  }
+
+  // Bu sabahın gazetesi (eski vakalarda yoktur). Personayı söylemez: yalnızca kasabanın duyduklarını yazar.
+  async getNewspaper(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    const day = session.currentDay;
+    return { day, paper: paperForDay(parsePersonaState(session.personaState), day) };
   }
 
   async getSession(sessionId: string, userId: string) {
@@ -551,8 +570,9 @@ export class GameSessionsService {
     const config = getScenarioConfig(session.scenarioType, session.difficulty);
     const nameOf = (id: string) =>
       config.npcDefinitions.find((n) => n.id === id)?.name ?? id;
+    // Gece olaylarının kartları dayanak kanıt olamaz
     const evidence = await this.prisma.evidence.findMany({
-      where: { sessionId: session.id },
+      where: { sessionId: session.id, category: { not: 'EVENT' } },
       select: {
         id: true,
         kind: true,
