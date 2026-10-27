@@ -90,7 +90,7 @@ Oyuncu oyun boyunca **bir kez** bir şüpheliyi bir geceliğine nezarete aldıra
   - Değişken aksiyon sayısı (1–3) ve boş geceler.
   - Her sabah gelen gazete.
   - Ertelenen hamle.
-- Nezaret persona altyapısından **sonra** eklenir. Masumların kendi eylemleri ("kaçma", "dükkân kapatma") geldikçe anlam kazanır.
+- Nezaret diyalog ekranından verilir ("Nezarete Al", onaylı). Persona altyapısından **sonra** eklendi. Masumların kendi eylemleri ("kaçma", "dükkân kapatma") geldikçe anlam kazanır.
 
 ## 6. Görseller
 
@@ -104,9 +104,9 @@ Hepsi gündüz ışığında üretilir; gece etkisi CSS ile verilir. Mektup ve g
 |---|---|---|
 | 1 ✓ | Persona altyapısı: plan alanları, aksiyon havuzu ve gece pencereleri, gece olaylarının işlenmesi, sabah gazetesi, olay kartı, `publicCaseFacts` satırı | Hayır |
 | 2 ✓ | Kasaba olayları (planlı kapanış ve önceden sezdirme) ve Psikopatın mektubu ile kundaklaması | Hayır |
-| 3 | Baskın motoru (saf durum makinesi, `raid-engine.ts`) ve `POST /game-sessions/:id/raid/act`; bütün yolların testleri | Hayır |
-| 4 | Baskın sahnesi, yer tutucu odalarla | Hayır |
-| 5 | Karakter dalları (Mavi Rozet, Kar Kâhini) ve Çatı Geçişi kuralı | Hayır |
-| 6 | Nezaret | Hayır |
+| 3 ✓ | Baskın motoru (saf durum makinesi, `raid-engine.ts`) ve `POST /game-sessions/:id/raid/act`; bütün yolların testleri | Hayır |
+| 4 ✓ | Baskın sahnesi, yer tutucu odalarla | Hayır |
+| 5 ✓ | Karakter dalları (Mavi Rozet, Kar Kâhini) ve Çatı Geçişi kuralı | Hayır |
+| 6 ✓ | Nezaret | Hayır |
 | 7 | Görseller gelince gerçek odalar ve evin yeni yerleşimi | Evet |
 | 8 | Gemini ile oyun denemeleri; hikâye havuzu kural sürümü 4 | Hayır |

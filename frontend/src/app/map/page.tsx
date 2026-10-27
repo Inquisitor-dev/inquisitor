@@ -142,6 +142,17 @@ export default function MapPage() {
 
   // Sabah gazetesi: gece olayları ve kasabanın haberleri, her sabah bir kez
   const morningPaper = useMorningPaper(sessionId, currentDay, hasHydrated);
+  // Süren bir baskın varsa (sayfa yenilendi ya da sekme kapandı) sahneye dön
+  useEffect(() => {
+    if (!hasHydrated || !sessionId) return;
+    api
+      .get<{ active: boolean }>(`/game-sessions/${sessionId}/raid`)
+      .then((data) => {
+        if (data.active) router.push('/raid');
+      })
+      .catch((err) => logger.error('Failed to check raid', err));
+  }, [hasHydrated, sessionId, router]);
+
   // Bugün kapalı mekânlar (sahibi şehir dışında ya da gece zorla açılmış)
   const closedToday = useClosedToday(sessionId, currentDay, hasHydrated);
   const closedIds = new Set(closedToday.map((c) => c.locationId));
@@ -358,7 +369,14 @@ export default function MapPage() {
 
     setEndingDay(true);
     try {
-      const data = await api.post<{ timeOfDay?: number }>(`/game-sessions/${sessionId}/end-day`);
+      const data = await api.post<{ timeOfDay?: number; raid?: { active: boolean } }>(
+        `/game-sessions/${sessionId}/end-day`,
+      );
+      // Baskın gecesi: gün kapanmadı, baskın başladı
+      if (data.raid?.active) {
+        router.push('/raid');
+        return;
+      }
       endDay();
       // Çatı Geçişi'nin bedeli: gün sabahsız başlayabilir
       if (typeof data.timeOfDay === 'number') setTimeOfDay(data.timeOfDay);

@@ -20,6 +20,8 @@ import {
   UpdateNotesDto,
   CondemnNpcDto,
   ConsumeWarrantDto,
+  RaidActDto,
+  DetainDto,
 } from './dto/game-sessions.dto';
 
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -134,6 +136,38 @@ export class GameSessionsController {
     return {
       evidence: await this.gameSessionsService.getEvidence(sessionId, userId),
     };
+  }
+
+  // Nezaret: bir şüpheliyi bir geceliğine nezarete aldır (vakada bir kez)
+  @Post(':id/detain')
+  @UseGuards(JwtAuthGuard)
+  async detain(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+    @Body() dto: DetainDto,
+  ) {
+    return await this.gameSessionsService.detain(sessionId, userId, dto.npcId);
+  }
+
+  // Gece baskını: süren ya da biten baskının hâli
+  @Get(':id/raid')
+  @UseGuards(JwtAuthGuard)
+  async getRaid(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getRaid(sessionId, userId);
+  }
+
+  // Gece baskınında bir aksiyon; baskın biterse gün kapanır
+  @Post(':id/raid/act')
+  @UseGuards(JwtAuthGuard)
+  async raidAct(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+    @Body() dto: RaidActDto,
+  ) {
+    return await this.gameSessionsService.raidAct(sessionId, userId, dto.action);
   }
 
   // Bu sabahın gazetesi: gece olayları ve kasabanın haberleri

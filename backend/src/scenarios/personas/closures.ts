@@ -1,23 +1,32 @@
-// Bir gün kapalı olan mekânlar: kasaba olayı (sahibi şehir dışında) ya da katilin kilit kırması (gece
-// zorla açılan mekân ertesi gün kapalı). Kapalı mekâna girilemez, sahibi o gün sorgulanamaz.
-import { personaPlanOf } from './persona-plan';
+// Bir gün kapalı olan mekânlar: kasaba olayı (sahibi şehir dışında), katilin kilit kırması (gece
+// zorla açılan mekân ertesi gün kapalı) ya da nezaret (sahibi o günün kalanında nezarette).
+// Kapalı mekâna girilemez, sahibi o gün sorgulanamaz.
+import { detentionOf, effectivePersonaPlan } from './detention';
 import { townEventsOf } from './town-events';
 
-export type ClosureReason = 'AWAY' | 'BREAK_IN';
+export type ClosureReason = 'AWAY' | 'BREAK_IN' | 'DETAINED';
 
 export interface Closure {
   locationId: string;
   reason: ClosureReason;
 }
 
-export function closuresOn(caseFacts: unknown, day: number): Closure[] {
+export function closuresOn(
+  caseFacts: unknown,
+  day: number,
+  personaState?: unknown,
+): Closure[] {
   const closures: Closure[] = [];
   for (const event of townEventsOf(caseFacts)) {
     if (event.kind === 'AWAY' && event.day === day) {
       closures.push({ locationId: event.npcId, reason: 'AWAY' });
     }
   }
-  for (const event of personaPlanOf(caseFacts).events) {
+  const detention = detentionOf(personaState);
+  if (detention?.day === day) {
+    closures.push({ locationId: detention.npcId, reason: 'DETAINED' });
+  }
+  for (const event of effectivePersonaPlan(caseFacts, personaState).events) {
     if (
       event.kind === 'BREAK_IN' &&
       event.locationId &&
@@ -36,9 +45,12 @@ export function closureFor(
   caseFacts: unknown,
   day: number,
   npcId: string,
+  personaState?: unknown,
 ): Closure | null {
   const location = locationOfNpc(npcId);
   return (
-    closuresOn(caseFacts, day).find((c) => c.locationId === location) ?? null
+    closuresOn(caseFacts, day, personaState).find(
+      (c) => c.locationId === location,
+    ) ?? null
   );
 }

@@ -8,11 +8,22 @@ export interface EvidenceItem {
   // BODY: örtü altındaki yara; TESTIMONY: cinayete bağlı sırrın ifadesi; ALIBI: mazeret doğrulaması (Vaka Motoru v2)
   // EVENT: gece olayının defterdeki kartı (v3 personaları); kanıt deposuna alınmaz
   // LETTER: Psikopatın kapının altına bıraktığı mektup (izi birkaç şüpheliye uyar)
-  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION' | 'BODY' | 'TESTIMONY' | 'ALIBI' | 'EVENT' | 'LETTER';
+  kind:
+    | 'CLUE'
+    | 'VERIFICATION'
+    | 'CONFESSION'
+    | 'BODY'
+    | 'TESTIMONY'
+    | 'ALIBI'
+    | 'EVENT'
+    | 'LETTER'
+    | 'RAID_TRACE';
   category: 'ITEM' | 'STATEMENT' | 'EVENT';
   sourceId: string;
   text: string;
   dayNumber: number;
+  // Gece baskınında çalındı: kaydı kalır ama gösterilemez, panoya ve hükme giremez
+  stolen?: boolean;
 }
 
 export interface AuthSlice {

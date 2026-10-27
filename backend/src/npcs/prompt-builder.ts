@@ -36,6 +36,7 @@ import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 import {
   breakInOwnerLines,
   culpritNightLines,
+  detentionPromptLines,
   ownPlanLines,
   parsePersonaState,
   publicNightLines,
@@ -525,6 +526,7 @@ function nightLines(
     ...publicNightLines(state, day, ctx),
     ...townPromptLines(townEventsOf(session.caseFacts), day, npcId, ctx),
     ...breakInOwnerLines(state, npcId, isCulprit),
+    ...detentionPromptLines(state, day, npcId, ctx),
     ...(isCulprit ? culpritNightLines(state) : []),
   ];
   return lines.length > 0 ? `\n${lines.join('\n')}` : '';

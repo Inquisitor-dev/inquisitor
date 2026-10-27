@@ -165,6 +165,26 @@ describe('sabah gazetesi', () => {
     expect(townPromptLines(away, 4, 'tavern', ctx)).toEqual([]);
   });
 
+  it('baskın: sonuca göre gazete ve kart; Çatı Geçişi gecesi ev aranmış bulunur, iz yok', () => {
+    const raidPlan = (outcome: 'GOOD' | 'SEARCHED'): NightPlan => ({
+      ...plan([{ night: 2, kind: 'RAID', raidStart: 'HALLWAY' }]),
+      raid: { outcome, trace: 'kâğıtta un tozu var' },
+    });
+    const good = processNight(emptyPersonaState(), raidPlan('GOOD'), 2, ctx);
+    expect(good.records.map((r) => r.kind)).toEqual(['EVENT', 'RAID_TRACE']);
+    expect(paperForDay(good.state, 3)!.items[0].headline).toContain('baskın');
+    const searched = processNight(
+      emptyPersonaState(),
+      raidPlan('SEARCHED'),
+      2,
+      ctx,
+    );
+    expect(searched.records.map((r) => r.kind)).toEqual(['EVENT']);
+    expect(paperForDay(searched.state, 3)!.items[0].headline).toContain(
+      'aranmış',
+    );
+  });
+
   it('aynı gece ikinci kez işlenmez', () => {
     const once = processNight(emptyPersonaState(), letterPlan, 2, ctx);
     const twice = processNight(once.state, letterPlan, 2, ctx);

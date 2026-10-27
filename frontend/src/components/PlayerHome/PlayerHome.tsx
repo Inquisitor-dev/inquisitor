@@ -164,7 +164,14 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     }
     setEndingDay(true);
     try {
-      const data = await api.post<{ timeOfDay?: number }>(`/game-sessions/${sessionId}/end-day`);
+      const data = await api.post<{ timeOfDay?: number; raid?: { active: boolean } }>(
+        `/game-sessions/${sessionId}/end-day`,
+      );
+      // Baskın gecesi: gün kapanmadı, baskın başladı
+      if (data.raid?.active) {
+        router.push('/raid');
+        return;
+      }
       endDay();
       // Çatı Geçişi'nin bedeli: gün sabahsız başlayabilir
       if (typeof data.timeOfDay === 'number') setTimeOfDay(data.timeOfDay);

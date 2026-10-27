@@ -187,6 +187,8 @@ function DossierForm({
   };
 
   const answered = others.filter((s) => report.involvements[s.id]).length;
+  // Baskında çalınan kanıt hükme dayanak olamaz
+  const citable = evidence.filter((item) => !item.stolen);
 
   return (
     <div className={styles.overlay} onClick={handleClose}>
@@ -284,11 +286,11 @@ function DossierForm({
                     {report.evidenceIds.length}/{maxEvidence}
                   </span>
                 </p>
-                {evidence.length === 0 ? (
+                {citable.length === 0 ? (
                   <p className={styles.empty}>Bu vakada hiç kanıt bulmadın.</p>
                 ) : (
                   <ul className={styles.evidenceList}>
-                    {evidence.map((item) => {
+                    {citable.map((item) => {
                       const active = report.evidenceIds.includes(item.id);
                       const full = !active && report.evidenceIds.length >= maxEvidence;
                       const photo =

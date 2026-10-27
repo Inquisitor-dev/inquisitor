@@ -174,7 +174,8 @@ export default function InvestigationBoard() {
   // Çekmecede: panoya henüz asılmamış şüpheliler ve kanıtlar
   const pinnedRefs = useMemo(() => new Set(board.cards.map((c) => `${c.kind}:${c.refId}`)), [board.cards]);
   const drawerSuspects = suspectIds.filter((id) => !pinnedRefs.has(`suspect:${id}`));
-  const drawerEvidence = evidence.filter((e) => !pinnedRefs.has(`evidence:${e.id}`));
+  // Baskında çalınan kanıt panoya iğnelenemez
+  const drawerEvidence = evidence.filter((e) => !e.stolen && !pinnedRefs.has(`evidence:${e.id}`));
 
   // Yeni kart panonun ortasına yakın, biraz rastgele bir yere asılır
   const pinCard = (card: Omit<BoardCard, 'id' | 'x' | 'y'>) => {

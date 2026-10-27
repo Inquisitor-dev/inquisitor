@@ -29,6 +29,7 @@ const EMPTY_BOARD: BoardState = { cards: [], strings: [] };
 const EXCERPT_LENGTH = 90;
 
 import { parseAbilityState } from '../abilities/abilities';
+import { stolenIdsOf } from '../personas/raid-session';
 import {
   canThinkAgain,
   thoughtLimit,
@@ -66,10 +67,18 @@ export class BoardService {
     ).npcDefinitions.map((npc) => npc.id);
   }
 
-  // Gece olaylarının kartları kanıt değildir, panoya iğnelenemez
-  private loadEvidence(sessionId: string): Promise<BoardEvidence[]> {
+  // Gece olaylarının kartları kanıt değildir; baskında çalınan kanıt panoya iğnelenemez
+  private async loadEvidence(sessionId: string): Promise<BoardEvidence[]> {
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      select: { personaState: true },
+    });
     return this.prisma.evidence.findMany({
-      where: { sessionId, category: { not: 'EVENT' } },
+      where: {
+        sessionId,
+        category: { not: 'EVENT' },
+        id: { notIn: stolenIdsOf(session?.personaState) },
+      },
       select: {
         id: true,
         kind: true,

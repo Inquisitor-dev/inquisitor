@@ -102,6 +102,7 @@ export function evidenceTitle(scenarioType: string, item: EvidenceItem): string 
   if (item.kind === 'ALIBI') return 'Mazeret';
   if (item.kind === 'BODY') return 'Beden İncelemesi';
   if (item.kind === 'LETTER') return 'Tehdit Mektubu';
+  if (item.kind === 'RAID_TRACE') return 'Kapı Önündeki İz';
   if (item.category === 'STATEMENT') return 'Tanıklık';
   if (item.sourceId === 'crime_scene') return 'Olay Yeri İzi';
   return `Kanıt · ${getLocationLabel(item.sourceId, scenarioType)}`;

@@ -20,6 +20,16 @@ import {
 } from '../abilities/abilities';
 import { fearAfterNight, morningTimeOfDay } from '../abilities/ability-effects';
 import { initialPersonaState, runNight } from '../personas/persona-session';
+import {
+  activeRaid,
+  applyRaidAction,
+  beginRaid,
+  raidLostMorning,
+  raidRewardFactor,
+  raidView,
+  stolenIdsOf,
+} from '../personas/raid-session';
+import type { RaidAction } from '../personas/raid-engine';
 import { paperForDay, parsePersonaState } from '../personas/persona-night';
 
 import { MarketService } from '../market/market.service';
@@ -44,6 +54,9 @@ import {
 } from './verdict/verdict-report';
 
 import { StoryPoolService } from '../stories/story-pool.service';
+import { detentionOf } from '../scenarios/personas/detention';
+import { closedMessage } from '../personas/closure-message';
+import { FEAR_MAX } from '../npcs/fear';
 import {
   StoryCriteria,
   STORY_RULE_VERSION,
@@ -364,7 +377,105 @@ export class GameSessionsService {
         'Soruşturmanın son günündesin; hükmünü ver.',
       );
     }
+    // Baskın bitmeden ertesi gün başlamaz; baskın gecesinde gün kapanmaz, baskın başlar
+    if (activeRaid(parsePersonaState(session.personaState))) {
+      throw new BadRequestException('Gece baskını sürüyor; önce onu atlat.');
+    }
+    // Çatı Geçişi'yle o gece dışarıdaysa baskın olmaz, ev aranmış bulunur (gün olağan kapanır)
+    const awayTonight =
+      parseAbilityState(session.abilityState).rooftop?.day === session.currentDay;
+    const raid = await beginRaid(
+      this.prisma,
+      session,
+      session.currentDay,
+      awayTonight,
+    );
+    if (awayTonight) {
+      const refreshed = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: sessionId },
+        include: { npcStates: true },
+      });
+      return toPublicSession(await this.advanceDay(refreshed));
+    }
+    if (raid) {
+      const fresh = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: sessionId },
+      });
+      return { ...toPublicSession(fresh), raid: raidView(fresh) };
+    }
     return toPublicSession(await this.advanceDay(session));
+  }
+
+  // Nezaret: vakada bir kez, son gün değil; kişinin mekânı günün kalanında kapanır, ertesi sabah çıkar
+  async detain(sessionId: string, userId: string, npcId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    if (session.status !== 'ACTIVE') {
+      throw new BadRequestException('Bu soruşturma sona erdi.');
+    }
+    const state = parsePersonaState(session.personaState);
+    if (state.detention) {
+      throw new BadRequestException('Nezaret hakkını bu vakada kullandın.');
+    }
+    if (session.currentDay >= lastDayOf(session.abilityState)) {
+      throw new BadRequestException('Son günde kimseyi nezarete aldıramazsın.');
+    }
+    const suspects = getScenarioConfig(
+      session.scenarioType,
+      session.difficulty,
+    ).npcDefinitions.map((npc) => npc.id);
+    if (!suspects.includes(npcId)) {
+      throw new BadRequestException('Yalnızca bir şüpheliyi nezarete aldırabilirsin.');
+    }
+    const closed = closedMessage(session, npcId);
+    if (closed) throw new BadRequestException(closed);
+    const updated = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: {
+        personaState: {
+          ...state,
+          detention: { npcId, day: session.currentDay },
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+    return toPublicSession(updated);
+  }
+
+  // Süren ya da biten baskın (yoksa active: false)
+  async getRaid(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    return raidView(session);
+  }
+
+  // Baskında bir aksiyon. Baskın biterse sonucu uygulanır ve gün kapanır; zorda ölüm vakayı kaybettirir.
+  async raidAct(sessionId: string, userId: string, action: string) {
+    const owned = await findOwnedSession(this.prisma, sessionId, userId);
+    if (owned.status !== 'ACTIVE') {
+      throw new BadRequestException('Bu soruşturma sona erdi.');
+    }
+    const view = raidView(owned);
+    if (!view.active || !view.actions?.some((a) => a.id === action)) {
+      throw new BadRequestException('Bu aksiyon şu an yapılamaz.');
+    }
+    const raid = await applyRaidAction(this.prisma, owned, action as RaidAction);
+    if (raid?.outcome === 'DEATH') {
+      const lost = await this.prisma.gameSession.update({
+        where: { id: sessionId },
+        data: { status: 'LOST' },
+      });
+      return { raid: raidView(lost), session: toPublicSession(lost) };
+    }
+    if (raid?.outcome) {
+      const session = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: sessionId },
+        include: { npcStates: true },
+      });
+      const next = await this.advanceDay(session);
+      return { raid: raidView(next), session: toPublicSession(next) };
+    }
+    const fresh = await this.prisma.gameSession.findUniqueOrThrow({
+      where: { id: sessionId },
+    });
+    return { raid: raidView(fresh), session: toPublicSession(fresh) };
   }
 
   // Günü kapatır: ertesi günün sabahı başlar, korku gece azalır (Vizör Kilidi hariç)
@@ -377,21 +488,25 @@ export class GameSessionsService {
       where: { id: session.id },
       data: {
         currentDay: nextDay,
-        // Çatı Geçişi kullanıldıysa ertesi günün sabahı kaybedilir
-        timeOfDay: morningTimeOfDay(abilityState, nextDay),
+        // Çatı Geçişi kullanıldıysa ya da baskında bayılındıysa ertesi günün sabahı kaybedilir
+        timeOfDay: Math.max(
+          morningTimeOfDay(abilityState, nextDay),
+          raidLostMorning(session.personaState, session.currentDay) ? 1 : 0,
+        ),
       },
     });
 
     // Katilin o geceki hamleleri ve ertesi sabahın gazetesi
     await runNight(this.prisma, session, session.currentDay);
 
+    // Nezarette geçen gecenin ardından kişinin korkusu bir artar
+    const detention = detentionOf(session.personaState);
     for (const state of session.npcStates) {
       // Vizör Kilidi'ndeki şüphelinin korkusu gece azalmaz
-      const newFear = fearAfterNight(
-        state.npcId,
-        state.currentFear,
-        abilityState,
-      );
+      const newFear =
+        detention?.day === session.currentDay && detention.npcId === state.npcId
+          ? Math.min(FEAR_MAX, state.currentFear + 1)
+          : fearAfterNight(state.npcId, state.currentFear, abilityState);
       await this.prisma.sessionNpcState.update({
         where: { id: state.id },
         data: { currentFear: newFear },
@@ -529,7 +644,10 @@ export class GameSessionsService {
           session.currentDay,
           {
             halved: !!abilityState.secondBreath,
-            multiplier: verdict ? rewardMultiplier(verdict.total) : 1,
+            // Baskının kötü sonucu bu vakanın ödülünden keser
+            multiplier:
+              (verdict ? rewardMultiplier(verdict.total) : 1) *
+              raidRewardFactor(session.personaState),
           },
         )) as Record<string, unknown>;
       } catch (err: unknown) {
@@ -561,6 +679,7 @@ export class GameSessionsService {
       caseFacts: Prisma.JsonValue;
       truthReveal: string | null;
       isTestMode: boolean;
+      personaState?: Prisma.JsonValue;
     },
     report: VerdictReport,
   ): Promise<ScoredVerdict | null> {
@@ -570,9 +689,13 @@ export class GameSessionsService {
     const config = getScenarioConfig(session.scenarioType, session.difficulty);
     const nameOf = (id: string) =>
       config.npcDefinitions.find((n) => n.id === id)?.name ?? id;
-    // Gece olaylarının kartları dayanak kanıt olamaz
+    // Gece olaylarının kartları ve baskında çalınan kanıt dayanak olamaz
     const evidence = await this.prisma.evidence.findMany({
-      where: { sessionId: session.id, category: { not: 'EVENT' } },
+      where: {
+        sessionId: session.id,
+        category: { not: 'EVENT' },
+        id: { notIn: stolenIdsOf(session.personaState) },
+      },
       select: {
         id: true,
         kind: true,
@@ -690,8 +813,9 @@ export class GameSessionsService {
   }
 
   async getEvidence(sessionId: string, userId: string) {
-    await findOwnedSession(this.prisma, sessionId, userId);
-    return this.prisma.evidence.findMany({
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    const stolen = new Set(stolenIdsOf(session.personaState));
+    const rows = await this.prisma.evidence.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
       select: {
@@ -704,6 +828,8 @@ export class GameSessionsService {
         createdAt: true,
       },
     });
+    // Baskında çalınan kanıt kaydıyla kalır, "çalındı" diye işaretlenir
+    return rows.map((row) => (stolen.has(row.id) ? { ...row, stolen: true } : row));
   }
 
   async findActiveSession(userId: string) {

@@ -76,6 +76,13 @@ describe('planPersona', () => {
           expect(event.locationId).toBeDefined();
           expect(input.protectedIds).not.toContain(event.locationId);
         }
+        // Baskın: saldırgan yatak odasında başlamaz, iz katile uyar ve mektubunkinden farklıdır
+        if (event.kind === 'RAID') {
+          expect(['KITCHEN', 'HALLWAY', 'DOORSTEP']).toContain(event.raidStart);
+          expect(event.traceFits).toContain('mill');
+          const letter = plan.events.find((e) => e.kind === 'THREAT_LETTER');
+          if (letter) expect(letter.traceId).not.toBe(event.traceId);
+        }
         // Mektup izi koddaki havuzdan: katil dahil üç kişiye uyar
         if (event.kind === 'THREAT_LETTER') {
           expect(event.traceFits).toHaveLength(3);

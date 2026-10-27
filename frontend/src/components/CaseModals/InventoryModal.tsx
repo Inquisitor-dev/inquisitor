@@ -42,7 +42,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                   photo={evidencePhoto(scenario, item, crimeScene)}
                   title={evidenceTitle(scenario, item)}
                   text={item.text}
-                  meta={`${item.dayNumber}. gün`}
+                  meta={item.stolen ? 'ÇALINDI · gece baskınında' : `${item.dayNumber}. gün`}
+                  stolen={item.stolen}
                 />
               ))}
             </div>
