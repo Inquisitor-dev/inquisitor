@@ -19,6 +19,17 @@ import {
   type PersonaState,
 } from './persona-night';
 import { fallbackLetter } from './threat-letter';
+import { letterTracesFor } from '../scenarios/personas/letter-traces';
+import type { PersonaPlan } from '../scenarios/personas/persona-plan';
+
+// Mektuptaki izin metni (planın seçtiği iz)
+function traceText(persona: PersonaPlan, scenarioType: string): string {
+  const id = persona.events.find((e) => e.kind === 'THREAT_LETTER')?.traceId;
+  return (
+    (id !== undefined ? letterTracesFor(scenarioType)[id]?.text : undefined) ??
+    'kâğıtta belli belirsiz bir leke var'
+  );
+}
 
 export function nightContext(session: {
   id: string;
@@ -47,7 +58,7 @@ export function nightPlanOf(
     letter: hasLetter
       ? {
           text: facts?.threatLetter || fallbackLetter(scenarioType),
-          trace: facts?.letterTrace || 'belli belirsiz bir leke var',
+          trace: traceText(persona, scenarioType),
         }
       : undefined,
   };

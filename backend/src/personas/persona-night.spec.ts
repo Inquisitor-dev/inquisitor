@@ -3,6 +3,7 @@ import type { TownEvent } from '../scenarios/personas/town-events';
 import {
   breakInOwnerLines,
   culpritNightLines,
+  ownPlanLines,
   emptyPersonaState,
   firstMorningPaper,
   paperForDay,
@@ -27,7 +28,7 @@ const plan = (
 ): NightPlan => ({
   persona: { persona: 'PSYCHOPATH', events },
   townEvents,
-  letter: { text: 'Seni izliyorum.', trace: 'mum isi kokusu var' },
+  letter: { text: 'Seni izliyorum.', trace: 'kâğıtta mum isi kokusu var' },
 });
 
 const letterPlan = plan([
@@ -146,9 +147,17 @@ describe('sabah gazetesi', () => {
       'NOTICE',
     );
 
-    expect(townPromptLines(away, 1, 'mill', ctx)[0]).toContain('YOUR PLANS');
-    expect(townPromptLines(away, 4, 'mill', ctx)[0]).toContain(
-      'you were out of town',
+    // Kişinin kendi programı ayrı ve göreli zamanla (gün numarası değil)
+    expect(townPromptLines(away, 1, 'mill', ctx)).toEqual([]);
+    expect(ownPlanLines(away, 2, 'mill', ctx)[0]).toContain('TOMORROW');
+    expect(ownPlanLines(away, 2, 'mill', ctx)[0]).toContain('the answer is NO');
+    expect(ownPlanLines(away, 1, 'mill', ctx)[0]).toContain(
+      'THE DAY AFTER TOMORROW',
+    );
+    expect(ownPlanLines(away, 4, 'mill', ctx)[0]).toContain('Yesterday');
+    expect(ownPlanLines(away, 2, 'tavern', ctx)).toEqual([]);
+    expect(townPromptLines(away, 1, 'tavern', ctx)[0]).toContain(
+      'the day after tomorrow',
     );
     expect(townPromptLines(away, 2, 'tavern', ctx)[0]).toContain(
       'Word in town',

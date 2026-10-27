@@ -5,6 +5,8 @@ import {
   personaPlanOf,
   planPersona,
 } from './persona-plan';
+import { LETTER_TRACES } from './letter-traces';
+import { getScenarioConfig } from '../scenario-config';
 
 // Tekrarlanabilir rastgelelik
 function seeded(seed: number) {
@@ -16,6 +18,7 @@ function seeded(seed: number) {
 }
 
 const input = {
+  scenarioType: 'medieval',
   culpritId: 'mill',
   suspectIds: ['tavern', 'church', 'mill', 'farm', 'graveyard'],
   protectedIds: ['church'],
@@ -73,11 +76,31 @@ describe('planPersona', () => {
           expect(event.locationId).toBeDefined();
           expect(input.protectedIds).not.toContain(event.locationId);
         }
-        // Mektup izi katil dahil üç kişiye uyar
+        // Mektup izi koddaki havuzdan: katil dahil üç kişiye uyar
         if (event.kind === 'THREAT_LETTER') {
           expect(event.traceFits).toHaveLength(3);
           expect(event.traceFits).toContain('mill');
+          expect(LETTER_TRACES.medieval[event.traceId!].fits).toEqual(
+            event.traceFits,
+          );
         }
+      }
+    }
+  });
+
+  it('her evrende her şüpheli en az iki izde: katil kim olursa olsun bir iz bulunur', () => {
+    for (const [universe, traces] of Object.entries(LETTER_TRACES)) {
+      const ids = getScenarioConfig(universe, 'hard').npcDefinitions.map(
+        (n) => n.id,
+      );
+      for (const trace of traces) {
+        expect(new Set(trace.fits).size).toBe(3);
+        for (const id of trace.fits) expect(ids).toContain(id);
+      }
+      for (const id of ids) {
+        expect(
+          traces.filter((t) => t.fits.includes(id)).length,
+        ).toBeGreaterThanOrEqual(2);
       }
     }
   });

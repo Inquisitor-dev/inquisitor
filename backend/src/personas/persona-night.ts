@@ -222,7 +222,7 @@ function nightRecords(
           kind: 'LETTER',
           category: 'ITEM',
           sourceId: 'home',
-          text: `İmzasız tehdit mektubu: “${plan.letter.text}” Kâğıtta ${plan.letter.trace}.`,
+          text: `İmzasız tehdit mektubu: “${plan.letter.text}” İz: ${plan.letter.trace}.`,
         });
       }
       return records;
@@ -313,8 +313,8 @@ export function publicNightLines(
   return lines;
 }
 
-// Kasaba olayları önceden sezilir: şehir dışına çıkacak kişi planını bilir ve sorulunca ya da konu
-// açılınca söyler; ötekiler dedikodusunu duymuştur (NPC istemi, İngilizce; gerekçe Türkçe)
+// Kasaba olayları önceden sezilir: ötekiler şehir dışına çıkacak kişinin dedikodusunu duymuştur
+// (NPC istemi, İngilizce; gerekçe Türkçe). Kişinin kendisi programını ownPlanLines ile bilir.
 export function townPromptLines(
   townEvents: TownEvent[],
   day: number,
@@ -325,27 +325,55 @@ export function townPromptLines(
     if (e.kind !== 'AWAY') return [];
     const reason = reasonOf(e, ctx.scenarioType);
     const place = ctx.placeName(e.npcId);
-    if (e.npcId === npcId) {
-      if (day < e.day) {
-        return [
-          `- YOUR PLANS: on day ${e.day} you will be out of town for the whole day (in Turkish: "${reason}"), so "${place}" will be closed that day. Today is day ${day}. If the Inquisitor says they will come back later or tomorrow, asks about your plans, or the topic comes up, tell them naturally in your own words. It has nothing to do with the murder.`,
-        ];
-      }
-      if (day > e.day) {
-        return [
-          `- On day ${e.day} you were out of town for the whole day (in Turkish: "${reason}") and came back the next morning. Mention it if asked where you were.`,
-        ];
-      }
-      return [];
-    }
+    // Gün numarası yerine göreli zaman: Gemini denemesinde "3. gün gideceksin, bugün 2. gün" yazınca
+    // karakter "yarın buradayım" dedi ve kasabalı "üçüncü gün" diye sayaç diliyle konuştu
+    const when = relativeDay(e.day - day);
+    // Kişinin kendi programı ayrı bir bölümdür (ownPlanLines)
+    if (e.npcId === npcId) return [];
     if (day <= e.day) {
       return [
-        `- Word in town: ${ctx.npcName(e.npcId)} ${day === e.day ? 'is out of town today' : `will be out of town on day ${e.day}`} (in Turkish: "${reason}"), so "${place}" ${day === e.day ? 'is' : 'will be'} closed that day. You may mention it if it comes up.`,
+        `- Word in town: ${ctx.npcName(e.npcId)} ${day === e.day ? 'is out of town today' : `will be out of town ${when}`} (in Turkish: "${reason}"), so "${place}" ${day === e.day ? 'is closed today' : `will be closed ${when}`}. You may mention it if it comes up (say "yarın" or "öbür gün", never a day number${day === e.day ? '; the reason is written as a plan, say it in the present or past tense: "pazara gitti"' : ''}).`,
       ];
     }
     return [];
   });
 }
+
+// Şehir dışına çıkacak kişinin kendi programı. İstemin sonunda ayrı bir bölüm olarak verilir: "kasabada
+// herkesin bildikleri" arasına gömüldüğünde rahip, "beni her zaman kilisede bulursunuz" kişiliğine uyup
+// tam ertesi gün şehir dışındayken "yarın buradayım" dedi.
+export function ownPlanLines(
+  townEvents: TownEvent[],
+  day: number,
+  npcId: string,
+  ctx: Pick<NightContext, 'scenarioType' | 'placeName'>,
+): string[] {
+  return townEvents.flatMap((e): string[] => {
+    if (e.kind !== 'AWAY' || e.npcId !== npcId) return [];
+    const reason = reasonOf(e, ctx.scenarioType);
+    const place = ctx.placeName(e.npcId);
+    const diff = e.day - day;
+    if (diff === 1) {
+      return [
+        `- TOMORROW you will be out of town for the whole day (in Turkish: "${reason}"), so "${place}" will be closed tomorrow. If the Inquisitor asks whether they can find you tomorrow or says they will come back tomorrow, the answer is NO: tell them you will be away tomorrow and why, and that you are back the day after. Say "yarın", never a day number.`,
+      ];
+    }
+    if (diff > 1) {
+      return [
+        `- THE DAY AFTER TOMORROW you will be out of town for the whole day (in Turkish: "${reason}"), so "${place}" will be closed that day. Tomorrow you are here as usual. If the Inquisitor says they will come back later, asks about your plans, or the topic comes up, tell them naturally. Say "öbür gün", never a day number.`,
+      ];
+    }
+    if (diff < 0) {
+      return [
+        `- ${diff === -1 ? 'Yesterday' : 'A few days ago'} you were out of town for the whole day (in Turkish: "${reason}"; it is past now, say it in the past tense) and then came back. Mention it if asked where you were.`,
+      ];
+    }
+    return [];
+  });
+}
+
+const relativeDay = (diff: number) =>
+  diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : 'the day after tomorrow';
 
 // Kilit kırılan mekânın sahibi ertesi gün ne olduğunu anlatır. Katilin kendi mekânıysa bunu kendisi
 // düzenlemiştir ve bir kurban gibi anlatır.

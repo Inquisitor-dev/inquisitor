@@ -208,7 +208,12 @@ function withPersona(
   ];
   const persona = planPersona(
     difficulty,
-    { culpritId: plan.culpritId, suspectIds, protectedIds },
+    {
+      scenarioType: scenarioConfig.scenarioType,
+      culpritId: plan.culpritId,
+      suspectIds,
+      protectedIds,
+    },
     rng,
   );
   const breakIns = persona.events.filter((e) => e.kind === 'BREAK_IN');
@@ -483,9 +488,8 @@ export interface CaseFacts extends CasePlan {
   // Katilin örtü hikâyesi: korkusu eşiğe varınca "itiraf" diye anlattığı yalan mazeret ve küçük sır.
   // Eskiden yalnızca katil kırılmıyordu; kırılmayan tek kişi olması onu ele veriyordu.
   culpritCover?: string;
-  // Psikopatın tehdit mektubu ve kâğıttaki iz (v3; planda mektup varsa)
+  // Psikopatın tehdit mektubu (v3; planda mektup varsa). Kâğıttaki iz koddan gelir (letter-traces.ts).
   threatLetter?: string;
-  letterTrace?: string;
 }
 
 // Oturumun olay yeri id'si; olay yeri seçimi eklenmeden önce açılan vakalarda yoktur

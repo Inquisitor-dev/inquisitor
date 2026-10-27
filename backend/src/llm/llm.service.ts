@@ -204,9 +204,6 @@ export function cleanDraftIds(
     threatLetter: draft.threatLetter
       ? clean(draft.threatLetter)
       : draft.threatLetter,
-    letterTrace: draft.letterTrace
-      ? clean(draft.letterTrace)
-      : draft.letterTrace,
   };
 }
 

@@ -36,6 +36,7 @@ import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
 import {
   breakInOwnerLines,
   culpritNightLines,
+  ownPlanLines,
   parsePersonaState,
   publicNightLines,
   townPromptLines,
@@ -135,13 +136,21 @@ export function buildNpcPrompt({
   dreamActive = false,
   verifiedStatement,
 }: BuildNpcPromptParams): string {
-  const canonicalNpc = scenarioConfig.npcDefinitions.find((n) => n.id === npc.id);
+  const canonicalNpc = scenarioConfig.npcDefinitions.find(
+    (n) => n.id === npc.id,
+  );
   const canonicalLocations = scenarioConfig.locationDefinitions;
 
-  const sessionLocationClues = (session.locationClues ?? {}) as Record<string, string>;
+  const sessionLocationClues = (session.locationClues ?? {}) as Record<
+    string,
+    string
+  >;
   const locationListText = canonicalLocations
     .map((location) => {
-      const localizedName = getLocalizedLocationLabel(session.scenarioType, location.id);
+      const localizedName = getLocalizedLocationLabel(
+        session.scenarioType,
+        location.id,
+      );
       return `- ${location.id}: ${localizedName} (${location.description})`;
     })
     .join('\n');
@@ -211,8 +220,10 @@ STRICT CANON RULES:
 `;
 
   const isNarrator = npc.id.startsWith('narrator_');
-  const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
-  const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
+  const narratedLocationId = isNarrator
+    ? npc.id.replace('narrator_', '')
+    : null;
+  const caseFacts = session.caseFacts ?? null;
   const fearThreshold = fearThresholdOf(caseFacts, npc.id);
   const nameOf = (id: string) =>
     scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id;
@@ -234,9 +245,12 @@ The murder happened ${TIME_OF_DEATH_LABELS[caseFacts.timeOfDeath].toLocaleLowerC
   });
 
   if (isNarrator) {
-    const narratedLocation = canonicalLocations.find((location) => location.id === narratedLocationId);
+    const narratedLocation = canonicalLocations.find(
+      (location) => location.id === narratedLocationId,
+    );
     const canonicalClueForLocation =
-      sessionLocationClues[narratedLocationId!] || 'Bu mekan icin kayitli gizli ipucu yok.';
+      sessionLocationClues[narratedLocationId!] ||
+      'Bu mekan icin kayitli gizli ipucu yok.';
 
     combinedPrompt += `
 NARRATOR ROLE:
@@ -347,7 +361,8 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
           : 'This evidence makes you look suspicious (it may fit other people too). You had nothing to do with it unless YOUR PERSONAL SECRET/ROLE above says so: never invent a link between yourself and it (that you found, took, hid, moved or placed it).',
         IRRELEVANT:
           'This evidence has nothing to do with you: you were not involved with it and you were not where it was found. Do NOT invent a connection to yourself, your work or your place. React with puzzlement or dismissal (for example ask why you are being shown it). It does not frighten you.',
-        REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
+        REPEAT:
+          'The Inquisitor has already shown you this before. React to being shown the same thing again.',
       };
 
       // "Seninle ilgisi yok" talimatı, kanıtta karakterin adı geçerken onu kendi mazeretinin kanıtını
@@ -403,7 +418,11 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
     }
 
     const placement = caseFacts?.verification?.placement;
-    if (placement?.type === 'TESTIMONY' && placement.npcId === npc.id && caseFacts?.verificationText) {
+    if (
+      placement?.type === 'TESTIMONY' &&
+      placement.npcId === npc.id &&
+      caseFacts?.verificationText
+    ) {
       combinedPrompt += `
 
 VERIFYING EVIDENCE YOU KNOW:
@@ -435,6 +454,23 @@ Tonight a seer's dream pressed on your conscience. In this reply, even if the In
 
   if (isWarrantIssuer(session.scenarioType, npc.id)) {
     combinedPrompt += warrantInstructions(session, warrantDecision ?? null);
+  }
+
+  // Şehir dışına çıkacak kişinin programı en sonda ve ayrı: kişiliğindeki "hep buradayım" onu bastırmasın
+  const schedule = ownPlanLines(
+    townEventsOf(session.caseFacts),
+    session.currentDay ?? 1,
+    npc.id,
+    {
+      scenarioType: session.scenarioType,
+      placeName: (id) => getLocalizedLocationLabel(session.scenarioType, id),
+    },
+  );
+  if (schedule.length > 0) {
+    combinedPrompt += `
+
+YOUR SCHEDULE (this overrides anything in your role about always being at your place):
+${schedule.join('\n')}`;
   }
 
   return combinedPrompt;

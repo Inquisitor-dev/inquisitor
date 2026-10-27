@@ -23,6 +23,5 @@ export function buildCaseFacts(
     witnessDescription: draft.witnessDescription,
     culpritCover: draft.culpritCover,
     threatLetter: draft.threatLetter,
-    letterTrace: draft.letterTrace,
   };
 }

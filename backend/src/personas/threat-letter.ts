@@ -1,4 +1,5 @@
-// Psikopatın tehdit mektubu (v3): metni Gemini senaryoyla birlikte yazar, kod denetler. Korkutucu ve
+// Psikopatın tehdit mektubu (v3): metni Gemini senaryoyla birlikte yazar, kod denetler (kâğıttaki izi kod
+// seçer: scenarios/personas/letter-traces.ts). Korkutucu ve
 // tehditkâr olmalı ama küfür ve ağır hakaret içermemeli; bir şüpheliyi ya da kurbanı adıyla anmamalı.
 // Geçemezse evrenin hazır mektubu kullanılır.
 import { mentions } from '../npcs/case-statements';
@@ -27,8 +28,6 @@ const FALLBACK_LETTERS: Record<string, string> = {
     'Kardaki izlerini sabaha kadar izledim, müfettiş. Soğuk herkesi susturur, seni de susturacak. Sorularını bırak ve geçit açılınca bu kasabadan git.',
 };
 
-const FALLBACK_TRACE = 'kâğıtta belli belirsiz bir leke';
-
 export const fallbackLetter = (scenarioType: string) =>
   FALLBACK_LETTERS[scenarioType] ?? FALLBACK_LETTERS.medieval;
 
@@ -50,15 +49,10 @@ export function ensureThreatLetter(
     return draft;
   const names = [...Object.values(npcNames), draft.victim?.name ?? ''];
   const letter = draft.threatLetter?.trim() ?? '';
-  const trace = draft.letterTrace?.trim() ?? '';
   return {
     ...draft,
     threatLetter: isAcceptableLetter(letter, names)
       ? letter
       : fallbackLetter(scenarioType),
-    letterTrace:
-      trace && !names.some((name) => name && mentions(trace, name))
-        ? trace
-        : FALLBACK_TRACE,
   };
 }

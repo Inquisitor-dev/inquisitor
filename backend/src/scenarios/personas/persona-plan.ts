@@ -3,6 +3,8 @@
 // aksiyonun olabileceği geceler tanımlıdır. Vaka başında havuzdan 1–3 aksiyon çekilir, bazı geceler boş
 // geçer; böylece ne katil ne de persona her vakada aynı davranır. Oyuncu personayı bilmez.
 
+import { letterTracesFor } from './letter-traces';
+
 type Rng = () => number;
 
 export type PersonaId = 'NONE' | 'PSYCHOPATH';
@@ -15,8 +17,9 @@ export interface PersonaEvent {
   kind: PersonaActionKind;
   // Mekâna yönelik hamlelerde hedef mekân (kilit kırma); mekân ertesi gün kapalıdır
   locationId?: string;
-  // Tehdit mektubundaki izin (mürekkep, koku, kâğıt) uyduğu şüpheliler: katil dahil 2–3 kişi.
+  // Tehdit mektubundaki iz (letter-traces.ts içindeki sıra) ve uyduğu şüpheliler: katil dahil 3 kişi.
   // Pano bunu eşkâl tanığı gibi yargılar (uyduğu herkesi gösterir, yalnız katili değil).
+  traceId?: number;
   traceFits?: string[];
 }
 
@@ -96,15 +99,13 @@ function assignNights(
 }
 
 export interface PersonaPlanInput {
+  scenarioType: string;
   culpritId: string;
   // Şüpheliler (id'leri aynı zamanda mekânlarının id'si)
   suspectIds: string[];
   // Vakayı taşıyan kanıtın sahibi kilit kırmanın hedefi olmaz (doğrulayan kanıtın mekânı ya da tanığı)
   protectedIds: string[];
 }
-
-// Mektup izinin uyduğu kişi sayısı (katil dahil)
-export const LETTER_TRACE_FITS = 3;
 
 // Vakanın personasını ve gece planını seçer. Sıradan katilde (NONE) gece olayı yoktur.
 export function planPersona(
@@ -135,11 +136,19 @@ export function planPersona(
           if (targets.length > 0) event.locationId = pick(targets, rng);
         }
         if (action.kind === 'THREAT_LETTER') {
-          const others = shuffle(
-            input.suspectIds.filter((id) => id !== input.culpritId),
-            rng,
-          ).slice(0, LETTER_TRACE_FITS - 1);
-          event.traceFits = shuffle([input.culpritId, ...others], rng);
+          // Katile uyan ve vakadaki şüphelilerin dışına çıkmayan izlerden biri
+          const traces = letterTracesFor(input.scenarioType)
+            .map((trace, id) => ({ trace, id }))
+            .filter(
+              ({ trace }) =>
+                trace.fits.includes(input.culpritId) &&
+                trace.fits.every((id) => input.suspectIds.includes(id)),
+            );
+          if (traces.length > 0) {
+            const { trace, id } = pick(traces, rng);
+            event.traceId = id;
+            event.traceFits = [...trace.fits];
+          }
         }
         return event;
       })
