@@ -12,6 +12,7 @@ import {
   WEAPONS,
 } from '../../scenarios/case-catalog';
 import { normalizeScenarioType } from '../../scenarios/scenario-config';
+import { newspaperTextsFor } from '../../personas/newspaper-texts';
 
 export type ScenarioDraft = {
   scenario: string;
@@ -138,8 +139,11 @@ function caseDetailsLines(
     .filter(Boolean);
   const letter = plan.persona?.events.find((e) => e.kind === 'THREAT_LETTER');
   if (letter) {
+    // Gemini denemesinde kış evreninde mektup "dedektif" diye hitap etti ve "stop digging"i
+    // "bu kazı işi" diye kelimesi kelimesine çevirdi
+    const title = newspaperTextsFor(scenarioType).investigator;
     lines.push(
-      `- THREAT LETTER: During the investigation the culprit, obsessed with the Inquisitor, will slip an unsigned threatening letter under the Inquisitor's door. Return "threatLetter": the letter itself, 3–4 short Turkish sentences addressed to the Inquisitor, cold, menacing and unsettling (they are being watched, they should stop digging). No swearing, no slurs, no graphic violence. It never names, describes or hints at any suspect, place owner, the culprit's job or the victim's name. truthReveal does not need to mention the letter.`,
+      `- THREAT LETTER: During the investigation the culprit, obsessed with the Inquisitor, will slip an unsigned threatening letter under the Inquisitor's door. Return "threatLetter": the letter itself, 3–4 short Turkish sentences addressed to the Inquisitor, cold, menacing and unsettling (they are being watched, they should drop the case). If it addresses them by title, the only title is "${title}"; never another one. Write natural Turkish, never a word-for-word translation of an English idiom. No swearing, no slurs, no graphic violence. It never names, describes or hints at any suspect, place owner, the culprit's job or the victim's name. truthReveal does not need to mention the letter.`,
     );
   }
   if (secretLines.length > 0) {

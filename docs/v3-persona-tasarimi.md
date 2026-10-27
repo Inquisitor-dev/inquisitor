@@ -108,5 +108,20 @@ Hepsi gündüz ışığında üretilir; gece etkisi CSS ile verilir. Mektup ve g
 | 4 ✓ | Baskın sahnesi, yer tutucu odalarla | Hayır |
 | 5 ✓ | Karakter dalları (Mavi Rozet, Kar Kâhini) ve Çatı Geçişi kuralı | Hayır |
 | 6 ✓ | Nezaret | Hayır |
-| 7 | Görseller gelince gerçek odalar ve evin yeni yerleşimi | Evet |
-| 8 | Gemini ile oyun denemeleri; hikâye havuzu kural sürümü 4 | Hayır |
+| 7 ✓ | Görseller gelince gerçek odalar ve evin yeni yerleşimi | Evet |
+| 8 ✓ | Gemini ile oyun denemeleri; hikâye havuzu kural sürümü 4 | Hayır |
+
+## 8. Gemini denemesi (28 Ekim 2026)
+
+Zor bir kış vakası (Psikopat, 2. gece mektup) gerçek Gemini ile dört gün oynandı. Kundaklamayı ve baskını da aynı vakada görmek için yerel veritabanındaki plana 1. gece kundaklama ve 3. gece baskın eklendi. Bulunan ve düzeltilenler:
+
+- "Kasabada ne konuşuluyor?" sorusuna şüpheliler yalnızca gazetenin sıradan haberini anlatıp "başka büyük bir laf yok" dedi; cinayeti ve gecenin kundaklamasını anmadı. Artık sıradan haber "küçük bir konu" olarak verilir, önce cinayet ve gece olayları anlatılır; kundaklama da mektup ve baskın gibi "bütün kasaba duydu" diye yazılır.
+- Gece satırları gün numarası veriyordu ("In the night after day 2"); hancı "ikinci günün gecesinde" diye sayaç diliyle konuştu. Artık göreli: "dün gece", "iki gece önce", "birkaç gece önce".
+- Hancı kasaba haberlerini anlatınca duyulmamış tanıklığı deftere düştü: "Donmuş Geçit", "gecenin bir yarısı", "birinin", "dolaşıyor" tanıklıkla 4 kök paylaşıyordu. Her konuşmada geçen genel kökler (`COMMON_STEMS`, `npcs/evidence.ts`) artık sayılmaz.
+- Kundaklama metinleri mekân adına ek ve "kapısı" getiriyordu ("Sur gece kırıldı", "Kutsal Yürek Ağacı kapısı"). Gazete, olay kartı ve kapanış mesajı artık "Mekân: gece zorla girildi" biçiminde, her adla çalışır.
+- Kış gazetesi mektubun kapıya "çivilendiğini" ve "kulübe kapısını" yazıyordu; olay kartı ve istemler "kapının altına bırakıldı" diyor. Çin ve kış gazeteleri de artık öyle.
+- Mektup kış evreninde "dedektif" diye hitap etti ve "stop digging"i "bu kazı işi" diye çevirdi; şüpheliler de oyuncuya kimi "müfettiş", kimi "dedektif" dedi. Mektup istemi ve NPC istemi artık evrenin unvanını verir (`newspaperTextsFor(...).investigator`).
+- Baskında ışık yanarken saldırganla silahsız karşılaşınca metin "Karanlıkta biri üstüne atılıyor" diyordu; boğuşma ve bayılma metinleri artık ışıktan bağımsız.
+- Baskın sahnesi: kısa ekranda eylem paneli oda başlığının üstüne biniyordu (artık akışta, gerekirse sayfa kayar); kapı önünde lamba yanınca bütün sokak gündüz gibi aydınlanıyordu (dışarıda gece örtüsü koyu kalır).
+
+Doğru çalışanlar: mektup izi kod havuzundan ve üç şüpheliye uyuyor; katil gece olaylarını kendiliğinden açmıyor; nezarete alınan ertesi gün kırgın; gazete baskını ve nezareti yazıyor; kapanan mekânla konuşma engelleniyor. Hikâye havuzu kural sürümü 4 zaten etkin.

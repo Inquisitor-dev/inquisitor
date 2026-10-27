@@ -186,11 +186,11 @@ export function raidEventText(scenarioType: string, e: RaidEvent): string {
     case 'APPROACHES':
       return 'Ayak sesleri sana doğru yaklaşıyor.';
     case 'STRUGGLE':
-      return 'Karanlıkta biri üstüne atılıyor! Boğuşuyorsunuz; omzuna sert bir darbe yiyorsun ve gölge geri çekiliyor.';
+      return 'Biri üstüne atılıyor! Boğuşuyorsunuz; omzuna sert bir darbe yiyorsun ve saldırgan geri çekiliyor.';
     case 'FLED':
       return 'Gölge hazır olduğunu fark edince irkiliyor, kapıya atılıp karanlığa kaçıyor. Kapı önünde bir şey düşürdü.';
     case 'FAINTED':
-      return 'Karanlıkta bir el ağzını kapatıyor, başına bir darbe iniyor… Her şey kararıyor.';
+      return 'Arkandan bir el ağzını kapatıyor, başına bir darbe iniyor… Her şey kararıyor.';
     case 'DIED':
       return 'Bu kez darbe çok sert. Yere yığılıyorsun ve bir daha kalkamıyorsun.';
     case 'HID':

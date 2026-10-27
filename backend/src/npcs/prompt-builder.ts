@@ -1,3 +1,4 @@
+import { newspaperTextsFor } from '../personas/newspaper-texts';
 import {
   FEAR_GAIN,
   FEAR_BREAK_THRESHOLD,
@@ -538,7 +539,10 @@ function publicCaseFacts(
   scenarioType: string,
   caseFacts: Partial<CaseFacts> | null,
 ): string {
-  const lines: string[] = [];
+  // Gemini denemesinde kış evreninde şüpheliler oyuncuya kimi "müfettiş", kimi "dedektif" dedi
+  const lines: string[] = [
+    `- The Inquisitor is the town's "${newspaperTextsFor(scenarioType).investigator}". If you address them by title, use only that word, never another title.`,
+  ];
   const victim = caseFacts?.victim;
   if (victim?.name) {
     lines.push(
