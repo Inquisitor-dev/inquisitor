@@ -17,6 +17,9 @@ export default function AudioSettingsModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
         className={styles.modalContent}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Ses ayarları"
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth: '480px' }}
       >

@@ -571,8 +571,7 @@ $legendary: $gold-bright;
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.84);
 }
 
 .modal {
@@ -721,7 +720,6 @@ $legendary: $gold-bright;
     padding: 10px 12px 12px;
     border-radius: 14px 14px 0 0;
     background: rgba(12, 7, 7, 0.95);
-    backdrop-filter: blur(8px);
     box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.65);
   }
 

@@ -56,14 +56,13 @@
   align-items: center;
   gap: 7px;
   padding: 6px 14px;
-  background: rgba(16, 17, 24, 0.75);
+  background: rgba(16, 17, 24, 0.81);
   border: 1px solid rgba(232, 220, 196, 0.18);
   border-radius: 999px;
   color: #cfc5b4;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   text-decoration: none;
-  backdrop-filter: blur(12px);
   transition: all 0.2s ease;
 
   &:hover {
@@ -97,12 +96,11 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba(15, 16, 22, 0.75);
+  background: rgba(15, 16, 22, 0.81);
   border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 999px;
   font-size: 0.78rem;
   color: #c9bfaf;
-  backdrop-filter: blur(12px);
 }
 
 .quotaValue {
@@ -117,7 +115,6 @@
   padding: 5px 11px;
   border-radius: 999px;
   font-size: 0.74rem;
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -156,13 +153,12 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba(16, 17, 24, 0.75);
+  background: rgba(16, 17, 24, 0.81);
   border: 1px solid rgba(232, 220, 196, 0.16);
   border-radius: 999px;
   color: #cfc5b4;
   font-size: 0.78rem;
   cursor: pointer;
-  backdrop-filter: blur(12px);
   transition: all 0.2s ease;
 
   &:hover {
@@ -254,9 +250,7 @@
   z-index: 10;
   width: min(1080px, 94%);
   margin-bottom: 12px;
-  background: rgba(11, 12, 17, 0.82);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(11, 12, 17, 0.88);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 14px;
   padding: 16px 20px 12px;
@@ -558,8 +552,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.88);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -619,7 +612,6 @@
   width: min(480px, 92vw);
   height: 100vh;
   background: rgba(12, 13, 18, 0.96);
-  backdrop-filter: blur(20px);
   border-left: 1px solid rgba(212, 175, 55, 0.28);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.85);
   z-index: 95;

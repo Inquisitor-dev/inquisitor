@@ -24,7 +24,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const isEmpty = evidenceItems.length === 0 && !hasWarrants;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true" aria-label="Envanter">
       <div className={`${styles.content} ${styles.inventoryContent}`} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Kapat">&times;</button>
         <h2 className={styles.title}>Envanter</h2>

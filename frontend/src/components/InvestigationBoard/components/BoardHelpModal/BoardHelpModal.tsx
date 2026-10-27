@@ -10,7 +10,7 @@ export default function BoardHelpModal({ isOpen, onClose }: BoardHelpModalProps)
   if (!isOpen) return null;
 
   return (
-    <div className={styles.helpOverlay} onClick={onClose}>
+    <div className={styles.helpOverlay} onClick={onClose} role="dialog" aria-modal="true">
       <div className={styles.helpCard} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.helpTitle}>Soruşturma Panosu</h2>
         <ol className={styles.helpSteps}>

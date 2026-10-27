@@ -16,9 +16,8 @@ $gold-soft: rgba(224, 187, 94, 0.35);
   overflow-x: auto;
   padding: 6px;
   border-radius: $radius-md;
-  background: rgba(12, 10, 8, 0.72);
+  background: rgba(12, 10, 8, 0.78);
   border: 1px solid $gold-soft;
-  backdrop-filter: blur(8px);
   scrollbar-width: none;
 
   @media (max-width: 768px) {
@@ -99,8 +98,7 @@ $gold-soft: rgba(224, 187, 94, 0.35);
   align-items: center;
   justify-content: center;
   padding: $sp-md;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.86);
 }
 
 .sheet {
