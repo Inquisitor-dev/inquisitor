@@ -1,160 +1,212 @@
-$blood: #8a0303;
-$gold: #e0bb5e;
-$paper: #e5d9c5;
-$muted: #8a7f72;
-$line: #3d342d;
+// Sonuç ekranındaki Hüküm Dosyası: hükmün verildiği dosyanın kâğıdı (aynı evren paleti), üstünde hâkimin
+// kırmızı kalemi. Oyuncunun cevapları mavi el yazısıyla, düzeltmeler kırmızıyla, doğrular yeşil tikle.
+@use '../../../components/VerdictDossier/paper' as *;
+
+$tick: #2e7d32;
 
 .card {
+  @include paper-theme;
+
+  position: relative;
   width: 100%;
   max-width: 800px;
   margin-bottom: 24px;
-  padding: 20px 22px;
-  background: rgba(26, 21, 18, 0.92);
-  border: 1px solid $line;
-  border-top: 3px solid $blood;
-  border-radius: 6px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(180deg, var(--paper), var(--paper-shade));
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 8px var(--folder),
+    0 18px 40px rgba(0, 0, 0, 0.6);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
   text-align: left;
-  font-family: system-ui, sans-serif;
-  color: $paper;
+  overflow: hidden;
 }
 
 .header {
+  padding: 18px 28px 12px;
+  border-bottom: 2px solid var(--ink);
+  box-shadow: 0 3px 0 -1px var(--paper), 0 4px 0 -1px var(--ink);
+}
+
+.office {
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: var(--type-font);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.headerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 8px;
 }
 
 .kicker {
-  margin: 0;
-  color: $blood;
-  font-size: 0.72rem;
+  margin: 2px 0 0;
+  font-family: var(--type-font);
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
 }
 
-.title {
-  margin: 2px 0 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
+.caseNo {
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
-.score {
+.title {
+  margin: 6px 0 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+}
+
+// Kırmızı kalemle daire içine yazılmış not
+.grade {
   display: flex;
   align-items: baseline;
-  padding: 6px 14px;
-  border: 2px solid $gold;
-  border-radius: 6px;
-  color: $gold;
-  font-family: 'Playfair Display', serif;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 96px;
+  padding: 10px 14px 6px;
+  border: 3px solid var(--accent);
+  border-radius: 50% 46% 52% 48% / 48% 54% 46% 52%;
+  color: var(--accent);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  transform: rotate(-6deg);
 }
 
-.scoreValue {
-  font-size: 2rem;
+.gradeValue {
+  font-size: 2.6rem;
   font-weight: 700;
+  line-height: 1;
 }
 
-.scoreMax {
-  font-size: 0.95rem;
-  opacity: 0.8;
+.gradeMax {
+  font-size: 1.1rem;
 }
 
-.row {
-  padding: 14px 0;
-  border-top: 1px solid $line;
+.body {
+  padding: 8px 28px 22px;
 }
 
-.rowHead {
+.line {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.lineHead {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.fieldName {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.05rem;
-}
-
-.points {
-  color: $gold;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.compare {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  align-items: baseline;
   gap: 10px;
 }
 
-.answer {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border: 1px solid $line;
-  border-radius: 4px;
-}
-
-.answerTruth {
-  border-color: rgba($gold, 0.4);
-  background: rgba($gold, 0.06);
-}
-
-.answerLabel {
-  color: $muted;
-  font-size: 0.72rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.answerValue {
+.label {
+  flex-shrink: 0;
+  font-family: var(--type-font);
   font-size: 0.92rem;
-  line-height: 1.4;
-}
-
-.narrative {
-  margin: 0 0 8px;
-  padding: 10px 12px;
-  border-left: 3px solid $line;
-  font-family: var(--font-hand), 'Caveat', cursive;
-  font-size: 1.2rem;
-  line-height: 1.35;
-  white-space: pre-wrap;
-}
-
-.judge {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  font-style: italic;
-}
-
-.judgeLabel {
-  color: $gold;
-  font-style: normal;
   font-weight: 700;
+}
+
+.lineAnswer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.points {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--accent);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+// Oyuncunun yazdığı cevap
+.hand {
+  color: var(--hand);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.handLarge {
+  font-size: 1.65rem;
+}
+
+// Yanlış cevap: üstü kırmızıyla çizili
+.struck {
+  color: var(--hand);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.35rem;
+  line-height: 1.15;
+  text-decoration: line-through;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  opacity: 0.75;
+}
+
+// Hâkimin düzeltmesi
+.correction {
+  color: var(--accent);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.tick {
+  display: inline-flex;
+  color: $tick;
+  transform: rotate(-8deg);
+}
+
+.blankNote {
+  margin: 0;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin: 10px 0 0;
-  padding: 0;
+  gap: 4px;
+  margin: 2px 0 0;
+  padding: 0 0 10px 16px;
   list-style: none;
+  border-bottom: 1px solid var(--rule);
 }
 
 .detail {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   line-height: 1.4;
+}
+
+.tickSmall,
+.crossSmall {
+  display: inline-flex;
+  flex-shrink: 0;
+  transform: translateY(2px);
+}
+
+.tickSmall {
+  color: $tick;
+}
+
+.crossSmall {
+  color: var(--accent);
 }
 
 .detailLabel {
@@ -162,69 +214,122 @@ $line: #3d342d;
   min-width: 0;
 }
 
-.detailCompare {
+.detailAnswer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 10px;
   flex-shrink: 0;
-  max-width: 50%;
-  color: $muted;
+  max-width: 55%;
   text-align: right;
+
+  .hand,
+  .struck,
+  .correction {
+    font-size: 1.15rem;
+  }
 }
 
-.detailTruth {
-  color: $gold;
+.narrativeBlock {
+  padding: 10px 0;
 }
 
-.stamp {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+.narrative {
+  margin: 6px 0 8px;
   padding: 2px 8px;
-  border: 2px solid currentColor;
-  border-radius: 3px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  transform: rotate(-3deg);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.7rem - 1px),
+    var(--rule) calc(1.7rem - 1px),
+    var(--rule) 1.7rem
+  );
+  border-left: 2px solid rgba(138, 3, 3, 0.3);
+  color: var(--hand);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.3rem;
+  line-height: 1.7rem;
+  white-space: pre-wrap;
 }
 
-.stampSmall {
-  padding: 1px;
-  border-width: 1px;
-  border-radius: 50%;
-  transform: none;
+// Hakemin kenar notu
+.judge {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.3rem;
+  line-height: 1.3;
 }
 
-.stampOk {
-  color: #7fb069;
-}
-
-.stampBad {
-  color: #d9534f;
+.judgeLabel {
+  font-weight: 700;
 }
 
 .empty {
   margin: 12px 0 0;
-  color: $muted;
+  color: var(--ink-soft);
   font-style: italic;
 }
 
+// Köşedeki büyük karar damgası
+.verdictStamp {
+  position: absolute;
+  top: 70px;
+  right: 130px;
+  padding: 4px 12px;
+  border: 3px double var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: var(--type-font);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.75;
+  transform: rotate(-10deg);
+  pointer-events: none;
+}
+
+.verdictWon {
+  border-color: $tick;
+  color: $tick;
+}
+
 @media (max-width: 560px) {
-  .card {
-    padding: 16px;
+  .header,
+  .body {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
-  .compare {
-    grid-template-columns: 1fr;
+  .grade {
+    min-width: 76px;
+    padding: 8px 10px 4px;
+  }
+
+  .gradeValue {
+    font-size: 2rem;
+  }
+
+  .lineHead {
+    flex-wrap: wrap;
+  }
+
+  .verdictStamp {
+    top: 8px;
+    right: 12px;
+    font-size: 0.72rem;
   }
 
   .detail {
     flex-wrap: wrap;
   }
 
-  .detailCompare {
+  .detailAnswer {
     max-width: none;
     width: 100%;
+    justify-content: flex-start;
     padding-left: 22px;
     text-align: left;
   }

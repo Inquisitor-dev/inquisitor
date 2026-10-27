@@ -1,11 +1,11 @@
-// Hüküm Dosyası: mühürlü bir mahkeme dosyası. Menü ve marketle aynı dil: koyu zemin, kan kırmızısı,
-// altın vurgular, Playfair başlıklar, roma rakamları.
-$blood: #8a0303;
-$gold: #e0bb5e;
-$paper: #e8dcc4;
-$muted: #8a7f72;
-$line: #3d342d;
-$card: #251f1b;
+// Hüküm Dosyası: bir klasörün içindeki tek sayfalık mahkeme dosyası. Klasörün ve kâğıdın rengi evrene
+// göre değişir (_paper.scss); yazılar dossierTheme.ts'te.
+@use './paper' as *;
+
+/* ─── TEMALAR (_paper.scss) ─── */
+.folder {
+  @include paper-theme;
+}
 
 .overlay {
   position: fixed;
@@ -19,157 +19,269 @@ $card: #251f1b;
   background: rgba(0, 0, 0, 0.91);
 }
 
-.dossier {
+/* ─── KLASÖR ─── */
+.folder {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 680px;
+  max-width: 720px;
   max-height: calc(100dvh - 48px);
-  background: #1a1512;
-  border: 1px solid $line;
-  border-top: 3px solid $blood;
-  border-radius: 8px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  color: $paper;
+  padding: 0 10px 10px;
+  background: linear-gradient(160deg, var(--folder), var(--folder-edge));
+  border-radius: 4px 10px 10px 10px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+  color: var(--ink);
+}
+
+// Klasörün üst kenarındaki bölüm sekmeleri (roma rakamlı ayraçlar)
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 -10px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  transform: translateY(-26px);
+  margin-bottom: -26px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 12px;
+  background: var(--tab);
+  border: none;
+  border-radius: 6px 6px 0 0;
+  color: var(--tab-text);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+}
+
+.tabNumber {
+  font-weight: 700;
+}
+
+.tabLabel {
+  white-space: nowrap;
+}
+
+.tabDone {
+  opacity: 0.9;
+}
+
+.tabCurrent {
+  height: 34px;
+  margin-top: -4px;
+  background: var(--paper);
+  color: var(--ink);
+  opacity: 1;
+}
+
+/* ─── KÂĞIT ─── */
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 8px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(180deg, var(--paper), var(--paper-shade));
+  border-radius: 2px;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.12),
+    0 8px 18px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
 }
 
 .closeBtn {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
   display: flex;
   padding: 4px;
   background: transparent;
   border: none;
-  color: $muted;
+  color: var(--ink-soft);
   cursor: pointer;
 
   &:hover {
-    color: #fff;
+    color: var(--accent);
   }
 }
 
 .header {
-  padding: 22px 24px 14px;
-  border-bottom: 1px solid $line;
-  text-align: center;
+  padding: 18px 28px 12px;
+  border-bottom: 2px solid var(--ink);
+  box-shadow: 0 3px 0 -1px var(--paper), 0 4px 0 -1px var(--ink);
+}
+
+.office {
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: var(--type-font);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+  padding-right: 24px;
 }
 
 .kicker {
   margin: 0;
-  color: $blood;
-  font-size: 0.72rem;
+  color: var(--ink);
+  font-family: var(--type-font);
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
 }
 
-.title {
-  margin: 4px 0 12px;
-  font-family: 'Playfair Display', serif;
-  font-size: 1.6rem;
-  color: $paper;
+.caseNo {
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
-.steps {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.stepDot {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid $line;
-  border-radius: 50%;
-  color: $muted;
-  font-family: 'Playfair Display', serif;
+// Köşedeki kırmızı sınıflandırma damgası
+.classification {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--type-font);
   font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  opacity: 0.85;
 }
 
-.stepDone {
-  border-color: rgba($gold, 0.5);
-  color: $gold;
+.title {
+  margin: 10px 0 0;
+  color: var(--ink);
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
 }
 
-.stepCurrent {
-  border-color: $blood;
-  background: $blood;
-  color: #fff;
+.titleNumber {
+  color: var(--accent);
 }
 
 .body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 18px 28px 20px;
 }
 
 .hint {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
   margin: 0 0 16px;
-  color: $muted;
+  color: var(--ink-soft);
   font-size: 0.9rem;
   font-style: italic;
   line-height: 1.5;
 }
 
+.hintCount {
+  flex-shrink: 0;
+  color: var(--ink);
+  font-family: var(--type-font);
+  font-style: normal;
+  font-weight: 700;
+}
+
 .empty {
-  color: $muted;
+  color: var(--ink-soft);
   text-align: center;
 }
 
 .error {
   margin: 12px 0 0;
-  color: #e57373;
+  color: var(--accent);
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
-// Katil seçimi
+/* ─── I. KATİL: şüphelilerin fotoğrafları, seçilene kırmızı mürekkeple daire ─── */
 .suspectGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+  gap: 18px 14px;
+  padding: 4px;
 }
 
 .suspect {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: $card;
-  border: 1px solid $line;
-  border-radius: 6px;
-  color: inherit;
-  text-align: left;
+  gap: 2px;
+  padding: 8px 8px 10px;
+  background: #fbf8f0;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  color: var(--ink);
+  text-align: center;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.15s ease;
 
   &:hover {
-    border-color: rgba($blood, 0.7);
-    background: #332924;
+    transform: rotate(0deg) translateY(-2px);
   }
 }
 
-.suspectActive {
-  border-color: $blood;
-  background: rgba($blood, 0.18);
-  box-shadow: inset 0 0 0 1px $blood;
+.suspectPhoto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 6px;
+  overflow: hidden;
+  background: #2a2420;
+  filter: sepia(0.25);
+
+  .suspectActive & {
+    filter: none;
+  }
 }
 
-.portrait,
-.portraitIcon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 1px solid $line;
+.portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: top;
 }
@@ -177,34 +289,42 @@ $card: #251f1b;
 .portraitIcon {
   display: grid;
   place-items: center;
-  font-size: 1.5rem;
-}
-
-.suspectText {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 1.6rem;
 }
 
 .suspectName {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.02rem;
-  color: $paper;
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.25rem;
+  line-height: 1.05;
 }
 
 .suspectRole {
-  color: $muted;
-  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  line-height: 1.3;
 }
 
-// Dayanak kanıtlar
+// Elle çizilmiş gibi kırmızı daire
+.inkCircle {
+  position: absolute;
+  inset: -10px -12px;
+  border: 3px solid var(--accent);
+  border-radius: 48% 52% 46% 54% / 55% 45% 55% 45%;
+  transform: rotate(-4deg);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* ─── II. DAYANAKLAR ─── */
 .evidenceList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--rule);
 }
 
 .evidence {
@@ -212,212 +332,507 @@ $card: #251f1b;
   align-items: flex-start;
   gap: 12px;
   width: 100%;
-  padding: 12px;
-  background: $card;
-  border: 1px solid $line;
-  border-radius: 6px;
+  padding: 10px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
   color: inherit;
   text-align: left;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    border-color: rgba($gold, 0.5);
+    background: rgba(0, 0, 0, 0.03);
   }
 
   &:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 }
 
-.evidenceActive {
-  border-color: $gold;
-  background: rgba($gold, 0.08);
-}
-
+// Kâğıda çizilmiş kutu; seçilince mürekkeple işaretlenir
 .checkbox {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  border: 1px solid $muted;
-  border-radius: 3px;
-  color: #1a1512;
+  width: 22px;
+  height: 22px;
+  margin-top: 4px;
+  border: 2px solid var(--ink);
+  color: var(--accent);
+}
 
-  .evidenceActive & {
-    background: $gold;
-    border-color: $gold;
-  }
+.evidenceThumb {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  background: #fbf8f0 center / cover no-repeat;
+  border: 3px solid #fbf8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  color: var(--ink-soft);
+  transform: rotate(-2deg);
 }
 
 .evidenceText {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .evidenceTitle {
-  color: $gold;
-  font-size: 0.75rem;
+  color: var(--accent);
+  font-family: var(--type-font);
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .evidenceBody {
+  color: var(--ink);
   font-size: 0.88rem;
   line-height: 1.45;
 }
 
-// Seçenek düğmeleri (silah, motif, saat, bağ)
-.group {
-  margin-bottom: 18px;
-}
-
-.groupTitle {
-  margin: 0 0 8px;
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem;
+.evidenceActive .evidenceBody {
   font-weight: 600;
-  color: $paper;
 }
 
-.choices {
+/* ─── III ve IV. BOŞLUKLAR: "Cinayet aleti: ______" ─── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: baseline;
+  gap: 4px 10px;
+  min-width: 0;
 }
 
-.choice {
-  padding: 7px 12px;
-  background: $card;
-  border: 1px solid $line;
-  border-radius: 999px;
-  color: $paper;
-  font-size: 0.85rem;
+.fieldLabel {
+  flex-shrink: 0;
+  color: var(--ink);
+  font-family: var(--type-font);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.blank {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  min-width: 140px;
+  min-height: 34px;
+  padding: 0 4px 2px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px dotted var(--ink-soft);
+  color: var(--ink);
+  text-align: left;
   cursor: pointer;
 
-  &:hover {
-    border-color: rgba($gold, 0.6);
+  &:hover,
+  &.blankOpen {
+    border-bottom-style: solid;
+    border-bottom-color: var(--accent);
   }
 }
 
-.choiceActive {
-  background: $blood;
-  border-color: $blood;
-  color: #fff;
+.blankEmpty {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-style: italic;
+  opacity: 0.7;
 }
 
-// Olay anlatımı
-.narrative {
-  width: 100%;
-  padding: 12px;
-  background: $card;
-  border: 1px solid $line;
-  border-radius: 6px;
-  color: $paper;
+.blankHand {
+  color: var(--hand);
   font-family: var(--font-hand), 'Caveat', cursive;
-  font-size: 1.25rem;
-  line-height: 1.4;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+// Diğer şüphelilerde seçilen bağ: kırmızı damga
+.blankStamp {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--type-font);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+}
+
+.blankChevron {
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--ink-soft);
+}
+
+// Seçenekler boşluğun altında açılır (kaydırılan alanda kırpılmasın diye akışın içinde)
+.menu {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 2px 0 4px;
+  padding: 4px;
+  list-style: none;
+  background: #fbf8f0;
+  border: 1px solid var(--rule);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.menuItem,
+.menuClear {
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+}
+
+.menuItemActive {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.menuClear {
+  color: var(--ink-soft);
+  font-style: italic;
+  border-top: 1px solid var(--rule);
+}
+
+/* ─── IV. DİĞER ŞÜPHELİLER ─── */
+.innocentList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.innocent {
+  display: grid;
+  grid-template-columns: 48px minmax(110px, 0.8fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 4px 14px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--rule);
+
+  .field {
+    align-items: center;
+  }
+}
+
+.innocentPhoto {
+  display: block;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  background: #2a2420;
+  border: 3px solid #fbf8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.innocentText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.innocentName {
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.3rem;
+  line-height: 1.05;
+}
+
+/* ─── V. OLAYIN AKIŞI: çizgili kâğıda el yazısı ─── */
+.narrative {
+  display: block;
+  width: 100%;
+  padding: 2px 6px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.8rem - 1px),
+    var(--rule) calc(1.8rem - 1px),
+    var(--rule) 1.8rem
+  );
+  background-attachment: local;
+  border: none;
+  border-left: 2px solid rgba(138, 3, 3, 0.3);
+  color: var(--hand);
+  font-family: var(--font-hand), 'Caveat', cursive;
+  font-size: 1.35rem;
+  line-height: 1.8rem;
   resize: vertical;
+
+  &::placeholder {
+    color: var(--ink-soft);
+    opacity: 0.5;
+  }
 
   &:focus {
     outline: none;
-    border-color: $gold;
   }
 }
 
 .counter {
   margin: 6px 0 0;
-  color: $muted;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   text-align: right;
 }
 
-// Mühür özeti
+/* ─── VI. MÜHÜR ─── */
 .summary {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 18px;
-  margin: 0 0 18px;
+  margin: 0 0 16px;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
 
   dt {
-    color: $muted;
+    flex-shrink: 0;
+    color: var(--ink-soft);
+    font-family: var(--type-font);
     font-size: 0.85rem;
   }
 
+  // Noktalı kılavuz çizgi
+  &::after {
+    content: '';
+    order: 1;
+    flex: 1;
+    border-bottom: 1px dotted var(--ink-soft);
+    opacity: 0.6;
+  }
+
   dd {
+    order: 2;
     margin: 0;
+    color: var(--hand);
+    font-family: var(--font-hand), 'Caveat', cursive;
+    font-size: 1.35rem;
+    line-height: 1;
+    text-align: right;
   }
 }
 
 .summaryCulprit {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.15rem;
-  color: $blood;
+  color: var(--accent) !important;
+  font-size: 1.6rem !important;
   font-weight: 700;
 }
 
 .warning {
   margin: 0;
-  padding: 10px 12px;
-  border-left: 3px solid $blood;
-  background: rgba($blood, 0.1);
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: rgba(138, 3, 3, 0.06);
+  color: var(--ink);
   font-size: 0.85rem;
   line-height: 1.5;
 }
 
-.footer {
+.sealArea {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 24px;
-  border-top: 1px solid $line;
+  justify-content: center;
+  padding: 18px 0 4px;
 }
 
-.navBtn,
+// Mum mühür düğmesi
 .sealBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 104px;
+  height: 104px;
+  background: radial-gradient(circle at 35% 30%, #c0262b, #8a0303 55%, #5c0202);
+  border: none;
+  border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+  box-shadow:
+    inset 0 0 0 6px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 8px rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  color: #f6d9c4;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover:not(:disabled) {
+    transform: scale(1.05) rotate(-3deg);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// Modern, cyberpunk ve kışta mühür yerine lastik damga
+.folder:is([data-theme='modern'], [data-theme='cyberpunk'], [data-theme='winter']) .sealBtn {
+  width: auto;
+  height: auto;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px 22px;
+  background: transparent;
+  border: 3px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: none;
+  color: var(--accent);
+  font-family: var(--type-font);
+  font-size: 1rem;
+  letter-spacing: 3px;
+  transform: rotate(-3deg);
+
+  &:hover:not(:disabled) {
+    background: rgba(138, 3, 3, 0.06);
+    transform: rotate(-3deg) scale(1.04);
+  }
+}
+
+// Çin'de kare kırmızı mühür (chop)
+.folder[data-theme='china'] .sealBtn {
+  border-radius: 6px;
+}
+
+// Mühürlenince kâğıdın ortasına basılan büyük damga
+.sealStamp {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  z-index: 3;
+  padding: 10px 26px;
+  border: 5px double var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: var(--type-font);
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  animation: stampDown 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes stampDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1.8);
+  }
+  to {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sealStamp {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
+/* ─── ALT ÇUBUK ─── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 28px 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.pageNo {
+  color: var(--ink-soft);
+  font-family: var(--type-font);
+  font-size: 0.8rem;
+}
+
+.navSpacer {
+  width: 90px;
+}
+
+.navBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 18px;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--ink-soft);
+  border-radius: 3px;
+  color: var(--ink);
+  font-family: var(--type-font);
+  font-size: 0.85rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   cursor: pointer;
 
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
   &:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 }
 
-.navBtn {
-  background: transparent;
-  border: 1px solid $line;
-  color: $paper;
-
-  &:hover:not(:disabled) {
-    border-color: $gold;
-    color: $gold;
-  }
-}
-
-.sealBtn {
-  background: $blood;
-  border: 1px solid $blood;
-  color: #fff;
-  font-weight: 700;
-
-  &:hover:not(:disabled) {
-    background: #a50505;
-  }
-}
-
+/* ─── DAR EKRAN ─── */
 @media (max-width: 560px) {
+  .overlay {
+    padding: 34px 8px 8px;
+  }
+
+  .folder {
+    max-height: calc(100dvh - 42px);
+    padding: 0 6px 6px;
+  }
+
+  // Dar ekranda sekmelerde yalnızca roma rakamı kalır
+  .tabLabel {
+    display: none;
+  }
+
+  .tabCurrent .tabLabel {
+    display: inline;
+  }
+
   .header,
   .body,
   .footer {
@@ -429,40 +844,54 @@ $card: #251f1b;
     font-size: 1.3rem;
   }
 
-  .suspectGrid {
-    grid-template-columns: 1fr;
+  .classification {
+    font-size: 0.66rem;
+    letter-spacing: 2px;
   }
 
-  .navBtn,
-  .sealBtn {
-    padding: 10px 12px;
-    font-size: 0.8rem;
+  .suspectGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .innocent {
+    grid-template-columns: 44px 1fr;
+
+    .field {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .innocentPhoto {
+    width: 44px;
+    height: 44px;
+  }
+
+  .navSpacer {
+    width: 0;
   }
 }
 
 // Kısa ekranlarda (yatay telefon) başlık küçülür, form alanına yer kalır
 @media (max-height: 560px) {
   .overlay {
-    padding: 8px;
+    padding: 34px 8px 8px;
   }
 
-  .dossier {
-    max-height: calc(100dvh - 16px);
+  .folder {
+    max-height: calc(100dvh - 42px);
   }
 
   .header {
-    padding-top: 10px;
-    padding-bottom: 8px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+  }
+
+  .office {
+    display: none;
   }
 
   .title {
-    margin: 0 0 6px;
+    margin-top: 4px;
     font-size: 1.15rem;
-  }
-
-  .stepDot {
-    width: 24px;
-    height: 24px;
-    font-size: 0.68rem;
   }
 }

@@ -1,0 +1,76 @@
+// Hüküm Dosyası'nın kâğıdı: dosya formu ve sonuç ekranındaki düzeltilmiş dosya aynı paleti kullanır.
+// Renkler evrene göre değişir (data-theme, defterle aynı paletler).
+@mixin paper-theme {
+  --folder: #4a2e1a;
+  --folder-edge: #2a170b;
+  --tab: #6b4528;
+  --tab-text: #f3e6c8;
+  --paper: #efe2c4;
+  --paper-shade: #e2d1ab;
+  --rule: rgba(120, 88, 50, 0.28);
+  --ink: #2b1d12;
+  --ink-soft: #6b5640;
+  --accent: #8a0303;
+  --hand: #1f3a7a;
+  --type-font: 'Playfair Display', Georgia, serif;
+
+  &[data-theme='modern'] {
+    // Manila klasör, daktilo yazısı
+    --folder: #c9a86a;
+    --folder-edge: #a4844a;
+    --tab: #d8bb80;
+    --tab-text: #3a2c14;
+    --paper: #f6f3e8;
+    --paper-shade: #e8e3d2;
+    --rule: rgba(70, 90, 130, 0.22);
+    --ink: #1b2433;
+    --ink-soft: #55607a;
+    --accent: #b3151b;
+    --hand: #1f3a7a;
+    --type-font: 'Courier New', ui-monospace, monospace;
+  }
+
+  &[data-theme='cyberpunk'] {
+    --folder: #1d1830;
+    --folder-edge: #0c0a14;
+    --tab: #2b2346;
+    --tab-text: #ff6be3;
+    --paper: #e8ecf2;
+    --paper-shade: #d6dce6;
+    --rule: rgba(60, 80, 120, 0.22);
+    --ink: #141826;
+    --ink-soft: #4d5670;
+    --accent: #c2127f;
+    --hand: #233a8a;
+    --type-font: ui-monospace, 'Courier New', monospace;
+  }
+
+  &[data-theme='china'] {
+    --folder: #5a1414;
+    --folder-edge: #330909;
+    --tab: #7a1f1a;
+    --tab-text: #f3dfae;
+    --paper: #f3e9d2;
+    --paper-shade: #e6d8b8;
+    --rule: rgba(140, 60, 40, 0.22);
+    --ink: #2a1712;
+    --ink-soft: #6e4c3c;
+    --accent: #b8141b;
+    --hand: #2a1712;
+  }
+
+  &[data-theme='winter'] {
+    --folder: #4a5562;
+    --folder-edge: #2a323b;
+    --tab: #5d6a78;
+    --tab-text: #eef3f7;
+    --paper: #eef1f2;
+    --paper-shade: #dde3e6;
+    --rule: rgba(80, 110, 135, 0.24);
+    --ink: #1c2630;
+    --ink-soft: #586773;
+    --accent: #9b1c22;
+    --hand: #1f3a7a;
+    --type-font: 'Courier New', ui-monospace, monospace;
+  }
+}
