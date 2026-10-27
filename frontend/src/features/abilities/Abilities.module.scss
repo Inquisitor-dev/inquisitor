@@ -3,12 +3,12 @@
 $gold: #e0bb5e;
 $gold-soft: rgba(224, 187, 94, 0.35);
 
-// Harita: eylem çubuğunun üstünde ortalanmış yetenek şeridi
+// Harita: sağ altta, Olay Yeri ve Evim düğmelerinin üstünde yetenek şeridi. Alt ortada mekân
+// etiketleriyle (Ashenmoor'da çiftlik), sağ üstte mezarlıkla çakışıyordu.
 .dock {
   position: absolute;
-  left: 50%;
-  bottom: 92px;
-  transform: translateX(-50%);
+  right: 28px;
+  bottom: 94px;
   z-index: 90;
   display: flex;
   gap: $sp-sm;
@@ -22,7 +22,10 @@ $gold-soft: rgba(224, 187, 94, 0.35);
 
   @media (max-width: 768px) {
     position: fixed;
+    right: auto;
+    left: 50%;
     bottom: 80px;
+    transform: translateX(-50%);
     max-width: calc(100% - 16px);
   }
 }
@@ -246,7 +249,7 @@ $gold-soft: rgba(224, 187, 94, 0.35);
 .armedHint {
   position: absolute;
   left: 50%;
-  bottom: 148px;
+  bottom: 100px;
   transform: translateX(-50%);
   z-index: 90;
   max-width: calc(100% - 32px);

@@ -20,166 +20,6 @@
   display: none;
 }
 
-.header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  padding: 16px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 60%, transparent 100%);
-  pointer-events: none;
-}
-
-.header > * {
-  pointer-events: auto;
-}
-
-.backBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #8a7f72;
-  transition: color 0.15s ease;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-
-  &:hover {
-    color: #E8DCC4;
-  }
-}
-
-.headerCenter {
-  text-align: center;
-}
-
-.pageTitle {
-  font-family: 'Playfair Display', serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #E8DCC4;
-  letter-spacing: 0.1em;
-  margin: 0 0 4px 0;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-}
-
-.pageSub {
-  font-size: 0.85rem;
-  color: #8a7f72;
-  font-style: italic;
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.sessionInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-}
-
-.stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #E8DCC4;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.sessionDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #8A0303;
-  box-shadow: 0 0 8px #8A0303;
-}
-
-.limitText {
-  margin-left: 12px;
-  color: #8a7f72;
-}
-
-.endDayBtn {
-  background: transparent;
-  border: 1px solid #8A0303;
-  color: #8A0303;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  border-radius: 2px;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: rgba(138, 3, 3, 0.1);
-    box-shadow: 0 0 15px rgba(138, 3, 3, 0.3);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    border-color: #555;
-    color: #555;
-  }
-}
-
-.condemnCenter {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 110;
-}
-
-.mainCondemnBtn {
-  background: #8A0303;
-  color: #fff;
-  border: none;
-  padding: 10px 30px;
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 4px;
-  letter-spacing: 0.1em;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(138, 3, 3, 0.4), 0 0 40px rgba(138, 3, 3, 0.1);
-
-  &:hover {
-    background: #a00;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(138, 3, 3, 0.6), 0 0 60px rgba(138, 3, 3, 0.2);
-  }
-}
-
-.actionBar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 76px;
-  background: linear-gradient(to top, rgba(12, 10, 8, 0.85) 0%, rgba(12, 10, 8, 0.45) 65%, transparent 100%);
-  border-top: 1px solid rgba(232, 220, 196, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
-  z-index: 100;
-}
-
 .modalSubtitle {
   font-size: 0.85rem;
   color: #8a7f72;
@@ -279,68 +119,6 @@
   color: #8a7f72;
   font-size: 0.75rem;
   font-style: italic;
-}
-
-.actionGroup {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  
-  /* İlk grubu (Notlar/Envanter) biraz sağa kaydır */
-  &:first-child {
-    margin-left: 60px;
-  }
-}
-
-.iconBtn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: #8a7f72;
-  transition: all 0.2s ease;
-  padding: 8px;
-
-  svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 1.5;
-  }
-
-  span {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  &:hover {
-    color: #E8DCC4;
-    transform: translateY(-2px);
-  }
-}
-
-.crimeSceneBarBtn {
-  background: rgba(138, 3, 3, 0.15);
-  border: 1px solid #8A0303;
-  color: #E8DCC4;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #8A0303;
-    box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
-  }
 }
 
 .modalOverlay {
@@ -505,7 +283,14 @@
   }
 
   .homeActionIcon {
-    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(224, 187, 94, 0.25);
+    border-radius: 50%;
+    color: #e0bb5e;
   }
 
   .homeActionInfo {
@@ -710,6 +495,9 @@
 }
 
 .icon {
+  display: grid;
+  place-items: center;
+  color: #e0bb5e;
   font-size: 1.2rem;
 }
 
@@ -741,178 +529,6 @@
     height: 100vh;
     background-size: cover;
     background-position: center;
-  }
-
-  .header {
-    position: fixed; /* Kaydırırken tepede kalsın */
-    padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.92);
-    pointer-events: auto;
-    z-index: 1000;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    border-bottom: 1px solid rgba(138, 3, 3, 0.3);
-  }
-
-  .backBtn {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.5rem;
-    svg { width: 10px; height: 10px; }
-  }
-
-  .headerCenter {
-    margin: 0;
-  }
-
-  .pageTitle {
-    font-size: 0.9rem;
-    margin: 0;
-  }
-
-  .pageSub {
-    display: block !important;
-    font-size: 0.6rem;
-    color: #8A0303;
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .sessionInfo {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  .stats {
-    font-size: 0.5rem;
-    .limitText { margin: 0; }
-  }
-
-  .sessionDot { width: 4px; height: 4px; }
-
-  .endDayBtn {
-    display: flex !important;
-    padding: 3px 6px;
-    font-size: 0.55rem;
-    background: rgba(138, 3, 3, 0.1);
-    border: 1px solid #8A0303;
-    color: #8A0303;
-    border-radius: 2px;
-  }
-
-  .actionBar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 72px;
-    padding: 0 4px;
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly; // Eşit aralıklarla dağıt
-    background: rgba(5, 5, 5, 0.98);
-    border-top: 1px solid rgba(138, 3, 3, 0.6);
-    z-index: 1000;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
-    gap: 0;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(138, 3, 3, 0.8), transparent);
-    }
-  }
-
-  .actionGroup, .condemnCenter {
-    display: contents;
-  }
-
-  .iconBtn, .crimeSceneBarBtn, .endDayBtn, .mainCondemnBtn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    padding: 4px 0;
-    flex: 1;
-    min-width: 0;
-    gap: 2px;
-    
-    .icon {
-      font-size: 1.1rem;
-      margin-bottom: 2px;
-      color: #E8DCC4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-    
-    svg {
-      width: 18px;
-      height: 18px;
-      color: #E8DCC4;
-    }
-
-    span, .btnText {
-      font-size: 0.48rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.2px;
-      color: #E8DCC4;
-      opacity: 0.8;
-      white-space: nowrap;
-      text-align: center;
-    }
-  }
-
-  .crimeSceneBarBtn {
-    .btnText { display: none; }
-    &::after { 
-      content: 'Mahal'; 
-      font-size: 0.48rem; 
-      font-weight: 600; 
-      text-transform: uppercase; 
-      color: #E8DCC4; 
-      opacity: 0.8; 
-    }
-  }
-
-  .endDayBtn {
-    .btnText { display: none; }
-    &::after { 
-      content: 'Dinlen'; 
-      font-size: 0.48rem; 
-      font-weight: 600; 
-      text-transform: uppercase; 
-      color: #E8DCC4; 
-      opacity: 0.8; 
-    }
-  }
-
-  .mainCondemnBtn {
-    .icon {
-      color: #ff4d4d;
-      font-size: 1.2rem;
-      text-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
-    }
-    .btnText {
-      color: #ff4d4d;
-      opacity: 1;
-      font-weight: 700;
-    }
-    margin: 0;
-    box-shadow: none;
   }
 
   .label {

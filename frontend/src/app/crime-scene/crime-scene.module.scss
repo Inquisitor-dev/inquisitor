@@ -51,8 +51,10 @@
 }
 
 .npcIcon {
-  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
   margin-bottom: 4px;
+  color: #c0392b;
 }
 
 .npcName {

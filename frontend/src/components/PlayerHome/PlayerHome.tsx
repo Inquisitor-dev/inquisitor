@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { BedDouble, BookOpen, Briefcase, DoorOpen, Gavel, Pin, type LucideIcon } from 'lucide-react';
 import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { getPlayerHome, type HomeActionId, type HomeSpot, type PlayerHomeData } from '@/config/homeConfig';
@@ -176,40 +177,40 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
     }
   };
 
-  const actions: Record<HomeActionId, { icon: string; label: string; desc: string; run: () => void }> = {
+  const actions: Record<HomeActionId, { icon: LucideIcon; label: string; desc: string; run: () => void }> = {
     bed: isLastDay
       ? {
-          icon: '⚖️',
+          icon: Gavel,
           label: 'Hükmünü Ver',
           desc: 'Soruşturmanın son günü. Suçluyu seçme vakti geldi.',
           run: handleSleep,
         }
       : {
-          icon: '🛌',
-          label: endingDay ? 'Uykuya dalıyorsun…' : 'Dinlen & Günü Bitir',
+          icon: BedDouble,
+          label: endingDay ? 'Uykuya dalıyorsun…' : 'Dinlen ve Günü Bitir',
           desc: isNight ? 'Geceyi uykuda geçir ve bir sonraki güne başla.' : 'Günü erken sonlandırıp dinlen.',
           run: handleSleep,
         },
     desk: {
-      icon: '📖',
-      label: 'Soruşturma Notları',
+      icon: BookOpen,
+      label: 'Not Defteri',
       desc: 'Aldığın ifadeleri ve gözlemlerini oku.',
       run: () => setOpenPanel('notes'),
     },
     chest: {
-      icon: '🎒',
+      icon: Briefcase,
       label: 'Envanter ve Deliller',
       desc: 'Bulduğun kanıtları ve arama izinlerini incele.',
       run: () => setOpenPanel('inventory'),
     },
     board: {
-      icon: '📌',
+      icon: Pin,
       label: 'Soruşturma Panosu',
       desc: 'Kanıtları ve ifadeleri panoya iğnele, aralarına ip ger.',
       run: () => router.push('/board'),
     },
     door: {
-      icon: '🚪',
+      icon: DoorOpen,
       label: 'Dışarı Çık',
       desc: 'Sokaklara geri dön.',
       run: () => {
@@ -267,7 +268,7 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
         onClick={() => setActiveSpot(spot.action)}
       >
         <span className={styles.spotHint} aria-hidden>
-          {action.icon}
+          <action.icon size={18} strokeWidth={1.7} />
         </span>
         <span className={styles.spotTitle}>{spot.title}</span>
         <button
@@ -281,7 +282,9 @@ function HomeScene({ home }: { home: PlayerHomeData }) {
             action.run();
           }}
         >
-          <span className={styles.spotActionIcon}>{action.icon}</span>
+          <span className={styles.spotActionIcon}>
+            <action.icon size={22} strokeWidth={1.7} aria-hidden />
+          </span>
           <span className={styles.spotActionText}>
             <span className={styles.spotActionLabel}>{action.label}</span>
             <span className={styles.spotActionDesc}>{action.desc}</span>

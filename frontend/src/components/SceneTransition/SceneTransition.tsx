@@ -6,7 +6,7 @@ import styles from './SceneTransition.module.scss';
 // Uzun beklemelerde (ör. sunucu uyanırken) okunacak kısa oyun ipuçları
 const TIPS = [
   'Bir masuma kendi mekânından bulunan kanıtı göstermek onu itirafa zorlar.',
-  'Suçlu hiçbir zaman itiraf etmez; sıkıştırıldığında yalnızca paniğe kapılır.',
+  'Suçlu da sıkıştırılınca çözülür, ama anlattığı önceden hazırladığı bir yalandır. İtirafları başka kanıtlarla doğrula.',
   'Her mekâna girmek günün saatini ilerletir. Gece çökünce kapılar kapanır.',
   'Arama iznin olan mekânlarda gizli kanıtları kendin araştırabilirsin.',
   'İfadeler not defterine kendiliğinden yazılır; bulduğun eşyalar envanterde durur.',

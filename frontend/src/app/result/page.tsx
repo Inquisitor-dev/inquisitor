@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { Coins, Medal } from 'lucide-react';
 import { Suspense } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { TruthRevealPanel } from '../../components/TruthRevealPanel';
@@ -81,13 +82,13 @@ function ResultContent() {
           }}
         >
           {rewardTokens && (
-            <span style={{ color: '#daa520', fontWeight: 700, fontSize: '1.1rem' }}>
-              🪙 +{rewardTokens} Token
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#daa520', fontWeight: 700, fontSize: '1.1rem' }}>
+              <Coins size={18} aria-hidden /> +{rewardTokens} Token
             </span>
           )}
           {scoreEarned && (
-            <span style={{ color: '#e5d9c5', fontWeight: 600, fontSize: '1rem' }}>
-              🎖️ +{scoreEarned} Sıralama Puanı
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#e5d9c5', fontWeight: 600, fontSize: '1rem' }}>
+              <Medal size={18} aria-hidden /> +{scoreEarned} Sıralama Puanı
             </span>
           )}
         </div>

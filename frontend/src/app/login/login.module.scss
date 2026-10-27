@@ -218,6 +218,9 @@
 }
 
 .errorBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 16px;
   padding: 10px 14px;
   background: rgba(138, 3, 3, 0.15);

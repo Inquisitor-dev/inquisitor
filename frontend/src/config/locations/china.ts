@@ -4,7 +4,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'home',
     name: 'Evim',
-    icon: '🏡',
     top: '62%',
     left: '53%',
     width: '26%',
@@ -14,7 +13,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'church',
     name: 'Muhafız Karargahı',
-    icon: '🏯',
     top: '3%',
     left: '6%',
     width: '29%',
@@ -24,7 +22,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'tavern',
     name: 'Çay Evi & Han',
-    icon: '🍵',
     top: '8%',
     left: '44%',
     width: '24%',
@@ -34,7 +31,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'graveyard',
     name: 'Kadim Tapınak',
-    icon: '⛩️',
     top: '3%',
     left: '71%',
     width: '28%',
@@ -44,7 +40,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'clinic',
     name: 'Şifacı & Baharatçı',
-    icon: '🌿',
     top: '36%',
     left: '3%',
     width: '23%',
@@ -55,7 +50,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'mill',
     name: 'Demirci Ocağı',
-    icon: '⚒️',
     top: '36%',
     left: '69%',
     width: '24%',
@@ -65,7 +59,6 @@ export const chinaLocations: MapLocation[] = [
   {
     id: 'farm',
     name: 'Balıkçı İskelesi',
-    icon: '🎣',
     top: '68%',
     left: '0%',
     width: '28%',

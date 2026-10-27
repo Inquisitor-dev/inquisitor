@@ -1,7 +1,9 @@
 'use client';
 
 import { Check, X } from 'lucide-react';
-import type { CaseOutcome, VerdictFieldId } from '@/features/verdict/verdictTypes';
+import { useGameStore } from '@/store/useGameStore';
+import { getDossierTheme, shortLabel } from '@/components/VerdictDossier/dossierTheme';
+import type { CaseOutcome, VerdictFieldId, VerdictFieldResult } from '@/features/verdict/verdictTypes';
 import styles from './VerdictReportCard.module.scss';
 
 const FIELD_LABELS: Record<VerdictFieldId, string> = {
@@ -13,111 +15,177 @@ const FIELD_LABELS: Record<VerdictFieldId, string> = {
   NARRATIVE: 'Olayın akışı',
 };
 
+// Sunucunun boş alan için yazdığı cevap (verdict-report.ts NOT_ANSWERED)
+const NOT_ANSWERED = 'Boş bıraktın';
+
+type Mark = 'ok' | 'partial' | 'bad';
+
+const markOf = (field: VerdictFieldResult): Mark =>
+  field.points >= field.max ? 'ok' : field.points > 0 ? 'partial' : 'bad';
+
 interface VerdictReportCardProps {
   outcome: CaseOutcome;
   nameOf: (npcId: string) => string;
 }
 
-// Hüküm Dosyası'nın sonucu: her alanda oyuncunun cevabı ile gerçek yan yana, damga ve puanla
+// Hüküm Dosyası'nın sonucu: oyuncunun mühürlediği dosya, hâkimin kırmızı kalemiyle düzeltilmiş hâliyle.
+// Doğru cevaplar tikli, yanlışların üstü çizili ve gerçeği yanına yazılı; puanlar kenar boşluğunda.
 export default function VerdictReportCard({ outcome, nameOf }: VerdictReportCardProps) {
+  const { scenarioType, sessionId } = useGameStore();
   const { verdict } = outcome;
-  const culpritCorrect = outcome.won;
+  const theme = scenarioType || 'medieval';
+  const copy = getDossierTheme(theme);
+  const caseNo = (sessionId ?? '').replace(/-/g, '').slice(0, 6).toLocaleUpperCase('tr-TR');
+  const culprit = outcome.culpritId ? nameOf(outcome.culpritId) : '—';
 
   return (
-    <section className={styles.card} aria-labelledby="verdict-report-title">
+    <section className={styles.card} data-theme={theme} aria-labelledby="verdict-report-title">
       <header className={styles.header}>
-        <div>
-          <p className={styles.kicker}>Hüküm Dosyası</p>
-          <h2 id="verdict-report-title" className={styles.title}>
-            Raporun
-          </h2>
-        </div>
-        {verdict && (
-          <div className={styles.score} aria-label={`Rapor puanı: 100 üzerinden ${verdict.total}`}>
-            <span className={styles.scoreValue}>{verdict.total}</span>
-            <span className={styles.scoreMax}>/100</span>
+        <p className={styles.office}>{copy.office}</p>
+        <div className={styles.headerRow}>
+          <div>
+            <p className={styles.kicker}>
+              Hüküm Dosyası{caseNo && <span className={styles.caseNo}> · No. {caseNo}</span>}
+            </p>
+            <h2 id="verdict-report-title" className={styles.title}>
+              Raporun
+            </h2>
           </div>
-        )}
+          {verdict && (
+            <div className={styles.grade} aria-label={`Rapor puanı: 100 üzerinden ${verdict.total}`}>
+              <span className={styles.gradeValue}>{verdict.total}</span>
+              <span className={styles.gradeMax}>/100</span>
+            </div>
+          )}
+        </div>
       </header>
 
-      <div className={styles.row}>
-        <div className={styles.rowHead}>
-          <span className={styles.fieldName}>Katil</span>
-          <Stamp correct={culpritCorrect} />
-        </div>
-        <div className={styles.compare}>
-          <Answer label="Senin hükmün" value={nameOf(outcome.condemnedNpcId)} />
-          <Answer label="Gerçek" value={outcome.culpritId ? nameOf(outcome.culpritId) : '—'} truth />
-        </div>
-      </div>
+      <div className={styles.body}>
+        <Line
+          label="Katil"
+          mark={outcome.won ? 'ok' : 'bad'}
+          answer={nameOf(outcome.condemnedNpcId)}
+          truth={culprit}
+          emphasis
+        />
 
-      {verdict?.fields.map((field) => (
-        <div key={field.id} className={styles.row}>
-          <div className={styles.rowHead}>
-            <span className={styles.fieldName}>{FIELD_LABELS[field.id]}</span>
-            <span className={styles.points}>
-              {field.points}/{field.max}
-            </span>
-          </div>
-          {field.id === 'NARRATIVE' ? (
-            <>
-              <p className={styles.narrative}>{field.answer}</p>
+        {verdict?.fields.map((field) =>
+          field.id === 'NARRATIVE' ? (
+            <div key={field.id} className={styles.narrativeBlock}>
+              <div className={styles.lineHead}>
+                <span className={styles.label}>{FIELD_LABELS[field.id]}</span>
+                <span className={styles.points}>
+                  {field.points}/{field.max}
+                </span>
+              </div>
+              {field.answer === NOT_ANSWERED ? (
+                <p className={styles.blankNote}>{NOT_ANSWERED}</p>
+              ) : (
+                <p className={styles.narrative}>{field.answer}</p>
+              )}
               {verdict.judgeComment && (
                 <p className={styles.judge}>
                   <span className={styles.judgeLabel}>Hakem:</span> {verdict.judgeComment}
                 </p>
               )}
-            </>
-          ) : (
-            <div className={styles.compare}>
-              <Answer label="Senin cevabın" value={field.answer} />
-              <Answer label="Gerçek" value={field.truth} truth />
             </div>
-          )}
-          {field.details && field.details.length > 0 && (
-            <ul className={styles.details}>
-              {field.details.map((d, i) => (
-                <li key={i} className={styles.detail}>
-                  <Stamp correct={d.correct} small />
-                  <span className={styles.detailLabel}>{d.label}</span>
-                  {field.id === 'INVOLVEMENTS' && (
-                    <span className={styles.detailCompare}>
-                      {d.answer}
-                      {!d.correct && <span className={styles.detailTruth}> · gerçekte: {d.truth}</span>}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+          ) : (
+            <div key={field.id}>
+              <Line
+                label={FIELD_LABELS[field.id]}
+                mark={markOf(field)}
+                answer={field.id === 'MOTIVE' ? shortLabel(field.answer) : field.answer}
+                truth={field.id === 'MOTIVE' ? shortLabel(field.truth) : field.truth}
+                points={`${field.points}/${field.max}`}
+                // Bağlarda düzeltmeler kişi kişi aşağıda; özet satırına gerçek yazılmaz
+                showTruth={field.id !== 'INVOLVEMENTS'}
+              />
+              {field.details && field.details.length > 0 && (
+                <ul className={styles.details}>
+                  {field.details.map((d, i) => (
+                    <li key={i} className={styles.detail}>
+                      <span className={d.correct ? styles.tickSmall : styles.crossSmall} aria-label={d.correct ? 'Doğru' : 'Yanlış'}>
+                        {d.correct ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+                      </span>
+                      <span className={styles.detailLabel}>{d.label}</span>
+                      {field.id === 'INVOLVEMENTS' && (
+                        <span className={styles.detailAnswer}>
+                          <span className={d.correct ? styles.hand : styles.struck}>{d.answer}</span>
+                          {!d.correct && <span className={styles.correction}>{d.truth}</span>}
+                        </span>
+                      )}
+                      {field.id === 'EVIDENCE' && !d.correct && (
+                        <span className={styles.detailAnswer}>
+                          <span className={styles.correction}>{d.truth}</span>
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ),
+        )}
 
-      {!verdict && (
-        <p className={styles.empty}>Bu vaka için rapor puanlanmadı; yalnızca hükmün değerlendirildi.</p>
-      )}
+        {!verdict && (
+          <p className={styles.empty}>Bu vaka için rapor puanlanmadı; yalnızca hükmün değerlendirildi.</p>
+        )}
+      </div>
+
+      <div className={`${styles.verdictStamp} ${outcome.won ? styles.verdictWon : ''}`} aria-hidden>
+        {outcome.won ? 'Doğru Hüküm' : 'Yanlış Hüküm'}
+      </div>
     </section>
   );
 }
 
-function Answer({ label, value, truth = false }: { label: string; value: string; truth?: boolean }) {
+// Bir satır: "Cinayet aleti: <cevap>". Doğruysa tik, yanlışsa üstü çizilir ve gerçek kırmızıyla yazılır.
+function Line({
+  label,
+  mark,
+  answer,
+  truth,
+  points,
+  emphasis = false,
+  showTruth = true,
+}: {
+  label: string;
+  mark: Mark;
+  answer: string;
+  truth: string;
+  points?: string;
+  emphasis?: boolean;
+  showTruth?: boolean;
+}) {
+  const empty = answer === NOT_ANSWERED;
   return (
-    <div className={`${styles.answer} ${truth ? styles.answerTruth : ''}`}>
-      <span className={styles.answerLabel}>{label}</span>
-      <span className={styles.answerValue}>{value}</span>
+    <div className={styles.line}>
+      <div className={styles.lineHead}>
+        <span className={styles.label}>{label}:</span>
+        <span className={styles.lineAnswer}>
+          {empty ? (
+            <span className={styles.blankNote}>boş</span>
+          ) : (
+            <span
+              className={`${mark === 'bad' && showTruth ? styles.struck : styles.hand} ${emphasis ? styles.handLarge : ''}`}
+            >
+              {answer}
+            </span>
+          )}
+          {mark === 'ok' ? (
+            <span className={styles.tick} aria-label="Doğru">
+              <Check size={20} strokeWidth={3} />
+            </span>
+          ) : (
+            showTruth && (
+              <span className={styles.correction}>
+                {mark === 'partial' ? `Gerçek: ${truth}` : truth}
+              </span>
+            )
+          )}
+        </span>
+        {points && <span className={styles.points}>{points}</span>}
+      </div>
     </div>
-  );
-}
-
-function Stamp({ correct, small = false }: { correct: boolean; small?: boolean }) {
-  const Icon = correct ? Check : X;
-  return (
-    <span
-      className={`${styles.stamp} ${correct ? styles.stampOk : styles.stampBad} ${small ? styles.stampSmall : ''}`}
-      aria-label={correct ? 'Doğru' : 'Yanlış'}
-    >
-      <Icon size={small ? 12 : 14} />
-      {!small && <span>{correct ? 'Doğru' : 'Yanlış'}</span>}
-    </span>
   );
 }

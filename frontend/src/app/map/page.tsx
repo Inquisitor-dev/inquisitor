@@ -28,6 +28,8 @@ import VerdictDossier from '@/components/VerdictDossier/VerdictDossier';
 import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
 import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
 import MapActionBar from './components/MapActionBar/MapActionBar';
+import MapHud from './components/MapHud/MapHud';
+import { Home, MapPin } from 'lucide-react';
 import HomeModal from './components/HomeModal/HomeModal';
 import AudioSettingsModal from './components/AudioSettingsModal/AudioSettingsModal';
 import RoadDebugOverlay from './components/RoadDebugOverlay/RoadDebugOverlay';
@@ -82,6 +84,7 @@ export default function MapPage() {
     difficulty,
     scenarioType,
     dialoguesUsedToday,
+    maxDailyDialogues,
     authToken,
     isAdmin,
     endDay,
@@ -444,27 +447,16 @@ export default function MapPage() {
     <main className={styles.main}>
       <div className={`${styles.vignette} ${isNight ? styles.nightVignette : ''}`} />
 
-      {/* Header overlay */}
-      <header className={styles.header}>
-        <button onClick={handleRetreat} className={styles.backBtn}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Kaydet ve Çık
-        </button>
-        <div className={styles.headerCenter}>
-          <h1 className={styles.pageTitle}>{scenarioName}</h1>
-          <p className={styles.pageSub}>{TIME_LABELS[timeOfDay]} — Gün {currentDay}</p>
-        </div>
-        <div className={styles.sessionInfo}>
-          <div className={styles.stats}>
-            <span className={styles.sessionDot} />
-            <span className={styles.limitText}>
-              Soru Hakkı: {isAdmin ? 'Sınırsız' : `${30 - dialoguesUsedToday}/30`}
-            </span>
-          </div>
-        </div>
-      </header>
+      <MapHud
+        townName={scenarioName}
+        timeOfDay={timeOfDay}
+        currentDay={currentDay}
+        lastDay={lastDay}
+        dialoguesUsed={dialoguesUsedToday}
+        dialoguesMax={maxDailyDialogues}
+        unlimited={!!isAdmin}
+        onRetreat={handleRetreat}
+      />
 
       {/* Interactive Map */}
       <div 
@@ -502,7 +494,9 @@ export default function MapPage() {
                     />
                   </div>
                 ) : (
-                  <span className={styles.icon}>{loc.icon}</span>
+                  <span className={styles.icon}>
+                    {loc.id === 'home' ? <Home size={18} aria-hidden /> : <MapPin size={18} aria-hidden />}
+                  </span>
                 )}
                 <div className={styles.labelTextCol}>
                   <span className={styles.labelTextAction}>

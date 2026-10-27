@@ -3,7 +3,7 @@ import type { LocationInteriorData } from './types';
 export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   tavern: {
     id: 'tavern',
-    menuLabel: '🍵 Çay Evi (Lin Feng)',
+    menuLabel: 'Çay Evi (Lin Feng)',
     name: 'Altın Lotus Çay Evi',
     subtitle: 'Çay Evi ve Han — Yolcuların, Tüccarların ve Fısıltıların Durağı',
     scenarioType: 'china',
@@ -20,7 +20,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 49,
         title: 'Lin Feng (Çay Tezgâhı)',
         category: 'npc',
-        icon: '🍵',
         summary: 'Demliği havada tutup çayı uzun bir yayla bardağa döken çay ustası.',
         description:
           'Lin Feng kibarca gülümsüyor ama gözleri her masada. Burada konuşulan her sözün bir değeri olduğunu ve o değeri kimin ödeyeceğini çok iyi biliyor.',
@@ -33,7 +32,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 71,
         title: 'Çay Tezgâhı',
         category: 'atmosphere',
-        icon: '🫖',
         summary: 'Demlikler, porselen fincanlar ve sıra sıra çay kavanozları.',
         description:
           'Kavanozların her birinde başka bir yörenin çayı var. En pahalıları, tezgâhın arkasında kilitli bir dolapta duruyor.',
@@ -44,7 +42,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 27,
         title: 'Üst Kattaki Localar',
         category: 'atmosphere',
-        icon: '🏮',
         summary: 'Perdeli, kafes paravanlı özel localar.',
         description:
           'Memurlar ve zengin tüccarlar üst katta, perdelerin ardında oturuyor. Aşağıdan bakan biri yalnızca gölgelerini görebilir.',
@@ -55,7 +52,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Fısıldaşan Müşteriler',
         category: 'atmosphere',
-        icon: '🗣️',
         summary: 'Mangalın başında alçak sesle konuşan yolcular.',
         description:
           'Konuşmalar sen yaklaşınca kesiliyor. Masadakilerden biri fincanını bırakıp bakışlarını kapıya çeviriyor.',
@@ -66,7 +62,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 51,
         title: 'Üst Kata Çıkan Merdiven',
         category: 'passage',
-        icon: '🪜',
         summary: 'Oymalı tırabzanlı ahşap merdiven.',
         description:
           'Merdivenin basamakları gıcırdıyor; yukarı çıkan herkesi aşağıdakiler duyuyor. Han odaları koridorun sonunda.',
@@ -77,7 +72,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 55,
         title: 'Arka Odanın Kapısı',
         category: 'clue',
-        icon: '🚪',
         summary: 'Avluya açılan, yarı aralık sürgülü kapı.',
         description:
           'Lin Feng özel misafirlerini bu kapıdan arka odaya alıyor. Çay evini aramak için arama izni gerekir.',
@@ -88,7 +82,7 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   },
   church: {
     id: 'church',
-    menuLabel: '🏯 Karargâh (Komutan Zhao)',
+    menuLabel: 'Karargâh (Komutan Zhao)',
     name: 'İmparatorluk Garnizonu',
     subtitle: 'Muhafız Karargâhı — Silahların, Mühürlerin ve Emirlerin Salonu',
     scenarioType: 'china',
@@ -105,7 +99,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 57,
         title: 'Komutan Zhao (Harita Masası)',
         category: 'npc',
-        icon: '🏯',
         summary: 'Zırhının içinde dimdik duran, yüzü yara izli komutan.',
         description:
           'Zhao düzensizliğe ve ihanete tahammül etmiyor. Sert bir sesle konuşuyor ve her sorunun askerlerinin onurunu lekeleyip lekelemeyeceğini tartıyor.',
@@ -118,7 +111,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 81,
         title: 'Savaş Haritası Masası',
         category: 'clue',
-        icon: '🗺️',
         summary: 'Açılmış bir harita, balmumu mühürler ve fırça takımı.',
         description:
           'Haritanın üzerinde devriye yollarını gösteren işaretler var; bazıları yakın zamanda değiştirilmiş. Karargâhı aramak için arama izni gerekir.',
@@ -131,7 +123,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 39,
         title: 'Silah Rafları',
         category: 'atmosphere',
-        icon: '🔱',
         summary: 'Mızraklar, teberler ve kılıçlarla dolu raflar.',
         description:
           'Rafların her biri numaralı. Garnizonun silahları sayılı; eksik olan bir tanesi bile komutanın gözünden kaçmaz.',
@@ -142,7 +133,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 59,
         title: 'Zırh Askısı',
         category: 'atmosphere',
-        icon: '🛡️',
         summary: 'Kırmızı tüylü miğferiyle boş bir pul zırh.',
         description:
           'Zırh, savaşta ölen eski bir komutana ait. Askerler önünden geçerken başlarını eğiyor.',
@@ -153,7 +143,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Kışlaya Açılan Kapı',
         category: 'passage',
-        icon: '🚪',
         summary: 'İki muhafızın beklediği ağır ahşap kapı.',
         description:
           'Kapının ardındaki koridor kışlaya ve zindana iniyor. Muhafızlar komutanın izni olmadan kimseyi geçirmiyor.',
@@ -162,7 +151,7 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   },
   graveyard: {
     id: 'graveyard',
-    menuLabel: '⛩️ Tapınak (Keşiş Huikang)',
+    menuLabel: 'Tapınak (Keşiş Huikang)',
     name: 'Kadim Dağ Tapınağı',
     subtitle: 'Ata Ruhlarının Salonu — Tütsü, Mum ve Sessizlik',
     scenarioType: 'china',
@@ -179,7 +168,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Keşiş Huikang (Tütsü Kazanı)',
         category: 'npc',
-        icon: '⛩️',
         summary: 'Tespihini çeken, gözleri yarı kapalı yaşlı keşiş.',
         description:
           'Huikang sakin bir sesle, bilmece gibi konuşuyor. İnsanların dünyevi hırslarının altındaki niyetleri sezdiğini söylüyor.',
@@ -192,7 +180,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 55,
         title: 'Ata Ruhu Tabletleri',
         category: 'clue',
-        icon: '🕯️',
         summary: 'Mumlarla çevrili, sıra sıra dizilmiş ahşap tabletler.',
         description:
           'Tabletlerden birinin önündeki mumlar diğerlerinden yeni. Tapınağı aramak için arama izni gerekir.',
@@ -205,7 +192,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 37,
         title: 'Altın Heykel',
         category: 'atmosphere',
-        icon: '🪷',
         summary: 'Arka nişte oturan, yaldızı dökülmüş heykel.',
         description:
           'Heykelin önündeki tütsü dumanı hiç dağılmıyor. Köylüler burada verilen sözlerin bozulmadığına inanıyor.',
@@ -216,7 +202,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 71,
         title: 'Bronz Tütsü Kazanı',
         category: 'atmosphere',
-        icon: '🌫️',
         summary: 'Salonun ortasında duman tüten büyük kazan.',
         description:
           'Kazandaki küller henüz soğumamış. Biri gece yarısı burada uzun süre dua etmiş olmalı.',
@@ -227,7 +212,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 51,
         title: 'Avluya Açılan Kafes Kapılar',
         category: 'passage',
-        icon: '🚪',
         summary: 'Oymalı, kafesli büyük ahşap kapılar.',
         description:
           'Kapılar ay ışığındaki avluya ve oradan dağ yoluna açılıyor. Gece tapınağa girip çıkan biri buradan geçmek zorunda.',
@@ -236,7 +220,7 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   },
   mill: {
     id: 'mill',
-    menuLabel: '⚒️ Demirci (Usta Guan)',
+    menuLabel: 'Demirci (Usta Guan)',
     name: 'Usta Guan’ın Demirci Ocağı',
     subtitle: 'Silah Atölyesi — Kor, Çelik ve Çekiç Sesleri',
     scenarioType: 'china',
@@ -253,7 +237,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Usta Guan (Örs)',
         category: 'npc',
-        icon: '⚒️',
         summary: 'Kızgın bir bıçağı dövmek için çekicini kaldırmış iri yarı demirci.',
         description:
           'Guan’ın sesi çekicinden daha gür. Bu mahalledeki her silahı tanıyor ve kılıçlarının onursuz bir iş için kullanıldığı imasına öfkeleniyor.',
@@ -266,7 +249,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 54,
         title: 'Taş Ocak',
         category: 'atmosphere',
-        icon: '🔥',
         summary: 'Kor dolu, körükle beslenen taş ocak.',
         description:
           'Ocak gece gündüz yanıyor. Atölyede çalışan çırak, körüğün başından hiç ayrılmıyor.',
@@ -277,7 +259,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 39,
         title: 'Bitmiş Kılıçların Rafı',
         category: 'clue',
-        icon: '🗡️',
         summary: 'Duvara dizilmiş kılıçlar ve bıçaklar.',
         description:
           'Raftaki kılıçların arasında bir boşluk var. Atölyeyi aramak için arama izni gerekir.',
@@ -290,7 +271,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 83,
         title: 'Su Kovaları',
         category: 'atmosphere',
-        icon: '🪣',
         summary: 'Kızgın çeliğin soğutulduğu, buhar tüten kovalar.',
         description:
           'Kovaların dibinde demir talaşı birikmiş. Su sık sık değiştirilmiyor.',
@@ -301,7 +281,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 47,
         title: 'Külçe Rafları',
         category: 'atmosphere',
-        icon: '🧱',
         summary: 'Üst üste dizilmiş demir külçeler.',
         description:
           'Külçelerin bir kısmı garnizonun mührünü taşıyor. Guan, ordu için de silah dövüyor.',
@@ -312,7 +291,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 47,
         title: 'Sokağa Açılan Kapı',
         category: 'passage',
-        icon: '🚪',
         summary: 'Fenerle aydınlanan çift kanatlı ağır kapı.',
         description:
           'Kapının sürgüsü içeriden çekiliyor. Gece atölyeye girmek isteyen birinin Guan’ı uyandırması gerekir.',
@@ -321,7 +299,7 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   },
   farm: {
     id: 'farm',
-    menuLabel: '🎣 İskele (Mei Teyze)',
+    menuLabel: 'İskele (Mei Teyze)',
     name: 'Nehir İskelesi',
     subtitle: 'Balıkçı İskelesi — Ağlar, Kayıklar ve Sisli Sular',
     scenarioType: 'china',
@@ -338,7 +316,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Mei Teyze (Ağ Başı)',
         category: 'npc',
-        icon: '🎣',
         summary: 'Mangalın yanında ağ onaran yaşlı balıkçı kadın.',
         description:
           'Mei Teyze ağı onarırken yan gözle seni süzüyor. Nehir kıyısından geçen hiçbir şey gözünden kaçmaz, ama yabancılara saf görünmeyi iyi bilir.',
@@ -351,7 +328,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 71,
         title: 'Balık Sepetleri',
         category: 'atmosphere',
-        icon: '🐟',
         summary: 'Mangalın başında sıra sıra balık dolu sepetler.',
         description:
           'Sabah tutulan balıklar hâlâ satılmamış. Bugün pazara inen olmamış gibi.',
@@ -362,7 +338,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 21,
         title: 'Kurumaya Asılmış Ağlar',
         category: 'atmosphere',
-        icon: '🕸️',
         summary: 'Tavan kirişlerinden sarkan ıslak ağlar.',
         description:
           'Ağlardan biri yeni yırtılmış; düğümler aceleyle atılmış.',
@@ -373,7 +348,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Üstü Kapalı İskele',
         category: 'passage',
-        icon: '🌉',
         summary: 'Fenerlerle aydınlanan ahşap iskele yolu.',
         description:
           'İskele nehir boyunca mahallenin öbür ucuna uzanıyor. Gece buradan geçen birini sadece Mei Teyze görür.',
@@ -384,7 +358,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Bağlı Kayıklar',
         category: 'clue',
-        icon: '🛶',
         summary: 'İskeleye bağlanmış, halatları gevşek ahşap kayıklar.',
         description:
           'Kayıklardan birinin içi diğerlerinden ıslak; yakın zamanda kullanılmış. İskeleyi aramak için arama izni gerekir.',
@@ -397,7 +370,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 33,
         title: 'Karşı Kıyıdaki Köşkler',
         category: 'atmosphere',
-        icon: '🏮',
         summary: 'Sisin ardında ışıkları yanan köşkler.',
         description:
           'Karşı kıyıda eğlence sürüyor. Nehrin sesi, oradaki müziği buraya kadar taşıyor.',
@@ -406,7 +378,7 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
   },
   clinic: {
     id: 'clinic',
-    menuLabel: '🌿 Şifacı (Bilgin Song)',
+    menuLabel: 'Şifacı (Bilgin Song)',
     name: 'Saray Eczanesi',
     subtitle: 'Şifacı ve Baharatçı — Kökler, Otlar ve Gizli Formüller',
     scenarioType: 'china',
@@ -423,7 +395,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 55,
         title: 'Bilgin Song (Tezgâh)',
         category: 'npc',
-        icon: '🌿',
         summary: 'Taş havanda ot döven, mavi cüppeli hekim.',
         description:
           'Song yumuşak ve ölçülü konuşuyor; duygulardan çok akla değer veriyor. İlaçlar kadar zehirleri de iyi tanıdığını gizlemiyor.',
@@ -436,7 +407,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'İlaç Çekmeceleri',
         category: 'clue',
-        icon: '🗄️',
         summary: 'Duvarı baştan sona kaplayan yüzlerce küçük çekmece.',
         description:
           'Çekmecelerden birinin tozu silinmiş, kulpu parlıyor. Eczaneyi aramak için arama izni gerekir.',
@@ -449,7 +419,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 61,
         title: 'Perdeli Arka Oda',
         category: 'passage',
-        icon: '🚪',
         summary: 'Perdenin ardından sızan yeşil bir ışık.',
         description:
           'Arka odada bir şey kaynıyor. Song oraya müşterileri hiç almıyor.',
@@ -460,7 +429,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Akupunktur Heykeli',
         category: 'atmosphere',
-        icon: '🧍',
         summary: 'Vücudun noktalarını gösteren bronz insan figürü.',
         description:
           'Figürün boynundaki birkaç nokta, sık dokunulmaktan parlamış.',
@@ -471,7 +439,6 @@ export const CHINA_INTERIORS: Record<string, LocationInteriorData> = {
         y: 21,
         title: 'Asılı Kurutulmuş Otlar',
         category: 'atmosphere',
-        icon: '🌾',
         summary: 'Tavandan sarkan kökler, otlar ve su kabakları.',
         description:
           'Otların bazıları buralarda yetişmiyor; uzak eyaletlerden getirilmiş, pahalı ve nadir.',

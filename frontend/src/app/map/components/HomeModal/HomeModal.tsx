@@ -1,4 +1,4 @@
-import React from 'react';
+import { BedDouble, BookOpen, Briefcase, DoorOpen, Settings, X } from 'lucide-react';
 import { playDoorSound } from '@/features/audio/doorSound';
 import styles from '../../map.module.scss';
 
@@ -45,11 +45,11 @@ export default function HomeModal({
           onClick={handleClose}
           aria-label="Kapat"
         >
-          &times;
+          <X size={20} />
         </button>
-        <h2 className={styles.modalTitle}>🏡 Evim (Engizisyoncu Odası)</h2>
+        <h2 className={styles.modalTitle}>Evim</h2>
         <p className={styles.modalMessage}>
-          Köydeki ikametgahındasın. Kapıyı kilitleyip dinlenebilir, günü tamamlayabilir,
+          Kasabadaki evindesin. Kapıyı kilitleyip dinlenebilir, günü tamamlayabilir,
           soruşturma notlarını inceleyebilir veya envanterindeki delilleri gözden geçirebilirsin.
         </p>
         <div className={styles.homeActionList}>
@@ -62,9 +62,11 @@ export default function HomeModal({
             }}
             disabled={endingDay}
           >
-            <span className={styles.homeActionIcon}>🛌</span>
+            <span className={styles.homeActionIcon}>
+              <BedDouble size={22} aria-hidden />
+            </span>
             <div className={styles.homeActionInfo}>
-              <span className={styles.homeActionTitle}>Dinlen & Günü Bitir</span>
+              <span className={styles.homeActionTitle}>Dinlen ve Günü Bitir</span>
               <span className={styles.homeActionDesc}>
                 {isNight
                   ? 'Geceyi uykuda geçir ve bir sonraki güne başla.'
@@ -80,11 +82,13 @@ export default function HomeModal({
               onOpenNotebook();
             }}
           >
-            <span className={styles.homeActionIcon}>📖</span>
+            <span className={styles.homeActionIcon}>
+              <BookOpen size={22} aria-hidden />
+            </span>
             <div className={styles.homeActionInfo}>
-              <span className={styles.homeActionTitle}>Soruşturma Notları</span>
+              <span className={styles.homeActionTitle}>Not Defteri</span>
               <span className={styles.homeActionDesc}>
-                Köy halkından aldığın ifadeleri ve gözlemlerini oku.
+                Aldığın ifadeleri ve kendi notlarını oku.
               </span>
             </div>
           </button>
@@ -96,7 +100,9 @@ export default function HomeModal({
               onOpenInventory();
             }}
           >
-            <span className={styles.homeActionIcon}>🎒</span>
+            <span className={styles.homeActionIcon}>
+              <Briefcase size={22} aria-hidden />
+            </span>
             <div className={styles.homeActionInfo}>
               <span className={styles.homeActionTitle}>Envanter ve Deliller</span>
               <span className={styles.homeActionDesc}>
@@ -112,7 +118,9 @@ export default function HomeModal({
               onOpenAudioSettings();
             }}
           >
-            <span className={styles.homeActionIcon}>⚙️</span>
+            <span className={styles.homeActionIcon}>
+              <Settings size={22} aria-hidden />
+            </span>
             <div className={styles.homeActionInfo}>
               <span className={styles.homeActionTitle}>Ses Ayarları</span>
               <span className={styles.homeActionDesc}>
@@ -125,10 +133,12 @@ export default function HomeModal({
             className={styles.homeActionBtn}
             onClick={handleClose}
           >
-            <span className={styles.homeActionIcon}>🚪</span>
+            <span className={styles.homeActionIcon}>
+              <DoorOpen size={22} aria-hidden />
+            </span>
             <div className={styles.homeActionInfo}>
               <span className={styles.homeActionTitle}>Dışarı Çık</span>
-              <span className={styles.homeActionDesc}>Köy sokaklarına geri dön.</span>
+              <span className={styles.homeActionDesc}>Sokaklara geri dön.</span>
             </div>
           </button>
         </div>

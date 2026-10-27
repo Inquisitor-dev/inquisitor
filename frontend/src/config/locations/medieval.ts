@@ -4,7 +4,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'church',
     name: 'Kilise',
-    icon: '⛪',
     top: '10%',
     left: '2%',
     width: '34%',
@@ -14,7 +13,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'mill',
     name: 'Değirmen',
-    icon: '⚙️',
     top: '32%',
     left: '66%',
     width: '28%',
@@ -24,7 +22,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'tavern',
     name: 'Taverna',
-    icon: '🍺',
     top: '35%',
     left: '40%',
     width: '18%',
@@ -34,7 +31,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'graveyard',
     name: 'Mezarlık',
-    icon: '🪦',
     top: '4%',
     left: '68%',
     width: '31%',
@@ -44,7 +40,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'home',
     name: 'Evim',
-    icon: '🏡',
     top: '55%',
     left: '1%',
     width: '22%',
@@ -54,7 +49,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'clinic',
     name: 'Revir',
-    icon: '🏥',
     top: '42%',
     left: '25%',
     width: '17%',
@@ -65,7 +59,6 @@ export const medievalLocations: MapLocation[] = [
   {
     id: 'farm',
     name: 'Çiftlik',
-    icon: '🌾',
     top: '64%',
     left: '37%',
     width: '28%',
