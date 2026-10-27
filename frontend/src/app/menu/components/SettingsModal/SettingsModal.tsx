@@ -1,11 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import {
-  Coins,
-  LogOut,
-  Settings,
-  X,
-} from 'lucide-react';
+import { Check, Coins, LogOut, Settings, TriangleAlert, X } from 'lucide-react';
 import { DEFAULT_AVATARS, getAvatarSrc, getAvatarInfo } from '@/config/avatars';
 import AudioSettingsPanel from '@/features/audio/AudioSettingsPanel';
 import styles from '../../page.module.scss';
@@ -202,7 +197,7 @@ export default function SettingsModal({
                   color: profileMsg.type === 'success' ? '#8fdf8f' : '#f08080',
                 }}
               >
-                {profileMsg.type === 'success' ? '✓ ' : '⚠️ '}
+                {profileMsg.type === 'success' ? <Check size={14} aria-hidden /> : <TriangleAlert size={14} aria-hidden />}{' '}
                 {profileMsg.text}
               </div>
             )}

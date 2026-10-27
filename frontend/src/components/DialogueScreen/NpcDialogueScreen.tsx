@@ -18,20 +18,7 @@ import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
 import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
-import {
-  HeartPulse,
-  Hand,
-  Search,
-  MessageSquare,
-  Compass,
-  ArrowLeft,
-  Send,
-  BookOpen,
-  Briefcase,
-  Scale,
-  ListChecks,
-  Quote,
-} from 'lucide-react';
+import { ArrowLeft, BookOpen, Briefcase, Compass, Hand, HeartPulse, ListChecks, MessageSquare, Quote, Scale, Search, Send, Square } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
 import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
@@ -115,7 +102,6 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const baseProfile = getNpcProfile(actualNpcKey, scenario) ?? {
     name: 'Meçhul Köylü',
     title: 'Gölgelerin arasından bir yabancı',
-    icon: '👤',
   };
   // Olay yeri her vakada evrenin 5 yerinden biridir: adı ve görseli o yerin
   const crimeSceneLabel =
@@ -629,7 +615,8 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
               <div className={styles.npcTurn}>
                 {isInvestigating && (
                   <div className={styles.investigatingNotice}>
-                    <span>🔍 Mekân Araştırma Modu</span>
+                    <Search size={14} aria-hidden />
+                    <span>Mekân Araştırma Modu</span>
                   </div>
                 )}
 
@@ -806,7 +793,8 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                         });
                       }}
                     >
-                      <span>⏹️ Araştırmayı Bitir</span>
+                      <Square size={12} aria-hidden />
+                      <span>Araştırmayı Bitir</span>
                     </button>
                   )
                 )}

@@ -4,7 +4,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'farm',
     name: 'Petrol İstasyonu',
-    icon: '⛽',
     top: '38%',
     left: '0%',
     width: '18%',
@@ -14,7 +13,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'tavern',
     name: 'Karakol',
-    icon: '🚔',
     top: '24%',
     left: '17%',
     width: '16%',
@@ -24,7 +22,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'clinic',
     name: 'Bar',
-    icon: '🍺',
     top: '0%',
     left: '33%',
     width: '24%',
@@ -35,7 +32,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'home',
     name: 'Evim',
-    icon: '🏡',
     top: '0%',
     left: '57%',
     width: '16%',
@@ -45,7 +41,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'church',
     name: 'Hotel',
-    icon: '🏨',
     top: '2%',
     left: '70%',
     width: '30%',
@@ -55,7 +50,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'graveyard',
     name: 'Video Oyuncusu',
-    icon: '🎮',
     top: '44%',
     left: '60%',
     width: '22%',
@@ -65,7 +59,6 @@ export const modernLocations: MapLocation[] = [
   {
     id: 'mill',
     name: 'Lokanta',
-    icon: '🍽️',
     top: '60%',
     left: '30%',
     width: '28%',

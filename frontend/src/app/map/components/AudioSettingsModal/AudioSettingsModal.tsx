@@ -31,7 +31,7 @@ export default function AudioSettingsModal({
         >
           <X size={20} />
         </button>
-        <h2 className={styles.modalTitle}>⚙️ Ses Ayarları</h2>
+        <h2 className={styles.modalTitle}>Ses Ayarları</h2>
         <AudioSettingsPanel />
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
           <button

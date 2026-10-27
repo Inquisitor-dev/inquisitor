@@ -1,4 +1,5 @@
 import React from 'react';
+import { MessageSquareQuote, Search, StickyNote } from 'lucide-react';
 import type { EvidenceItem } from '@/store/useGameStore';
 import {
   evidenceTitle,
@@ -42,7 +43,9 @@ export default function BoardDrawer({
             className={`${styles.drawerItem} ${styles.drawerNote}`}
             onClick={() => onPinCard({ kind: 'note', text: '' })}
           >
-            <span className={styles.drawerIcon}>📝</span>
+            <span className={styles.drawerIcon}>
+              <StickyNote size={18} aria-hidden />
+            </span>
             <span className={styles.drawerLabel}>Not Ekle</span>
           </button>
           {drawerSuspects.map((id) => {
@@ -71,7 +74,7 @@ export default function BoardDrawer({
               onClick={() => onPinCard({ kind: 'evidence', refId: item.id })}
             >
               <span className={styles.drawerIcon}>
-                {item.category === 'STATEMENT' ? '🗣️' : '🔎'}
+                {item.category === 'STATEMENT' ? <MessageSquareQuote size={18} aria-hidden /> : <Search size={18} aria-hidden />}
               </span>
               <span className={styles.drawerLabel}>
                 {evidenceTitle(scenario, item)}

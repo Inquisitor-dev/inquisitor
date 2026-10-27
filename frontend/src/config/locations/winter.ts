@@ -4,7 +4,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'home',
     name: 'Evim',
-    icon: '🏡',
     top: '45%',
     left: '26%',
     width: '22%',
@@ -14,7 +13,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'church',
     name: 'Kutsal Yürek Ağacı',
-    icon: '🍁',
     top: '1%',
     left: '1%',
     width: '28%',
@@ -24,7 +22,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'graveyard',
     name: 'Gözcü Kalesi',
-    icon: '🏰',
     top: '4%',
     left: '36%',
     width: '26%',
@@ -34,7 +31,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'farm',
     name: 'Sur',
-    icon: '🛡️',
     top: '0%',
     left: '70%',
     width: '29%',
@@ -44,7 +40,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'tavern',
     name: 'Kış Hanı',
-    icon: '🔥',
     top: '36%',
     left: '63%',
     width: '25%',
@@ -54,7 +49,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'mill',
     name: 'Terk Edilmiş Maden',
-    icon: '⛏️',
     top: '65%',
     left: '0%',
     width: '29%',
@@ -64,7 +58,6 @@ export const winterLocations: MapLocation[] = [
   {
     id: 'clinic',
     name: 'İnfaz Meydanı',
-    icon: '⚔️',
     top: '65%',
     left: '58%',
     width: '32%',

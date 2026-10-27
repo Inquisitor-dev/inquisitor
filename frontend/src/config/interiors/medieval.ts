@@ -3,7 +3,7 @@ import type { LocationInteriorData } from './types';
 export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   tavern: {
     id: 'tavern',
-    menuLabel: '🍺 Taverna (Kardeş Aldric)',
+    menuLabel: 'Taverna (Kardeş Aldric)',
     name: 'Ashenmoor Tavernası',
     subtitle: 'Karga ve Kadeh — Sırların ve Fısıltıların Sığınağı',
     scenarioType: 'medieval',
@@ -20,7 +20,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 55,
         title: 'Kardeş Aldric (Hancı)',
         category: 'npc',
-        icon: '🍺',
         summary: 'Tezgâhın arkasında gergin bir şekilde kupa dolduran hancı.',
         description:
           'Kardeş Aldric, elleri hafifçe titreyerek müşterilerine bira dolduruyor. Bakışları sürekli kapıya ve şöminenin karanlık köşelerine kayıyor. Köydeki son olaylar hakkında bildiklerini saklamakta zorlanıyor gibi.',
@@ -33,7 +32,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Meşe Fıçılar ve Tezgâh Arkası',
         category: 'clue',
-        icon: '🛢️',
         summary: 'Tezgâhın kenarına istiflenmiş eski meşe bira fıçıları.',
         description:
           'Fıçıların üzerinde kilise mührüne benzeyen kazınmış işaretler var. Varillerin arkasındaki zemini aramak için arama izni gerekir.',
@@ -46,7 +44,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Büyük Taş Şömine',
         category: 'atmosphere',
-        icon: '🔥',
         summary: 'Ateşin sıcaklığına sığınmış kapüşonlu köylüler ve çıtırdayan kütükler.',
         description:
           'Közlerin çıtırtısı arasında fısıltılar duyuluyor: "...dün gece mezarlık tarafında parlayan meşaleler vardı... Silas yine kilisenin çanını çalmadı..." Köylüler Engizitörün gölgesini görünce aniden susuyor.',
@@ -57,7 +54,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 60,
         title: 'Ortadaki Masalar ve Fısıldaşanlar',
         category: 'atmosphere',
-        icon: '📜',
         summary: 'Karanlık köşede toplanmış tedirgin köy ahalisi.',
         description:
           'Masada devrilmiş bir kalay kupa ve üzerinde kırmızı balmumu lekeleri olan parşömen kırıntıları dikkat çekiyor.',
@@ -68,7 +64,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 46,
         title: 'Görkemli Çift Kanatlı Ahşap Merdiven',
         category: 'passage',
-        icon: '🪜',
         summary: 'Karanlık kiralık odalara çıkan ahşap merdivenler.',
         description:
           'Yukarıdan ağır ayak sesleri ve tahta gıcırtıları geliyor. Hancının dediğine göre üst kattaki köşe oda iki gündür kilitli tutuluyor.',
@@ -79,7 +74,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 16,
         title: 'Döküm Demir Avize',
         category: 'atmosphere',
-        icon: '🕯️',
         summary: 'Yüksek ahşap kirişlerden sarkan ve damlayan balmumu mumları.',
         description:
           'İsli kirişlerden sarkan demir avize, salona titrek ve sıcak bir ışık yayıyor.',
@@ -88,7 +82,7 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   },
   church: {
     id: 'church',
-    menuLabel: '⛪ Kilise (Peder Malachar)',
+    menuLabel: 'Kilise (Peder Malachar)',
     name: 'Ashenmoor Kilisesi',
     subtitle: 'Aziz Jude Bazilikası — Taş Sütunlar ve Soğuk Dualar',
     scenarioType: 'medieval',
@@ -105,7 +99,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 68,
         title: 'Peder Malachar (Kürsü Yanındaki Din Adamı)',
         category: 'npc',
-        icon: '⛪',
         summary: 'Oymalı vaaz kürsüsünün yanında soğuk bakışlarla bekleyen rahip.',
         description:
           'Peder Malachar dik ve kibirli duruşuyla seni süzüyor. Göğsündeki gümüş haç ve siyah cübbesiyle köyün ruhani otoritesini temsil ediyor; ancak gözlerindeki tedirginlik gizlenemiyor.',
@@ -118,7 +111,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 42,
         title: 'Oymalı Ahşap Vaaz Kürsüsü',
         category: 'atmosphere',
-        icon: '📖',
         summary: 'Yüksek helezonik ahşap basamaklar ve süslü tavan gölgeliği.',
         description:
           'Pederin cemaate vaaz verdiği bu yüksek kürsünün basamaklarında yakın zamanda dökülmüş balmumu damlaları var.',
@@ -129,7 +121,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Kutsal Sunak ve Ayin Masası',
         category: 'atmosphere',
-        icon: '🕯️',
         summary: 'Merkezi koridorun ucundaki mermer sunak ve şamdanlar.',
         description:
           'Sunağın üzerindeki mumların titrek aydınlığında mermer üzerindeki koyu renkli lekeler dikkat çekiyor.',
@@ -140,7 +131,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 38,
         title: 'Gotik Duvar Halısı ve Gizli Duvar Nişi',
         category: 'clue',
-        icon: '🗝️',
         summary: 'Sağ duvardaki antik dini halı ve arkasındaki kilitli emanet oyuğu.',
         description:
           'Halının arkasındaki taş oyukta eski el yazmaları ve mühürlü bir kutu var. Burayı aramak için resmi bir arama izni gerekir.',
@@ -153,7 +143,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 42,
         title: 'Devasa Gül Vitray Pencere',
         category: 'atmosphere',
-        icon: '✨',
         summary: 'Ay ışığını süzerek kiliseyi aydınlatan muazzam vitray.',
         description:
           'Gül pencereden giren solgun ay ışığı toz zerrelerini aydınlatıyor ve taş zemine gotik renkli gölgeler düşürüyor.',
@@ -164,7 +153,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 58,
         title: 'Döküm Demir Ayaklı Şamdan Grubu',
         category: 'atmosphere',
-        icon: '🕯️',
         summary: 'Eriyen onlarca balmumu mumunun aydınlattığı sağ nef.',
         description:
           'Ağır balmumu ve tütsü kokusu kilisenin soğuk rutubetine karışıyor.',
@@ -173,7 +161,7 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   },
   mill: {
     id: 'mill',
-    menuLabel: '⚙️ Değirmen (Giles)',
+    menuLabel: 'Değirmen (Giles)',
     name: 'Ashenmoor Değirmeni',
     subtitle: 'Eski Un Değirmeni — Gıcırdayan Çarklar ve Beyaz Tozlar',
     scenarioType: 'medieval',
@@ -190,7 +178,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 58,
         title: 'Değirmenci Giles (Masa Başı)',
         category: 'npc',
-        icon: '⚙️',
         summary: 'Unlu kıyafetleri ve düşünceli haliyle masasının başında duran değirmenci.',
         description:
           'Giles, un tozlarına bulanmış kıyafetleri ve şüpheci bakışlarıyla çalışma masasının başında duruyor. Değirmene gelenlerin kayıtlarını ve un çuvallarının nereye gittiğini en iyi o biliyor.',
@@ -203,7 +190,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 70,
         title: 'Hesap Masası ve Fener',
         category: 'clue',
-        icon: '⚖️',
         summary: 'Sıcak sarı fener ışığında duran defter ve kilitli çekmece.',
         description:
           'Tezgâhın çekmecesinde un tozuyla kaplanmış şüpheli notlar ve mühürlü belgeler bulunuyor. Burayı detaylı aramak için arama izni gerekir.',
@@ -216,7 +202,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Devasa Ahşap Dişli Mekanizması',
         category: 'atmosphere',
-        icon: '⚙️',
         summary: 'Değirmenin kalbi olan ağır meşe dişliler ve miller.',
         description:
           'Büyük ahşap dişliler her dönüşte gıcırdıyor. Çarkların arasına sıkışmış koyu renkli bir kumaş parçası rüzgârla dalgalanıyor.',
@@ -227,7 +212,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Büyük Değirmen Taşı ve Hazne',
         category: 'atmosphere',
-        icon: '🪨',
         summary: 'Tahılı un haline getiren dairesel devasa öğütme mekanizması.',
         description:
           'Ağır taş haznenin etrafında taze öğütülmüş un dumanı tütüyor. Taşın kenarında koyu renkli, şüpheli sürtünme izleri var.',
@@ -238,7 +222,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 52,
         title: 'Tavan Arası Merdiveni',
         category: 'passage',
-        icon: '🪜',
         summary: 'Yukarıdaki asma tahıl ambarına çıkan ahşap merdiven.',
         description:
           'Güneş ışınlarının süzüldüğü ahşap çatı aralığına ve tahıl ambarına çıkan basamaklar.',
@@ -249,7 +232,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 82,
         title: 'İstiflenmiş Un Çuvalları',
         category: 'atmosphere',
-        icon: '🌾',
         summary: 'Duvar dibine dizilmiş kenevir çuvallar.',
         description:
           'Çuvalların bazılarının üzerinde köy ambarının resmi damgası yerine tuhaf kırmızı işaretler çizilmiş.',
@@ -258,7 +240,7 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   },
   graveyard: {
     id: 'graveyard',
-    menuLabel: '🪦 Mezarlık (İhtiyar Silas)',
+    menuLabel: 'Mezarlık (İhtiyar Silas)',
     name: 'Ashenmoor Mezarlığı',
     subtitle: 'Sisli Kabirler — Sessizliğin ve Toprağın Şahitliği',
     scenarioType: 'medieval',
@@ -275,7 +257,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 54,
         title: 'İhtiyar Silas (Mezarcı)',
         category: 'npc',
-        icon: '🪦',
         summary: 'Küreğine yaslanmış, çürük peleriniyle sisler içinde bekleyen ihtiyar.',
         description:
           'Silas, kırk yıldır bu mezarlıkta kazdığı çukurların başında duruyor. Yüzündeki derin kırışıklıklar ve çökük gözleri, canlılardan çok ölülerle konuştuğunu hissettiriyor.',
@@ -288,7 +269,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 80,
         title: 'Mezar Başındaki Gaz Lambası',
         category: 'atmosphere',
-        icon: '🏮',
         summary: 'Yosunlu taşın dibinde sarı ışık saçan yağ feneri.',
         description:
           'Fenerin titrek alevi yoğun yer sisini yarıp geçmeye çalışıyor.',
@@ -299,7 +279,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 44,
         title: 'Antik Aile Anıt Mezarı',
         category: 'atmosphere',
-        icon: '🏛️',
         summary: 'Gargoyle heykelleriyle süslü gotik taş türbe.',
         description:
           'Yosun tutmuş taş türbenin tepesindeki gargoyle heykelleri mezarlığa tepeden bakıyor.',
@@ -310,7 +289,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 60,
         title: 'Türbenin Parmaklıklı Demir Kapısı',
         category: 'clue',
-        icon: '🗝️',
         summary: 'Zincirle sarılmış ancak kilidi kurcalanmış kapı.',
         description:
           'Türbenin demir parmaklıklarındaki zincir gevşetilmiş; içeride son günlerde yakılmış balmumu kalıntıları var. Burayı aramak için arama izni gerekir.',
@@ -323,7 +301,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 60,
         title: 'Sisli Kabir Yolu ve Çarpık Taşlar',
         category: 'atmosphere',
-        icon: '🌫️',
         summary: 'Dolunayın altında uzanan soğuk mezar taşları ve sisli patika.',
         description:
           'Sıra sıra dizilmiş eski taş haçlar arasında hafif bir rüzgâr uğulduyor.',
@@ -334,7 +311,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 84,
         title: 'Yosunlu Antik Lahit Kapağı',
         category: 'atmosphere',
-        icon: '⛏️',
         summary: 'Ön plandaki çatlamış taş lahit.',
         description:
           'Lahit taşının kenarında kazınmış esrarengiz Latince mısralar görülüyor.',
@@ -343,7 +319,7 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   },
   farm: {
     id: 'farm',
-    menuLabel: '🌾 Çiftlik (Çiftçi Edmund)',
+    menuLabel: 'Çiftlik (Çiftçi Edmund)',
     name: 'Ashenmoor Çiftliği',
     subtitle: 'Köy Dışındaki Yalnız Araziler — Saman Kokusu ve Tedirgin Bakışlar',
     scenarioType: 'medieval',
@@ -360,7 +336,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Çiftçi Edmund (Tırpanlı Çiftçi)',
         category: 'npc',
-        icon: '🌾',
         summary: 'Elindeki tırpanı sıkıca tutarak savunmacı bir tavırla duran köylü.',
         description:
           'Çiftçi Edmund, nasırlı elleri ve çamurlu giysileriyle saman balyalarının önünde duruyor. Gözlerindeki güvensizlik ve korku açıkça hissediliyor; toprağını ve sırlarını korumaya kararlı görünüyor.',
@@ -373,7 +348,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 76,
         title: 'İstiflenmiş Saman Balyaları',
         category: 'atmosphere',
-        icon: '🌾',
         summary: 'Edmund’un yanında yükselen kuru saman yığınları.',
         description:
           'Kuru saman kokusu ahırın rutubetine karışıyor. Balyaların arkasındaki loşlukta saklanan biri kolayca gizlenebilir.',
@@ -384,7 +358,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 46,
         title: 'Duvara Asılı Paslı Tırpanlar ve Oraklar',
         category: 'atmosphere',
-        icon: '⛏️',
         summary: 'Taş duvara dizilmiş keskin tarım aletleri.',
         description:
           'Tırpanların birinin ucunda kurumuş koyu renkli bir leke var; pas mı yoksa kan mı olduğunu ayırt etmek güç.',
@@ -395,7 +368,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 76,
         title: 'Ahşap Sandık ve Fıçılar',
         category: 'clue',
-        icon: '📦',
         summary: 'Sol taraftaki varillerin yanına bırakılmış kilitli oyma sandık.',
         description:
           'Sandığın üzerinde taze tebeşir tozu ve şüpheli mühürler bulunuyor. Burayı detaylı aramak için arama izni gerekir.',
@@ -408,7 +380,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 33,
         title: 'Asılı Yağ Feneri ve Çatı Kirişleri',
         category: 'atmosphere',
-        icon: '🏮',
         summary: 'Ahşap kirişe asılı sıcak sarı fener.',
         description:
           'Fenerin ışığında havada süzülen saman tozları ve örümcek ağları parıldıyor.',
@@ -419,7 +390,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 52,
         title: 'Arka Samanlık ve Ahşap Merdivenler',
         category: 'passage',
-        icon: '🪜',
         summary: 'Ahırın derinliğindeki asma samanlık bölmesi.',
         description:
           'İçerideki gölgeli samanlık bölmesine uzanan ahşap merdivenler.',
@@ -428,7 +398,7 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
   },
   clinic: {
     id: 'clinic',
-    menuLabel: '🩸 Revir (Doktor Harland)',
+    menuLabel: 'Revir (Doktor Harland)',
     name: 'Ashenmoor Şifahanesi',
     subtitle: 'Taş Duvarlar Arasında Şifa ve Sır — İksir Şişeleri ve Neşterler',
     scenarioType: 'medieval',
@@ -445,7 +415,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 56,
         title: 'Doktor Harland (Köy Hekimi)',
         category: 'npc',
-        icon: '🩺',
         summary: 'Hassas terazi ve iksir şişelerinin başında soğukkanlılıkla duran hekim.',
         description:
           'Doktor Harland, siyah hekim cübbesi ve dikkatli bakışlarıyla ilaç şişelerini düzenliyor. Köydeki hastalıkları, zehirleri ve son ölümlerin ardındaki gerçek anatomik sebepleri herkesten iyi bildiği şüphesiz.',
@@ -458,7 +427,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 72,
         title: 'Hekim Tezgâhı ve İlaç Şişeleri',
         category: 'clue',
-        icon: '🧪',
         summary: 'Havanlar, terazi, açık tıp defteri ve cerrahi aletler.',
         description:
           'Tezgâhta üzerinde isim yazılı olmayan koyu renkli bir zehir şişesi ve gizli bir otopsi kaydı duruyor. Burayı detaylı aramak için arama izni gerekir.',
@@ -471,7 +439,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Ecza Dolapları ve Cam Kavanozlar',
         category: 'atmosphere',
-        icon: '🏺',
         summary: 'Sıra sıra dizilmiş tentürler, iksirler ve tozlar.',
         description:
           'Ahşap raflarda köydeki her türlü hastalığa ve belki de ölümcül zehirlere ait kavanozlar bulunuyor.',
@@ -482,7 +449,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 76,
         title: 'Eski Deri Muayene Masası',
         category: 'atmosphere',
-        icon: '🛏️',
         summary: 'Gotik taş pencerenin altına yerleştirilmiş sedir.',
         description:
           'Köyde yaralananların ve son nefesini verenlerin yattığı bu sedirde solgun ay ışığı parıldıyor.',
@@ -493,7 +459,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 58,
         title: 'Taş Ocak ve Közler',
         category: 'atmosphere',
-        icon: '🔥',
         summary: 'İlaçların kaynatıldığı taş ocak ve közler.',
         description:
           'Taş ocağın kor ateşi soğuk odaya hafif bir sıcaklık veriyor.',
@@ -504,7 +469,6 @@ export const MEDIEVAL_INTERIORS: Record<string, LocationInteriorData> = {
         y: 22,
         title: 'Tavandan Sarkan Kurutulmuş Şifalı Otlar',
         category: 'atmosphere',
-        icon: '🌿',
         summary: 'İplerle asılmış lavanta, adamotu ve sarmaşıklar.',
         description:
           'Kurutulmuş otların keskin ve acı kokusu tüm odayı kaplıyor.',

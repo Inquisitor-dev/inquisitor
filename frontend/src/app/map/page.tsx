@@ -29,6 +29,7 @@ import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
 import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
 import MapActionBar from './components/MapActionBar/MapActionBar';
 import MapHud from './components/MapHud/MapHud';
+import { Home, MapPin } from 'lucide-react';
 import HomeModal from './components/HomeModal/HomeModal';
 import AudioSettingsModal from './components/AudioSettingsModal/AudioSettingsModal';
 import RoadDebugOverlay from './components/RoadDebugOverlay/RoadDebugOverlay';
@@ -493,7 +494,9 @@ export default function MapPage() {
                     />
                   </div>
                 ) : (
-                  <span className={styles.icon}>{loc.icon}</span>
+                  <span className={styles.icon}>
+                    {loc.id === 'home' ? <Home size={18} aria-hidden /> : <MapPin size={18} aria-hidden />}
+                  </span>
                 )}
                 <div className={styles.labelTextCol}>
                   <span className={styles.labelTextAction}>

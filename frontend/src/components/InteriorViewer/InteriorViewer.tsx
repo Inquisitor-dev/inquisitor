@@ -18,6 +18,8 @@ import { interiorScene, mapScene } from '@/components/SceneTransition/scenes';
 import styles from './InteriorViewer.module.scss';
 import { useScenePan } from './useScenePan';
 import { useAmbientParticles } from './useAmbientParticles';
+import { Check, MapPin, NotebookPen } from 'lucide-react';
+import HotspotGlyph, { isSearchSpot } from './HotspotGlyph';
 
 interface InteriorViewerProps {
   locationId: string;
@@ -107,7 +109,6 @@ function InteriorScene({
   };
 
   // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
-  const isSearchSpot = (hotspot: InteriorHotspot) => hotspot.category === 'clue' && !hotspot.clueSnippet;
   const hasWarrant = inventory?.activeWarrants?.includes(locationData.id) ?? false;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -199,7 +200,7 @@ function InteriorScene({
               <button
                 key={hotspot.id}
                 type="button"
-                className={styles.hotspotPin}
+                className={`${styles.hotspotPin} ${styles[`pin_${hotspot.category}`] ?? ''}`}
                 style={{
                   left: `${hotspot.x}%`,
                   top: `${hotspot.y}%`,
@@ -208,7 +209,7 @@ function InteriorScene({
                 title={hotspot.title}
               >
                 <div className={styles.pinBeacon}>
-                  <span>{hotspot.icon}</span>
+                  <HotspotGlyph hotspot={hotspot} size={20} />
                 </div>
                 <div className={styles.pinLabel}>
                   <span>{hotspot.title}</span>
@@ -288,7 +289,8 @@ function InteriorScene({
         </div>
 
         <div className={styles.hotspotsCount}>
-          <span>📍 {locationData.hotspots.length} İnceleme Noktası</span>
+          <MapPin size={14} aria-hidden />
+          <span>{locationData.hotspots.length} İnceleme Noktası</span>
         </div>
       </footer>
 
@@ -313,7 +315,7 @@ function InteriorScene({
                       onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
                     />
                   ) : (
-                    activeHotspot.icon
+                    <HotspotGlyph hotspot={activeHotspot} size={26} />
                   )}
                 </div>
                 <div>
@@ -370,7 +372,15 @@ function InteriorScene({
                   onClick={() => handleAddClueToNotebook(activeHotspot.clueSnippet!)}
                   disabled={noteAddedFeedback}
                 >
-                  {noteAddedFeedback ? '✓ Notlara Eklendi' : '📝 Deftere Not Al'}
+                  {noteAddedFeedback ? (
+                    <>
+                      <Check size={16} aria-hidden /> Deftere Eklendi
+                    </>
+                  ) : (
+                    <>
+                      <NotebookPen size={16} aria-hidden /> Deftere Not Al
+                    </>
+                  )}
                 </button>
               )}
 

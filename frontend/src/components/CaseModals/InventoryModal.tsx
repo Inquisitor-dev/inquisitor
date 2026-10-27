@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { ScrollText } from 'lucide-react';
 import { getLocationLabel } from '@/config/locationLabels';
 import { useGameStore } from '@/store/useGameStore';
 import EvidencePolaroid from '@/components/EvidencePolaroid/EvidencePolaroid';
@@ -54,7 +55,9 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
             <div className={styles.inventoryList}>
               {inventory.activeWarrants.map((w, idx) => (
                 <div key={`active-${idx}`} className={styles.inventoryItem}>
-                  <span className={styles.itemIcon}>📜</span>
+                  <span className={styles.itemIcon}>
+                    <ScrollText size={30} strokeWidth={1.5} aria-hidden />
+                  </span>
                   <span className={styles.itemName}>Arama İzni</span>
                   <span className={styles.warrantPlace}>{getLocationLabel(w, scenario)}</span>
                   <span>(Hazır)</span>
@@ -62,7 +65,9 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               ))}
               {inventory.usedWarrants.map((w, idx) => (
                 <div key={`used-${idx}`} className={`${styles.inventoryItem} ${styles.usedItem}`}>
-                  <span className={styles.itemIcon}>📜</span>
+                  <span className={styles.itemIcon}>
+                    <ScrollText size={30} strokeWidth={1.5} aria-hidden />
+                  </span>
                   <span className={styles.itemName}>Arama İzni</span>
                   <span className={styles.warrantPlace}>{getLocationLabel(w, scenario)}</span>
                   <span>(Kullanıldı)</span>

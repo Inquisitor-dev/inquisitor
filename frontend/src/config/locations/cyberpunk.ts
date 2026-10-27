@@ -4,7 +4,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'home',
     name: 'Evim',
-    icon: '🏡',
     top: '38%',
     left: '0%',
     width: '18%',
@@ -14,7 +13,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'church',
     name: 'Lokanta',
-    icon: '🍜',
     top: '26%',
     left: '25%',
     width: '13%',
@@ -24,7 +22,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'mill',
     name: 'Tamirhane',
-    icon: '🛠️',
     top: '19%',
     left: '34%',
     width: '15%',
@@ -34,7 +31,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'graveyard',
     name: 'Klinik',
-    icon: '🏥',
     top: '25%',
     left: '54%',
     width: '16%',
@@ -44,7 +40,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'tavern',
     name: 'Karakol',
-    icon: '👮',
     top: '30%',
     left: '70%',
     width: '14%',
@@ -54,7 +49,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'clinic',
     name: 'Bar',
-    icon: '🍸',
     top: '38%',
     left: '82%',
     width: '18%',
@@ -65,7 +59,6 @@ export const cyberpunkLocations: MapLocation[] = [
   {
     id: 'farm',
     name: 'Sokak Pazarı',
-    icon: '🏮',
     top: '44%',
     left: '31%',
     width: '39%',

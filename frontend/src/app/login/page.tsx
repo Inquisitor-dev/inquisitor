@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/shared/api/client';
 import { useGameStore } from '../../store/useGameStore';
@@ -229,7 +230,7 @@ export default function LoginPage() {
 
         {error && (
           <div className={styles.errorBox}>
-            ⚠️ {error}
+            <TriangleAlert size={16} aria-hidden /> {error}
           </div>
         )}
       </div>

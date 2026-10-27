@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/shared/api/client';
@@ -411,7 +412,7 @@ export default function InvestigationBoard() {
     return (
       <div className={`${styles.polaroid} ${styles.evidenceCard}`}>
         <div className={`${styles.photo} ${photo ? '' : styles.photoEmpty}`} style={{ backgroundImage: photo ? `url(${photo})` : undefined }}>
-          {!photo && <span>🔍</span>}
+          {!photo && <Search size={22} aria-hidden />}
         </div>
         <span className={styles.evidenceKind}>{evidenceTitle(scenario, item)}</span>
         <p className={styles.evidenceText}>{item.text}</p>

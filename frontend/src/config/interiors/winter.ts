@@ -3,7 +3,7 @@ import type { LocationInteriorData } from './types';
 export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   tavern: {
     id: 'tavern',
-    menuLabel: '🔥 Kış Hanı (Torstein)',
+    menuLabel: 'Kış Hanı (Torstein)',
     name: 'Ocak Ateşi Hanı',
     subtitle: 'Kış Hanı — Fırtınadan Kaçanların Son Sığınağı',
     scenarioType: 'winter',
@@ -19,7 +19,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Torstein (Tezgâh)',
         category: 'npc',
-        icon: '🔥',
         summary: 'Maşrapalara sıcak bira dolduran iri yarı, örgü sakallı hancı.',
         description:
           'Torstein müşterilerini kollar ve kimin fırtınadan önce geçidi aştığını bilir. Ocağın başında konuşulanları duyar ama duyduklarını kolay kolay anlatmaz.',
@@ -32,7 +31,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Taş Ocak',
         category: 'atmosphere',
-        icon: '🍲',
         summary: 'Kazanlarda baharatlı biranın kaynadığı dev ocak.',
         description:
           'Ocağın ateşi hiç sönmüyor. Soğuktan donan yolcular önce buraya gelip ellerini ısıtıyor.',
@@ -43,7 +41,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 43,
         title: 'Bira Fıçıları',
         category: 'clue',
-        icon: '🛢️',
         summary: 'Tezgâhın arkasına istiflenmiş meşe fıçılar.',
         description:
           'Fıçılardan biri diğerlerinden hafif ve sesi boş geliyor. Hanı aramak için arama izni gerekir.',
@@ -56,7 +53,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 27,
         title: 'Üst Kattaki Odalar',
         category: 'atmosphere',
-        icon: '🛏️',
         summary: 'Yolcuların kaldığı odalara açılan ahşap galeri.',
         description:
           'Fırtına geçidi kapattığından beri odaların hepsi dolu. Kimin hangi odada kaldığını yalnızca Torstein biliyor.',
@@ -67,7 +63,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Kürklü Yolcular',
         category: 'atmosphere',
-        icon: '🍺',
         summary: 'Uzun masalarda içip fısıldaşan kalabalık.',
         description:
           'Masalardakilerin çoğu fırtınada mahsur kalmış tüccar ve avcılar. Yabancıları görünce sesleri kısılıyor.',
@@ -78,7 +73,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'Üst Kata Çıkan Merdiven',
         category: 'passage',
-        icon: '🪜',
         summary: 'Galeriye çıkan dik ahşap merdiven.',
         description:
           'Basamakların üzerinde erimiş kar izleri var; biri dışarıdan gelip doğrudan yukarı çıkmış.',
@@ -89,7 +83,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 54,
         title: 'Açık Kalan Kapı',
         category: 'atmosphere',
-        icon: '❄️',
         summary: 'Karın içeri savrulduğu ağır ahşap kapı.',
         description:
           'Kapı rüzgârdan sık sık açılıyor. Dışarıda avluya düşen kar, gelip gidenlerin izlerini çabucak örtüyor.',
@@ -98,7 +91,7 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   },
   church: {
     id: 'church',
-    menuLabel: '🍁 Kutsal Ağaç (Kahin Valda)',
+    menuLabel: 'Kutsal Ağaç (Kahin Valda)',
     name: 'Kutsal Yürek Ağacı',
     subtitle: 'Dikili Taşlar Halkası — Kadim Tanrıların Koruluğu',
     scenarioType: 'winter',
@@ -114,7 +107,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Kahin Valda (Taşların Yanı)',
         category: 'npc',
-        icon: '🍁',
         summary: 'Elinde kemik tılsımlarla diz çökmüş, kukuletalı yaşlı kadın.',
         description:
           'Valda soğuk, kehanet dolu fısıltılarla konuşuyor. Dünyevi suçlara kadim tanrıların gözünden bakıyor ve ağacın yapraklarında işaretler okuduğunu söylüyor.',
@@ -127,7 +119,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 30,
         title: 'Kutsal Ağaç',
         category: 'atmosphere',
-        icon: '🌳',
         summary: 'Kemik beyazı gövdesine rünler oyulmuş, kızıl yapraklı dev ağaç.',
         description:
           'Rünlerin bazıları çok eski, bazıları yeni oyulmuş. Kızıl yapraklar karın üzerine kan damlası gibi dökülüyor.',
@@ -138,7 +129,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 63,
         title: 'Köklerdeki Adaklar',
         category: 'clue',
-        icon: '🕯️',
         summary: 'Mumlar, kemikler ve küçük adaklar.',
         description:
           'Adakların arasında buraya ait olmayan bir şey parlıyor. Koruluğu aramak için arama izni gerekir.',
@@ -151,7 +141,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 83,
         title: 'Donmuş Gölet',
         category: 'atmosphere',
-        icon: '🧊',
         summary: 'Ağacın önündeki kara buzla kaplı gölet.',
         description:
           'Buzun bir köşesi yakın zamanda kırılmış ve yeniden donmuş. İnce buzun altında karanlık su görünüyor.',
@@ -162,7 +151,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 51,
         title: 'Dikili Taşlar',
         category: 'atmosphere',
-        icon: '🪨',
         summary: 'Koruluğu çevreleyen, üzeri işaretli taşlar.',
         description:
           'Taşlardaki işaretleri artık Valda’dan başka kimse okuyamıyor. Halkanın içine silahla girmek yasak.',
@@ -173,7 +161,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 39,
         title: 'Kaleye Dönen Yol',
         category: 'passage',
-        icon: '🏰',
         summary: 'Meşalelerle aydınlanan, kale binalarına giden patika.',
         description:
           'Patikadaki ayak izleri karla dolmaya başlamış. Gece koruluğa gelen biri buradan geçmiş olmalı.',
@@ -182,7 +169,7 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   },
   graveyard: {
     id: 'graveyard',
-    menuLabel: '🏰 Gözcü Kalesi (Komutan Bjorn)',
+    menuLabel: 'Gözcü Kalesi (Komutan Bjorn)',
     name: 'Gözcü Kalesi',
     subtitle: 'Frosthold Kalesinin Büyük Salonu — Demir Disiplin ve Kurt Postları',
     scenarioType: 'winter',
@@ -198,7 +185,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Komutan Bjorn (Savaş Masası)',
         category: 'npc',
-        icon: '🏰',
         summary: 'Zincir zırhının üstüne kurt postu atmış, yüzü yara izli komutan.',
         description:
           'Bjorn nöbetçiler arasında demir bir disiplin sürdürüyor. Her yabancıya sızma ihtimali olan biri gibi bakıyor ve zayıflığa da yalana da tahammül etmiyor.',
@@ -211,7 +197,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 83,
         title: 'Savaş Masası',
         category: 'clue',
-        icon: '🗺️',
         summary: 'Oyma bir harita ve üzerinde dizili ahşap figürler.',
         description:
           'Figürlerden biri gecenin nöbet düzeninden farklı bir yere konmuş. Kaleyi aramak için arama izni gerekir.',
@@ -224,7 +209,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 42,
         title: 'Yüksek Koltuk',
         category: 'atmosphere',
-        icon: '🪑',
         summary: 'Kürsünün üstünde, postlarla örtülü ahşap taht.',
         description:
           'Kalenin sahibi bu koltukta oturup hüküm verir. Komutan, kalenin efendisi yokken buraya oturmuyor.',
@@ -235,7 +219,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 61,
         title: 'Ziyafet Masaları',
         category: 'atmosphere',
-        icon: '🍖',
         summary: 'Üstünde boş kâseler ve boynuz kadehler kalmış uzun masalar.',
         description:
           'Akşam yemeği aceleyle bitirilmiş. Masalardan biri devrilip yeniden kurulmuş gibi duruyor.',
@@ -246,7 +229,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 51,
         title: 'Silah Rafları',
         category: 'atmosphere',
-        icon: '🪓',
         summary: 'Baltalar, mızraklar ve yuvarlak kalkanlar.',
         description:
           'Silahların sayımı her sabah yapılıyor. Raftaki bir baltanın yerinde boşluk var.',
@@ -257,7 +239,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 52,
         title: 'Demir Kaplı Kapı',
         category: 'passage',
-        icon: '🚪',
         summary: 'İki nöbetçinin beklediği ağır kapı.',
         description:
           'Kapı surlara ve kalenin alt katlarına açılıyor. Nöbetçiler kimin geçtiğini tek tek deftere yazıyor.',
@@ -266,7 +247,7 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   },
   mill: {
     id: 'mill',
-    menuLabel: '⛏️ Maden (Madenci Durn)',
+    menuLabel: 'Maden (Madenci Durn)',
     name: 'Terk Edilmiş Maden',
     subtitle: 'Eski Demir Madeni — Buz Sarkıtları ve Karanlık Tüneller',
     scenarioType: 'winter',
@@ -282,7 +263,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Madenci Durn (Fener)',
         category: 'npc',
-        icon: '⛏️',
         summary: 'Elinde fener ve kazmayla omzunun üstünden bakan yaşlı madenci.',
         description:
           'Durn kaba ve kısa konuşuyor. Klanından olmayan kimseye güvenmiyor ve tünelleri herkesten iyi biliyor.',
@@ -295,7 +275,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 65,
         title: 'Cevher Arabaları',
         category: 'atmosphere',
-        icon: '🛒',
         summary: 'Paslı raylar üzerinde cevherle dolu arabalar.',
         description:
           'Maden terk edilmiş sayılıyor ama arabalardaki cevher yeni çıkarılmış gibi duruyor.',
@@ -306,7 +285,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'Duvardaki Kazmalar',
         category: 'atmosphere',
-        icon: '⛏️',
         summary: 'Çivilere asılmış kazmalar ve fenerler.',
         description:
           'Kazmalardan birinin sapı buz tutmamış; yakın zamanda kullanılmış.',
@@ -317,7 +295,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Maden Girişi',
         category: 'passage',
-        icon: '🌨️',
         summary: 'Tünelin sonunda soluk mavi bir ışık.',
         description:
           'Giriş dağın yamacına, geçide yakın bir noktaya açılıyor. Maden, kaleye fark edilmeden gelmenin bir yolu olabilir.',
@@ -328,7 +305,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 59,
         title: 'Göçmüş Yan Tünel',
         category: 'clue',
-        icon: '🪨',
         summary: 'Kayalar ve kırık kirişlerle yarı kapanmış bir tünel.',
         description:
           'Kayaların arasında insan geçecek kadar bir aralık açılmış. Madeni aramak için arama izni gerekir.',
@@ -341,7 +317,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 77,
         title: 'Sandıklar',
         category: 'atmosphere',
-        icon: '📦',
         summary: 'Tünel ağzına istiflenmiş ahşap sandıklar.',
         description:
           'Sandıkların üzerinde maden mührü yok. Ne taşıdıkları belli değil.',
@@ -350,7 +325,7 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   },
   farm: {
     id: 'farm',
-    menuLabel: '🛡️ Sur (Einar)',
+    menuLabel: 'Sur (Einar)',
     name: 'Sur Kapısı',
     subtitle: 'Buz Surunun Nöbet Odası — Donmuş Geçidin Bekçisi',
     scenarioType: 'winter',
@@ -366,7 +341,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 66,
         title: 'Einar (Kapı Kemeri)',
         category: 'npc',
-        icon: '🛡️',
         summary: 'Yayını tutup geçidi izleyen genç nöbetçi.',
         description:
           'Einar dondurucu rüzgâra rağmen yerinden ayrılmıyor. Geçitteki her hareketi görüyor ve suru geçmek isteyen herkese şüpheyle bakıyor.',
@@ -379,7 +353,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 71,
         title: 'Nöbet Ocağı',
         category: 'atmosphere',
-        icon: '🔥',
         summary: 'Nöbetçilerin ısındığı küçük taş ocak.',
         description:
           'Ocağın yanındaki odunlar azalmış. Gece nöbetinde burada kaç kişinin ısındığı belli değil.',
@@ -390,7 +363,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Yaylar ve Sadaklar',
         category: 'atmosphere',
-        icon: '🏹',
         summary: 'Duvara asılmış uzun yaylar.',
         description:
           'Sadaklardan birindeki okların sayısı eksik. Nöbetçiler her oku tek tek sayar.',
@@ -401,7 +373,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Donmuş Geçit',
         category: 'atmosphere',
-        icon: '🏔️',
         summary: 'Kemerin ardında uzanan buz duvarlı dağ geçidi.',
         description:
           'Fırtınadan beri geçitten kimse gelmedi; en azından nöbet defterine göre.',
@@ -412,7 +383,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 73,
         title: 'Kapı Makarası',
         category: 'clue',
-        icon: '⛓️',
         summary: 'Ağır kapıyı açan zincirli makara.',
         description:
           'Zincirdeki buz kırılmış; kapı gece açılıp kapanmış olmalı. Suru aramak için arama izni gerekir.',
@@ -425,7 +395,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Surlara Çıkan Merdiven',
         category: 'passage',
-        icon: '🪜',
         summary: 'Mazgallara tırmanan dar ahşap merdiven.',
         description:
           'Merdivenin tepesinden bütün geçit ve kalenin avlusu görünüyor.',
@@ -434,7 +403,7 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
   },
   clinic: {
     id: 'clinic',
-    menuLabel: '⚔️ İnfaz Meydanı (Muhafız Kenneth)',
+    menuLabel: 'İnfaz Meydanı (Muhafız Kenneth)',
     name: 'İnfaz Meydanı',
     subtitle: 'Askerî Yargı Avlusu — Darağacı, Kafesler ve Soğuk Adalet',
     scenarioType: 'winter',
@@ -450,7 +419,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 47,
         title: 'Muhafız Kenneth (Yargı Kürsüsü)',
         category: 'npc',
-        icon: '⚔️',
         summary: 'Eldivenli elini kürsüye dayamış, soğuk bakışlı muhafız.',
         description:
           'Kenneth garnizonu isyandan koruyan tek şeyin korku olduğuna inanıyor. Suçu acımasız bir kesinlikle ölçüyor.',
@@ -463,7 +431,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 81,
         title: 'Yargı Defteri',
         category: 'clue',
-        icon: '📖',
         summary: 'Kürsüdeki kalın, deri ciltli defter ve kum saati.',
         description:
           'Defterin son sayfalarından biri koparılmış. İnfaz meydanını aramak için arama izni gerekir.',
@@ -476,7 +443,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 41,
         title: 'Darağacı',
         category: 'atmosphere',
-        icon: '🪢',
         summary: 'Boş bir ilmeğin sallandığı ahşap darağacı.',
         description:
           'İlmek yeni bağlanmış. Garnizonda yakında bir infaz yapılacağı fısıldanıyor.',
@@ -487,7 +453,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 54,
         title: 'Demir Kafesler',
         category: 'atmosphere',
-        icon: '⛓️',
         summary: 'Avluda asılı duran boş kafesler.',
         description:
           'Kafeslerden birinin kilidi açık bırakılmış. İçindeki kar ezilmiş.',
@@ -498,7 +463,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 61,
         title: 'Avludaki Ateş',
         category: 'atmosphere',
-        icon: '🔥',
         summary: 'Nöbetçilerin etrafında beklediği büyük ateş.',
         description:
           'Ateşin külleri arasında yanmamış bir kumaş parçası var.',
@@ -509,7 +473,6 @@ export const WINTER_INTERIORS: Record<string, LocationInteriorData> = {
         y: 53,
         title: 'Zindan Kapısı',
         category: 'passage',
-        icon: '🚪',
         summary: 'Kulenin dibindeki demir parmaklıklı kapı.',
         description:
           'Kapının ardındaki merdiven zindana iniyor. Mahkûmlar sorguya buradan çıkarılıyor.',

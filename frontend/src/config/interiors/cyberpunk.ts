@@ -3,7 +3,7 @@ import type { LocationInteriorData } from './types';
 export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   tavern: {
     id: 'tavern',
-    menuLabel: '🚔 Karakol (Kael Voss)',
+    menuLabel: 'Karakol (Kael Voss)',
     name: 'Neon Prime Karakolu',
     subtitle: 'Nöbetçi Masası — Arama İzinlerinin ve Bitmeyen Raporların Yeri',
     scenarioType: 'cyberpunk',
@@ -20,7 +20,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 57,
         title: 'Memur Kael Voss (Nöbetçi Masası)',
         category: 'npc',
-        icon: '👮',
         summary: 'Holografik dosyaların başında yorgun gözlerle bekleyen memur.',
         description:
           'Kael Voss, gözündeki implantın soluk ışığında ekrandaki dosyaları kaydırıyor. Her isteği masasına ne kadar iş açacağına göre tartıyor. Arama izinleri onun imzasından geçiyor.',
@@ -33,7 +32,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 38,
         title: 'Aranan Afişleri ve Şehir Haritası',
         category: 'atmosphere',
-        icon: '📌',
         summary: 'Solmuş afişler, işaretli bir harita ve üst üste yapıştırılmış notlar.',
         description:
           'Mantar panoda solmuş aranan afişleri, raptiyelerle işaretlenmiş bir şehir haritası ve üst üste yapıştırılmış notlar var. Bazı dosyalar çoktan kapanmış ama kimse afişleri indirmeye zahmet etmemiş.',
@@ -44,7 +42,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 52,
         title: 'Nezarethane',
         category: 'atmosphere',
-        icon: '🔒',
         summary: 'Soluk camgöbeği ışık altında parmaklıkların ardındaki gözaltılar.',
         description:
           'Parmaklıkların ardında gözaltılar bekliyor. Kapının önündeki iki memur alçak sesle konuşuyor; içeriden biri dışarıdakilere bir şey fısıldamaya çalışıyor.',
@@ -55,7 +52,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 55,
         title: 'Delil Dolapları',
         category: 'clue',
-        icon: '🗄️',
         summary: 'Sıra sıra dizilmiş numaralı metal dolaplar.',
         description:
           'Numaralı metal dolapların birkaçının kilidi zorlanmış gibi duruyor. Karakolun burasını aramak için arama izni gerekir.',
@@ -68,7 +64,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 47,
         title: 'Yağmurlu Cadde',
         category: 'atmosphere',
-        icon: '🌃',
         summary: 'Camın ardında neon tabelalar ve seyyar yemek tezgâhları.',
         description:
           'Neon tabelalar, seyyar yemek tezgâhları ve alçaktan uçan bir dron. Şehir, karakolun içinde olanlardan habersiz akıp gidiyor.',
@@ -79,7 +74,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 88,
         title: 'Eski Yazıcı',
         category: 'atmosphere',
-        icon: '🖨️',
         summary: 'Hâlâ kâğıtla çalışan, son çıktısı yarım kalmış bir yazıcı.',
         description:
           'Karakol yeni sistemlere geçmeyi yıllardır erteliyor. Yazıcının ağzında yarım kalmış bir rapor sallanıyor.',
@@ -88,7 +82,7 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   },
   church: {
     id: 'church',
-    menuLabel: '🍜 Lokanta (Mirel Sato)',
+    menuLabel: 'Lokanta (Mirel Sato)',
     name: 'Static Spoon',
     subtitle: 'Gece Boyu Açık Erişte Lokantası — Kuryelerin, Polislerin ve Uykusuzların Durağı',
     scenarioType: 'cyberpunk',
@@ -105,7 +99,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Mirel Sato (Tezgâh)',
         category: 'npc',
-        icon: '🍜',
         summary: 'Buharın içinde kepçesiyle kazanların başında duran lokanta sahibi.',
         description:
           'Metal önkolu buharın içinde parlıyor. Kepçeyi kazana daldırırken gözü kapıdan girip çıkan herkeste. Bu tezgâhtan geçen her söz bir gün işine yarayabilir.',
@@ -118,7 +111,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 60,
         title: 'Tezgâhtaki Müdavimler',
         category: 'atmosphere',
-        icon: '🥢',
         summary: 'Eriştelerine eğilmiş kuryeler ve gece vardiyasından çıkanlar.',
         description:
           'Konuşmalar alçak sesle yapılıyor ama yan yana oturanlar birbirinin her kelimesini duyuyor. Burada sır tutmak, erişteyi soğumadan bitirmekten zor.',
@@ -129,7 +121,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 50,
         title: 'Mutfağa Açılan Arka Kapı',
         category: 'passage',
-        icon: '🚪',
         summary: 'Aralık kapının ardında tavalar ve sokağa açılan servis çıkışı.',
         description:
           'Mutfağın arkasındaki servis çıkışı doğrudan ara sokağa açılıyor. Buradan girip çıkan birini tezgâhtakiler fark etmez.',
@@ -140,7 +131,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 44,
         title: 'Ezik Otomat',
         category: 'atmosphere',
-        icon: '🥤',
         summary: 'Camı çatlamış, yarısı boş bir içecek otomatı.',
         description:
           'Biri yumruğunu camına geçirmiş; çatlak hâlâ duruyor. İçindeki içeceklerin yarısının son kullanma tarihi çoktan geçmiş.',
@@ -151,7 +141,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 80,
         title: 'Arka Köşedeki Masa',
         category: 'clue',
-        icon: '🍲',
         summary: 'Yarım bırakılmış bir kâse ve dağılmış yemek çubukları.',
         description:
           'Biri buradan aceleyle kalkmış. Lokantanın arka köşelerini aramak için arama izni gerekir.',
@@ -164,7 +153,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 33,
         title: 'Buğulu Vitrin',
         category: 'atmosphere',
-        icon: '🌧️',
         summary: 'Yağmur damlalarının arasından süzülen pembe neon.',
         description:
           'Buğulu camın ardında caddenin neon ışıkları bulanıklaşıyor. İçeriden dışarısı görünmüyor, dışarıdan da içerisi.',
@@ -173,7 +161,7 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   },
   graveyard: {
     id: 'graveyard',
-    menuLabel: '🏥 Klinik (Brakk Coil)',
+    menuLabel: 'Klinik (Brakk Coil)',
     name: 'Neon Prime Kliniği',
     subtitle: 'Yeraltı Siber Cerrahisi — Faturasız Ameliyatlar, Sorusuz Hastalar',
     scenarioType: 'cyberpunk',
@@ -190,7 +178,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 57,
         title: 'Brakk Coil (Çalışma Masası)',
         category: 'npc',
-        icon: '🩺',
         summary: 'Masasında mekanik bir eli söken siber cerrah.',
         description:
           'Brakk, başını kaldırmadan konuşuyor; tornavidası mekanik elin eklemlerinde dolaşıyor. Burada her işlemin bir bedeli var ve Brakk kimseye güvenmiyor.',
@@ -203,7 +190,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 48,
         title: 'Biyolojik Saklama Dolapları',
         category: 'clue',
-        icon: '🧪',
         summary: 'Buzlu camların ardında yeşil ışıkta parlayan şişeler.',
         description:
           'Etiketsiz tüpler ve şişeler raflara dizilmiş; bazı rafların yakın zamanda boşaltıldığı belli. Kliniği aramak için arama izni gerekir.',
@@ -216,7 +202,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 65,
         title: 'Ameliyat Koltuğu',
         category: 'atmosphere',
-        icon: '💺',
         summary: 'Tavandan sarkan robotik kolların altındaki yıpranmış koltuk.',
         description:
           'Deri koltuk sayısız ameliyattan geçmiş. Zemindeki lekeler hiçbir zaman tam olarak temizlenmemiş.',
@@ -227,7 +212,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'Plastik Perdenin Ardı',
         category: 'passage',
-        icon: '🚪',
         summary: 'Kutularla dolu bir arka odayı gizleyen yarı saydam perde.',
         description:
           'Perdenin ardındaki odada hastaların görmemesi gereken işler yapılıyor olmalı. İçeriden soğutucu uğultusu geliyor.',
@@ -238,7 +222,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 86,
         title: 'Hurda İmplantlar',
         category: 'atmosphere',
-        icon: '🦾',
         summary: 'Bir kasaya gelişigüzel atılmış sökülmüş robot kolları.',
         description:
           'Kullanılmış implantlar ve sökülmüş protezler üst üste yığılmış. Kimin bedeninden çıktıkları belli değil.',
@@ -247,7 +230,7 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   },
   mill: {
     id: 'mill',
-    menuLabel: '🛠️ Tamirhane (AURA-9)',
+    menuLabel: 'Tamirhane (AURA-9)',
     name: 'AURA Tamirhanesi',
     subtitle: 'Siber Protez ve Robot Atölyesi — Kıvılcımlar, Lehim ve Yedek Parçalar',
     scenarioType: 'cyberpunk',
@@ -264,7 +247,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 51,
         title: 'AURA-9 (Lehim Tezgâhı)',
         category: 'npc',
-        icon: '🤖',
         summary: 'Bir devre kartını lehimleyen beyaz-krom kabuklu android.',
         description:
           'AURA-9’un mavi optik sensörleri her hareketi kaydediyor. Ses tonu kibar ve ticari, ama bakışları bir makineye göre fazlasıyla dikkatli.',
@@ -277,7 +259,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 62,
         title: 'Robotik Montaj Kolu',
         category: 'atmosphere',
-        icon: '🦿',
         summary: 'Masanın üzerinde kendi kendine çalışan montaj kolu.',
         description:
           'Kol, sahibine ihtiyaç duymadan vida sıkıyor. Atölyede kimse yokken de iş durmuyor.',
@@ -288,7 +269,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 42,
         title: 'Yedek Uzuv Rafı',
         category: 'atmosphere',
-        icon: '🦾',
         summary: 'Kancalara asılı kollar ve raflarda dizili boş bakışlı yüzler.',
         description:
           'Bazı parçaların seri numaraları kazınarak silinmiş. Bu rafın kaçta kaçının yasal yoldan geldiğini kimse sormuyor.',
@@ -299,7 +279,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 88,
         title: 'Devre Kartı Masası',
         category: 'clue',
-        icon: '💾',
         summary: 'Yarı sökülmüş kartlar ve hafıza modülleri.',
         description:
           'Masadaki hafıza modüllerinden birinin kayıtları silinmeye çalışılmış gibi. Atölyeyi aramak için arama izni gerekir.',
@@ -312,7 +291,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 52,
         title: 'Yarı Açık Kepenk',
         category: 'passage',
-        icon: '🚪',
         summary: 'Kepengin altından görünen yağmurlu sokak.',
         description:
           'Atölyeye gece yarısı da girip çıkılabiliyor. Kepengin önündeki ıslak zeminde silik ayak izleri var.',
@@ -321,7 +299,7 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   },
   farm: {
     id: 'farm',
-    menuLabel: '🏮 Sokak Pazarı (Ash)',
+    menuLabel: 'Sokak Pazarı (Ash)',
     name: 'Gece Pazarı',
     subtitle: 'Neon Prime Sokak Pazarı — Hurda Teknoloji, Sokak Yemeği ve Satılık Fısıltılar',
     scenarioType: 'cyberpunk',
@@ -338,7 +316,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 57,
         title: 'Ash (Hurda Tezgâhı)',
         category: 'npc',
-        icon: '🧥',
         summary: 'Kapüşonunun altından kalabalığı izleyen sokak satıcısı.',
         description:
           'Gözlüğü alnında, eldivenli elleri kenetli. Bu pazarda görünmez olmak bir zırh; Ash de bu zırhın ardından her şeyi görüyor.',
@@ -351,7 +328,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 85,
         title: 'Ash’in Tezgâhı',
         category: 'clue',
-        icon: '🔌',
         summary: 'Kablo yumakları, eski piller ve elden düşme devre kartları.',
         description:
           'Tezgâhtaki parçaların bazıları bir hurdaya göre fazla yeni duruyor. Tezgâhı aramak için arama izni gerekir.',
@@ -364,7 +340,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 59,
         title: 'Buharlı Wok Tezgâhı',
         category: 'atmosphere',
-        icon: '🥘',
         summary: 'Devasa tavada erişte çeviren bir aşçı.',
         description:
           'Buhar neon ışıkla karışıyor; kızgın yağın sesi yakındaki konuşmaları bastırıyor.',
@@ -375,7 +350,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 46,
         title: 'Fenerli Pazar Sokağı',
         category: 'passage',
-        icon: '🏮',
         summary: 'Kâğıt fenerlerin altında ilerleyen şemsiyeli kalabalık.',
         description:
           'Bu kalabalığın içinde biri takip edilse kimse fark etmez. Sokak, şehrin daha karanlık katlarına doğru uzanıyor.',
@@ -386,7 +360,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 40,
         title: 'Karşı Tezgâh',
         category: 'atmosphere',
-        icon: '🧵',
         summary: 'Kancalardan sarkan kablolar ve tencereler.',
         description:
           'Satıcı müşterilerden çok sokağın başını izliyor. Polis geldiğinde bu tezgâhın ilk kapanan olacağı belli.',
@@ -395,7 +368,7 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
   },
   clinic: {
     id: 'clinic',
-    menuLabel: '🍸 Bar (Vera Nyx)',
+    menuLabel: 'Bar (Vera Nyx)',
     name: 'Velvet Static',
     subtitle: 'Karartma Barı — Paralı Askerlerin, Aracıların ve Kaybolmak İsteyenlerin Mekânı',
     scenarioType: 'cyberpunk',
@@ -412,7 +385,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 48,
         title: 'Vera Nyx (Bar Tezgâhı)',
         category: 'npc',
-        icon: '🍸',
         summary: 'Bir bardağı ağır ağır parlatırken salonu süzen barmen.',
         description:
           'Çene hattındaki implant neon ışıkta belli belirsiz parlıyor. Herkesle samimi konuşuyor ama kendisi hakkında hiçbir şey söylemiyor.',
@@ -425,7 +397,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'Boncuk Perdeli Özel Oda',
         category: 'passage',
-        icon: '🚪',
         summary: 'Kırmızı ışıklı, alçak sesle pazarlık yapılan arka oda.',
         description:
           'Perdenin ardında birileri anlaşma yapıyor. Davetsiz girenlerin buradan nasıl çıktığını kimse hatırlamıyor.',
@@ -436,7 +407,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 45,
         title: 'Sahne',
         category: 'atmosphere',
-        icon: '🎸',
         summary: 'Sis makinesinin dumanında çalan bir grup.',
         description:
           'Müzik o kadar yüksek ki masalardaki fısıltılar kayboluyor. Burada konuşulanı ancak yan masadaki duyar.',
@@ -447,7 +417,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 64,
         title: 'Yan Odadaki Masa',
         category: 'atmosphere',
-        icon: '🤝',
         summary: 'Grafitili duvarın önünde pazarlık yapan iki kişi.',
         description:
           'Siber kollu iki kişi masaya eğilmiş, bir şeyin fiyatında anlaşmaya çalışıyor. Seni görünce sesleri kısılıyor.',
@@ -458,7 +427,6 @@ export const CYBERPUNK_INTERIORS: Record<string, LocationInteriorData> = {
         y: 72,
         title: 'Bar Tezgâhının Arkası',
         category: 'clue',
-        icon: '🍾',
         summary: 'Işıklı raflar ve tezgâhın altındaki kilitli çekmeceler.',
         description:
           'Rafların arkasında içkiden fazlası saklanıyor olabilir. Barın arkasını aramak için arama izni gerekir.',

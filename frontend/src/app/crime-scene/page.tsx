@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { Droplet } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/shared/api/client';
@@ -76,7 +77,9 @@ export default function CrimeScenePage() {
         </Link>
         
         <div className={styles.npcInfo}>
-          <div className={styles.npcIcon}>🩸</div>
+          <div className={styles.npcIcon}>
+            <Droplet size={30} strokeWidth={1.6} aria-hidden />
+          </div>
           <div className={styles.npcName}>Cinayet Mahalli</div>
           <div className={styles.npcTitle}>Sessiz tanıklar...</div>
         </div>

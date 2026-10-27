@@ -3,8 +3,8 @@ export interface InteriorHotspot {
   x: number; // Yüzde olarak yatay konum (0 - 100)
   y: number; // Yüzde olarak dikey konum (0 - 100)
   title: string;
+  // Simge türe göre seçilir (components/InteriorViewer/HotspotGlyph.tsx)
   category: 'npc' | 'clue' | 'atmosphere' | 'passage';
-  icon: string;
   summary: string;
   description: string;
   clueSnippet?: string;

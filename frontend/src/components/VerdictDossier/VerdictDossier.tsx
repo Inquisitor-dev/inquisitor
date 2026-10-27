@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Check, ChevronLeft, ChevronRight, Gavel, Search, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Gavel, Search, UserRound, X } from 'lucide-react';
 import { api } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
 import { useGameStore } from '@/store/useGameStore';
@@ -260,7 +260,9 @@ function DossierForm({
                             {portrait ? (
                               <img src={portrait} alt="" className={styles.portrait} />
                             ) : (
-                              <span className={styles.portraitIcon}>{s.icon}</span>
+                              <span className={styles.portraitIcon}>
+                                <UserRound size={28} aria-hidden />
+                              </span>
                             )}
                           </span>
                           <span className={styles.suspectName}>{s.name}</span>
@@ -374,7 +376,9 @@ function DossierForm({
                           {portrait ? (
                             <img src={portrait} alt="" className={styles.portrait} />
                           ) : (
-                            <span className={styles.portraitIcon}>{s.icon}</span>
+                            <span className={styles.portraitIcon}>
+                              <UserRound size={22} aria-hidden />
+                            </span>
                           )}
                         </span>
                         <span className={styles.innocentText}>

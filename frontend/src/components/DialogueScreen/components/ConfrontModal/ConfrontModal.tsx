@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ScrollText, Search } from 'lucide-react';
 import type { EvidenceItem } from '@/store/useGameStore';
 import styles from '../../NpcDialogueScreen.module.scss';
 
@@ -70,7 +71,12 @@ function ConfrontModalContent({
               >
                 <div>
                   <div className={styles.choiceText}>
-                    {item.category === 'ITEM' ? '🔍' : '📜'} {item.text}
+                    {item.category === 'ITEM' ? (
+                      <Search size={14} aria-hidden className={styles.choiceKind} />
+                    ) : (
+                      <ScrollText size={14} aria-hidden className={styles.choiceKind} />
+                    )}{' '}
+                    {item.text}
                   </div>
                   <div className={styles.choiceMeta}>
                     {evidenceSource(item)}

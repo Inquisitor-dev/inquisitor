@@ -148,7 +148,7 @@ Run each in its own directory.
     - "Hazır Sorular" toggles a row of preset questions (`config/quickQuestions.ts`, `getQuickQuestions`) that are sent with one click; the introduction uses the player's username and the town name. Sending one keeps the player's half-typed draft. Hidden while searching a location and at the crime scene.
   - **Interiors** (`interior/[locationId]`, `InteriorViewer`, `config/interiors/<universe>.ts`, looked up with `getInterior`) are defined per universe; `medieval`, `cyberpunk`, `china`, `winter` and `modern` have them; other universes show a "henüz hazır değil" screen.
     - Entering a location from the map opens its interior first when one exists, otherwise the dialogue screen.
-    - Hotspot positions are percentages of the image.
+    - Hotspot positions are percentages of the image. A hotspot's icon comes from its category (`InteriorViewer/HotspotGlyph.tsx`: talk, search spot, clue, object, passage); configs no longer hold emoji, and the game uses `lucide-react` icons everywhere instead of colour emoji (✠, ✓ and ✕ are kept as typographic marks).
     - A `clue` hotspot without `clueSnippet` is a search spot: it checks the warrant and links to `/interact/<id>?ara=1`, which opens investigation mode.
   - **Player home** (`/home`, `components/PlayerHome`, `config/homeConfig.ts`) replaces the map's "Evim" popup in universes that have a home image (all five so far; a universe without one keeps the popup).
     - Objects in the room open the old popup's actions: bed (end day; on the last day it opens the verdict picker via `/map?hukum=1`), desk (the notebook), chest (inventory), board (opens the investigation board) and door (back to the map).
