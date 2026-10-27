@@ -62,6 +62,8 @@ function testContradictions(replies: string[]): Contradiction[] {
   const head = (text: string) => text.slice(0, 40);
   return [
     {
+      a: 1,
+      b: replies.length,
       quoteA: head(replies[0]),
       quoteB: head(replies[replies.length - 1]),
       note: '[TEST MODU] Yer tutucu çelişki.',

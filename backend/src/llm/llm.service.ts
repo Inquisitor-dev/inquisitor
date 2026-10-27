@@ -40,7 +40,10 @@ import {
 } from './prompts/verdict-judge-prompt.builder';
 import {
   type Contradiction,
+  MAX_CANDIDATES,
+  buildContradictionCheckPrompt,
   buildContradictionPrompt,
+  parseContradictionCheck,
   parseContradictions,
 } from './prompts/contradiction-prompt.builder';
 import {
@@ -918,24 +921,43 @@ export class LlmService {
     }
   }
 
-  // Çelişki Taraması: şüphelinin kendi cevapları arasındaki çelişkiler; başarısızlıkta null
+  // Çelişki Taraması: şüphelinin kendi cevapları arasındaki çelişkiler; başarısızlıkta null.
+  // Önce adaylar bulunur, sonra her aday iki tam cevapla ayrıca kontrol edilir (yanlış alarm olmasın).
   async findContradictions(
     npcName: string,
     replies: string[],
     scenarioType: string,
     sessionId?: string,
   ): Promise<Contradiction[] | null> {
-    const prompt = buildContradictionPrompt(npcName, replies, scenarioType);
+    const ask = async <T>(
+      prompt: string,
+      parse: (text: string) => T | null,
+    ): Promise<T | null> => {
+      // Model ara sıra okunamayan JSON döndürüyor (ölçümde 36 taramada 1); o zaman bir kez daha sorulur
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await this.complete(
+          { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
+          'Contradiction scan',
+          30_000,
+          { kind: 'CONTRADICTION_SCAN', sessionId },
+        );
+        const parsed = parse(response?.choices?.[0]?.message?.content || '');
+        if (parsed) return parsed;
+      }
+      return null;
+    };
 
     try {
-      const response = await this.complete(
-        { messages: [{ role: 'user', content: prompt }], temperature: 0.2 },
-        'Contradiction scan',
-        30_000,
-        { kind: 'CONTRADICTION_SCAN', sessionId },
+      const candidates = await ask(
+        buildContradictionPrompt(npcName, replies, scenarioType),
+        (text) => parseContradictions(text, replies, MAX_CANDIDATES),
       );
-      const text = response?.choices?.[0]?.message?.content || '';
-      return parseContradictions(text, replies);
+      if (!candidates?.length) return candidates;
+      const checked = await ask(
+        buildContradictionCheckPrompt(npcName, replies, candidates),
+        (text) => parseContradictionCheck(text, candidates),
+      );
+      return checked;
     } catch (error) {
       this.logger.warn(`Contradiction scan failed. ${error}`);
       return null;
