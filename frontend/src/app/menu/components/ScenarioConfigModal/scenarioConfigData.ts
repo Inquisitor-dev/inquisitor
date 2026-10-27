@@ -35,6 +35,11 @@ export const STORY_DETAILS: Record<string, { title: string; era: string; desc: s
   },
 };
 
+// Evren seçimindeki küçük önizlemeler: tam harita görselleri (2752 px) beşi birden açılınca
+// pencere takılıyordu; 480 px'lik kopyaları kullanılır
+export const getMapThumb = (story: string) =>
+  getMapImage(story).replace('/map/', '/map/thumbs/');
+
 export const getMapImage = (story: string) => {
   switch (story) {
     case 'modern': return '/map/town_map_night.webp';

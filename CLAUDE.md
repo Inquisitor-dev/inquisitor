@@ -172,6 +172,7 @@ Run each in its own directory.
 
 ### UI conventions (frontend)
 - **Visual language** (shared by menu, market and community): near-black background, blood red `#8A0303`, gold `#e0bb5e` for tokens and highlights, Playfair Display headings, wax-seal and roman-numeral motifs, and `lucide-react` icons instead of emoji.
+- **Performance:** avoid `backdrop-filter` (and animated `filter`) on top of moving content: the menu's background drifts and the 3D character animates, so every blurred panel was recomputed each frame. Panels use a more opaque background instead. While a window (`aria-modal`) is open, the menu's looping animations pause (`body:has([aria-modal='true'])`) and the 3D/sprite character stops drawing (`isCoveredByModal`). `CharacterModelView` builds its WebGL scene once and only swaps the model when the character changes (pixel ratio capped at 1.5); `CharacterTurntable` keeps the previous model on screen while the next manifest loads. The universe picker uses 480 px map thumbnails (`public/map/thumbs/`, `getMapThumb`).
 - **Uppercase text:** `<html lang="tr">` makes CSS `text-transform: uppercase` follow Turkish rules (i → İ). Mark uppercased English or Latin text with `lang="en"` (e.g. "The Inquisitor"). In JS, use `toLocaleUpperCase('tr-TR')`.
 - **Copy:** user-facing text uses the informal "sen" form and TDK spelling with diacritics (hikâye, mekân, mahkûm, dükkân). Never write Turkish without its special characters.
 

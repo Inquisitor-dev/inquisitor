@@ -14,7 +14,7 @@ import {
   DIFFICULTY_IDS,
   DIFFICULTY_DETAILS,
   STORY_DETAILS,
-  getMapImage,
+  getMapThumb,
 } from './scenarioConfigData';
 import styles from '../../page.module.scss';
 
@@ -81,7 +81,7 @@ export default function ScenarioConfigModal({
               const selected = tempStory === id;
               const thumb = (
                 <>
-                  <span className={styles.universeThumb} style={{ backgroundImage: `url('${getMapImage(id)}')` }} />
+                  <span className={styles.universeThumb} style={{ backgroundImage: `url('${getMapThumb(id)}')` }} />
                   <span className={styles.universeShade} />
                   <span className={`${styles.cardStatus} ${selected ? styles.statusSelected : owned ? styles.statusOwned : styles.statusLocked}`}>
                     {selected ? <><Check size={12} /> Seçili</> : owned ? 'Açık' : <><Lock size={12} /> Kilitli</>}

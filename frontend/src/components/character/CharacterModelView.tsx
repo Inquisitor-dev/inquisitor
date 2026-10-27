@@ -7,6 +7,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import styles from './CharacterTurntable.module.scss';
 import { TurntableMotion, type MotionCommand } from './turntableMotion';
+import { isCoveredByModal } from './modalCover';
 
 // Sürüklerken bir piksel başına dönüş (radyan)
 const DRAG_RAD_PER_PX = 0.012;
@@ -68,6 +69,15 @@ export default function CharacterModelView({ src, className = '', alt, onError }
     onErrorRef.current = onError;
   }, [onError]);
 
+  // Sahne bir kez kurulur; karakter değişince yalnızca model değişir. Eskiden her değişimde yeni bir WebGL
+  // bağlamı açılıyor, ortam ışığı yeniden hesaplanıyor ve gölgelendiriciler yeniden derleniyordu
+  // (karakter seçerken takılma). Yükleme etkisi sahneye bu ref üzerinden ulaşır.
+  const stageRef = useRef<{
+    renderer: THREE.WebGLRenderer;
+    pivot: THREE.Group;
+    mixer: THREE.AnimationMixer | null;
+  } | null>(null);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -82,7 +92,8 @@ export default function CharacterModelView({ src, className = '', alt, onError }
       onErrorRef.current();
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Yüksek DPI ekranlarda 2 kat çizim gereksiz yere pahalı; 1,5 kat gözle ayırt edilmiyor
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -101,6 +112,8 @@ export default function CharacterModelView({ src, className = '', alt, onError }
     const camera = new THREE.PerspectiveCamera(CAMERA_FOV, 1, 0.1, 50);
     const pivot = new THREE.Group();
     scene.add(pivot);
+    const stage = { renderer, pivot, mixer: null as THREE.AnimationMixer | null };
+    stageRef.current = stage;
 
     const fitCamera = () => {
       const { clientWidth: w, clientHeight: h } = container;
@@ -125,22 +138,75 @@ export default function CharacterModelView({ src, className = '', alt, onError }
     });
     intersection.observe(container);
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const turntable = new TurntableMotion(reduceMotion);
-    motion.current = turntable;
-    let mixer: THREE.AnimationMixer | null = null;
     const timer = new THREE.Timer();
     timer.connect(document);
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      timer.update(now);
+      if (disposed || !visible || isCoveredByModal(container)) return;
+      const dt = Math.min(timer.getDelta(), 0.1);
+      const turntable = motion.current;
+      // Model yüklenmeden hareket başlamaz (önde bekleme yükleme sırasında tükenmesin)
+      if (!turntable || !pivot.children.length) return;
+      applyCommand.current(turntable.update(dt));
+      pivot.rotation.y = turntable.yaw;
+      if (stage.mixer && !reduceMotion) stage.mixer.update(dt);
+      // Uçtan uca testler ve hata ayıklama için o anki aşama
+      if (container.dataset.motion !== turntable.phase) container.dataset.motion = turntable.phase;
+      renderer.render(scene, camera);
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      disposed = true;
+      stageRef.current = null;
+      cancelAnimationFrame(raf);
+      resizeObserver.disconnect();
+      intersection.disconnect();
+      timer.dispose();
+      stage.mixer?.stopAllAction();
+      applyCommand.current = () => {};
+      motion.current = null;
+      disposeObject(scene);
+      envMap.dispose();
+      renderer.dispose();
+      // Tarayıcının açık bağlam sınırına takılmasın
+      renderer.forceContextLoss();
+      renderer.domElement.remove();
+    };
+  }, []);
+
+  // Karakter değişince yalnızca model yüklenir; yeni model gelene kadar eskisi görünür kalır
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    let cancelled = false;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load(
       src,
       (gltf) => {
-        if (disposed) {
+        if (cancelled || stageRef.current !== stage) {
           disposeObject(gltf.scene);
           return;
         }
+        const { renderer, pivot } = stage;
+        // Önceki karakter bırakılır
+        stage.mixer?.stopAllAction();
+        stage.mixer = null;
+        applyCommand.current = () => {};
+        for (const old of [...pivot.children]) {
+          pivot.remove(old);
+          disposeObject(old);
+        }
+        pivot.rotation.y = 0;
+
+        const turntable = new TurntableMotion(reduceMotion);
+        motion.current = turntable;
         const model = gltf.scene;
         const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         model.traverse((obj) => {
@@ -156,7 +222,7 @@ export default function CharacterModelView({ src, className = '', alt, onError }
         if (gltf.animations.length) {
           const clip = gltf.animations[0];
           const animMixer = new THREE.AnimationMixer(model);
-          mixer = animMixer;
+          stage.mixer = animMixer;
           // Dinlenme pozu klibin ilk karesidir; tur bu pozla atılır
           const rest = animMixer.clipAction(THREE.AnimationUtils.subclip(clip, 'rest', 0, 1));
           const play = animMixer.clipAction(clip);
@@ -190,48 +256,17 @@ export default function CharacterModelView({ src, className = '', alt, onError }
         const center = box.getCenter(new THREE.Vector3());
         model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
         pivot.add(model);
-
-        renderer.render(scene, camera);
         setReady(true);
       },
       undefined,
       (err) => {
         console.error('Karakter modeli yüklenemedi:', err);
-        if (!disposed) onErrorRef.current();
+        if (!cancelled) onErrorRef.current();
       },
     );
 
-    const tick = (now: number) => {
-      raf = requestAnimationFrame(tick);
-      timer.update(now);
-      if (!visible) return;
-      const dt = Math.min(timer.getDelta(), 0.1);
-      // Model yüklenmeden hareket başlamaz (önde bekleme yükleme sırasında tükenmesin)
-      if (!pivot.children.length) return;
-      applyCommand.current(turntable.update(dt));
-      pivot.rotation.y = turntable.yaw;
-      if (mixer && !reduceMotion) mixer.update(dt);
-      // Uçtan uca testler ve hata ayıklama için o anki aşama
-      if (container.dataset.motion !== turntable.phase) container.dataset.motion = turntable.phase;
-      renderer.render(scene, camera);
-    };
-    raf = requestAnimationFrame(tick);
-
     return () => {
-      disposed = true;
-      cancelAnimationFrame(raf);
-      resizeObserver.disconnect();
-      intersection.disconnect();
-      timer.dispose();
-      mixer?.stopAllAction();
-      applyCommand.current = () => {};
-      motion.current = null;
-      disposeObject(scene);
-      envMap.dispose();
-      renderer.dispose();
-      // Gardıropta karakter değiştikçe yeni bağlam açılır; tarayıcının bağlam sınırına takılmasın
-      renderer.forceContextLoss();
-      renderer.domElement.remove();
+      cancelled = true;
     };
   }, [src]);
 
