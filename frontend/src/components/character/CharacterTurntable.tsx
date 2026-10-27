@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } fr
 import dynamic from 'next/dynamic';
 import { useCharacterManifest, type CharacterManifest } from './characterManifest';
 import styles from './CharacterTurntable.module.scss';
-import { isCoveredByModal } from './modalCover';
+import { isCoveredByModal } from '@/shared/lib/modalCover';
 
 // three.js yalnızca 3D model gösterilecekse yüklensin
 const CharacterModelView = dynamic(() => import('./CharacterModelView'), { ssr: false });

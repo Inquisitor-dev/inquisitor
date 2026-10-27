@@ -19,7 +19,7 @@ export default function DialogueConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay}>
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true">
       <div className={styles.modalCard} style={{ maxWidth: 440 }}>
         <h3 className={styles.modalTitle}>{title}</h3>
         <p style={{ color: '#cfc5b4', margin: '14px 0 20px', lineHeight: 1.5 }}>

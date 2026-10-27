@@ -7,7 +7,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import styles from './CharacterTurntable.module.scss';
 import { TurntableMotion, type MotionCommand } from './turntableMotion';
-import { isCoveredByModal } from './modalCover';
+import { isCoveredByModal } from '@/shared/lib/modalCover';
 
 // Sürüklerken bir piksel başına dönüş (radyan)
 const DRAG_RAD_PER_PX = 0.012;

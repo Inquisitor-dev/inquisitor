@@ -2,6 +2,7 @@
 
 import { useEffect, type RefObject } from 'react';
 import type { LocationInteriorData } from '@/config/interiorConfig';
+import { isCoveredByModal } from '@/shared/lib/modalCover';
 
 // ─── AMBİYANS PARÇACIK MOTORU (Uçuşan Közler, Yağmur, Kar ve Toz) ───────────
 export function useAmbientParticles(
@@ -45,7 +46,23 @@ export function useAmbientParticles(
       pulse: Math.random() * Math.PI * 2,
     }));
 
+    // Köz parıltısı bir kez çizilir, her parçacıkta kopyalanır: her karede 45 parçacık için shadowBlur
+    // tuvalin en pahalı işlemlerinden biriydi
+    const glow = document.createElement('canvas');
+    glow.width = glow.height = 32;
+    const glowCtx = glow.getContext('2d');
+    if (glowCtx) {
+      const gradient = glowCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gradient.addColorStop(0, 'rgba(255, 120, 20, 0.6)');
+      gradient.addColorStop(1, 'rgba(255, 120, 20, 0)');
+      glowCtx.fillStyle = gradient;
+      glowCtx.fillRect(0, 0, 32, 32);
+    }
+
     const render = () => {
+      animId = requestAnimationFrame(render);
+      // Üstte bir pencere (defter, pano, envanter) açıkken görünmeyen parçacıklar çizilmez
+      if (isCoveredByModal(canvas)) return;
       ctx.clearRect(0, 0, width, height);
 
       particles.forEach((p) => {
@@ -74,31 +91,30 @@ export function useAmbientParticles(
           ctx.lineTo(p.x + p.speedX * 2, p.y + p.size);
           ctx.strokeStyle = `rgba(170, 220, 255, ${currentOpacity * 0.35})`;
           ctx.lineWidth = 1;
-          ctx.shadowBlur = 0;
           ctx.stroke();
           return;
         }
 
+        if (isEmbers) {
+          const r = p.size + 8;
+          ctx.globalAlpha = currentOpacity;
+          ctx.drawImage(glow, p.x - r, p.y - r, r * 2, r * 2);
+          ctx.globalAlpha = 1;
+        }
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         if (isSnow) {
           ctx.fillStyle = `rgba(245, 250, 255, ${currentOpacity * 0.8})`;
-          ctx.shadowBlur = 0;
         } else if (isEmbers) {
           ctx.fillStyle = `rgba(255, ${Math.floor(140 + Math.sin(p.pulse) * 40)}, 40, ${currentOpacity})`;
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = 'rgba(255, 120, 20, 0.6)';
         } else {
           ctx.fillStyle = `rgba(232, 220, 196, ${currentOpacity * 0.5})`;
-          ctx.shadowBlur = 0;
         }
         ctx.fill();
       });
-
-      animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
 
     const handleResize = () => {
       if (!canvas) return;

@@ -800,7 +800,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   const atEnd = current >= total - 1 && (!isNarrow || narrowPage === 'R');
 
   return (
-    <div className={styles.overlay} data-theme={theme} onClick={close}>
+    <div className={styles.overlay} data-theme={theme} onClick={close} role="dialog" aria-modal="true" aria-label="Not defteri">
       <div
         className={`${styles.shell} ${isDrawerOpen ? styles.withDrawer : ''} ${tool ? styles.withPen : ''}`}
         onClick={(e) => e.stopPropagation()}

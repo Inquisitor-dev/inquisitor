@@ -68,8 +68,19 @@
   background: rgba(13, 13, 13, 0.7);
   border: 1px solid rgba(232, 220, 196, 0.35);
   box-shadow: 0 0 14px rgba(224, 187, 94, 0.25);
-  animation: hintPulse 2.8s ease-in-out infinite;
   transition: opacity $transition-fast;
+
+  // Parıltı: gölgeyi canlandırmak her karede yeniden çizim ister; sabit gölgeli katmanın opaklığı değişir
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 22px rgba(224, 187, 94, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    animation: hintPulse 2.8s ease-in-out infinite;
+  }
 
   .spotActive & {
     opacity: 0;
@@ -77,8 +88,8 @@
 }
 
 @keyframes hintPulse {
-  0%, 100% { box-shadow: 0 0 10px rgba(224, 187, 94, 0.15); }
-  50% { box-shadow: 0 0 22px rgba(224, 187, 94, 0.45); }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 .spotTitle {
@@ -173,12 +184,11 @@
   gap: 8px;
   padding: 7px 14px;
   border-radius: $radius-sm;
-  background: rgba(18, 18, 18, 0.85);
+  background: rgba(18, 18, 18, 0.91);
   border: 1px solid rgba(232, 220, 196, 0.2);
   color: $text-parchment;
   font-family: $font-body;
   font-size: 13px;
-  backdrop-filter: blur(8px);
 }
 
 .dayRoman {

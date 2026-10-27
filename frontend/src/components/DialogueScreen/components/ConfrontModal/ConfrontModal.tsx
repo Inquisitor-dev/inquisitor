@@ -40,7 +40,7 @@ function ConfrontModalContent({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div className={styles.modalOverlay} onClick={onClose} role="dialog" aria-modal="true" aria-label="Kanıt Göster">
       <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>Kanıt Göster</h3>

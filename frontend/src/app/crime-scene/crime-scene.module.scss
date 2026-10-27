@@ -22,8 +22,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   z-index: 10;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(10px);
+  background: rgba(0,0,0, 0.55);
 }
 
 .backBtn {
@@ -163,8 +162,7 @@
 .sidebar {
   width: 380px;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(20px);
+  background: rgba(10, 10, 10, 0.75);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -233,7 +231,6 @@
   width: 50vw;
   height: 100vh;
   background: rgba(15, 15, 15, 0.95);
-  backdrop-filter: blur(20px);
   border-left: 1px solid rgba(138, 3, 3, 0.3);
   box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
   pointer-events: auto;

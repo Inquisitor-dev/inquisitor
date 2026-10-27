@@ -32,7 +32,13 @@ export default function HomeModal({
 
   return (
     <div className={styles.modalOverlay} onClick={handleClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modalContent}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Evim"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           className={styles.closeBtn}
