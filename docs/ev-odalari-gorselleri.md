@@ -82,18 +82,27 @@ people, person, character, figure, face, readable text, letters, words, watermar
 
 ## Kış: Frosthold (`winter`)
 
-**Ortak tarz:** `detailed cinematic semi-realistic digital painting, interior of a hunter's log cabin in a snowbound northern town, thick log walls, furs and antlers, iron fittings, cold blue light outside and warm amber light inside, frosted windows, eye-level wide panoramic shot, 2.36:1`
+İlk istemler ("hunter's log cabin") modern bir av kulübesi çağrıştırdı; görseller tüfek, mont ve kar ayakkabısıyla geldi. Bu sürümde çağ en başta söyleniyor (erken ortaçağ, kuzey hanedanı), ev ahşap kulübe yerine bir kale kasabasındaki taş ve kalın kereste evi, ve modern eşyalar negatif isteme açıkça yazıldı. Bilinen bir dizinin adını isteme yazma; araç onun sahnelerini kopyalamaya çalışır ya da isteği reddeder. Havayı tarif etmek yeter.
+
+**Ortak tarz:** `early medieval northern Europe, around the 10th century, no modern objects. Detailed cinematic semi-realistic digital painting, interior of a stern stone-and-timber house inside the walls of a grim northern castle town in endless winter, rough grey stone walls, massive dark oak beams blackened by smoke, wolf and bear pelts, heavy hand-forged iron, woven wool tapestries, tallow candles and iron braziers, a cold grey-blue light through small deep-set windows with wooden shutters, warm firelight inside, austere, harsh and solemn mood, eye-level wide panoramic shot, 2.36:1`
 
 | Oda | İstem (sahne kısmı) |
 |---|---|
-| `bedroom` | `a log cabin bedroom-study: a bed covered with heavy furs on the left, an investigation board with pinned notes and red strings on the log wall, a frosted window, a writing desk with a lantern and maps on the right, an iron-bound chest, a closed inner plank door on the far right leading to a hallway` |
-| `kitchen` | `a log cabin kitchen: a cast-iron stove with a kettle in the middle, a heavy wooden table with a knife drawer on the left, dried meat and herbs hanging from the beams, a snow-dusted back door with a wooden bar on the right, a small frosted window` |
-| `hallway` | `a narrow log cabin hallway: fur coats and snowshoes hanging on pegs, a bench with boots, doors to the bedroom and kitchen, the heavy front door with an iron latch at the end, worn creaking floorboards with melted snow` |
-| `doorstep` | `outside the cabin at the front door: snow-covered wooden steps, a lantern by the door, deep snow in the yard, pine trees and a path into the dark forest, fresh untouched snow that would hold footprints` |
+| `bedroom` | `a lord's investigator's bedchamber and study: a heavy carved wooden bed piled with wolf pelts and wool blankets on the left, a large wooden board on the stone wall with pinned parchment sketches and red threads, a deep stone fireplace with a low fire in the middle, a small deep-set window with open wooden shutters and snow on the sill, a rough oak writing table with tallow candles, a quill, parchment rolls and a wax seal on the right, a wooden stool, an iron-bound oak chest, a closed heavy plank door with iron straps on the far right leading to a passage` |
+| `kitchen` | `a medieval stone kitchen: a wide open hearth with a fire, an iron cauldron on a chain and a spit in the middle, a long scarred oak table with a drawer of plain iron knives on the left, salted meat, dried fish and herbs hanging from the smoke-black beams, clay jugs, wooden bowls and a bread trough, a low heavy back door barred with a thick wooden beam on the right, snow drifted against it, a narrow shuttered window` |
+| `hallway` | `a narrow stone passage inside the house: a hooded wool cloak lined with fur and a leather belt hanging on wooden pegs, a wooden bench with worn leather boots, an iron candle sconce on the wall, heavy plank doors to the bedchamber and kitchen on the sides, a steep stone stair going up, the massive iron-banded front door with a crossbar at the end, uneven flagstones wet with melted snow` |
+| `doorstep` | `outside the house at the front door inside a snowbound medieval castle town: worn stone steps under a small timber porch, an iron lantern with a candle hanging by the door, a narrow lane of grey stone houses with steep snow-laden roofs, the dark castle wall and a square tower in the distance, smoke rising from chimneys, a few bare trees, fresh deep snow on the lane that would hold footprints` |
+
+**Kış için ek negatif istem** (genel negatif istemin sonuna ekle):
+
+```
+rifle, gun, musket, firearm, modern jacket, parka, puffer coat, zipper, snowshoes, skis, ski poles, glass light bulb, electric lamp, kerosene lantern, oil lamp with glass chimney, plastic, metal stove, cast-iron stove, log cabin, hunting lodge, cowboy, 19th century, modern furniture, sofa, armchair, photograph, framed picture
+```
 
 ---
 
-## Görseller gelince (kod tarafı)
+## Kod tarafı (yapıldı)
 
-- `frontend/src/config/homeConfig.ts`: yeni yatak odasının görseli, nesne alanları (`spots`) ve karakterin durduğu nokta beş evren için yeniden ayarlanır.
-- Baskın sahnesi odaları bu dosyalardan okur. Görsel yoksa yer tutucu olarak yatak odası (bugünkü ev görseli) gösterilir.
+- 20 görsel `frontend/public/backgrounds/home_<evren>_<oda>.webp` olarak eklendi (WebP kalite 85); eski tek odalı `home_<evren>.webp` görselleri kaldırıldı.
+- `frontend/src/config/homeConfig.ts`: ev ekranı yatak odası görselini kullanıyor; nesne alanları (`spots`) ve karakterin durduğu nokta beş evren için yeni görsellere göre ayarlandı. Bir odanın görseli `getHomeRoomImage(evren, oda)` ile alınır.
+- Baskın sahnesi (`components/RaidScene`) her odayı kendi görseliyle gösteriyor; gece etkisi CSS ile veriliyor.

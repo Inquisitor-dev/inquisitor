@@ -1,5 +1,5 @@
 // Gece baskını sahnesi: oyuncunun evi gece karanlığında; kandil yanınca sıcak bir ışık halkası.
-// Oda görselleri gelene kadar her oda ev görselinin başka bir köşesine odaklanır.
+// Her odanın kendi görseli var; ortalanıp ekranı kaplar.
 $gold: #e0bb5e;
 $parchment: #e8dcc4;
 $muted: #8a7f72;
@@ -11,9 +11,9 @@ $blood: #8a0303;
   overflow: hidden;
   background-color: #050403;
   background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
   color: $parchment;
-  transition: background-position 0.8s ease;
 }
 
 // Gece: koyu mavi bir örtü
