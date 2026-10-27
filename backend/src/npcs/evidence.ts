@@ -20,10 +20,15 @@ export type EvidenceKind =
   | 'CONFESSION'
   | 'BODY'
   | 'TESTIMONY'
-  | 'ALIBI';
+  | 'ALIBI'
+  // Gece olayının defterdeki kartı (v3 personaları); kanıt değildir
+  | 'EVENT'
+  // Psikopatın kapının altına bıraktığı mektup; izi katil dahil birkaç kişiye uyar
+  | 'LETTER';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
-export type EvidenceCategory = 'ITEM' | 'STATEMENT';
+// EVENT: gece olayının kartı; defterde görünür ama gösterilemez, panoya ve Hüküm Dosyası'na girmez.
+export type EvidenceCategory = 'ITEM' | 'STATEMENT' | 'EVENT';
 
 export interface EvidenceDraft {
   kind: EvidenceKind;

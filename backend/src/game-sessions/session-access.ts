@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { lastDayOf } from '../abilities/abilities';
 import type { CaseFacts } from '../scenarios/case-setup';
+import { closuresOn } from '../scenarios/personas/closures';
 
 // Oturumu sadece sahibine verir. Başkasının oturumu da "bulunamadı" döner;
 // böylece başka kullanıcıların oturum id'lerinin var olup olmadığı dışarı sızmaz.
@@ -30,16 +31,30 @@ export function toPublicSession<
     locationClues?: unknown;
     caseFacts?: unknown;
     abilityState?: unknown;
+    personaState?: unknown;
+    currentDay?: number;
   },
 >(session: T) {
   const crimeScene = publicCrimeScene(session.caseFacts);
+  // Bugün kapalı mekânlar (kasaba olayı ya da kilit kırma): yalnızca bugün, plan değil
+  const closedToday = closuresOn(session.caseFacts, session.currentDay ?? 1);
   // Vakanın son günü (lastDay) her cevapta gider: İkinci Nefes vakayı uzatabilir
   const lastDay = lastDayOf(session.abilityState);
-  if (session.status !== 'ACTIVE') return { ...session, crimeScene, lastDay };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { culpritId, truthReveal, locationClues, caseFacts, ...publicSession } =
-    session;
-  return { ...publicSession, crimeScene, lastDay };
+  if (session.status !== 'ACTIVE') {
+    return { ...session, crimeScene, lastDay, closedToday };
+  }
+  // Gece olaylarının kaydı da gönderilmez: gazete kendi uç noktasından gelir (getNewspaper)
+  const {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    culpritId,
+    truthReveal,
+    locationClues,
+    caseFacts,
+    personaState,
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    ...publicSession
+  } = session;
+  return { ...publicSession, crimeScene, lastDay, closedToday };
 }
 
 // Olay yerinin hangi mekân olduğu ve görünüşü (dağınık/düzenli) cevabı ele vermez: oyuncu ikisini de

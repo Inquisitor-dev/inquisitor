@@ -63,6 +63,7 @@ model GameSession {
   characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
   abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
   verdictReport  Json?                          // Hüküm Dosyası: oyuncunun raporu ve puanı (src/game-sessions/verdict/verdict-report.ts)
+  personaState   Json?                          // Katil personası: işlenen geceler, gerçekleşen hamleler ve sabah gazeteleri (src/personas/persona-night.ts)
   storyId        String?                        // Havuzdan seçilmişse bağlı olduğu hikâye paketi
   story          Story?            @relation(fields: [storyId], references: [id])
   createdAt     DateTime          @default(now())
@@ -136,8 +137,8 @@ model Evidence {
   id        String      @id @default(uuid())
   sessionId String
   session   GameSession @relation(fields: [sessionId], references: [id])
-  kind      String      // CLUE, VERIFICATION, CONFESSION
-  category  String      @default("ITEM") // ITEM: Envanter'deki fiziksel nesne, STATEMENT: Not defterine yazılan ifade
+  kind      String      // CLUE, VERIFICATION, CONFESSION, BODY, TESTIMONY, ALIBI, EVENT
+  category  String      @default("ITEM") // ITEM: Envanter'deki fiziksel nesne, STATEMENT: Not defterine yazılan ifade, EVENT: gece olayının defterdeki kartı
   sourceId  String      // İpucunda mekân id'si, itiraf ve tanıklıkta karakter id'si
   text      String      @db.Text
   dayNumber Int         @default(1)

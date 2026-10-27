@@ -91,8 +91,9 @@ export class NpcsService {
     if (npcId.startsWith('narrator_') || npcId === 'crime_scene') {
       throw new BadRequestException('Kanıt sadece karakterlere gösterilebilir.');
     }
+    // Gece olaylarının kartları kanıt değildir, gösterilemez
     const evidence = await this.prisma.evidence.findFirst({
-      where: { id: evidenceId, sessionId },
+      where: { id: evidenceId, sessionId, category: { not: 'EVENT' } },
     });
     if (!evidence) throw new NotFoundException('Kanıt bulunamadı.');
 
@@ -394,6 +395,8 @@ export class NpcsService {
         activeWarrants: currentState.session.activeWarrants,
         caseFacts,
         locationClues: sessionLocationClues,
+        personaState: currentState.session.personaState,
+        currentDay: currentState.session.currentDay,
       },
       npc: currentState.npc,
       dynamicPrompt: currentState.dynamicPrompt,
@@ -615,6 +618,9 @@ function describeEvidenceOrigin(
   }
   if (evidence.sourceId === 'crime_scene') {
     return 'It was found at the crime scene, where the body was.';
+  }
+  if (evidence.sourceId === 'home') {
+    return "It is the unsigned threatening letter someone slipped under the Inquisitor's door at night. Everyone in town has heard of it; it was not found at your place.";
   }
   if (evidence.sourceId === npcId) return 'It was found at your own place.';
   return `It was found at "${getLocalizedLocationLabel(scenarioType, evidence.sourceId)}".`;

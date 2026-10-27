@@ -18,6 +18,7 @@ import {
   VerifyQuoteDto,
 } from './dto/npc-requests.dto';
 import { isFreeMessage } from '../abilities/ability-effects';
+import { closedMessage } from '../personas/closure-message';
 
 @Controller('npcs')
 export class NpcsController {
@@ -35,7 +36,7 @@ export class NpcsController {
     const isGreeting = dto.message === '__NEW_DAY_GREETING__';
 
     // Selamlama sinyali sorgu hakkı harcamaz
-    await this.checkSessionAndQuota(dto.sessionId, userId, !isGreeting);
+    await this.checkSessionAndQuota(dto.sessionId, userId, !isGreeting, dto.npcId);
 
     return await this.npcsService.interact(dto.sessionId, dto.npcId, dto.message);
   }
@@ -54,7 +55,7 @@ export class NpcsController {
       dto.npcId,
       dto.evidenceId,
     );
-    await this.checkSessionAndQuota(dto.sessionId, userId, true);
+    await this.checkSessionAndQuota(dto.sessionId, userId, true, dto.npcId);
     return await this.npcsService.confront(
       dto.sessionId,
       dto.npcId,
@@ -81,15 +82,23 @@ export class NpcsController {
     await this.npcsService.getOwnedSession(dto.sessionId, userId);
     // Geçersiz ya da kullanılmış yetenek sorgu hakkı harcamasın
     await this.npcsService.assertVerifiable(dto.sessionId, dto.npcId, dto.quoteId);
-    await this.checkSessionAndQuota(dto.sessionId, userId, true);
+    await this.checkSessionAndQuota(dto.sessionId, userId, true, dto.npcId);
     return await this.npcsService.verifyQuote(dto.sessionId, dto.npcId, dto.quoteId);
   }
 
-  private async checkSessionAndQuota(sessionId: string, userId: string, usesQuota: boolean) {
+  private async checkSessionAndQuota(
+    sessionId: string,
+    userId: string,
+    usesQuota: boolean,
+    npcId: string,
+  ) {
     const session = await this.npcsService.getOwnedSession(sessionId, userId);
     if (session.status !== 'ACTIVE') {
       throw new BadRequestException('Bu soruşturma sona erdi.');
     }
+    // Kapalı mekâna girilemez, sahibi o gün sorgulanamaz (kasaba olayı ya da kilit kırma); hak harcanmaz
+    const closed = closedMessage(session, npcId);
+    if (closed) throw new BadRequestException(closed);
 
     // Sabır (Engizitör): oyun gününün ilk mesajları kotadan düşmez
     const isFree =

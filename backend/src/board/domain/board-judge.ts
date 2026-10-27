@@ -72,6 +72,13 @@ export function judgeSuspectLink(
     // adıyla söylemez, hiçbir şüpheliyi aklamaz ya da işaret etmez.
     const own = involvementOf(facts, e.sourceId);
     clears = own?.kind === 'WITNESS' && own.aboutNpcId === suspectId;
+  } else if (e.kind === 'LETTER') {
+    // Tehdit mektubunun izi eşkâl tanığı gibidir: uyduğu herkesi işaret eder, uymayanları aklar
+    const fits =
+      facts.persona?.events.find((ev) => ev.kind === 'THREAT_LETTER')
+        ?.traceFits ?? [];
+    implicates = fits.includes(suspectId);
+    clears = fits.length > 0 && !fits.includes(suspectId);
   } else if (e.kind === 'ALIBI') {
     // Mazeret doğrulaması, doğrulanan tamamen masumu aklar
     clears = vouchedBy(facts, e.sourceId).includes(suspectId);

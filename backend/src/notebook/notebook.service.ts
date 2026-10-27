@@ -9,10 +9,10 @@ import { parseStoredNotebook, sanitizeNotebook } from './notebook';
 export class NotebookService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Defterin kayıt kartları: oyuncunun aldığı ifadeler (itiraf ve tanıklık)
+  // Defterin kayıt kartları: oyuncunun aldığı ifadeler (itiraf ve tanıklık) ve gece olayları
   private loadStatements(sessionId: string) {
     return this.prisma.evidence.findMany({
-      where: { sessionId, category: 'STATEMENT' },
+      where: { sessionId, category: { in: ['STATEMENT', 'EVENT'] } },
       select: {
         id: true,
         kind: true,
@@ -46,7 +46,8 @@ export class NotebookService {
         evidenceId: s.id,
         kind: s.kind,
         day: s.dayNumber,
-        speaker: nameOf(s.sourceId),
+        // Gece olayının konuşanı yoktur
+        speaker: s.kind === 'EVENT' ? '' : nameOf(s.sourceId),
         text: s.text,
       })),
       currentDay: session.currentDay,

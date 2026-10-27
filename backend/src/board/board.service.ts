@@ -66,9 +66,10 @@ export class BoardService {
     ).npcDefinitions.map((npc) => npc.id);
   }
 
+  // Gece olaylarının kartları kanıt değildir, panoya iğnelenemez
   private loadEvidence(sessionId: string): Promise<BoardEvidence[]> {
     return this.prisma.evidence.findMany({
-      where: { sessionId },
+      where: { sessionId, category: { not: 'EVENT' } },
       select: {
         id: true,
         kind: true,

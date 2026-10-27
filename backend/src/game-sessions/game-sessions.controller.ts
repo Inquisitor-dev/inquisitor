@@ -136,6 +136,16 @@ export class GameSessionsController {
     };
   }
 
+  // Bu sabahın gazetesi: gece olayları ve kasabanın haberleri
+  @Get(':id/newspaper')
+  @UseGuards(JwtAuthGuard)
+  async getNewspaper(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getNewspaper(sessionId, userId);
+  }
+
   // Hüküm Dosyası formunun seçenekleri (şüpheliler, evrenin silahları, motifler, saatler, bağ türleri)
   @Get(':id/verdict-options')
   @UseGuards(JwtAuthGuard)

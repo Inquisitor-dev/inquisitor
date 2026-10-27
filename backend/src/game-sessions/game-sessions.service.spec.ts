@@ -476,11 +476,11 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
         false,
       );
 
-      // Yalnızca güncel kural sürümündeki (örtü hikâyeli) hikâyeler seçilir
+      // Yalnızca güncel kural sürümündeki (personalı) hikâyeler seçilir
       expect(mockStoryPool.findAvailableStory).toHaveBeenCalledWith('owner', {
         universe: 'medieval',
         difficulty: 'easy',
-        minRuleVersion: 3,
+        minRuleVersion: 4,
       });
       expect(mockLlm.generateSessionScenario).not.toHaveBeenCalled();
       expect(create).toHaveBeenCalledTimes(1);

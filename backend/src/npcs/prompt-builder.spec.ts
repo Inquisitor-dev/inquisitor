@@ -121,6 +121,29 @@ describe('prompt-builder domain', () => {
       expect(prompt).toContain('Kayıp paraları saklıyor.');
     });
 
+    it('gece olaylarını herkes bilir; yalnızca katile "bunu sen yaptın" satırı gider', () => {
+      const personaState = {
+        version: 1,
+        processedNights: [1],
+        happened: [{ night: 1, kind: 'THREAT_LETTER' }],
+        papers: [],
+      };
+      const promptFor = (id: string) =>
+        buildNpcPrompt({
+          scenarioConfig: config,
+          session: { ...baseSession, personaState, currentDay: 2 },
+          npc: { id, name: id, description: id, basePrompt: '' },
+          fearLevel: 0,
+          hasConfessed: false,
+        });
+      const innocent = promptFor('tavern');
+      const culprit = promptFor('church');
+      expect(innocent).toContain('threatening letter');
+      expect(culprit).toContain('threatening letter');
+      expect(innocent).not.toContain('You yourself did the night events');
+      expect(culprit).toContain('You yourself did the night events');
+    });
+
     it('ortam anlatıcısı için NARRATOR ROLE ve gizli ipucu ekler', () => {
       const prompt = buildNpcPrompt({
         scenarioConfig: config,

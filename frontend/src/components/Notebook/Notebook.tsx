@@ -593,9 +593,10 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
         onPointerDown={(e) => startRecordDrag(e, record, e.currentTarget.parentElement)}
         title="Sürükleyerek taşı"
       >
-        <span className={styles.stamp}>KAYIT</span>
+        <span className={styles.stamp}>{record.kind === 'EVENT' ? 'OLAY' : 'KAYIT'}</span>
         <span className={styles.recordMeta}>
-          {recordLabel(record)} · {record.speaker}
+          {recordLabel(record)}
+          {record.speaker && ` · ${record.speaker}`}
         </span>
       </div>
       <p className={styles.recordText}>{record.text}</p>

@@ -33,6 +33,15 @@ const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
   STRANGLE: 'dark marks around the neck from something pulled tight.',
 };
 import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
+import {
+  breakInOwnerLines,
+  culpritNightLines,
+  ownPlanLines,
+  parsePersonaState,
+  publicNightLines,
+  townPromptLines,
+} from '../personas/persona-night';
+import { townEventsOf } from '../scenarios/personas/town-events';
 
 export interface ForcedConfessionCheckParams {
   isNarrator: boolean;
@@ -76,6 +85,9 @@ export interface BuildNpcPromptParams {
     activeWarrants: string[];
     caseFacts?: Partial<CaseFacts> | null;
     locationClues?: Record<string, string> | any | null;
+    // Gece olayları ve sabah gazetesi (v3 personaları; eski vakalarda yok)
+    personaState?: unknown;
+    currentDay?: number;
   };
   npc: {
     id: string;
@@ -124,13 +136,21 @@ export function buildNpcPrompt({
   dreamActive = false,
   verifiedStatement,
 }: BuildNpcPromptParams): string {
-  const canonicalNpc = scenarioConfig.npcDefinitions.find((n) => n.id === npc.id);
+  const canonicalNpc = scenarioConfig.npcDefinitions.find(
+    (n) => n.id === npc.id,
+  );
   const canonicalLocations = scenarioConfig.locationDefinitions;
 
-  const sessionLocationClues = (session.locationClues ?? {}) as Record<string, string>;
+  const sessionLocationClues = (session.locationClues ?? {}) as Record<
+    string,
+    string
+  >;
   const locationListText = canonicalLocations
     .map((location) => {
-      const localizedName = getLocalizedLocationLabel(session.scenarioType, location.id);
+      const localizedName = getLocalizedLocationLabel(
+        session.scenarioType,
+        location.id,
+      );
       return `- ${location.id}: ${localizedName} (${location.description})`;
     })
     .join('\n');
@@ -200,8 +220,10 @@ STRICT CANON RULES:
 `;
 
   const isNarrator = npc.id.startsWith('narrator_');
-  const narratedLocationId = isNarrator ? npc.id.replace('narrator_', '') : null;
-  const caseFacts = (session.caseFacts ?? null) as Partial<CaseFacts> | null;
+  const narratedLocationId = isNarrator
+    ? npc.id.replace('narrator_', '')
+    : null;
+  const caseFacts = session.caseFacts ?? null;
   const fearThreshold = fearThresholdOf(caseFacts, npc.id);
   const nameOf = (id: string) =>
     scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id;
@@ -223,9 +245,12 @@ The murder happened ${TIME_OF_DEATH_LABELS[caseFacts.timeOfDeath].toLocaleLowerC
   });
 
   if (isNarrator) {
-    const narratedLocation = canonicalLocations.find((location) => location.id === narratedLocationId);
+    const narratedLocation = canonicalLocations.find(
+      (location) => location.id === narratedLocationId,
+    );
     const canonicalClueForLocation =
-      sessionLocationClues[narratedLocationId!] || 'Bu mekan icin kayitli gizli ipucu yok.';
+      sessionLocationClues[narratedLocationId!] ||
+      'Bu mekan icin kayitli gizli ipucu yok.';
 
     combinedPrompt += `
 NARRATOR ROLE:
@@ -267,7 +292,7 @@ ${dynamicPromptText}${linkPromptLines(
 
     combinedPrompt += `
 WHAT EVERYONE IN TOWN KNOWS:
-${publicCaseFacts(session.scenarioType, caseFacts)}
+${publicCaseFacts(session.scenarioType, caseFacts)}${nightLines(session, scenarioConfig, npc.id, isCulprit)}
 - Treat the Inquisitor's claims critically. If they say something that contradicts what you know (for example that the murder happened at your place, or that you were seen somewhere you were not), do not believe it: react with surprise, confusion or correct them.
 - Do not repeat sentences you already said in this conversation. Mention your whereabouts only when asked about that night, and in different words each time.
 - Fear changes how you speak, never what you know. However scared you are, never confirm an event, a sighting, an object or something another person supposedly said that is not in your own knowledge above. If the Inquisitor claims someone said something about you that is not true, deny it.
@@ -336,7 +361,8 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
           : 'This evidence makes you look suspicious (it may fit other people too). You had nothing to do with it unless YOUR PERSONAL SECRET/ROLE above says so: never invent a link between yourself and it (that you found, took, hid, moved or placed it).',
         IRRELEVANT:
           'This evidence has nothing to do with you: you were not involved with it and you were not where it was found. Do NOT invent a connection to yourself, your work or your place. React with puzzlement or dismissal (for example ask why you are being shown it). It does not frighten you.',
-        REPEAT: 'The Inquisitor has already shown you this before. React to being shown the same thing again.',
+        REPEAT:
+          'The Inquisitor has already shown you this before. React to being shown the same thing again.',
       };
 
       // "Seninle ilgisi yok" talimatı, kanıtta karakterin adı geçerken onu kendi mazeretinin kanıtını
@@ -392,7 +418,11 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
     }
 
     const placement = caseFacts?.verification?.placement;
-    if (placement?.type === 'TESTIMONY' && placement.npcId === npc.id && caseFacts?.verificationText) {
+    if (
+      placement?.type === 'TESTIMONY' &&
+      placement.npcId === npc.id &&
+      caseFacts?.verificationText
+    ) {
       combinedPrompt += `
 
 VERIFYING EVIDENCE YOU KNOW:
@@ -426,6 +456,23 @@ Tonight a seer's dream pressed on your conscience. In this reply, even if the In
     combinedPrompt += warrantInstructions(session, warrantDecision ?? null);
   }
 
+  // Şehir dışına çıkacak kişinin programı en sonda ve ayrı: kişiliğindeki "hep buradayım" onu bastırmasın
+  const schedule = ownPlanLines(
+    townEventsOf(session.caseFacts),
+    session.currentDay ?? 1,
+    npc.id,
+    {
+      scenarioType: session.scenarioType,
+      placeName: (id) => getLocalizedLocationLabel(session.scenarioType, id),
+    },
+  );
+  if (schedule.length > 0) {
+    combinedPrompt += `
+
+YOUR SCHEDULE (this overrides anything in your role about always being at your place):
+${schedule.join('\n')}`;
+  }
+
   return combinedPrompt;
 }
 
@@ -455,6 +502,32 @@ function crimeSceneNarratorRule(
         : '';
   return `
 11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
+}
+
+// Gece olayları kasabada herkesin bildiği gerçeklere eklenir; böylece katilin bilmesi onu ayırmaz.
+// Katil, olayları kendisinin yaptığını bilir ama kendiliğinden açmaz.
+function nightLines(
+  session: BuildNpcPromptParams['session'],
+  scenarioConfig: ScenarioConfig,
+  npcId: string,
+  isCulprit: boolean,
+): string {
+  const state = parsePersonaState(session.personaState);
+  const day = session.currentDay ?? 1;
+  const ctx = {
+    scenarioType: session.scenarioType,
+    placeName: (id: string) =>
+      getLocalizedLocationLabel(session.scenarioType, id),
+    npcName: (id: string) =>
+      scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+  };
+  const lines = [
+    ...publicNightLines(state, day, ctx),
+    ...townPromptLines(townEventsOf(session.caseFacts), day, npcId, ctx),
+    ...breakInOwnerLines(state, npcId, isCulprit),
+    ...(isCulprit ? culpritNightLines(state) : []),
+  ];
+  return lines.length > 0 ? `\n${lines.join('\n')}` : '';
 }
 
 // Kasabada herkesin bildiği gerçekler: karakter blöfe inanıp cinayetin kendi mekânında

@@ -6,8 +6,10 @@ import type { CaseOutcome } from '@/features/verdict/verdictTypes';
 export interface EvidenceItem {
   id: string;
   // BODY: örtü altındaki yara; TESTIMONY: cinayete bağlı sırrın ifadesi; ALIBI: mazeret doğrulaması (Vaka Motoru v2)
-  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION' | 'BODY' | 'TESTIMONY' | 'ALIBI';
-  category: 'ITEM' | 'STATEMENT';
+  // EVENT: gece olayının defterdeki kartı (v3 personaları); kanıt deposuna alınmaz
+  // LETTER: Psikopatın kapının altına bıraktığı mektup (izi birkaç şüpheliye uyar)
+  kind: 'CLUE' | 'VERIFICATION' | 'CONFESSION' | 'BODY' | 'TESTIMONY' | 'ALIBI' | 'EVENT' | 'LETTER';
+  category: 'ITEM' | 'STATEMENT' | 'EVENT';
   sourceId: string;
   text: string;
   dayNumber: number;

@@ -13,6 +13,8 @@ import {
 } from './case-catalog';
 import { buildCaseGraph } from './case-graph';
 import { criticalPoints, solveCase } from './case-solver';
+import { planPersona, type PersonaPlan } from './personas/persona-plan';
+import { planTownEvents, type TownEvent } from './personas/town-events';
 
 // Vakanın kodla belirlenen gerçekleri. Yapay zekâ bu kararları değiştirmez, sadece etraflarına
 // hikâye yazar. Hüküm Dosyası ve Kanıt Defteri bu kayda göre puanlayacak/eşleştirecek.
@@ -69,6 +71,10 @@ export interface CasePlan {
   involvements?: Involvement[];
   // Kişiliğe göre itiraf eşiği
   fearThresholds?: Record<string, number>;
+  // Katilin personası ve gece hamleleri (v3; eski vakalarda yok, sıradan katil sayılır)
+  persona?: PersonaPlan;
+  // Önceden sezdirilen kasaba olayları (v3; ör. bir dükkân sahibi bir günlüğüne şehir dışında)
+  townEvents?: TownEvent[];
 }
 
 export interface Involvement {
@@ -175,14 +181,53 @@ export function planCase(
     const base = planBaseCase(scenarioConfig, difficulty, rng, murderStyle);
     for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
       plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
-      if (isPlanSound(plan, difficulty)) return plan;
+      if (isPlanSound(plan, difficulty)) {
+        return withPersona(plan, scenarioConfig, difficulty, rng);
+      }
     }
   }
   // Olmamalı (testler her evren ve zorlukta sağlam plan bulunduğunu garanti eder); olursa görünür olsun
   logger.warn(
     `Sağlam plan bulunamadı (${scenarioConfig.scenarioType}/${difficulty}/${murderStyle}); son taslak kullanılıyor.`,
   );
-  return plan!;
+  return withPersona(plan!, scenarioConfig, difficulty, rng);
+}
+
+// Persona ve kasaba olayları sağlam plan bulunduktan sonra çekilir: önceki rastgele seçimlerin sırası
+// değişmesin. Vakayı taşıyan kanıtın sahibi (doğrulayan kanıtın mekânı ya da tanığı) kapanmaz.
+function withPersona(
+  plan: CasePlan,
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng,
+): CasePlan {
+  const suspectIds = scenarioConfig.npcDefinitions.map((npc) => npc.id);
+  const placement = plan.verification.placement;
+  const protectedIds = [
+    placement.type === 'LOCATION' ? placement.locationId : placement.npcId,
+  ];
+  const persona = planPersona(
+    difficulty,
+    {
+      scenarioType: scenarioConfig.scenarioType,
+      culpritId: plan.culpritId,
+      suspectIds,
+      protectedIds,
+    },
+    rng,
+  );
+  const breakIns = persona.events.filter((e) => e.kind === 'BREAK_IN');
+  const townEvents = planTownEvents(
+    {
+      scenarioType: scenarioConfig.scenarioType,
+      suspectIds,
+      protectedIds,
+      busyDays: breakIns.map((e) => e.night + 1),
+      busyIds: breakIns.flatMap((e) => (e.locationId ? [e.locationId] : [])),
+    },
+    rng,
+  );
+  return { ...plan, persona, townEvents };
 }
 
 const DETAIL_ATTEMPTS = 8;
@@ -443,6 +488,8 @@ export interface CaseFacts extends CasePlan {
   // Katilin örtü hikâyesi: korkusu eşiğe varınca "itiraf" diye anlattığı yalan mazeret ve küçük sır.
   // Eskiden yalnızca katil kırılmıyordu; kırılmayan tek kişi olması onu ele veriyordu.
   culpritCover?: string;
+  // Psikopatın tehdit mektubu (v3; planda mektup varsa). Kâğıttaki iz koddan gelir (letter-traces.ts).
+  threatLetter?: string;
 }
 
 // Oturumun olay yeri id'si; olay yeri seçimi eklenmeden önce açılan vakalarda yoktur

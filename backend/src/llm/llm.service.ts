@@ -60,6 +60,7 @@ import {
 } from './prompts/story-review-prompt.builder';
 import type { StoryIssue, StoryReviewInput } from '../stories/story-review';
 import { removeConfessionInstructions } from './prompts/confession-instructions';
+import { ensureThreatLetter } from '../personas/threat-letter';
 
 export type { ScenarioDraft };
 
@@ -200,6 +201,9 @@ export function cleanDraftIds(
     culpritCover: draft.culpritCover
       ? clean(draft.culpritCover)
       : draft.culpritCover,
+    threatLetter: draft.threatLetter
+      ? clean(draft.threatLetter)
+      : draft.threatLetter,
   };
 }
 
@@ -402,7 +406,13 @@ export class LlmService {
           `Culprit cover story rejected, using a plain one: ${sighted.culpritCover ?? '(none)'}`,
         );
       }
-      const cleaned = cleanDraftIds(covered, npcNames);
+      const lettered = ensureThreatLetter(covered, plan, npcNames, scenarioType);
+      if (lettered.threatLetter !== covered.threatLetter?.trim()) {
+        this.logger.warn(
+          `Threat letter rejected, using the universe's own: ${covered.threatLetter ?? '(none)'}`,
+        );
+      }
+      const cleaned = cleanDraftIds(lettered, npcNames);
       // İtirafı oyun verir: rol metinlerinde "sorguda itiraf edeceksin" gibi talimat kalmaz
       return {
         ...cleaned,
