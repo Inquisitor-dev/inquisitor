@@ -10,6 +10,8 @@ interface EvidencePolaroidProps {
   selected?: boolean;
   onClick?: () => void;
   compact?: boolean;
+  // Gece baskınında çalındı: fotoğrafın üstüne damga basılır
+  stolen?: boolean;
 }
 
 // Kanıtın polaroid fotoğrafı: envanterde ve Not Defteri'nin kanıt çekmecesinde kullanılır
@@ -21,10 +23,11 @@ export default function EvidencePolaroid({
   selected = false,
   onClick,
   compact = false,
+  stolen = false,
 }: EvidencePolaroidProps) {
   const className = `${styles.polaroid} ${compact ? styles.compact : ''} ${
     selected ? styles.selected : ''
-  } ${onClick ? styles.clickable : ''}`;
+  } ${onClick ? styles.clickable : ''} ${stolen ? styles.stolen : ''}`;
   const content = (
     <>
       <div
@@ -33,6 +36,7 @@ export default function EvidencePolaroid({
         aria-hidden
       >
         {!photo && <Search size={compact ? 18 : 26} />}
+        {stolen && <span className={styles.stolenStamp}>Çalındı</span>}
       </div>
       <div className={styles.caption}>
         <span className={styles.title}>{title}</span>

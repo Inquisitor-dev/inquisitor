@@ -836,7 +836,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         isOpen={isEvidencePickerOpen}
         onClose={() => setIsEvidencePickerOpen(false)}
         npcName={profile.name}
-        evidence={evidence}
+        evidence={evidence.filter((item) => !item.stolen)}
         shownEvidenceIds={shownEvidenceIds}
         loading={loading}
         onConfront={handleConfront}

@@ -58,8 +58,7 @@ export const PERSONA_POOLS: Record<Exclude<PersonaId, 'NONE'>, ActionDef[]> = {
   PSYCHOPATH: [
     { kind: 'THREAT_LETTER', nights: [1, 2], enabled: true },
     { kind: 'BREAK_IN', nights: [1, 2], enabled: true },
-    // Adım 3'te (baskın motoru) açılacak
-    { kind: 'RAID', nights: [2, 3], enabled: false },
+    { kind: 'RAID', nights: [2, 3], enabled: true },
   ],
 };
 

@@ -1,0 +1,211 @@
+// Gece baskını sahnesi: oyuncunun evi gece karanlığında; kandil yanınca sıcak bir ışık halkası.
+// Oda görselleri gelene kadar her oda ev görselinin başka bir köşesine odaklanır.
+$gold: #e0bb5e;
+$parchment: #e8dcc4;
+$muted: #8a7f72;
+$blood: #8a0303;
+
+.scene {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-color: #050403;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: $parchment;
+  transition: background-position 0.8s ease;
+}
+
+// Gece: koyu mavi bir örtü
+.darkness {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(6, 10, 22, 0.78), rgba(2, 3, 8, 0.96) 75%);
+  transition: opacity 0.6s ease;
+}
+
+.lit .darkness {
+  opacity: 0.55;
+}
+
+// Kandilin ışığı (yalnızca opaklık; sürekli oynayan bir animasyon yok)
+.lampGlow {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 70vmin;
+  height: 70vmin;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 190, 110, 0.32), rgba(255, 160, 70, 0.08) 45%, transparent 70%);
+  pointer-events: none;
+}
+
+.hud {
+  position: relative;
+  z-index: 2;
+  padding: 22px 28px 0;
+  text-align: center;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: $muted;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.room {
+  margin: 4px 0 8px;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  text-transform: capitalize;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
+.status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(10, 8, 6, 0.8);
+    border: 1px solid rgba($gold, 0.22);
+    border-radius: 999px;
+    color: $parchment;
+    font-size: 0.78rem;
+
+    svg {
+      color: $gold;
+    }
+  }
+}
+
+.panel {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 2;
+  width: min(720px, calc(100% - 32px));
+  padding: 18px 20px;
+  background: rgba(10, 8, 6, 0.9);
+  border: 1px solid rgba($gold, 0.22);
+  border-radius: 10px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+  transform: translateX(-50%);
+}
+
+.log {
+  max-height: 32dvh;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding-right: 6px;
+
+  p {
+    margin: 0 0 8px;
+    color: $muted;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .latest {
+    color: $parchment;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  button {
+    flex: 1 1 180px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba($gold, 0.3);
+    border-radius: 6px;
+    color: $parchment;
+    font-family: inherit;
+    font-size: 0.92rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: rgba($gold, 0.1);
+      border-color: $gold;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+  }
+}
+
+.outcome {
+  padding-top: 4px;
+  text-align: center;
+
+  h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: $gold;
+  }
+
+  p {
+    margin: 0 0 14px;
+    color: $parchment;
+    line-height: 1.5;
+  }
+
+  button {
+    padding: 10px 26px;
+    background: $blood;
+    border: 1px solid rgba($gold, 0.5);
+    border-radius: 999px;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+}
+
+.outcome_BAD h2,
+.outcome_DEATH h2 {
+  color: #e05a4e;
+}
+
+.error {
+  margin: 10px 0 0;
+  color: #e05a4e;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 560px) {
+  .room {
+    font-size: 1.5rem;
+  }
+
+  .panel {
+    bottom: 12px;
+    padding: 14px;
+  }
+
+  .actions button {
+    flex-basis: 100%;
+  }
+}

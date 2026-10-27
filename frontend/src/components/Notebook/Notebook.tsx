@@ -168,7 +168,7 @@ export default function Notebook({ onClose }: { onClose: () => void }) {
   const [undoCount, setUndoCount] = useState(0);
   const inkHistory = useRef<InkAction[]>([]);
   const drawingRef = useRef<{ page: NotebookPage; pointerId: number; points: number[] } | null>(null);
-  const itemEvidence = evidence.filter((item) => item.category === 'ITEM');
+  const itemEvidence = evidence.filter((item) => item.category === 'ITEM' && !item.stolen);
 
   const pageRefs = useRef<Record<NotebookPage, HTMLDivElement | null>>({ L: null, R: null });
   const itemsRef = useRef(items);
