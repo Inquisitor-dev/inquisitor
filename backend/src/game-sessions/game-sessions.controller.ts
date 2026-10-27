@@ -21,6 +21,7 @@ import {
   CondemnNpcDto,
   ConsumeWarrantDto,
   RaidActDto,
+  DetainDto,
 } from './dto/game-sessions.dto';
 
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -135,6 +136,17 @@ export class GameSessionsController {
     return {
       evidence: await this.gameSessionsService.getEvidence(sessionId, userId),
     };
+  }
+
+  // Nezaret: bir şüpheliyi bir geceliğine nezarete aldır (vakada bir kez)
+  @Post(':id/detain')
+  @UseGuards(JwtAuthGuard)
+  async detain(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+    @Body() dto: DetainDto,
+  ) {
+    return await this.gameSessionsService.detain(sessionId, userId, dto.npcId);
   }
 
   // Gece baskını: süren ya da biten baskının hâli

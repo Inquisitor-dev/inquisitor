@@ -2,7 +2,7 @@
 // ilerler (POST /game-sessions/:id/raid/act), baskın bitince sonucu uygulanır ve gün kapanır.
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../prisma/prisma.service';
-import { personaPlanOf } from '../scenarios/personas/persona-plan';
+import { effectivePersonaPlan } from '../scenarios/personas/detention';
 import {
   act,
   availableActions,
@@ -17,6 +17,8 @@ import { parsePersonaState, type PersonaState } from './persona-night';
 
 // Kötü sonuçta bu vakanın ödülünden kesilen pay (oyuncunun akçe bakiyesine dokunulmaz)
 export const RAID_REWARD_PENALTY = 0.2;
+// Çatı Geçişi gecesi: oyuncu dışarıdayken ev aranır; daha küçük kesinti, kanıt çalınmaz
+export const SEARCHED_REWARD_PENALTY = 0.1;
 
 interface RaidSession {
   id: string;
@@ -35,9 +37,10 @@ export const raidOptions = (session: RaidSession): RaidOptions => ({
 
 // Bu gecenin baskını (planlıysa ve henüz başlamadıysa)
 export function pendingRaid(session: RaidSession, night: number) {
-  const event = personaPlanOf(session.caseFacts).events.find(
-    (e) => e.kind === 'RAID' && e.night === night,
-  );
+  const event = effectivePersonaPlan(
+    session.caseFacts,
+    session.personaState,
+  ).events.find((e) => e.kind === 'RAID' && e.night === night);
   const state = parsePersonaState(session.personaState);
   return event && state.raid?.night !== night ? event : null;
 }
@@ -63,9 +66,27 @@ export async function beginRaid(
   prisma: PrismaService,
   session: RaidSession,
   night: number,
+  playerAway = false,
 ) {
   const event = pendingRaid(session, night);
   if (!event) return null;
+  // Oyuncu o gece Çatı Geçişi'yle dışarıdaydı: baskın olmaz, ev aranmış bulunur. Gün olağan kapanır.
+  if (playerAway) {
+    const prev = parsePersonaState(session.personaState);
+    await saveState(prisma, session.id, {
+      ...prev,
+      rewardPenalty: (prev.rewardPenalty ?? 0) + SEARCHED_REWARD_PENALTY,
+      raid: {
+        night,
+        state: startRaid(event.raidStart ?? 'HALLWAY'),
+        log: [
+          'Eve döndüğünde kapı aralık: biri sen yokken içeri girip her yeri karıştırmış.',
+        ],
+        outcome: 'SEARCHED',
+      },
+    });
+    return null;
+  }
   const raid = startRaid(
     event.raidStart ?? 'HALLWAY',
     session.characterId === 'kar_kahini',

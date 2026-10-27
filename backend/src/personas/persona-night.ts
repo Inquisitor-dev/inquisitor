@@ -7,6 +7,7 @@ import type {
 import { reasonsFor, type TownEvent } from '../scenarios/personas/town-events';
 import { newspaperTextsFor } from './newspaper-texts';
 import type { RaidOutcome, RaidState } from './raid-engine';
+import type { Detention } from '../scenarios/personas/detention';
 
 export interface NewspaperItem {
   // MURDER: ilk sabahın cinayet haberi; PERSONA: katilin hamlesi; NOTICE: kasaba olayının duyurusu
@@ -23,12 +24,15 @@ export interface Newspaper {
   items: NewspaperItem[];
 }
 
+// SEARCHED: oyuncu o gece Çatı Geçişi'yle dışarıdaydı; baskın olmadı, evi aranmış buldu
+export type RaidRecordOutcome = RaidOutcome | 'SEARCHED';
+
 export interface RaidRecord {
   night: number;
   state: RaidState;
   // Oyuncuya anlatılanlar (sırayla)
   log: string[];
-  outcome: RaidOutcome | null;
+  outcome: RaidRecordOutcome | null;
 }
 
 export interface PersonaState {
@@ -43,6 +47,8 @@ export interface PersonaState {
   // Baskının kötü sonucu: bu vakanın ödülünden kesinti (0–1) ve çalınan kanıtlar
   rewardPenalty?: number;
   stolenEvidenceIds?: string[];
+  // Nezaret (vakada bir kez): kimi, hangi gün
+  detention?: Detention;
 }
 
 // Gecenin bıraktığı kayıtlar. EVENT: defterdeki olay kartı (Kanıt Göster, pano ve Hüküm Dosyası'nda
@@ -60,7 +66,7 @@ export interface NightPlan {
   townEvents: TownEvent[];
   letter?: { text: string; trace: string };
   // Baskının sonucu ve kapı önünde kalan izin metni (iyi sonuçta)
-  raid?: { outcome: RaidOutcome; trace: string };
+  raid?: { outcome: RaidRecordOutcome; trace: string };
 }
 
 export interface NightContext {
@@ -91,6 +97,7 @@ export function parsePersonaState(raw: unknown): PersonaState {
     ...(Array.isArray(s.stolenEvidenceIds)
       ? { stolenEvidenceIds: s.stolenEvidenceIds }
       : {}),
+    ...(s.detention ? { detention: s.detention } : {}),
   };
 }
 
@@ -238,7 +245,7 @@ const genitive = (word: string) => {
 
 // Baskının gazete haberi sonuca göre
 function raidPaperItem(
-  outcome: RaidOutcome | undefined,
+  outcome: RaidRecordOutcome | undefined,
   ctx: NightContext,
 ): NewspaperItem {
   const who = genitive(newspaperTextsFor(ctx.scenarioType).investigator);
@@ -249,6 +256,12 @@ function raidPaperItem(
         kind: 'PERSONA',
         headline: `${Who} evine gece baskın`,
         body: `Gece ${who} evine biri girdi. Fark edilince kaçtı; kapı önünde bir iz bıraktı.`,
+      };
+    case 'SEARCHED':
+      return {
+        kind: 'PERSONA',
+        headline: `${Who} evi aranmış`,
+        body: `${Who.replace(/(ün|un|ın|in)$/, '')} gece evde yokken evine biri girip her yeri karıştırdı. Bir şey alınmamış.`,
       };
     case 'BAD':
       return {
@@ -307,9 +320,11 @@ function nightRecords(
         card(
           outcome === 'GOOD'
             ? 'Gece evime biri girdi. Hazır olduğumu fark edince kaçtı; kapı önünde bir iz bıraktı.'
-            : outcome === 'BAD'
-              ? 'Gece evime biri girdi. Beni bayılttı ve evi aradı.'
-              : 'Gece evime biri girdi ve karanlıkta sessizce çıkıp gitti.',
+            : outcome === 'SEARCHED'
+              ? 'Ben dışarıdayken evime biri girmiş; her yer karıştırılmış ama bir şey alınmamış.'
+              : outcome === 'BAD'
+                ? 'Gece evime biri girdi. Beni bayılttı ve evi aradı.'
+                : 'Gece evime biri girdi ve karanlıkta sessizce çıkıp gitti.',
         ),
       ];
       if (outcome === 'GOOD' && plan.raid) {
@@ -348,6 +363,7 @@ export function processNight(
     ...happened
       .map((e) => personaItem(e, ctx, plan))
       .filter((i): i is NewspaperItem => !!i),
+    ...detentionNotice(state, night, ctx),
     ...townNotices(plan.townEvents, day, ctx),
   ];
   const paper = paperFor(day, lead, state, ctx);
@@ -361,6 +377,44 @@ export function processNight(
     happened,
     records: happened.flatMap((e) => nightRecords(e, night, plan, ctx)),
   };
+}
+
+// Nezaret kasabada duyulur: ertesi sabahın gazetesi yazar
+function detentionNotice(
+  state: PersonaState,
+  night: number,
+  ctx: NightContext,
+): NewspaperItem[] {
+  if (state.detention?.day !== night) return [];
+  const name = ctx.npcName(state.detention.npcId);
+  return [
+    {
+      kind: 'NOTICE',
+      headline: `${name} bir gece nezarette kaldı`,
+      body: `${name} soruşturma sırasında bir geceliğine nezarete alındı ve sabah serbest bırakıldı.`,
+    },
+  ];
+}
+
+// Nezaret: kasaba duyar; kişi ertesi gün kırgındır (bildiği değişmez)
+export function detentionPromptLines(
+  state: PersonaState,
+  day: number,
+  npcId: string,
+  ctx: Pick<NightContext, 'npcName'>,
+): string[] {
+  const d = state.detention;
+  if (!d || day <= d.day) return [];
+  if (d.npcId === npcId) {
+    return [
+      day === d.day + 1
+        ? '- Yesterday the Inquisitor had you held overnight; you were released this morning. You are resentful, curt and cold with them today, but it changes nothing about what you know or how fear works on you.'
+        : `- On day ${d.day} the Inquisitor had you held overnight. You have not forgotten it.`,
+    ];
+  }
+  return [
+    `- The whole town knows the Inquisitor had ${ctx.npcName(d.npcId)} held overnight ${day === d.day + 1 ? 'last night' : 'a few nights ago'}.`,
+  ];
 }
 
 // O sabahın gazetesi (yoksa null)
@@ -378,7 +432,7 @@ export function publicNightLines(
     switch (e.kind) {
       case 'THREAT_LETTER':
         return [
-          `- In the night after day ${e.night}, someone slipped an unsigned threatening letter under the ${investigator}'s door. The whole town has heard about it; nobody knows who wrote it.`,
+          `- In the night after day ${e.night}, someone slipped an unsigned threatening letter under the ${investigator}'s door. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who wrote it.`,
         ];
       case 'BREAK_IN':
         return e.locationId
@@ -388,7 +442,7 @@ export function publicNightLines(
           : [];
       case 'RAID':
         return [
-          `- In the night after day ${e.night}, someone broke into the ${investigator}'s own home. The whole town has heard about it; nobody knows who it was.`,
+          `- In the night after day ${e.night}, someone broke into the ${investigator}'s own home. The whole town, you included, has heard about it; if asked, say you heard of it. Nobody knows who it was.`,
         ];
       default:
         return [];
@@ -398,7 +452,7 @@ export function publicNightLines(
   const town = paper?.items.filter((i) => i.kind === 'TOWN') ?? [];
   if (town.length > 0) {
     lines.push(
-      `- Today's town paper also reports: ${town.map((i) => `"${i.headline}" (${i.body})`).join('; ')}. You may chat about this if it comes up.`,
+      `- Today's town paper also reports: ${town.map((i) => `"${i.headline}" (${i.body})`).join('; ')}. Do not bring it up yourself; mention it only if the Inquisitor asks what is new in town.`,
     );
   }
   return lines;

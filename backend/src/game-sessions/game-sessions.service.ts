@@ -54,6 +54,9 @@ import {
 } from './verdict/verdict-report';
 
 import { StoryPoolService } from '../stories/story-pool.service';
+import { detentionOf } from '../scenarios/personas/detention';
+import { closedMessage } from '../personas/closure-message';
+import { FEAR_MAX } from '../npcs/fear';
 import {
   StoryCriteria,
   STORY_RULE_VERSION,
@@ -378,7 +381,22 @@ export class GameSessionsService {
     if (activeRaid(parsePersonaState(session.personaState))) {
       throw new BadRequestException('Gece baskını sürüyor; önce onu atlat.');
     }
-    const raid = await beginRaid(this.prisma, session, session.currentDay);
+    // Çatı Geçişi'yle o gece dışarıdaysa baskın olmaz, ev aranmış bulunur (gün olağan kapanır)
+    const awayTonight =
+      parseAbilityState(session.abilityState).rooftop?.day === session.currentDay;
+    const raid = await beginRaid(
+      this.prisma,
+      session,
+      session.currentDay,
+      awayTonight,
+    );
+    if (awayTonight) {
+      const refreshed = await this.prisma.gameSession.findUniqueOrThrow({
+        where: { id: sessionId },
+        include: { npcStates: true },
+      });
+      return toPublicSession(await this.advanceDay(refreshed));
+    }
     if (raid) {
       const fresh = await this.prisma.gameSession.findUniqueOrThrow({
         where: { id: sessionId },
@@ -386,6 +404,40 @@ export class GameSessionsService {
       return { ...toPublicSession(fresh), raid: raidView(fresh) };
     }
     return toPublicSession(await this.advanceDay(session));
+  }
+
+  // Nezaret: vakada bir kez, son gün değil; kişinin mekânı günün kalanında kapanır, ertesi sabah çıkar
+  async detain(sessionId: string, userId: string, npcId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    if (session.status !== 'ACTIVE') {
+      throw new BadRequestException('Bu soruşturma sona erdi.');
+    }
+    const state = parsePersonaState(session.personaState);
+    if (state.detention) {
+      throw new BadRequestException('Nezaret hakkını bu vakada kullandın.');
+    }
+    if (session.currentDay >= lastDayOf(session.abilityState)) {
+      throw new BadRequestException('Son günde kimseyi nezarete aldıramazsın.');
+    }
+    const suspects = getScenarioConfig(
+      session.scenarioType,
+      session.difficulty,
+    ).npcDefinitions.map((npc) => npc.id);
+    if (!suspects.includes(npcId)) {
+      throw new BadRequestException('Yalnızca bir şüpheliyi nezarete aldırabilirsin.');
+    }
+    const closed = closedMessage(session, npcId);
+    if (closed) throw new BadRequestException(closed);
+    const updated = await this.prisma.gameSession.update({
+      where: { id: sessionId },
+      data: {
+        personaState: {
+          ...state,
+          detention: { npcId, day: session.currentDay },
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+    return toPublicSession(updated);
   }
 
   // Süren ya da biten baskın (yoksa active: false)
@@ -447,13 +499,14 @@ export class GameSessionsService {
     // Katilin o geceki hamleleri ve ertesi sabahın gazetesi
     await runNight(this.prisma, session, session.currentDay);
 
+    // Nezarette geçen gecenin ardından kişinin korkusu bir artar
+    const detention = detentionOf(session.personaState);
     for (const state of session.npcStates) {
       // Vizör Kilidi'ndeki şüphelinin korkusu gece azalmaz
-      const newFear = fearAfterNight(
-        state.npcId,
-        state.currentFear,
-        abilityState,
-      );
+      const newFear =
+        detention?.day === session.currentDay && detention.npcId === state.npcId
+          ? Math.min(FEAR_MAX, state.currentFear + 1)
+          : fearAfterNight(state.npcId, state.currentFear, abilityState);
       await this.prisma.sessionNpcState.update({
         where: { id: state.id },
         data: { currentFear: newFear },

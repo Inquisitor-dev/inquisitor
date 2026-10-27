@@ -18,7 +18,7 @@ import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
 import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
-import { ArrowLeft, BookOpen, Briefcase, Compass, Hand, HeartPulse, ListChecks, MessageSquare, Quote, Scale, Search, Send, Square } from 'lucide-react';
+import { ArrowLeft, BookOpen, Briefcase, Compass, Hand, HeartPulse, ListChecks, Lock, MessageSquare, Quote, Scale, Search, Send, Square } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
 import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
@@ -150,6 +150,25 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const teyit = abilities.abilities.find((a) => a.id === 'verify_quote');
   const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Nezaret (vakada bir kez): kişinin mekânı günün kalanında kapanır, ertesi sabah çıkar
+  const askDetain = () =>
+    setConfirmModal({
+      isOpen: true,
+      title: 'Nezarete Al',
+      message: `${profile.name} bu gece nezarette kalacak. Mekânı günün kalanında kapanır, yarın sabah çıkar ve sana kırgın olur. Bu hakkı vakada yalnızca bir kez kullanabilirsin.`,
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        if (!sessionId) return;
+        try {
+          await api.post(`/game-sessions/${sessionId}/detain`, { npcId: actualNpcKey });
+          setToast(`${profile.name} nezarete alındı.`);
+          setTimeout(() => router.push('/map'), 1200);
+        } catch (err) {
+          setToast(err instanceof Error ? err.message : 'Nezarete aldırılamadı.');
+        }
+      },
+    });
   const [isVerdictOpen, setIsVerdictOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -801,6 +820,16 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
               </div>
 
               <div className={styles.footerRight}>
+                {!isInvestigating && !isCrimeScene && !actualNpcKey.startsWith('narrator_') && (
+                  <button
+                    className={styles.utilityBtn}
+                    onClick={askDetain}
+                    title="Bu şüpheliyi bir geceliğine nezarete aldır (vakada bir kez)"
+                  >
+                    <Lock size={13} />
+                    <span>Nezarete Al</span>
+                  </button>
+                )}
                 {!isInvestigating && !isCrimeScene && (
                   <button
                     className={`${styles.utilityBtn} ${styles.condemnUtilityBtn}`}

@@ -6,15 +6,28 @@ import {
 import { closureFor } from '../scenarios/personas/closures';
 
 export function closedMessage(
-  session: { scenarioType: string; currentDay: number; caseFacts: unknown },
+  session: {
+    scenarioType: string;
+    currentDay: number;
+    caseFacts: unknown;
+    personaState?: unknown;
+  },
   npcId: string,
 ): string | null {
-  const closure = closureFor(session.caseFacts, session.currentDay, npcId);
+  const closure = closureFor(
+    session.caseFacts,
+    session.currentDay,
+    npcId,
+    session.personaState,
+  );
   if (!closure) return null;
   const place = getLocalizedLocationLabel(
     session.scenarioType,
     closure.locationId,
   );
+  if (closure.reason === 'DETAINED') {
+    return `${place} bugün kapalı: sahibi nezarette. Yarın sabah çıkacak.`;
+  }
   if (closure.reason === 'BREAK_IN') {
     return `${place} bugün kapalı: gece zorla açılmış, sahibi içeriyi topluyor. Yarın yeniden açılacak.`;
   }

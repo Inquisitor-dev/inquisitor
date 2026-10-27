@@ -101,3 +101,9 @@ export class RaidActDto {
   @IsIn(RAID_ACTIONS, { message: 'Geçersiz aksiyon.' })
   action: string;
 }
+
+// Nezaret: bir şüpheliyi bir geceliğine nezarete aldır
+export class DetainDto {
+  @IsString()
+  npcId: string;
+}

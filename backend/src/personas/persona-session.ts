@@ -7,7 +7,6 @@ import {
   getLocalizedLocationLabel,
   getScenarioConfig,
 } from '../scenarios/scenario-config';
-import { personaPlanOf } from '../scenarios/personas/persona-plan';
 import { townEventsOf } from '../scenarios/personas/town-events';
 import {
   emptyPersonaState,
@@ -21,6 +20,7 @@ import {
 import { fallbackLetter } from './threat-letter';
 import { letterTracesFor } from '../scenarios/personas/letter-traces';
 import type { PersonaPlan } from '../scenarios/personas/persona-plan';
+import { effectivePersonaPlan } from '../scenarios/personas/detention';
 
 // Mektuptaki izin metni (planın seçtiği iz)
 function traceText(
@@ -56,7 +56,8 @@ export function nightPlanOf(
 ): NightPlan {
   const raid = parsePersonaState(personaState).raid;
   const facts = caseFacts as Partial<CaseFacts> | null;
-  const persona = personaPlanOf(caseFacts);
+  // Nezaretteki katilin hamlesi sonraki uygun geceye kayar
+  const persona = effectivePersonaPlan(caseFacts, personaState);
   const hasLetter = persona.events.some((e) => e.kind === 'THREAT_LETTER');
   return {
     persona,
