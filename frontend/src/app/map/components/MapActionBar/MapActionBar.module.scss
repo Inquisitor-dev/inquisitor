@@ -1,0 +1,361 @@
+// Haritanın alt barı. Menüyle aynı dil: koyu plaka, kan kırmızısı mühür, altın vurgu.
+// Harita kayarken bulanıklık yok; gece "Eve Dön" düğmesinin nabzı yalnızca opaklık oynatır.
+$blood: #8a0303;
+$gold: #e0bb5e;
+$parchment: #e8dcc4;
+$muted: #8a7f72;
+
+.bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 86px;
+  padding: 0 32px;
+  background: linear-gradient(to top, rgba(10, 8, 6, 0.94) 0%, rgba(10, 8, 6, 0.7) 60%, rgba(10, 8, 6, 0) 100%);
+
+  // Altın ince çizgi
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 10px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba($gold, 0.28) 20%, rgba($gold, 0.28) 80%, transparent);
+    pointer-events: none;
+  }
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.groupEnd {
+  gap: 10px;
+}
+
+.tool {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: $muted;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    background: rgba($gold, 0.07);
+    color: $parchment;
+
+    .toolIcon {
+      color: $gold;
+    }
+  }
+
+  &:focus-visible {
+    outline: 1px solid rgba($gold, 0.6);
+    outline-offset: 1px;
+  }
+}
+
+.toolIcon {
+  display: grid;
+  place-items: center;
+  color: $parchment;
+  opacity: 0.85;
+  transition: color 0.15s ease;
+}
+
+.toolLabel,
+.toolShort {
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.toolShort {
+  display: none;
+}
+
+// Olay yeri ve ev daha belirgin: çerçeveli plaka
+.crimeScene,
+.home {
+  flex-direction: row;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 16px;
+  background: rgba(12, 10, 8, 0.8);
+  border: 1px solid rgba($gold, 0.2);
+
+  .toolLabel {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: $parchment;
+  }
+}
+
+.crimeScene {
+  border-color: rgba($blood, 0.75);
+
+  .toolIcon {
+    color: #e05a4e;
+  }
+
+  &:hover {
+    background: rgba($blood, 0.25);
+  }
+}
+
+// Gece: eve dönme vakti. Altın halka nabız gibi atar (yalnızca opaklık).
+.homeNight {
+  border-color: rgba($gold, 0.6);
+
+  .toolIcon {
+    color: $gold;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9px;
+    box-shadow: 0 0 14px 2px rgba($gold, 0.45);
+    opacity: 0;
+    animation: homePulse 2.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes homePulse {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeNight::after {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+// Pencere açıkken nabız durur
+:global(body:has([aria-modal='true'])) .homeNight::after {
+  animation-play-state: paused;
+}
+
+// Ortadaki hüküm düğmesi: mum mühür ve altın çerçeveli kırmızı plaka
+.condemn {
+  position: absolute;
+  left: 50%;
+  // Araçlarla aynı hizada, altın çizginin altında kalır
+  bottom: 12px;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 24px 5px 5px;
+  background: linear-gradient(180deg, #9e0606, $blood 60%, #6a0202);
+  border: none;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px rgba($gold, 0.55),
+    inset 0 0 0 4px rgba(0, 0, 0, 0.18),
+    0 6px 18px rgba(0, 0, 0, 0.55),
+    0 0 30px rgba($blood, 0.25);
+  color: #fff;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateX(-50%) translateY(-2px);
+
+    .condemnSeal {
+      transform: rotate(-12deg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 3px;
+  }
+}
+
+.condemnSeal {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 35% 30%, #c0262b, #7a0202 70%);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px rgba($gold, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  color: $gold;
+  transition: transform 0.2s ease;
+}
+
+.condemnShort {
+  display: none;
+}
+
+.condemnText {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+// Orta genişlikte araç adları sığmaz: yalnızca simgeler
+@media (max-width: 1279px) and (min-width: 769px) {
+  .group:not(.groupEnd) .tool {
+    min-width: 0;
+    padding: 8px 10px;
+
+    .toolLabel {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .bar {
+    position: fixed;
+    z-index: 1000;
+    height: 66px;
+    padding: 0 4px env(safe-area-inset-bottom);
+    background: rgba(8, 6, 5, 0.97);
+    border-top: 1px solid rgba($blood, 0.55);
+
+    &::before {
+      top: -1px;
+      background: linear-gradient(to right, transparent, rgba($blood, 0.9), transparent);
+    }
+  }
+
+  .group {
+    display: contents;
+  }
+
+  // Mühür ortada kalsın: ilk üç araç solda, kalanlar sağda
+  .tool {
+    order: 2;
+  }
+
+  .group:not(.groupEnd) .tool:nth-child(-n + 4) {
+    order: 0;
+  }
+
+  .tool,
+  .crimeScene,
+  .home {
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    padding: 6px 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+
+    .toolLabel {
+      display: none;
+    }
+  }
+
+  .toolShort {
+    display: block;
+    font-size: 0.52rem;
+    letter-spacing: 0.04em;
+    color: $parchment;
+    opacity: 0.8;
+  }
+
+  .toolIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .homeNight::after {
+    inset: 2px 6px;
+  }
+
+  // Ortadaki mühür barın üstüne taşar; araçların arasında yerini tutar
+  .condemn {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    order: 1;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 2px;
+    margin: -22px 2px 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    transform: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .condemnSeal {
+    width: 52px;
+    height: 52px;
+    box-shadow:
+      inset 0 0 0 2px rgba($gold, 0.7),
+      0 0 0 3px rgba(8, 6, 5, 0.97),
+      0 4px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  .condemnText,
+  .wideOnly {
+    display: none;
+  }
+
+  .condemnShort {
+    display: block;
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #ff6b5e;
+  }
+}
+
+// Telefonda bar pencerelerin üstünde kalıyordu (z-index 1000); bir pencere açıkken gizlenir
+@media (max-width: 768px) {
+  :global(body:has([aria-modal='true'])) .bar {
+    visibility: hidden;
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import { X } from 'lucide-react';
 import AudioSettingsPanel from '@/features/audio/AudioSettingsPanel';
 import styles from '../../map.module.scss';
 
@@ -29,7 +29,7 @@ export default function AudioSettingsModal({
           onClick={onClose}
           aria-label="Kapat"
         >
-          &times;
+          <X size={20} />
         </button>
         <h2 className={styles.modalTitle}>⚙️ Ses Ayarları</h2>
         <AudioSettingsPanel />
