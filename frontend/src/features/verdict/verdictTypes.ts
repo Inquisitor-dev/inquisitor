@@ -57,3 +57,25 @@ export interface CaseOutcome {
   reward: { rewardTokens?: number; scoreEarned?: number } | null;
   verdict: ScoredVerdict | null;
 }
+
+// Sonuç ekranının çözüm yolları (backend: verdict/solution-report.ts); yalnızca vaka bitince gelir
+export interface SolutionStep {
+  clueId: string;
+  label: string;
+  how: string;
+  clears: string[];
+  found: boolean;
+}
+
+export interface SolutionPath {
+  steps: SolutionStep[];
+  conclusions: string[];
+  finale: string;
+  warrants: number;
+  found: number;
+  completed: boolean;
+}
+
+export interface SolutionReport {
+  paths: SolutionPath[];
+}

@@ -1,0 +1,177 @@
+// Sonuç ekranının çözüm yolları: Gerçeğin Ardında paneliyle aynı karanlık kart, bulunan kanıtlar altın tikli
+$gold: #b8860b;
+$muted: #7a5c2e;
+
+.panel {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 24px;
+  background: rgba(10, 5, 0, 0.7);
+  border: 1px solid #3a2510;
+  padding: 24px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  color: $muted;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.intro {
+  margin: 0 0 20px;
+  color: #9a8a78;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.paths {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.path {
+  border: 1px solid #2a1a08;
+  border-radius: 6px;
+  padding: 16px 18px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.completed {
+  border-color: rgba($gold, 0.6);
+}
+
+.pathHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+}
+
+.pathName {
+  color: #e5d9c5;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.pathMeta {
+  color: #8a7a68;
+  font-size: 0.85rem;
+}
+
+.progress {
+  margin-left: auto;
+  color: $muted;
+  font-size: 0.8rem;
+  font-family: sans-serif;
+
+  .completed & {
+    color: $gold;
+    font-weight: 700;
+  }
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: #5a4a38;
+
+  .found & {
+    background: rgba($gold, 0.2);
+    color: $gold;
+  }
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepLabel {
+  color: #d8ccb8;
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  .step:not(.found) & {
+    color: #a89884;
+  }
+}
+
+.stepHow {
+  color: #8a7a68;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.stepClears {
+  color: #7f9a6a;
+  font-size: 0.82rem;
+}
+
+.conclusion {
+  margin: 12px 0 0;
+  padding-left: 30px;
+  color: #b8a898;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.finale {
+  margin: 10px 0 0;
+  padding-left: 30px;
+  color: #e5d9c5;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .panel {
+    padding: 18px;
+  }
+
+  .path {
+    padding: 14px;
+  }
+
+  .progress {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .conclusion,
+  .finale {
+    padding-left: 0;
+  }
+}

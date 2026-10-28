@@ -190,6 +190,16 @@ export class GameSessionsController {
     return await this.gameSessionsService.getVerdictOptions(sessionId, userId);
   }
 
+  // Vaka bittikten sonra çözüm yolları (sonuç ekranı)
+  @Get(':id/solution')
+  @UseGuards(JwtAuthGuard)
+  async getSolution(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getSolution(sessionId, userId);
+  }
+
   @Post(':id/notes')
   @UseGuards(JwtAuthGuard)
   async updateNotes(
