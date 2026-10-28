@@ -178,7 +178,6 @@ export class AuthService implements OnModuleInit {
     email: string;
     userId: string;
     isAdmin: boolean;
-    isPremium: boolean;
     username: string | null;
     avatar: string;
   }> {
@@ -211,7 +210,6 @@ export class AuthService implements OnModuleInit {
       sub: updated.id,
       email: updated.email,
       isAdmin: updated.isAdmin,
-      isPremium: updated.isPremium,
       username: updated.username,
       avatar: updated.avatar,
     });
@@ -221,7 +219,6 @@ export class AuthService implements OnModuleInit {
       email: updated.email,
       userId: updated.id,
       isAdmin: updated.isAdmin,
-      isPremium: updated.isPremium,
       username: updated.username,
       avatar: updated.avatar,
     };
@@ -232,7 +229,6 @@ export class AuthService implements OnModuleInit {
     email: string;
     userId: string;
     isAdmin: boolean;
-    isPremium: boolean;
     username: string | null;
     avatar: string;
   }> {
@@ -267,7 +263,6 @@ export class AuthService implements OnModuleInit {
       sub: user.id,
       email: user.email,
       isAdmin: user.isAdmin,
-      isPremium: user.isPremium,
       username: user.username,
       avatar: user.avatar,
     });
@@ -277,7 +272,6 @@ export class AuthService implements OnModuleInit {
       email: user.email,
       userId: user.id,
       isAdmin: user.isAdmin,
-      isPremium: user.isPremium,
       username: user.username,
       avatar: user.avatar,
     };
@@ -309,13 +303,5 @@ export class AuthService implements OnModuleInit {
 
   updateAudioSettings(userId: string, settings: any) {
     return this.usersService.updateAudioSettings(userId, settings);
-  }
-
-  // Premium aktivasyonu (eski metod — token ekonomisine geçildi)
-  async activatePremium(userId: string, _activationCode: string): Promise<{ success: boolean; message: string }> {
-    return {
-      success: true,
-      message: 'Abonelik modeli yerine Token Marketi devrededir. Standart kotalar tüm kullanıcılara tanımlanmıştır.',
-    };
   }
 }

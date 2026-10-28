@@ -91,7 +91,7 @@ export class GameSessionsController {
       return this.gameSessionsService.createSession(userId, diff, sType, true, characterId);
     }
 
-    // Günlük kota kontrolü (Premium kaldırıldı, standart limit 5 oturum)
+    // Günlük kota kontrolü (standart limit 5 oturum)
     const quota = await this.authService.checkAndResetDailyQuota(userId);
     const maxSessions = quota.isAdmin ? 999 : 5;
     if (quota.dailySessionCount >= maxSessions) {

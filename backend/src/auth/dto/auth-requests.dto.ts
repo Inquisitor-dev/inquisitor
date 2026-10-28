@@ -45,9 +45,3 @@ export class LoginDto {
   @IsString()
   password: string;
 }
-
-export class ActivatePremiumDto {
-  @IsNotEmpty({ message: 'Aktivasyon kodu gereklidir.' })
-  @IsString()
-  activationCode: string;
-}

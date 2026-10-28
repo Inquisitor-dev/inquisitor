@@ -19,7 +19,7 @@ Backend-specific guidance (NestJS 11 + Prisma). The root `CLAUDE.md` holds the p
 
 ### `auth/`
 Email verification-code signup (mails via `MAIL_USER`/`MAIL_PASS`), password login and JWT (`JwtAuthGuard`).
-- Also owns daily quota tracking (`checkAndResetDailyQuota`, session/message counters on `User`), premium activation and per-user audio settings.
+- Also owns daily quota tracking (`checkAndResetDailyQuota`, session/message counters on `User`) and per-user audio settings.
 - The admin user is bootstrapped from `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `onModuleInit`.
 - `JWT_SECRET` is mandatory (`jwt-secret.ts`, no fallback).
 - `send-code` rejects every already-verified account, including the admin.

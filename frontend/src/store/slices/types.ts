@@ -33,7 +33,6 @@ export interface AuthSlice {
   username: string | null;
   avatar: string;
   isAdmin: boolean;
-  isPremium: boolean;
   hasHydrated: boolean;
 
   setUser: (
@@ -41,12 +40,10 @@ export interface AuthSlice {
     userId: string,
     token: string,
     isAdmin: boolean,
-    isPremium?: boolean,
     username?: string | null,
     avatar?: string,
   ) => void;
   setProfile: (username: string | null, avatar: string) => void;
-  setIsPremium: (val: boolean) => void;
   setHasHydrated: (val: boolean) => void;
   logout: () => void;
 }
