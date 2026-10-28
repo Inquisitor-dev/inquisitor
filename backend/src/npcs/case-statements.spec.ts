@@ -5,6 +5,7 @@ import {
   linkPromptLines,
   linkStatements,
   mentions,
+  splitCover,
 } from './case-statements';
 import {
   EVIDENCE_TAG,
@@ -253,5 +254,30 @@ describe('ad eşleşmesi', () => {
     expect(mentions('Kardeş Aldric gelmedi.', 'Kardeş Aldric')).toBe(true);
     // Unvan tek başına ad sayılmaz
     expect(mentions('Kardeş geldi.', 'Kardeş Aldric')).toBe(false);
+  });
+});
+
+// Katil kırılana kadar örtü hikâyesinin yalnızca ilk kısmını görür (Gemini denemesi, 29 Ekim 2026)
+describe('splitCover', () => {
+  it('iki cümleyi, tek cümlede noktalı virgülü ya da virgülü ayırır', () => {
+    expect(
+      splitCover('Hanımda yalnızdım. Kurbana borcum vardı, utanıyorum.'),
+    ).toEqual({
+      alibi: 'Hanımda yalnızdım.',
+      secret: 'Kurbana borcum vardı, utanıyorum.',
+    });
+    expect(
+      splitCover(
+        'Gece yarısı madende defterleri inceliyordum; borçlarımı gizlemeye çalıştığım için kimseyle görüşmedim.',
+      ),
+    ).toEqual({
+      alibi: 'Gece yarısı madende defterleri inceliyordum.',
+      secret: 'borçlarımı gizlemeye çalıştığım için kimseyle görüşmedim.',
+    });
+    expect(
+      splitCover(
+        'Gözetleme kulübemde oturuyordum, kurbanla aramızdaki borç meselesinden korktuğum için gizledim.',
+      ).secret,
+    ).toBe('kurbanla aramızdaki borç meselesinden korktuğum için gizledim.');
   });
 });

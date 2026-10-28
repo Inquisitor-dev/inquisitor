@@ -207,8 +207,7 @@ describe('wildcard kuralları', () => {
     expect(warrantLimitOf({})).toBe(2);
     expect(warrantLimitOf(withWildcard({ kind: 'EXTRA_WARRANT' }))).toBe(3);
     const request = {
-      userMessage: 'Değirmen için arama izni istiyorum.',
-      locations: [{ id: 'mill', localizedName: 'Değirmen' }],
+      requestedLocationId: 'mill',
       warrantsIssued: 2,
       activeWarrants: [],
       usedWarrants: ['tavern', 'church'],

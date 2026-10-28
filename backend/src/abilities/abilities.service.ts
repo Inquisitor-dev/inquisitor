@@ -333,6 +333,7 @@ export class AbilitiesService {
         const locationId = informantLocation({
           locationIds: config.locationDefinitions.map((l) => l.id),
           searched,
+          named: state.informantNamed,
         });
         if (!locationId)
           throw new BadRequestException(
@@ -342,7 +343,10 @@ export class AbilitiesService {
           `[${day}. gün · Muhbir] ${labelOf(locationId)} mekânında işine yarayacak bir şey olduğu fısıldanıyor.`,
         ]);
         return {
-          state,
+          state: {
+            ...state,
+            informantNamed: [...(state.informantNamed ?? []), locationId],
+          },
           result: {
             message: `Muhbirin fısıldadı: ${labelOf(locationId)}.`,
             notes,

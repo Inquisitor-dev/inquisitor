@@ -4,14 +4,16 @@ import { useEffect } from 'react';
 import { ScrollText } from 'lucide-react';
 import { getLocationLabel } from '@/config/locationLabels';
 import { useGameStore } from '@/store/useGameStore';
+import { issuerNames, useWarrantInfo } from '@/features/warrants/useWarrantInfo';
 import EvidencePolaroid from '@/components/EvidencePolaroid/EvidencePolaroid';
 import { evidencePhoto, evidenceTitle } from '@/components/InvestigationBoard/boardModel';
 import styles from './CaseModals.module.scss';
 
 // Envanter: bulunan fiziksel kanıtların fotoğrafları ve arama izinleri
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { inventory, evidence, scenarioType, crimeScene } = useGameStore();
+  const { inventory, evidence, scenarioType, crimeScene, sessionId } = useGameStore();
   const scenario = scenarioType || 'medieval';
+  const warrants = useWarrantInfo(sessionId);
   const evidenceItems = evidence.filter((item) => item.category === 'ITEM');
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,7 +24,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   const hasWarrants = inventory.activeWarrants.length > 0 || inventory.usedWarrants.length > 0;
-  const isEmpty = evidenceItems.length === 0 && !hasWarrants;
+  const isEmpty = evidenceItems.length === 0 && !hasWarrants && !warrants.info;
 
   return (
     <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true" aria-label="Envanter">
@@ -50,9 +52,14 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </>
         )}
 
-        {hasWarrants && (
+        {(hasWarrants || warrants.info) && (
           <>
             <h3 className={styles.sectionTitle}>Arama İzinleri</h3>
+            {warrants.info && (
+              <p className={styles.sectionHint}>
+                {`İzni ${issuerNames(warrants.info.issuers, scenario)} verir: sorgu ekranındaki “Arama İzni İste” ile mekânı seçerek iste. Kalan hakkın: ${warrants.info.remaining} / ${warrants.info.limit}.`}
+              </p>
+            )}
             <div className={styles.inventoryList}>
               {inventory.activeWarrants.map((w, idx) => (
                 <div key={`active-${idx}`} className={styles.inventoryItem}>

@@ -18,13 +18,15 @@ import NotebookModal from '@/components/CaseModals/NotebookModal';
 import InventoryModal from '@/components/CaseModals/InventoryModal';
 import { api, ApiError } from '@/shared/api/client';
 import { logger } from '@/shared/lib/logger';
-import { ArrowLeft, BookOpen, Briefcase, Compass, Hand, HeartPulse, ListChecks, Lock, MessageSquare, Quote, Scale, Search, Send, Square } from 'lucide-react';
+import { ArrowLeft, BookOpen, Briefcase, Compass, Hand, HeartPulse, ListChecks, Lock, MessageSquare, Quote, Scale, Search, Send, Square, Stamp } from 'lucide-react';
 import { useGameStore, type EvidenceItem } from '@/store/useGameStore';
 import { resolveNpcAlias } from './npcAliases';
 import DialogueHistoryDrawer, { type DialogueMessage } from './components/DialogueHistoryDrawer/DialogueHistoryDrawer';
 import ConfrontModal from './components/ConfrontModal/ConfrontModal';
 import QuoteModal, { type QuoteOption } from './components/QuoteModal/QuoteModal';
 import DialogueConfirmModal from './components/DialogueConfirmModal/DialogueConfirmModal';
+import WarrantModal from './components/WarrantModal/WarrantModal';
+import { issuerNames, useWarrantInfo } from '@/features/warrants/useWarrantInfo';
 import VerdictDossier from '@/components/VerdictDossier/VerdictDossier';
 import { condemnCase, finishCase } from '@/features/verdict/condemnCase';
 import type { VerdictReportInput } from '@/features/verdict/verdictTypes';
@@ -85,6 +87,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     addEvidence,
     hasHydrated,
     crimeScene,
+    difficulty,
   } = useGameStore();
 
   const { actualNpcKey, inferredScenario } = resolveNpcAlias(npcKey);
@@ -145,9 +148,14 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isEvidencePickerOpen, setIsEvidencePickerOpen] = useState(false);
   const [isQuotePickerOpen, setIsQuotePickerOpen] = useState(false);
+  const [isWarrantOpen, setIsWarrantOpen] = useState(false);
   const [fear, setFear] = useState<{ level: number; band: FearBand } | null>(null);
   const abilities = useAbilities(sessionId);
   const teyit = abilities.abilities.find((a) => a.id === 'verify_quote');
+  // Arama izni: kimin verdiği oyuncuya açıkça söylenir; izin yalnızca verenin ekranındaki pencereden istenir
+  const warrants = useWarrantInfo(sessionId);
+  const isWarrantIssuer = warrants.info?.issuers.includes(actualNpcKey) ?? false;
+  const warrantIssuerText = warrants.info ? issuerNames(warrants.info.issuers, scenario) : '';
   const [shownEvidenceIds, setShownEvidenceIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -344,7 +352,7 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
     }
   };
 
-  const sendMessageText = async (textToSend: string) => {
+  const sendMessageText = async (textToSend: string, warrantLocationId?: string) => {
     const trimmed = textToSend.trim();
     const maxLimit = isAdmin ? 999 : 100;
     if (!trimmed || loading || (!isAdmin && dialoguesUsedToday >= maxLimit) || !sessionId) return;
@@ -367,7 +375,9 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         sessionId,
         npcId: currentNpcKey,
         message: trimmed,
+        ...(warrantLocationId ? { warrantLocationId } : {}),
       });
+      if (warrantLocationId) warrants.refresh();
 
       if (data.grantedWarrants && data.grantedWarrants.length > 0) {
         data.grantedWarrants.forEach((w: string) => addWarrant(w));
@@ -772,6 +782,28 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                   />
                 )}
 
+                {!isInvestigating && !isCrimeScene && (
+                  <button
+                    className={styles.utilityBtn}
+                    onClick={() => {
+                      if (isWarrantIssuer) setIsWarrantOpen(true);
+                      else if (warrantIssuerText)
+                        setToast(`${profile.name} arama izni veremez. İzni ${warrantIssuerText} verir.`);
+                    }}
+                    disabled={loading || !warrants.info}
+                    title={
+                      isWarrantIssuer
+                        ? 'Bir mekân için arama izni iste'
+                        : warrantIssuerText
+                        ? `Arama iznini ${warrantIssuerText} verir`
+                        : 'Arama izni'
+                    }
+                  >
+                    <Stamp size={13} />
+                    <span>Arama İzni İste</span>
+                  </button>
+                )}
+
                 {!isInvestigating ? (
                   <button
                     className={`${styles.utilityBtn} ${canInvestigate ? styles.activeUtilityBtn : ''}`}
@@ -779,7 +811,11 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
                       if (canInvestigate) {
                         setIsInvestigating(true);
                       } else {
-                        setToast('Bu mekânı araştırmak için önce arama izni almalısın.');
+                        setToast(
+                          warrantIssuerText
+                            ? `Bu mekânı araştırmak için önce arama izni almalısın. İzni ${warrantIssuerText} verir.`
+                            : 'Bu mekânı araştırmak için önce arama izni almalısın.',
+                        );
                       }
                     }}
                     disabled={loading}
@@ -880,6 +916,21 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
         npcName={profile.name}
         loading={loading}
         onPick={handleVerifyQuote}
+      />
+
+      {/* ─── ARAMA İZNİ ─── */}
+      <WarrantModal
+        isOpen={isWarrantOpen}
+        onClose={() => setIsWarrantOpen(false)}
+        scenario={scenario}
+        difficulty={difficulty || 'easy'}
+        issuerName={profile.name}
+        info={warrants.info}
+        loading={loading}
+        onPick={(locationId, label) => {
+          setIsWarrantOpen(false);
+          void sendMessageText(`${label} için arama izni istiyorum.`, locationId);
+        }}
       />
 
       {/* ─── ONAY MODALI ─── */}

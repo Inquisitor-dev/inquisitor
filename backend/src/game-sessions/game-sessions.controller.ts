@@ -170,6 +170,16 @@ export class GameSessionsController {
     return await this.gameSessionsService.raidAct(sessionId, userId, dto.action);
   }
 
+  // Arama izinleri: izni veren karakterler ve kalan hak
+  @Get(':id/warrants')
+  @UseGuards(JwtAuthGuard)
+  async getWarrants(
+    @CurrentUser('userId') userId: string,
+    @Param('id') sessionId: string,
+  ) {
+    return await this.gameSessionsService.getWarrants(sessionId, userId);
+  }
+
   // Bu sabahın gazetesi: gece olayları ve kasabanın haberleri
   @Get(':id/newspaper')
   @UseGuards(JwtAuthGuard)

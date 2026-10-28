@@ -12,6 +12,7 @@ import {
   linkPromptLines,
   linkStatements,
   mentions,
+  splitCover,
 } from './case-statements';
 import {
   getScenarioConfig,
@@ -33,7 +34,7 @@ const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
     'no visible wound; discoloured lips and fingertips and a strange smell, the signs of poison.',
   STRANGLE: 'dark marks around the neck from something pulled tight.',
 };
-import { isWarrantIssuer, WarrantDecision } from './warrant';
+import { isWarrantIssuer, WarrantDecision, warrantIssuersOf } from './warrant';
 import {
   hasVictimNote,
   victimNoteText,
@@ -206,7 +207,7 @@ export function buildNpcPrompt({
 5. Stay resistant until the very end.${
         culpritCover
           ? `
-6. You have a prepared cover story (YOUR COVER STORY above). In conversation, when asked where you were that night, give only its place and activity, and keep its shameful secret to yourself. You tell the whole cover story only when an instruction at the end says that you break; even then it is a lie, and you NEVER confess the murder.
+6. You have a prepared cover story (YOUR COVER STORY above). In conversation, when asked where you were that night, give only its place and activity. It has a shameful part you tell only when an instruction at the end says that you break; even then it is a lie, and you NEVER confess the murder.
 7. Never name another suspect as the person you were with that night.
 8. Never reveal your real motive or any detail of THE ABSOLUTE TRUTH that is not public (the real reason, the weapon, your meeting with the victim). If you admit any tension with the victim, it is only the one in your cover story.`
           : ''
@@ -330,9 +331,15 @@ THE ABSOLUTE TRUTH OF THE INCIDENT:
 ${truthRevealText}${timeOfDeathLine}
 ${
   culpritCover
-    ? `
+    ? hasConfessed
+      ? `
 YOUR COVER STORY (a lie you prepared; it is not the truth):
 ${culpritCover}
+`
+      : `
+YOUR COVER STORY (a lie you prepared; it is not the truth):
+${splitCover(culpritCover).alibi}
+Until you break, this is all of it: where you were and what you did. Give no reason for it and admit no debt, quarrel or tension with the victim.
 `
     : ''
 }`;
@@ -466,7 +473,7 @@ You saw something important on the night of the murder, but you are too frighten
 
 VERIFYING EVIDENCE YOU KNOW:
 ${caseFacts.verificationText}
-Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
+Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. This is everything you saw: however hard you are pressed or shouted at, you only repeat it, and you never add a detail that is not in it (what the person held or did, their face, a name). If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
       // Suskun Tanık: beklediği kanıt bu cevapta gösterildi. Gemini denemesinde tanık anlattı ama
       // "bu kanıtı bana neden gösteriyorsun" diye şaşırdı
       if (reluctantOpened) {
@@ -499,6 +506,8 @@ Tonight a seer's dream pressed on your conscience. In this reply, even if the In
 
   if (isWarrantIssuer(session.scenarioType, npc.id)) {
     combinedPrompt += warrantInstructions(session, warrantDecision ?? null);
+  } else if (!isNarrator) {
+    combinedPrompt += otherWarrantLine(session.scenarioType, scenarioConfig);
   }
 
   // Şehir dışına çıkacak kişinin programı en sonda ve ayrı: kişiliğindeki "hep buradayım" onu bastırmasın
@@ -550,7 +559,7 @@ function crimeSceneNarratorRule(
     (w) => w.id === weaponId,
   );
   const wound = weapon
-    ? ` If the player lifts the cover, the body shows that the victim died this way: ${WOUND_DESCRIPTIONS[weapon.method]} Describe only this kind of wound; never name the exact weapon or object.`
+    ? ` If the player lifts the cover, the body shows that the victim died this way: ${WOUND_DESCRIPTIONS[weapon.method]} Describe only this kind of wound; never name the exact weapon or object. The hidden clue is a trace the culprit left nearby, not what caused the wound: never describe it as stuck in or touching the body.`
     : ' If the player lifts the cover, describe the body only in line with the absolute truth above.';
   const note = victimNote
     ? ` When the player lifts the cover, a folded note is also found in the victim's pocket. Read it out exactly, word for word: ${victimNote} Say nothing about whom it was written to or what it means.`
@@ -629,6 +638,26 @@ const placeNames = (scenarioType: string, ids: string[]) =>
     .map((id) => `"${getLocalizedLocationLabel(scenarioType, id)}"`)
     .join(', ');
 
+// İzin veremeyen karakter oyuncuyu izni verene yönlendirir. Eskiden kendi kafasından "Einar'a sor" ya da
+// "dilediğin gibi ara" diyordu (Kış vakası, 28 Ekim 2026).
+function otherWarrantLine(
+  scenarioType: string,
+  scenarioConfig: ScenarioConfig,
+): string {
+  const issuers = warrantIssuersOf(scenarioType)
+    .map((id) => {
+      const name = scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name;
+      return name
+        ? `${name} ("${getLocalizedLocationLabel(scenarioType, id)}")`
+        : null;
+    })
+    .filter(Boolean);
+  if (issuers.length === 0) return '';
+  return `
+
+SEARCH WARRANTS: You cannot grant search warrants, and nobody may search your place without one. Only ${issuers.join(' or ')} can grant them. Only if the Inquisitor asks you for a warrant or for permission to search, send them there; never say they may search, and never bring warrants up yourself.`;
+}
+
 // Arama izni veren makamın talimatı: izin kararını kod verir, karakter sadece söyler
 function warrantInstructions(
   session: BuildNpcPromptParams['session'],
@@ -650,7 +679,7 @@ You are the authority who grants search warrants, but the decision is made by th
 
   if (!decision) {
     text += `
-If the Inquisitor asks how many warrants they can still get, tell them the number of warrants left above. If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
+Warrants are never granted or refused in conversation: the Inquisitor must make a formal request ("Arama İzni İste") and choose the place there. If they ask for a warrant in words, tell them to make that formal request; never say they have no warrants left unless the number left above is 0. If they ask how many warrants they can still get, tell them the number of warrants left above. Never claim you granted one.`;
     return text;
   }
 
@@ -661,10 +690,6 @@ DECISION: In this reply you grant the Inquisitor a search warrant for ${placeNam
       if (decision.alreadyHeld.length > 0) {
         text += ` They already had one for ${placeNames(session.scenarioType, decision.alreadyHeld)}.`;
       }
-      break;
-    case 'NO_LOCATION':
-      text += `
-DECISION: The Inquisitor asked for a search warrant but did not name a place. Ask which place they want to search. Do not grant anything yet.`;
       break;
     case 'ALREADY_HELD':
       text += `

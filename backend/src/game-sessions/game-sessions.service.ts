@@ -9,7 +9,12 @@ import {
   normalizeScenarioType,
 } from '../scenarios/scenario-config';
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
-import { shortDayStart, wildcardsOf } from '../scenarios/wildcards';
+import {
+  shortDayStart,
+  warrantLimitOf,
+  wildcardsOf,
+} from '../scenarios/wildcards';
+import { warrantIssuersOf } from '../npcs/warrant';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { buildCaseFacts } from './case-facts';
@@ -541,6 +546,20 @@ export class GameSessionsService {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
     const day = session.currentDay;
     return { day, paper: paperForDay(parsePersonaState(session.personaState), day) };
+  }
+
+  // Arama izinleri: kimin verdiği ve kaç hak kaldığı. İzin vereni oyuncu açıkça görsün diye
+  // (eskiden yanlış kişilerden izin istenip duruluyordu).
+  async getWarrants(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    const limit = warrantLimitOf(session.caseFacts);
+    return {
+      issuers: warrantIssuersOf(session.scenarioType),
+      limit,
+      remaining: Math.max(0, limit - session.warrantsIssued),
+      active: session.activeWarrants,
+      used: session.usedWarrants,
+    };
   }
 
   async getSession(sessionId: string, userId: string) {

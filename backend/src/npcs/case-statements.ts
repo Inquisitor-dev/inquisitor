@@ -187,6 +187,45 @@ export function confessionText(
   return alibi;
 }
 
+// Örtü hikâyesinin ilk cümlesi yer ve iş, kalanı utanılan sır. Senaryo istemi iki cümle ister ama Gemini
+// bazen tek cümle yazıyor, ikisini noktalı virgülle ya da virgülle bağlıyor ("…oturuyordum, kurbanla
+// aramızdaki borç…"); eski hikâyeler de öyle. O zaman ilk noktalı virgülden, yoksa ilk virgülden bölünür.
+export function splitCover(cover: string): { alibi: string; secret: string } {
+  const text = cover.trim();
+  const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text];
+  if (sentences.length > 1) {
+    return {
+      alibi: sentences[0].trim(),
+      secret: sentences.slice(1).join('').trim(),
+    };
+  }
+  const cut = text.includes(';') ? text.indexOf(';') : text.indexOf(',');
+  if (cut === -1) return { alibi: text, secret: '' };
+  return {
+    alibi: `${text.slice(0, cut).trim()}.`,
+    secret: text.slice(cut + 1).trim(),
+  };
+}
+
+// İtirafın mazeretten fazlası, yani kişinin kırılana kadar sakladığı sır: silahı bilmeden verenin ve
+// cesetten eşya alanın eki. Diğerlerinde null. Katilin örtü hikâyesi burada yok: katil istemde sırrı
+// kırılana kadar hiç görmez (prompt-builder). Görüp söylediğinde kaydedilseydi, ilk soruda itirafı düşen
+// kişi katil olurdu (Gemini denemesi, 29 Ekim 2026).
+export function confessionSecret(
+  caseFacts: Partial<CaseFacts> | null,
+  npcId: string,
+  nameOf: (id: string) => string,
+  scenarioType: string,
+): string | null {
+  const own = caseFacts?.involvements?.find((i) => i.npcId === npcId);
+  if (own?.kind !== 'UNWITTING_HELP' && own?.kind !== 'SCAVENGER') return null;
+  const extra = confessionText(caseFacts, npcId, nameOf, scenarioType)
+    .replace(caseFacts?.alibis?.[npcId] ?? '', '')
+    .replace(/^\s*Ayrıca:\s*/, '')
+    .trim();
+  return extra || null;
+}
+
 // NPC istemine giden satırlar: karakterin vakadaki payı koddan gelir; yapay zekânın yazdığı sır
 // unutsa bile ifade ve itiraf vaka gerçekleriyle aynı kalır
 export function linkPromptLines(
@@ -248,15 +287,13 @@ export function linkPromptLines(
       `- That night you and ${nameOf(partnerId)} were together, at the same place doing the same thing. Here is that account (it may be in someone else's words; it is a summary, never a sentence to repeat): ${alibi} Tell it from your own point of view, in your own words, and only when asked about that night.`,
     );
   }
-  if (own?.kind === 'UNWITTING_HELP' || own?.kind === 'SCAVENGER') {
-    const extra = confessionText(
-      caseFacts,
-      npcId,
-      nameOf,
-      scenarioType,
-    ).replace(caseFacts?.alibis?.[npcId] ?? '', '');
+  const secret =
+    own?.kind === 'UNWITTING_HELP' || own?.kind === 'SCAVENGER'
+      ? confessionSecret(caseFacts, npcId, nameOf, scenarioType)
+      : null;
+  if (secret) {
     lines.push(
-      `- You hide this until you break. Never mention it in conversation, whatever the Inquisitor says; only when the instruction at the end says you break, you also say:${extra.replace(/^\s*Ayrıca:/, '')}`,
+      `- You hide this until you break. Never mention it in conversation, whatever the Inquisitor says; only when the instruction at the end says you break, you also say: ${secret}`,
     );
   }
   if (lines.length === 0) return '';

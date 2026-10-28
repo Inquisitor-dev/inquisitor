@@ -196,7 +196,9 @@ export const SCENARIO_CLUES: Record<ScenarioType, ClueDefinition[]> = {
     },
     {
       id: 'avci_ok_ucu',
-      clueText: 'Karın içine saplanmış, yivli avcı yaylarına uygun çentikli kemik bir ok ucu.',
+      // Eskiden "karın içine saplanmış" diyordu: silah ok değilken (ör. deri kayışla boğma) oyuncu kurbanın
+      // okla öldürüldüğünü sandı (Kış vakası, 28 Ekim 2026). Olay yeri izi silahı anlatmamalı.
+      clueText: 'Ayak izlerinin yanında kara düşmüş, kana hiç bulaşmamış çentikli kemik bir ok ucu; birinin sadağından ya da cebinden kaymış.',
       associatedNpcIds: ['farm', 'tavern', 'church', 'mill'],
     },
   ],

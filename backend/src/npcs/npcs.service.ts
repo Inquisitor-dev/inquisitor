@@ -109,6 +109,28 @@ export class NpcsService {
     return { evidence, state };
   }
 
+  // İzin isteğinin geçerli olduğunu kontrol eder; controller bunu kota harcanmadan önce çağırır
+  async assertWarrantRequest(
+    sessionId: string,
+    npcId: string,
+    locationId: string,
+  ) {
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+    });
+    if (!session) throw new NotFoundException('Oturum bulunamadı.');
+    if (!isWarrantIssuer(session.scenarioType, npcId)) {
+      throw new BadRequestException('Bu kişi arama izni veremez.');
+    }
+    const locationIds = getScenarioConfig(
+      session.scenarioType,
+      session.difficulty,
+    ).locationDefinitions.map((location) => location.id);
+    if (locationId === 'crime_scene' || !locationIds.includes(locationId)) {
+      throw new BadRequestException('Bu mekân için arama izni istenemez.');
+    }
+  }
+
   // Yüzleştirme: oyuncu Kanıt Defteri'nden bir kanıtı karaktere gösterir, isterse bir şey de söyler.
   // Kanıtın karakterle ilgisi ve korkuya etkisi kodla belirlenir; karakterin tepkisini yapay zekâ
   // bu karara göre yazar. Kanıtın nereden geldiği de söylenir ki karakter onu kendi mekânına bağlamasın.
@@ -265,6 +287,8 @@ export class NpcsService {
     userMessage: string,
     confrontation?: NpcConfrontation,
     verifiedStatement?: VerifiedStatement,
+    // "Arama İzni İste" penceresinde seçilen mekân
+    warrantLocationId?: string,
   ) {
     const state = await this.loadState(sessionId, npcId);
 
@@ -303,14 +327,6 @@ export class NpcsService {
       crimeSceneIdOf(currentState.session.caseFacts),
     );
     const canonicalNpc = scenarioConfig.npcDefinitions.find((npc) => npc.id === currentState.npc.id);
-    const canonicalLocations = scenarioConfig.locationDefinitions;
-    const canonicalLocationIds = canonicalLocations
-      .filter((location) => location.id !== 'crime_scene')
-      .map((location) => location.id);
-    const localizedLocationList = canonicalLocations.map((location) => ({
-      ...location,
-      localizedName: getLocalizedLocationLabel(currentState.session.scenarioType, location.id),
-    }));
 
     const isNarrator = currentState.npc.id.startsWith('narrator_');
     const narratedLocationId = isNarrator ? currentState.npc.id.replace('narrator_', '') : null;
@@ -388,27 +404,12 @@ export class NpcsService {
     const isInjectionAttempt =
       !isGreetingSignal && !confrontation && looksLikePromptInjection(userMessage);
 
-    // Arama iznini kod verir; izin veren karakter sadece kararı kendi ağzından söyler
+    // Arama iznini kod verir; izin veren karakter sadece kararı kendi ağzından söyler.
+    // Mekân yazıdan çıkarılmaz, izin penceresinde seçilir.
     const warrantDecision: WarrantDecision | null =
-      !isGreetingSignal &&
-      !confrontation &&
-      !isInjectionAttempt &&
-      isWarrantIssuer(currentState.session.scenarioType, currentState.npc.id)
+      warrantLocationId && !isGreetingSignal && !confrontation
         ? decideWarrants({
-            userMessage,
-            locations: localizedLocationList
-              .filter((location) => canonicalLocationIds.includes(location.id))
-              .map((location) => ({
-                id: location.id,
-                localizedName: location.localizedName,
-                // İzni veren kişinin kendi adı geçince kendi mekânı istenmiş sayılmasın
-                ownerName:
-                  location.id === currentState.npc.id
-                    ? undefined
-                    : scenarioConfig.npcDefinitions.find(
-                        (npc) => npc.id === location.id,
-                      )?.name,
-              })),
+            requestedLocationId: warrantLocationId,
             warrantsIssued: currentState.session.warrantsIssued,
             activeWarrants: currentState.session.activeWarrants,
             usedWarrants: currentState.session.usedWarrants,
@@ -669,8 +670,6 @@ function testWarrantNote(
   switch (decision.outcome) {
     case 'GRANTED':
       return `Arama izni verildi: ${decision.granted.map(label).join(', ')}.`;
-    case 'NO_LOCATION':
-      return 'Hangi mekân için izin istiyorsun?';
     case 'ALREADY_HELD':
       return `Bu mekân için iznin zaten var: ${decision.alreadyHeld.map(label).join(', ')}.`;
     case 'LIMIT_REACHED':

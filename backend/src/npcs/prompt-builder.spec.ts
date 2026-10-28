@@ -409,8 +409,10 @@ describe('prompt-builder domain', () => {
         hasConfessed: false,
       });
       expect(calm).toContain('YOUR COVER STORY');
-      expect(calm).toContain(cover);
-      expect(calm).toContain('keep its shameful secret to yourself');
+      // Kırılmadan önce yalnızca yer ve iş: utanılan kısmı istemde yok, ağzından kaçıramaz
+      expect(calm).toContain('Gece boyu kilisede tek başımaydım.');
+      expect(calm).not.toContain('eski bir borç');
+      expect(calm).toContain('Until you break, this is all of it');
       expect(calm).toContain('Never reveal your real motive');
       expect(calm).not.toContain('FEAR BREAK:');
 
