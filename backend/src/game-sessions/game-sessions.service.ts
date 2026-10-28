@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import {
+  getLocalizedLocationLabel,
   getScenarioConfig,
   normalizeScenarioType,
 } from '../scenarios/scenario-config';
@@ -53,6 +54,7 @@ import {
   VerdictReport,
   verdictFactLines,
 } from './verdict/verdict-report';
+import { buildSolutionReport } from './verdict/solution-report';
 
 import { StoryPoolService } from '../stories/story-pool.service';
 import { detentionOf } from '../scenarios/personas/detention';
@@ -813,6 +815,28 @@ export class GameSessionsService {
         narrative: MAX_NARRATIVE_LENGTH,
       },
     };
+  }
+
+  // Sonuç ekranının çözüm yolları; cevabı içerdiği için yalnızca vaka bittikten sonra
+  async getSolution(sessionId: string, userId: string) {
+    const session = await findOwnedSession(this.prisma, sessionId, userId);
+    if (session.status === 'ACTIVE') {
+      throw new BadRequestException('Soruşturma sürerken çözüm gösterilmez.');
+    }
+    const facts = session.caseFacts as unknown as CaseFacts | null;
+    if (!facts) return { paths: [] };
+    const config = getScenarioConfig(session.scenarioType, session.difficulty);
+    const evidence = await this.prisma.evidence.findMany({
+      where: { sessionId, category: { not: 'EVENT' } },
+      select: { kind: true, sourceId: true },
+    });
+    return buildSolutionReport({
+      facts,
+      evidence,
+      nameOf: (id) =>
+        config.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+      placeOf: (id) => getLocalizedLocationLabel(session.scenarioType, id),
+    });
   }
 
   async getEvidence(sessionId: string, userId: string) {
