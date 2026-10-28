@@ -85,13 +85,15 @@ export function packageToReviewInput(pkg: StoryPackage): StoryReviewInput {
  * havuzda kalır ama oyuncuya gelmez, yeniden üretilmeleri gerekir.
  * 1: v2 öncesi vaka · 2: Vaka Motoru v2 · 3: katilin örtü hikâyesi (katil de eşikte kırılır)
  * · 4: v3 personası ve kasaba olayları (planda persona alanı var; sıradan katilde de NONE yazar)
+ * · 5: küçük wildcard'lar (planda wildcards listesi var; wildcard'sız vakada boş liste)
  */
-export const STORY_RULE_VERSION = 4;
+export const STORY_RULE_VERSION = 5;
 
 export function storyRuleVersion(pkg: StoryPackage): number {
   if (!isV2StoryPackage(pkg)) return 1;
   if (!pkg.facts.culpritCover) return 2;
-  return pkg.plan.persona ? 4 : 3;
+  if (!pkg.plan.persona) return 3;
+  return Array.isArray(pkg.plan.wildcards) ? 5 : 4;
 }
 
 /**

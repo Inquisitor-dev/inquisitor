@@ -17,6 +17,8 @@ export interface EvidenceItem {
     | 'ALIBI'
     | 'EVENT'
     | 'LETTER'
+    // Kurbanın Notu wildcard'ı: bedenin üstünden çıkan not (motifi söyler, kimseyi anmaz)
+    | 'NOTE'
     | 'RAID_TRACE';
   category: 'ITEM' | 'STATEMENT' | 'EVENT';
   sourceId: string;

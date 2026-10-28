@@ -16,7 +16,7 @@ const caseFactsOf = (session: { caseFacts: unknown }) =>
   session.caseFacts as Partial<CaseFacts> | null;
 import { appendToNotes, recordEvidence } from '../npcs/evidence-recorder';
 import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
-import { MAX_WARRANTS } from '../npcs/warrant';
+import { warrantLimitOf } from '../scenarios/wildcards';
 import {
   AbilityDef,
   AbilityState,
@@ -243,10 +243,11 @@ export class AbilitiesService {
           );
         }
         // Yetenek ikna konuşmasını atlatır ama izin sınırını aşmaz: çözücü vakayı
-        // MAX_WARRANTS izinle çözülebilir kurar (scenarios/case-graph.ts)
-        if (session.warrantsIssued >= MAX_WARRANTS) {
+        // 2 izinle çözülebilir kurar (scenarios/case-graph.ts); Hevesli Kadı'da sınır 3
+        const warrantLimit = warrantLimitOf(session.caseFacts);
+        if (session.warrantsIssued >= warrantLimit) {
           throw new BadRequestException(
-            `Bu vakadaki ${MAX_WARRANTS} arama iznini de kullandın; iz sürmek yeni izin getirmez.`,
+            `Bu vakadaki ${warrantLimit} arama iznini de kullandın; iz sürmek yeni izin getirmez.`,
           );
         }
         return {

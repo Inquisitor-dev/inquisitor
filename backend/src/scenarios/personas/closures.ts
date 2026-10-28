@@ -3,8 +3,10 @@
 // Kapalı mekâna girilemez, sahibi o gün sorgulanamaz.
 import { detentionOf, effectivePersonaPlan } from './detention';
 import { townEventsOf } from './town-events';
+import { leftWildcardOf } from '../wildcards';
 
-export type ClosureReason = 'AWAY' | 'BREAK_IN' | 'DETAINED';
+// LEFT: sahibi kasabadan temelli ayrıldı (Ayrılan Tanık wildcard'ı)
+export type ClosureReason = 'AWAY' | 'BREAK_IN' | 'DETAINED' | 'LEFT';
 
 export interface Closure {
   locationId: string;
@@ -21,6 +23,10 @@ export function closuresOn(
     if (event.kind === 'AWAY' && event.day === day) {
       closures.push({ locationId: event.npcId, reason: 'AWAY' });
     }
+  }
+  const left = leftWildcardOf(caseFacts);
+  if (left && day >= left.day) {
+    closures.push({ locationId: left.npcId, reason: 'LEFT' });
   }
   const detention = detentionOf(personaState);
   if (detention?.day === day) {

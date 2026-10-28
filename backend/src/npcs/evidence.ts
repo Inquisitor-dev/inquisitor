@@ -1,3 +1,4 @@
+import { hasVictimNote, victimNoteText } from '../scenarios/wildcards';
 import { CaseFacts } from '../scenarios/case-setup';
 import { foldTurkish } from './prompt-guard';
 import {
@@ -26,7 +27,9 @@ export type EvidenceKind =
   // Psikopatın kapının altına bıraktığı mektup; izi katil dahil birkaç kişiye uyar
   | 'LETTER'
   // Baskında kaçan saldırganın kapı önünde düşürdüğü iz (aynı kural)
-  | 'RAID_TRACE';
+  | 'RAID_TRACE'
+  // Kurbanın Notu wildcard'ı: bedenin üstünden çıkan, motifi gösteren ve kimseyi anmayan not
+  | 'NOTE';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
 // EVENT: gece olayının kartı; defterde görünür ama gösterilemez, panoya ve Hüküm Dosyası'na girmez.
@@ -160,6 +163,8 @@ export function evidenceFromTags(params: {
   // Oyuncunun mesajı ve evren: beden incelemesi ve v2 ifadeleri için (isteğe bağlı)
   playerMessage?: string;
   scenarioType?: string;
+  // Suskun Tanık: istenen kanıt henüz gösterilmedi, doğrulayan tanıklık kaydedilmez
+  verificationLocked?: boolean;
 }): EvidenceDraft[] {
   const { tags, npcId, locationId, culpritId, caseFacts, locationClues } =
     params;
@@ -194,6 +199,18 @@ export function evidenceFromTags(params: {
         sourceId: 'crime_scene',
         text: finding,
       });
+      // Kurbanın notu bedenle birlikte bulunur (anlatıcı örtüyü kaldırınca söyler)
+      const note = hasVictimNote(caseFacts)
+        ? victimNoteText(caseFacts?.motive)
+        : null;
+      if (note) {
+        drafts.push({
+          kind: 'NOTE',
+          category: 'ITEM',
+          sourceId: 'victim',
+          text: `Kurbanın cebinden çıkan katlanmış not: ${note}`,
+        });
+      }
     }
   }
 
@@ -234,6 +251,7 @@ export function evidenceFromTags(params: {
     }
     // Tanıklıkla gelen doğrulayan kanıt sadece o tanıktan alınabilir
     const isWitness =
+      !params.verificationLocked &&
       placement?.type === 'TESTIMONY' &&
       placement.npcId === npcId &&
       !!caseFacts?.verificationText;

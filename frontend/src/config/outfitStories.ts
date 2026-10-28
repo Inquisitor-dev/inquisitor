@@ -175,7 +175,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
         usage: 'Günde 1 kez',
         rules: [
           'Henüz aranmamış bir mekân seçmelisin.',
-          'Bu izin de vakadaki 2 arama izni sınırına sayılır; sınır dolduysa kullanılamaz.',
+          'Bu izin de vakadaki arama izni sınırına (çoğu vakada 2) sayılır; sınır dolduysa kullanılamaz.',
           'İzin kazanmak için yapılan diyaloğu atlamanı sağlar.',
         ],
       },

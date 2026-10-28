@@ -8,6 +8,8 @@ import { reasonsFor, type TownEvent } from '../scenarios/personas/town-events';
 import { newspaperTextsFor } from './newspaper-texts';
 import type { RaidOutcome, RaidState } from './raid-engine';
 import type { Detention } from '../scenarios/personas/detention';
+import type { WildcardPlan } from '../scenarios/wildcards';
+import { wildcardNightCards, wildcardNotices } from './wildcard-texts';
 
 export interface NewspaperItem {
   // MURDER: ilk sabahın cinayet haberi; PERSONA: katilin hamlesi; NOTICE: kasaba olayının duyurusu
@@ -64,6 +66,8 @@ export interface NightRecordDraft {
 export interface NightPlan {
   persona: PersonaPlan;
   townEvents: TownEvent[];
+  // Küçük wildcard'lar: duyuruları gazeteye, söylenti kartı deftere düşer
+  wildcards?: WildcardPlan[];
   letter?: { text: string; trace: string };
   // Baskının sonucu ve kapı önünde kalan izin metni (iyi sonuçta)
   raid?: { outcome: RaidRecordOutcome; trace: string };
@@ -193,6 +197,7 @@ export function firstMorningPaper(
   victim: string,
   crimeScene: string,
   townEvents: TownEvent[] = [],
+  wildcards: WildcardPlan[] = [],
 ): Newspaper {
   const texts = newspaperTextsFor(ctx.scenarioType);
   return {
@@ -201,6 +206,7 @@ export function firstMorningPaper(
     items: [
       { kind: 'MURDER', ...texts.murder(victim, crimeScene) },
       ...townNotices(townEvents, 1, ctx),
+      ...wildcardNotices({ wildcards }, 1, ctx),
       ...townItems(ctx, 1, 1, new Set()),
     ],
   };
@@ -365,8 +371,14 @@ export function processNight(
       .filter((i): i is NewspaperItem => !!i),
     ...detentionNotice(state, night, ctx),
     ...townNotices(plan.townEvents, day, ctx),
+    ...wildcardNotices({ wildcards: plan.wildcards }, day, ctx),
   ];
   const paper = paperFor(day, lead, state, ctx);
+  const wildcardCards: NightRecordDraft[] = wildcardNightCards(
+    { wildcards: plan.wildcards },
+    night,
+    ctx,
+  ).map((card) => ({ kind: 'EVENT', category: 'EVENT', ...card }));
   return {
     state: {
       ...state,
@@ -375,7 +387,10 @@ export function processNight(
       papers: [...state.papers.filter((p) => p.day !== paper.day), paper],
     },
     happened,
-    records: happened.flatMap((e) => nightRecords(e, night, plan, ctx)),
+    records: [
+      ...happened.flatMap((e) => nightRecords(e, night, plan, ctx)),
+      ...wildcardCards,
+    ],
   };
 }
 
