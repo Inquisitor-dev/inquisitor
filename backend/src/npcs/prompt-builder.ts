@@ -6,7 +6,7 @@ import {
   fearThresholdOf,
   EvidenceImpact,
 } from './fear';
-import { EVIDENCE_TAG } from './evidence';
+import { EVIDENCE_TAG, withoutTestimonySentences } from './evidence';
 import {
   confessionText,
   linkPromptLines,
@@ -120,6 +120,8 @@ export interface BuildNpcPromptParams {
   verifiedStatement?: VerifiedStatement;
   // Suskun Tanık: istenen kanıt (olay yeri izi ya da beden) henüz gösterilmedi; tanık gördüğünü anlatmaz
   reluctantLock?: 'CRIME_SCENE' | 'BODY';
+  // Suskun Tanık: beklediği kanıt tam bu cevapta gösterildi
+  reluctantOpened?: boolean;
 }
 
 export interface VerifiedStatement {
@@ -149,6 +151,7 @@ export function buildNpcPrompt({
   dreamActive = false,
   verifiedStatement,
   reluctantLock,
+  reluctantOpened = false,
 }: BuildNpcPromptParams): string {
   const canonicalNpc = scenarioConfig.npcDefinitions.find(
     (n) => n.id === npc.id,
@@ -175,7 +178,16 @@ export function buildNpcPrompt({
 
   const scenarioText = session.scenario ?? '';
   const truthRevealText = session.truthReveal ?? '';
-  const dynamicPromptText = dynamicPrompt ?? '';
+  const witnessFacts = session.caseFacts as Partial<CaseFacts> | null;
+  // Suskun Tanık: kilit açılmadan rol metnindeki tanıklık cümleleri de istemden düşer
+  const dynamicPromptText =
+    reluctantLock && dynamicPrompt && witnessFacts?.verificationText
+      ? withoutTestimonySentences(
+          dynamicPrompt,
+          witnessFacts.verificationText,
+          [canonicalNpc?.name ?? npc.name],
+        )
+      : (dynamicPrompt ?? '');
   const isCulprit = !!session.culpritId && session.culpritId === npc.id;
   // Tamamen masumun sırrı yoktur: "senin de bir sırrın olabilir" denince baskı altında suç uyduruyordu
   const ownInvolvement = (
@@ -384,9 +396,12 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
       const namesYou =
         confrontation.impact === 'IRRELEVANT' &&
         mentions(confrontation.evidenceText, canonicalNpc?.name ?? npc.name);
-      const impactLine = namesYou
-        ? 'This evidence mentions you but does not make you look guilty. Explain it truthfully from what you know (your whereabouts and your part in the case); never deny the parts of it that match your own account. It does not frighten you.'
-        : impactText[confrontation.impact];
+      // Suskun Tanık: "neden bana gösteriyorsun" diye inkâr etmesin, beklediği kanıt budur
+      const impactLine = reluctantOpened
+        ? 'This is the evidence you said you had to see before you could speak. It does not make you look guilty; seeing it gives you the courage to talk.'
+        : namesYou
+          ? 'This evidence mentions you but does not make you look guilty. Explain it truthfully from what you know (your whereabouts and your part in the case); never deny the parts of it that match your own account. It does not frighten you.'
+          : impactText[confrontation.impact];
 
       combinedPrompt += `
 
@@ -408,7 +423,7 @@ React to the evidence in character.`;
 
       if (!isCulprit && !hasConfessed && !forcedConfession) {
         combinedPrompt += `
-This evidence alone does NOT break you. Do NOT confess your personal secret in this reply: deny, deflect or explain it away, letting your fear show.`;
+This evidence alone does NOT break you. Do NOT confess your personal secret in this reply${reluctantOpened ? '; but you do tell what you saw that night, as written below' : ': deny, deflect or explain it away, letting your fear show'}.`;
       }
     }
 
@@ -441,7 +456,7 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
       combinedPrompt += `
 
 WHAT YOU SAW THAT NIGHT:
-You saw something important on the night of the murder, but you are too frightened to talk about it. You do not tell what you saw, not even a hint of it, whatever the Inquisitor says. If they ask about that night, you grow visibly nervous, avoid the subject and say you could only speak if they showed you ${reluctantLock === 'BODY' ? 'what the body itself shows, the findings under the cover' : 'what they found at the crime scene'}. Never invent anything you saw.`;
+You saw something important on the night of the murder, but you are too frightened to talk about it. You do not tell what you saw, not even a hint of it, whatever the Inquisitor says. Never claim you saw nothing: you only say you cannot talk about it yet. If they ask about that night, you grow visibly nervous, avoid the subject and say you could only speak if they showed you ${reluctantLock === 'BODY' ? 'what the body itself shows, the findings under the cover' : 'what they found at the crime scene'}. Never invent anything you saw.`;
     } else if (
       placement?.type === 'TESTIMONY' &&
       placement.npcId === npc.id &&
@@ -452,6 +467,12 @@ You saw something important on the night of the murder, but you are too frighten
 VERIFYING EVIDENCE YOU KNOW:
 ${caseFacts.verificationText}
 Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
+      // Suskun Tanık: beklediği kanıt bu cevapta gösterildi. Gemini denemesinde tanık anlattı ama
+      // "bu kanıtı bana neden gösteriyorsun" diye şaşırdı
+      if (reluctantOpened) {
+        combinedPrompt += `
+The evidence just shown to you is exactly what you were waiting for before you could speak. In this reply you overcome your fear and, in your own words, tell what you saw (the VERIFYING EVIDENCE above). Never act surprised that you were shown it.`;
+      }
     }
     if (
       dreamActive &&
@@ -629,7 +650,7 @@ You are the authority who grants search warrants, but the decision is made by th
 
   if (!decision) {
     text += `
-If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
+If the Inquisitor asks how many warrants they can still get, tell them the number of warrants left above. If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
     return text;
   }
 

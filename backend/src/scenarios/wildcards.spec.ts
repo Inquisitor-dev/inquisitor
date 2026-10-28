@@ -30,7 +30,11 @@ import {
   wildcardPromptLines,
 } from '../personas/wildcard-texts';
 import { decideWarrants } from '../npcs/warrant';
-import { evidenceFromTags, EVIDENCE_TAG } from '../npcs/evidence';
+import {
+  evidenceFromTags,
+  EVIDENCE_TAG,
+  withoutTestimonySentences,
+} from '../npcs/evidence';
 import { buildNpcPrompt } from '../npcs/prompt-builder';
 
 const SCENARIOS = ['medieval', 'modern', 'cyberpunk', 'china', 'winter'];
@@ -334,6 +338,27 @@ describe('wildcard kuralları', () => {
   });
 });
 
+describe('suskun tanığın rol metni', () => {
+  it('kilit açılmadan tanıklığı anlatan cümle ve ona dönen talimat düşer (Gemini denemesi)', () => {
+    const role =
+      "Peder Malachar olarak, köyün manevi rehberisiniz. Cinayet gecesi biri gizlice İhtiyar Silas'ın kulübesinden bir şeyler alırken gördünüz ancak karanlıkta kim olduğunu tanımadınız. Sinyal verildiğinde veya bu gece sorulduğunda bu bilgiyi paylaşırsınız.";
+    const testimony =
+      "Peder Malachar, cinayet gecesi karanlık bir silüetin İhtiyar Silas'ın kulübesinden bu eşyayı aldığını gördüğünü ancak yüzünü seçemediğini belirtmektedir.";
+    expect(withoutTestimonySentences(role, testimony, ['Peder Malachar'])).toBe(
+      'Peder Malachar olarak, köyün manevi rehberisiniz.',
+    );
+  });
+
+  it('tanıklıkla ilgisi olmayan cümleler kalır', () => {
+    const role = 'Değirmenin sahibisiniz. Un çuvallarını sayarsınız.';
+    expect(
+      withoutTestimonySentences(role, 'Kilisenin önünde bir fener gördüm.', [
+        'Giles',
+      ]),
+    ).toBe(role);
+  });
+});
+
 describe('wildcard kanıtları', () => {
   const facts = {
     culpritId: 'church',
@@ -421,6 +446,7 @@ describe('wildcard kanıtları', () => {
     expect(locked).not.toContain(facts.verificationText);
     expect(locked).toContain('WHAT YOU SAW THAT NIGHT');
     expect(locked).toContain('findings under the cover');
+    expect(locked).toContain('Never claim you saw nothing');
     expect(prompt()).toContain(facts.verificationText);
   });
 });

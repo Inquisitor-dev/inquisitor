@@ -119,7 +119,28 @@ Kaynak: 26 Ekim 2026 Yol Haritası raporu. Vaka Motoru v2'nin 5. adımıdır ve 
 - **Kurbanın Notu:** beden incelenince envantere düşüyor, wildcard'sız vakada düşmüyor.
 - **Hevesli Kadı ve Kısa Gün:** izin sınırı 3, çözücü 2 izinle kuruyor; gazete duyuruyor; kısa günde sabah 2. dilimden başlıyor.
 
-Gemini denemesi henüz yapılmadı; kota harcanmadan önce sorulacak.
+- **Suskun Tanık'ın rol metni:** kilit varken tanıklığı anlatan rol cümleleri düşüyor (`withoutTestimonySentences`), gerçek Gemini rol metniyle sınandı.
+
+### Gemini denemesi (28 Ekim 2026)
+
+Zor bir Ashenmoor vakası gerçek Gemini ile üç gün oynandı. Altı wildcard'ı tek vakada görmek için yerel veritabanındaki plana hepsi elle eklendi; oyunda bir vakaya en çok bir tane düşer. Bulunan ve düzeltilenler:
+
+- **Suskun tanık ilk soruda gördüğünü anlattı.** Tanıklık metni istemde yoktu, ama Gemini'nin vaka başında yazdığı rol metni de tanıklığı içeriyordu ("biri kulübeden bir şey alırken gördünüz; sorulduğunda paylaşırsınız"). Kod bu cevabı kaydetmedi ama oyuncu duymuştu. Artık kilit varken rol metninden tanıklıkla en az üç kök paylaşan cümleler ve onlara dönen talimat ("bu bilgiyi…") düşüyor.
+- **Tanık önce "hiçbir şey görmedim" dedi,** kanıtı görünce anlattı. Artık "hiçbir şey görmedim deme, yalnızca henüz konuşamayacağını söyle" deniyor.
+- **Beklediği kanıt gösterilince tanık "bunu bana neden gösteriyorsun" diye şaşırdı.** Yüzleştirmedeki "inkâr et, geçiştir" talimatı ağır basıyordu. Artık kanıt tam o cevapta gösterildiyse (`reluctantOpened`) "beklediğin kanıt bu, şimdi anlat" deniyor; tanık "şimdi konuşma vaktidir" diyerek anlattı.
+- **"Ne konuşuluyor?" sorusunda kasabalılar yalnızca cinayeti anlattı.** Ayrılan Tanık ve Kısa Gün'ü anmadılar; "konu açılırsa söyleyebilirsin" yetmedi (v3 §8'deki gazete haberiyle aynı sorun). Artık "önce cinayeti anlat, sonra bunu da söyle" deniyor.
+- **Değirmenci "yarın öbür gün" dedi.** İstem iki kelimeyi birden veriyordu; artık o günün kelimesi tek başına veriliyor.
+- **Ayrıldıktan sonra hancı "döndü" yerine "dönecek" dedi.** Gerekçe plan kipinde yazılı; artık örnekle geçmiş zamana çevirmesi isteniyor ("dönecek" → "döndü").
+- **Söylentinin hedefi bir gerekçe uyduruyordu.** Bu vakada hedef katildi ve gerekçe örtü hikâyesinden geldi; bu doğru. Ama "küçük bir meseleydi diye geçiştir" satırı masum bir hedefi de neden uydurmaya itebilirdi. Artık "dedikodu deyip geç, hiçbir gerekçe ya da ayrıntı verme" deniyor.
+- **İzin veren makam kalan izin sayısını söylemedi.** Bu eskiden de böyleydi ama üçüncü izin sayısı artık önemli; sorulursa sayıyı söylüyor.
+
+**Doğru çalışanlar**
+- İlk sabahın gazetesi Kısa Gün'ü ve Hevesli Kadı'yı duyurdu.
+- Anlatıcı kurbanın notunu kelimesi kelimesine okudu; not ve beden envantere düştü.
+- Üçüncü arama izni verildi.
+- Kısa günde gün 2. dilimden başladı.
+- 2. sabah söylenti kartı deftere düştü; kasabalılar söylentiyi "fısıldananlar" diye aktardı, kendileri görmüş gibi anlatmadı.
+- 3. gün çiftlik `LEFT` nedeniyle kapandı ve ayrılan kişiyle konuşma reddedildi.
 
 ## 4. Ertelenen: vaka kırılmaları
 

@@ -360,20 +360,28 @@ export class NpcsService {
     // Suskun Tanık: istenen kanıt (olay yeri izi ya da beden) kendisine gösterilmeden doğrulayan
     // tanıklığını anlatmaz; Rüya Tabiri onu da konuşturur
     const reluctant = reluctantOf(caseFacts);
+    const awaited =
+      reluctant && reluctant.npcId === currentState.npc.id
+        ? await this.prisma.evidence.findFirst({
+            where: {
+              sessionId,
+              id: { in: currentState.shownEvidenceIds },
+              kind: reluctant.requires === 'BODY' ? 'BODY' : 'CLUE',
+              sourceId: 'crime_scene',
+            },
+          })
+        : null;
     const reluctantLock =
       reluctant &&
       reluctant.npcId === currentState.npc.id &&
       !dreamActive &&
-      !(await this.prisma.evidence.findFirst({
-        where: {
-          sessionId,
-          id: { in: currentState.shownEvidenceIds },
-          kind: reluctant.requires === 'BODY' ? 'BODY' : 'CLUE',
-          sourceId: 'crime_scene',
-        },
-      }))
+      !awaited
         ? reluctant.requires
         : undefined;
+    // Beklediği kanıt tam şimdi gösterildi (yüzleştirmede son gösterilen kanıt odur)
+    const lastShown = currentState.shownEvidenceIds.at(-1);
+    const reluctantOpened =
+      !!awaited && !!confrontation && lastShown === awaited.id;
 
     const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
     // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
@@ -432,6 +440,7 @@ export class NpcsService {
       dreamActive,
       verifiedStatement,
       reluctantLock,
+      reluctantOpened,
     });
 
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);

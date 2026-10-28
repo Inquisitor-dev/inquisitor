@@ -94,6 +94,11 @@ export function wildcardNightCards(
   ];
 }
 
+// Gemini denemesinde (28 Ekim 2026) "kasabada ne konuşuluyor" sorusuna hancı ve mezarcı yalnızca cinayeti
+// anlattı; "konu açılırsa söyleyebilirsin" satırı yetmedi
+const NEWS_RULE =
+  'If the Inquisitor asks what is new or what people are talking about, tell the murder first and then mention this too';
+
 const when = (diff: number) =>
   diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : 'the day after tomorrow';
 
@@ -112,8 +117,8 @@ export function wildcardPromptLines(
     const place = ctx.placeName(left.npcId);
     lines.push(
       day < left.day
-        ? `- Word in town: ${name} is leaving town for good ${when(left.day - day)} morning (in Turkish: "${reason}"), so "${place}" will be closed after that. You may mention it if it comes up (say "yarın" or "öbür gün", never a day number).`
-        : `- ${name} has left town for good (in Turkish: "${reason}"; say it in the past tense); "${place}" is closed. You may mention it if it comes up.`,
+        ? `- Word in town: ${name} is leaving town for good ${when(left.day - day)} morning (in Turkish: "${reason}"), so "${place}" will be closed after that. ${NEWS_RULE} (say "${left.day - day === 1 ? 'yarın' : 'öbür gün'}", never a day number).`
+        : `- ${name} has left town for good (in Turkish, written as a plan: "${reason}"; it has happened now, so turn it into the past tense, e.g. "dönecek" → "döndü", "gidecek" → "gitti"); "${place}" is closed. ${NEWS_RULE}.`,
     );
   }
   const short = shortDayOf(caseFacts);
@@ -121,8 +126,8 @@ export function wildcardPromptLines(
     const reason = shortDayReason(ctx.scenarioType, short.reasonIndex);
     lines.push(
       day === short.day
-        ? `- This morning the whole town was busy (in Turkish: "${reason}"); places opened again around noon. You may mention it if it comes up.`
-        : `- Everyone in town knows: ${when(short.day - day)} morning (in Turkish: "${reason}"), places stay closed until noon. You may mention it if it comes up (never a day number).`,
+        ? `- This morning the whole town was busy (in Turkish: "${reason}"); places opened again around noon. ${NEWS_RULE}.`
+        : `- Everyone in town knows: ${when(short.day - day)} morning (in Turkish: "${reason}"), places stay closed until noon. ${NEWS_RULE} (say "${short.day - day === 1 ? 'yarın' : 'öbür gün'}", never a day number).`,
     );
   }
   const rumor = rumorOf(caseFacts);
@@ -131,7 +136,7 @@ export function wildcardPromptLines(
     // Hedefin satırı katilde de masumda da aynıdır: söylentiye verilen tepki kimseyi ayırmaz
     lines.push(
       rumor.npcId === npcId
-        ? `- A rumor about you is going around town (in Turkish: "${text}"). It is exaggerated gossip. If asked, react with annoyance and explain it away briefly as a small, ordinary matter; never invent new details about the victim for it.`
+        ? `- A rumor about you is going around town (in Turkish: "${text}"). It is exaggerated gossip. If asked, react with annoyance and wave it away as gossip in one or two sentences. Give no reason, cause or detail for it (no debt, no deal, no argument topic): you never invent anything about the victim or that evening for it.`
         : `- Gossip going around town (unverified; in Turkish: "${text}"). You do not know whether it is true. If asked what people are talking about, you may pass it on as gossip, never as something you saw yourself.`,
     );
   }

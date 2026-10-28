@@ -148,6 +148,37 @@ export function sharesTestimony(params: {
   return matched >= Math.min(TESTIMONY_MIN_SHARED_STEMS, expected.length);
 }
 
+// Suskun Tanık: tanığın yapay zekâ yazımı rol metni gördüğünü de anlatıyor ("biri kulübeden bir şey
+// alırken gördünüz"); kilit açılmadan bu cümleler istemden düşer. Gemini denemesinde (28 Ekim 2026)
+// tanıklık metni istemde yokken tanık rol metnindeki bu cümleyi ilk soruda anlattı.
+const SENTENCE_MIN_SHARED_STEMS = 3;
+
+export function withoutTestimonySentences(
+  text: string,
+  verificationText: string,
+  names: string[],
+): string {
+  const nameStems = stems(names.join(' '));
+  const expected = [...stems(verificationText)].filter(
+    (stem) => !nameStems.has(stem) && !COMMON_STEMS.has(stem),
+  );
+  if (expected.length === 0) return text;
+  const sentences = text.match(/[^.!?]+[.!?]*\s*/g) ?? [text];
+  let dropped = false;
+  const kept = sentences.filter((sentence) => {
+    const said = stems(sentence);
+    const shared = expected.filter((stem) => said.has(stem)).length;
+    const tellsIt =
+      shared >= Math.min(SENTENCE_MIN_SHARED_STEMS, expected.length);
+    // Düşen cümleye dönen talimat da düşer ("bu bilgiyi paylaşırsınız")
+    const pointsBack =
+      dropped && /\bbu (bilgi|gordu|sahne)/.test(foldTurkish(sentence));
+    if (tellsIt) dropped = true;
+    return !tellsIt && !pointsBack;
+  });
+  return kept.join('').trim();
+}
+
 export function evidenceFromTags(params: {
   tags: Set<string>;
   // Konuşan karakterin id'si; anlatıcıda null
