@@ -202,6 +202,8 @@ export interface AbilityState {
   thoughts?: { day: number; count: number };
   // Rüya Tabiri (Kar Kâhini): etkinin geçerli olduğu gün
   dreamDay?: number;
+  // Muhbir (Şehir Dedektifi): söylediği mekânlar; aynı yeri tekrar söylemesin
+  informantNamed?: string[];
 }
 
 // Vakanın son günü; İkinci Nefes son günde kullanıldıysa 5
@@ -263,6 +265,12 @@ export function parseAbilityState(value: unknown): AbilityState {
     state.thoughts = { day: thoughts!.day, count: thoughts!.count };
   }
   if (Number.isInteger(raw.dreamDay)) state.dreamDay = raw.dreamDay as number;
+  if (
+    Array.isArray(raw.informantNamed) &&
+    raw.informantNamed.every((id) => typeof id === 'string')
+  ) {
+    state.informantNamed = raw.informantNamed;
+  }
   return state;
 }
 

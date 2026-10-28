@@ -20,6 +20,7 @@ import { useScenePan } from './useScenePan';
 import { useAmbientParticles } from './useAmbientParticles';
 import { Check, MapPin, NotebookPen } from 'lucide-react';
 import HotspotGlyph, { isSearchSpot } from './HotspotGlyph';
+import { issuerNames, useWarrantInfo } from '@/features/warrants/useWarrantInfo';
 
 interface InteriorViewerProps {
   locationId: string;
@@ -91,6 +92,7 @@ function InteriorScene({
 }) {
   const router = useRouter();
   const { sessionId, notes, setNotes, inventory, scenarioType, timeOfDay, currentDay } = useGameStore();
+  const warrants = useWarrantInfo(sessionId);
 
   // Mekân görseli yüklenene kadar geçiş ekranı kalır
   useLayoutEffect(() => {
@@ -359,7 +361,11 @@ function InteriorScene({
                   <div className={styles.clueText}>
                     {hasWarrant
                       ? 'Bu mekânı araştırabilirsin. Neyi, nerede aradığını anlat; bulduğun kanıt Envanter’ine düşer.'
-                      : 'Burayı araştırmak için önce bu mekân için arama izni almalısın.'}
+                      : `Burayı araştırmak için önce bu mekân için arama izni almalısın.${
+                          warrants.info?.issuers.length
+                            ? ` İzni ${issuerNames(warrants.info.issuers, scenarioType || 'medieval')} verir; sorgu ekranındaki "Arama İzni İste" ile iste.`
+                            : ''
+                        }`}
                   </div>
                 </div>
               )}

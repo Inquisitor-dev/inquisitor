@@ -110,7 +110,7 @@ function caseDetailsLines(
     const clueAtCulprit =
       placement.type === 'LOCATION' && placement.locationId === plan.culpritId;
     lines.push(
-      `- CULPRIT'S COVER STORY: Return "culpritCover": what ${who(plan.culpritId)} tells when the Inquisitor finally breaks them, a prepared lie in one or two Turkish sentences, in the first person. (1) Where they claim they were at the time of death: alone at their own place (${ownPlace}), doing something ordinary; never with any other suspect and never at the murder location. (2) A small shameful secret that explains why they hid it (both parts are required): ${clueAtCulprit ? 'a quarrel, a debt or a hidden deal with the victim' : 'it innocently explains their own location clue (the motive clue), for example a debt, a quarrel or a hidden deal with the victim'}. It never mentions the murder, the weapon, blood, the crime scene or another suspect. truthReveal says this story is a lie. The culprit's npcPrompt does not mention confessing or breaking.`,
+      `- CULPRIT'S COVER STORY: Return "culpritCover": what ${who(plan.culpritId)} tells when the Inquisitor finally breaks them, a prepared lie in exactly two Turkish sentences, in the first person: the first sentence is only (1), the second only (2), because the culprit is shown only the first one at the start of the interrogation. (1) Where they claim they were at the time of death: alone at their own place (${ownPlace}), doing something ordinary; never with any other suspect and never at the murder location. (2) A small shameful secret that explains why they hid it (both parts are required): ${clueAtCulprit ? 'a quarrel, a debt or a hidden deal with the victim' : 'it innocently explains their own location clue (the motive clue), for example a debt, a quarrel or a hidden deal with the victim'}. It never mentions the murder, the weapon, blood, the crime scene or another suspect. truthReveal says this story is a lie. The culprit's npcPrompt does not mention confessing or breaking.`,
     );
   }
   const witnessId = placement.type === 'TESTIMONY' ? placement.npcId : null;
@@ -273,7 +273,7 @@ Return a valid JSON object ONLY, in exactly this format:
       : ''
   }${
     plan.motive
-      ? '\n  "culpritCover": "The culprit\'s prepared lie, one or two Turkish sentences, first person",'
+      ? '\n  "culpritCover": "The culprit\'s prepared lie, exactly two Turkish sentences (where they were; the shameful secret), first person",'
       : ''
   }${
     plan.persona?.events.some((e) => e.kind === 'THREAT_LETTER')

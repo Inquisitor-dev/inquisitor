@@ -170,14 +170,17 @@ describe('NpcsService — prompt korumaları', () => {
 });
 
 describe('NpcsService — arama izni', () => {
-  it.each([
-    'Değirmeni aramak için arama izni ver',
-    'degirmeni aramak icin arama izni ver',
-    'Değirmeni araştırabilir miyim?',
-  ])('Türkçe karakterden bağımsız tanır: %s', async (message) => {
-    // Ortaçağda izni kilisedeki NPC verir; test modu LLM çağırmadan izin etiketi üretir
+  it('test modunda seçilen mekân için izin verir', async () => {
+    // Ortaçağda izni kilisedeki NPC verir; test modu LLM çağırmaz
     const { service } = setup(undefined, true, 'church');
-    const result = await service.interact('session-1', 'church', message);
+    const result = await service.interact(
+      'session-1',
+      'church',
+      'Değirmen için arama izni istiyorum.',
+      undefined,
+      undefined,
+      'mill',
+    );
     expect(result.grantedWarrants).toEqual(['mill']);
   });
 });
@@ -528,7 +531,7 @@ describe('NpcsService — yüzleştirme ve korku', () => {
 });
 
 describe('NpcsService — arama iznini kod verir', () => {
-  it('yapay zekâ etiket yazmasa da açık istek ve mekân adıyla izin verilir', async () => {
+  it('izin penceresinde seçilen mekân için izin verilir', async () => {
     const { service, generateNpcResponse } = setup(
       '*Homurdanır* Peki, değirmeni ara bakalım.',
       false,
@@ -537,7 +540,10 @@ describe('NpcsService — arama iznini kod verir', () => {
     const result = await service.interact(
       'session-1',
       'church',
-      'Değirmeni aramak için arama izni ver',
+      'Değirmen için arama izni istiyorum.',
+      undefined,
+      undefined,
+      'mill',
     );
     expect(result.grantedWarrants).toEqual(['mill']);
     const prompt = generateNpcResponse.mock.calls[0][1];
@@ -559,20 +565,32 @@ describe('NpcsService — arama iznini kod verir', () => {
     expect(result.reply).not.toContain('GRANT_WARRANT');
   });
 
-  it('mekân söylenmezse izin verilmez, karakter hangi mekân olduğunu sorar', async () => {
+  it('yazıyla istenen izin verilmez, karakter resmî talebe yönlendirir', async () => {
     const { service, generateNpcResponse } = setup(
-      'Hangi yer?',
+      'Talebini usulünce yap.',
       false,
       'church',
     );
     const result = await service.interact(
       'session-1',
       'church',
-      'Bana bir arama izni verir misin?',
+      'Değirmeni aramak için arama izni ver',
     );
     expect(result.grantedWarrants).toEqual([]);
     expect(generateNpcResponse.mock.calls[0][1]).toContain(
-      'did not name a place',
+      'must make a formal request',
+    );
+  });
+
+  it('izin veremeyen karakter oyuncuyu izni verene yönlendirir', async () => {
+    const { service, generateNpcResponse } = setup(
+      'Bana sorma.',
+      false,
+      'tavern',
+    );
+    await service.interact('session-1', 'tavern', 'Arama izni ver');
+    expect(generateNpcResponse.mock.calls[0][1]).toContain(
+      'You cannot grant search warrants',
     );
   });
 });

@@ -16,6 +16,11 @@ export class InteractDto {
     message: `Mesaj en fazla ${MAX_PLAYER_MESSAGE_LENGTH} karakter olabilir.`,
   })
   message: string;
+
+  // "Arama İzni İste" penceresinde seçilen mekân; yalnızca izin veren karaktere gönderilir
+  @IsOptional()
+  @IsString()
+  warrantLocationId?: string;
 }
 
 export class ConfrontDto {

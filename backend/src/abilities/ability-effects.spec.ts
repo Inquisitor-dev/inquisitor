@@ -105,6 +105,20 @@ describe('Muhbir', () => {
     expect(pick(['mill', 'tavern'], 0)).toBe('church');
     expect(pick(['mill', 'tavern', 'church'], 0)).toBeNull();
   });
+
+  it('daha önce söylediği yeri, söylenmemiş yer kaldıkça tekrar söylemez', () => {
+    const named = (list: string[], roll: number) =>
+      informantLocation({
+        locationIds,
+        searched: new Set(),
+        named: list,
+        rng: () => roll,
+      });
+    expect(named(['tavern'], 0)).toBe('mill');
+    expect(named(['tavern', 'mill'], 0)).toBe('church');
+    // Hepsi söylendiyse aranmamışlardan biri yine söylenir
+    expect(named(['tavern', 'mill', 'church'], 0)).toBe('tavern');
+  });
 });
 
 describe('Derin Tefekkür', () => {

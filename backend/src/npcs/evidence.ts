@@ -4,6 +4,7 @@ import { foldTurkish } from './prompt-guard';
 import {
   asksAboutBody,
   bodyFindingText,
+  confessionSecret,
   confessionText,
   linkStatements,
 } from './case-statements';
@@ -148,6 +149,27 @@ export function sharesTestimony(params: {
   return matched >= Math.min(TESTIMONY_MIN_SHARED_STEMS, expected.length);
 }
 
+// Kırılmadan söylenen sır: model "kırılana kadar sakla" talimatına rağmen sırrı eşiğin altında
+// söyleyebiliyor (Kış vakası, 28 Ekim 2026: Bjorn kayışı Torstein'a verdiğini, Torstein örtü
+// hikâyesinin tamamını anlattı; ikisi de deftere düşmedi). Cevap sırla yeterince örtüşürse itiraf
+// kaydedilir; oyuncunun duyduğu sır defterde de olur. Adlar (şüpheliler, kurban) sayılmaz.
+const SECRET_MIN_SHARED_STEMS = 4;
+
+export function revealsSecret(params: {
+  reply: string;
+  secret: string;
+  names: string[];
+}): boolean {
+  const nameStems = stems(params.names.join(' '));
+  const expected = [...stems(params.secret)].filter(
+    (stem) => !nameStems.has(stem) && !COMMON_STEMS.has(stem),
+  );
+  if (expected.length < 3) return false;
+  const said = stems(params.reply);
+  const matched = expected.filter((stem) => said.has(stem)).length;
+  return matched >= Math.min(SECRET_MIN_SHARED_STEMS, expected.length);
+}
+
 // Suskun Tanık: tanığın yapay zekâ yazımı rol metni gördüğünü de anlatıyor ("biri kulübeden bir şey
 // alırken gördünüz"); kilit açılmadan bu cümleler istemden düşer. Gemini denemesinde (28 Ekim 2026)
 // tanıklık metni istemde yokken tanık rol metnindeki bu cümleyi ilk soruda anlattı.
@@ -250,7 +272,26 @@ export function evidenceFromTags(params: {
     // Masumun itirafı mazeretidir; katilinki örtü hikâyesidir (yalan bir mazeret). Örtü hikâyesi olmayan
     // eski vakalarda katil kırılmaz, itirafı da kaydedilmez.
     const canConfess = npcId !== culpritId || !!caseFacts?.culpritCover;
-    if (tags.has(EVIDENCE_TAG.confession) && canConfess) {
+    const secret = confessionSecret(
+      caseFacts,
+      npcId,
+      nameOf,
+      params.scenarioType ?? '',
+    );
+    const toldSecret =
+      !!secret &&
+      !!params.reply &&
+      revealsSecret({
+        reply: params.reply,
+        secret,
+        names: [
+          ...[culpritId, ...(caseFacts?.innocentIds ?? [])]
+            .filter((id): id is string => !!id)
+            .map(nameOf),
+          caseFacts?.victim?.name ?? '',
+        ],
+      });
+    if ((tags.has(EVIDENCE_TAG.confession) || toldSecret) && canConfess) {
       drafts.push({
         kind: 'CONFESSION',
         category: 'STATEMENT',

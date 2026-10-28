@@ -2,6 +2,7 @@ import { CaseFacts } from '../scenarios/case-setup';
 import {
   evidenceFromTags,
   extractEvidenceTags,
+  revealsSecret,
   sharesTestimony,
 } from './evidence';
 
@@ -296,5 +297,75 @@ describe('sharesTestimony', () => {
           'Cinayetten kısa süre önce mahzene indiğimde özel mühürlü şarap şişesinin yerinde olmadığını ve çalındığını fark ettim.',
       }),
     ).toBe(true);
+  });
+});
+
+// Kış vakası (28 Ekim 2026): sırlar eşiğin altında söylendi ama deftere düşmedi
+describe('kırılmadan söylenen sır', () => {
+  const names: Record<string, string> = {
+    tavern: 'Torstein',
+    graveyard: 'Komutan Bjorn',
+    farm: 'Einar',
+  };
+  const winter = {
+    culpritId: 'tavern',
+    innocentIds: ['graveyard', 'farm'],
+    victim: { name: 'Jorah Vance', profession: 'Gezgin Tüccar' },
+    weaponId: 'leather_strap',
+    verification: {
+      kind: 'CORROBORATION',
+      placement: { type: 'TESTIMONY', npcId: 'farm' },
+    },
+    alibis: {
+      graveyard:
+        'Komutan Bjorn cinayet saatinde Gözcü Kalesi’nin taş kulesinde nöbet defterini denetliyordu.',
+    },
+    involvements: [
+      { kind: 'UNWITTING_HELP', npcId: 'graveyard', aboutNpcId: 'tavern' },
+    ],
+    culpritCover:
+      'Cinayet gecesi tamamen yalnız başıma Kış Hanı’ndaydım ve ocaktaki odunları tazeliyordum, kesinlikle dışarı adım atmadım. Kurban Jorah Vance ile aramızda sadece geçmişten kalan ufak bir borç meselesi vardı, bunun cinayetle hiçbir alakası yoktur.',
+  } as unknown as CaseFacts;
+  const draftsFor = (npcId: string, reply: string) =>
+    evidenceFromTags({
+      tags: new Set(),
+      npcId,
+      locationId: null,
+      culpritId: 'tavern',
+      caseFacts: winter,
+      locationClues: {},
+      reply,
+      nameOf: (id) => names[id] ?? id,
+      scenarioType: 'winter',
+    });
+
+  it('silahı veren sırrını söylerse itirafı kaydedilir', () => {
+    expect(
+      draftsFor(
+        'graveyard',
+        'Tanrı aşkına, daha fazla taşıyamayacağım... Deri kayış benimdi; cinayetten kısa süre önce Torstein istedi, ben de verdim. Yalvarırım beni tutuklama!',
+      ),
+    ).toMatchObject([{ kind: 'CONFESSION', sourceId: 'graveyard' }]);
+  });
+
+  it('katilin örtü hikâyesi kırılmadan söylenirse kaydedilmez (ilk soruda itiraf düşen katil olurdu)', () => {
+    expect(
+      draftsFor(
+        'tavern',
+        'Akşam tamamen yalnız başıma Kış Hanı’ndaydım. Jorah Vance ile aramızda sadece geçmişten kalan ufak bir borç meselesi vardı, bunun cinayetle hiçbir alakası yoktur.',
+      ),
+    ).toEqual([]);
+  });
+
+  it('sırla az örtüşen cevap itiraf sayılmaz', () => {
+    expect(
+      revealsSecret({
+        reply:
+          'Kayış mı? Hanın fıçılarını bağlamak için birkaç parça almış olabilirim.',
+        secret:
+          '"Deri kayış benimdi; cinayetten kısa süre önce Torstein istedi, ben de verdim."',
+        names: ['Torstein', 'Komutan Bjorn'],
+      }),
+    ).toBe(false);
   });
 });

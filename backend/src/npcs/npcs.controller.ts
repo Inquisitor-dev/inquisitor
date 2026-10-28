@@ -35,10 +35,26 @@ export class NpcsController {
   ) {
     const isGreeting = dto.message === '__NEW_DAY_GREETING__';
 
+    // Geçersiz izin isteği sorgu hakkı harcamasın
+    if (dto.warrantLocationId) {
+      await this.npcsService.getOwnedSession(dto.sessionId, userId);
+      await this.npcsService.assertWarrantRequest(
+        dto.sessionId,
+        dto.npcId,
+        dto.warrantLocationId,
+      );
+    }
     // Selamlama sinyali sorgu hakkı harcamaz
     await this.checkSessionAndQuota(dto.sessionId, userId, !isGreeting, dto.npcId);
 
-    return await this.npcsService.interact(dto.sessionId, dto.npcId, dto.message);
+    return await this.npcsService.interact(
+      dto.sessionId,
+      dto.npcId,
+      dto.message,
+      undefined,
+      undefined,
+      dto.warrantLocationId,
+    );
   }
 
   // Yüzleştirme: Kanıt Defteri'nden bir kanıtı karaktere göster. Bir sorgu hakkı harcar.

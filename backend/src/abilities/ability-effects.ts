@@ -130,9 +130,12 @@ export function quotesAbout(
 // Muhbir (Şehir Dedektifi): aranmamış mekânlardan rastgele birinin adı. Vaka gerçeklerine
 // bakılmaz: doğrulayan kanıt çoğu vakada katilin kendi mekânındadır, orayı söylemek katili
 // ele verirdi. Her aranmamış mekânda bir ipucu olduğu için söylenen yer yine işe yarar.
+// Daha önce söylediği yeri, söylenmemiş aranmamış yer kaldıkça tekrar söylemez (Kış vakasında
+// üç kullanımda üçü de aynı mekândı).
 export function informantLocation(params: {
   locationIds: string[];
   searched: Set<string>;
+  named?: string[];
   rng?: () => number;
 }): string | null {
   const { locationIds, searched } = params;
@@ -140,8 +143,10 @@ export function informantLocation(params: {
     (id) => id !== 'crime_scene' && !searched.has(id),
   );
   if (unsearched.length === 0) return null;
+  const fresh = unsearched.filter((id) => !params.named?.includes(id));
+  const pool = fresh.length > 0 ? fresh : unsearched;
   const rng = params.rng ?? Math.random;
-  return unsearched[Math.floor(rng() * unsearched.length)];
+  return pool[Math.floor(rng() * pool.length)];
 }
 
 // Rüya Tabiri (Kar Kâhini): vakada henüz deftere girmemiş bir ifade kaldı mı? Rüya o gün ifadesi olan
