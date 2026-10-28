@@ -11,7 +11,6 @@ export interface DailyQuotaResult {
   dailySessionCount: number;
   dailyMessageCount: number;
   isAdmin: boolean;
-  isPremium: boolean;
 }
 
 export interface AccountSummaryResult {
@@ -19,7 +18,6 @@ export interface AccountSummaryResult {
   username: string | null;
   avatar: string;
   isAdmin: boolean;
-  isPremium: boolean;
   tokenBalance: number;
   score: number;
   dailySessionCount: number;
@@ -50,7 +48,6 @@ export class UsersService {
         dailySessionCount: 0,
         dailyMessageCount: 0,
         isAdmin: true,
-        isPremium: false,
       };
     }
 
@@ -72,7 +69,6 @@ export class UsersService {
         dailySessionCount: updated.dailySessionCount,
         dailyMessageCount: updated.dailyMessageCount,
         isAdmin: false,
-        isPremium: user.isPremium,
       };
     }
 
@@ -80,7 +76,6 @@ export class UsersService {
       dailySessionCount: user.dailySessionCount,
       dailyMessageCount: user.dailyMessageCount,
       isAdmin: false,
-      isPremium: user.isPremium,
     };
   }
 
@@ -111,7 +106,6 @@ export class UsersService {
       username: user.username,
       avatar: user.avatar || 'avatar_1',
       isAdmin: user.isAdmin,
-      isPremium: false,
       tokenBalance: user.tokenBalance,
       score: user.score,
       dailySessionCount: quota.dailySessionCount,

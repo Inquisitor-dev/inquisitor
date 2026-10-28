@@ -15,6 +15,8 @@ import { buildCaseGraph } from './case-graph';
 import { criticalPoints, solveCase } from './case-solver';
 import { planPersona, type PersonaPlan } from './personas/persona-plan';
 import { planTownEvents, type TownEvent } from './personas/town-events';
+import { planWildcards, type WildcardPlan } from './wildcards';
+import type { CaseGraph } from './case-graph';
 
 // Vakanın kodla belirlenen gerçekleri. Yapay zekâ bu kararları değiştirmez, sadece etraflarına
 // hikâye yazar. Hüküm Dosyası ve Kanıt Defteri bu kayda göre puanlayacak/eşleştirecek.
@@ -75,6 +77,8 @@ export interface CasePlan {
   persona?: PersonaPlan;
   // Önceden sezdirilen kasaba olayları (v3; ör. bir dükkân sahibi bir günlüğüne şehir dışında)
   townEvents?: TownEvent[];
+  // Küçük wildcard'lar (docs/wildcard-tasarimi.md; eski vakalarda yok, en çok bir tane)
+  wildcards?: WildcardPlan[];
 }
 
 export interface Involvement {
@@ -182,7 +186,12 @@ export function planCase(
     for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
       plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
       if (isPlanSound(plan, difficulty)) {
-        return withPersona(plan, scenarioConfig, difficulty, rng);
+        return withWildcards(
+          withPersona(plan, scenarioConfig, difficulty, rng),
+          scenarioConfig,
+          difficulty,
+          rng,
+        );
       }
     }
   }
@@ -190,7 +199,48 @@ export function planCase(
   logger.warn(
     `Sağlam plan bulunamadı (${scenarioConfig.scenarioType}/${difficulty}/${murderStyle}); son taslak kullanılıyor.`,
   );
-  return withPersona(plan!, scenarioConfig, difficulty, rng);
+  return withWildcards(
+    withPersona(plan!, scenarioConfig, difficulty, rng),
+    scenarioConfig,
+    difficulty,
+    rng,
+  );
+}
+
+// Wildcard en sonda çekilir: önceki rastgele seçimlerin sırası değişmesin. Kapanışı olan kişi (şehir dışı,
+// kilit kırma) ayrılamaz; çözülebilirliği değiştiren wildcard çözücüden geçmezse düşer.
+function withWildcards(
+  plan: CasePlan,
+  scenarioConfig: ScenarioConfig,
+  difficulty: string,
+  rng: Rng,
+): CasePlan {
+  const placement = plan.verification.placement;
+  const wildcards = planWildcards(
+    {
+      scenarioType: scenarioConfig.scenarioType,
+      difficulty,
+      culpritId: plan.culpritId,
+      suspectIds: scenarioConfig.npcDefinitions.map((npc) => npc.id),
+      protectedIds: [
+        placement.type === 'LOCATION' ? placement.locationId : placement.npcId,
+      ],
+      verificationWitnessId:
+        placement.type === 'TESTIMONY' ? placement.npcId : null,
+      hasWeapon: !!plan.weaponId,
+      hasMotive: !!plan.motive,
+      busyIds: [
+        ...(plan.townEvents ?? []).map((e) => e.npcId),
+        ...(plan.persona?.events ?? []).flatMap((e) =>
+          e.kind === 'BREAK_IN' && e.locationId ? [e.locationId] : [],
+        ),
+      ],
+    },
+    buildCaseGraph(plan),
+    (graph) => isGraphSound(graph, difficulty),
+    rng,
+  );
+  return { ...plan, wildcards };
 }
 
 // Persona ve kasaba olayları sağlam plan bulunduktan sonra çekilir: önceki rastgele seçimlerin sırası
@@ -238,7 +288,10 @@ const ALWAYS_AVAILABLE = new Set(['crime_scene', 'body']);
 
 // Sağlam plan: çözülebilir, zorluğa yetecek kadar emek ister ve tek bir kanıta bağlı değildir
 export function isPlanSound(plan: CasePlan, difficulty?: string): boolean {
-  const graph = buildCaseGraph(plan);
+  return isGraphSound(buildCaseGraph(plan), difficulty);
+}
+
+export function isGraphSound(graph: CaseGraph, difficulty?: string): boolean {
   const solution = solveCase(graph);
   if (!solution.solvable) return false;
   const minWarrants = difficulty ? (MIN_WARRANTS[difficulty] ?? 0) : 0;

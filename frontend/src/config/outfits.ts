@@ -79,7 +79,7 @@ export const OUTFITS: Outfit[] = [
     price: 700,
     rarity: 'rare',
     ready: true,
-    lore: "Millfield'ın tek gazetesinde gece vardiyasında çalışır. Polisin kapattığı dosyaları manşete taşıdığı için iki kez kovuldu, iki kez geri alındı.",
+    lore: "Millfield'in tek gazetesinde gece vardiyasında çalışır. Polisin kapattığı dosyaları manşete taşıdığı için iki kez kovuldu, iki kez geri alındı.",
     quote: 'Kim ne dedi, bende kayıtlı. İnkâr etmek istersen buyur.',
   },
   {

@@ -1,3 +1,4 @@
+import { hasVictimNote, victimNoteText } from '../scenarios/wildcards';
 import { CaseFacts } from '../scenarios/case-setup';
 import { foldTurkish } from './prompt-guard';
 import {
@@ -26,7 +27,9 @@ export type EvidenceKind =
   // Psikopatın kapının altına bıraktığı mektup; izi katil dahil birkaç kişiye uyar
   | 'LETTER'
   // Baskında kaçan saldırganın kapı önünde düşürdüğü iz (aynı kural)
-  | 'RAID_TRACE';
+  | 'RAID_TRACE'
+  // Kurbanın Notu wildcard'ı: bedenin üstünden çıkan, motifi gösteren ve kimseyi anmayan not
+  | 'NOTE';
 // ITEM: mekânda bulunan fiziksel nesne, Envanter'de görünür.
 // STATEMENT: bir karakterin ifadesi, Not defterine otomatik yazılır.
 // EVENT: gece olayının kartı; defterde görünür ama gösterilemez, panoya ve Hüküm Dosyası'na girmez.
@@ -145,6 +148,37 @@ export function sharesTestimony(params: {
   return matched >= Math.min(TESTIMONY_MIN_SHARED_STEMS, expected.length);
 }
 
+// Suskun Tanık: tanığın yapay zekâ yazımı rol metni gördüğünü de anlatıyor ("biri kulübeden bir şey
+// alırken gördünüz"); kilit açılmadan bu cümleler istemden düşer. Gemini denemesinde (28 Ekim 2026)
+// tanıklık metni istemde yokken tanık rol metnindeki bu cümleyi ilk soruda anlattı.
+const SENTENCE_MIN_SHARED_STEMS = 3;
+
+export function withoutTestimonySentences(
+  text: string,
+  verificationText: string,
+  names: string[],
+): string {
+  const nameStems = stems(names.join(' '));
+  const expected = [...stems(verificationText)].filter(
+    (stem) => !nameStems.has(stem) && !COMMON_STEMS.has(stem),
+  );
+  if (expected.length === 0) return text;
+  const sentences = text.match(/[^.!?]+[.!?]*\s*/g) ?? [text];
+  let dropped = false;
+  const kept = sentences.filter((sentence) => {
+    const said = stems(sentence);
+    const shared = expected.filter((stem) => said.has(stem)).length;
+    const tellsIt =
+      shared >= Math.min(SENTENCE_MIN_SHARED_STEMS, expected.length);
+    // Düşen cümleye dönen talimat da düşer ("bu bilgiyi paylaşırsınız")
+    const pointsBack =
+      dropped && /\bbu (bilgi|gordu|sahne)/.test(foldTurkish(sentence));
+    if (tellsIt) dropped = true;
+    return !tellsIt && !pointsBack;
+  });
+  return kept.join('').trim();
+}
+
 export function evidenceFromTags(params: {
   tags: Set<string>;
   // Konuşan karakterin id'si; anlatıcıda null
@@ -160,6 +194,8 @@ export function evidenceFromTags(params: {
   // Oyuncunun mesajı ve evren: beden incelemesi ve v2 ifadeleri için (isteğe bağlı)
   playerMessage?: string;
   scenarioType?: string;
+  // Suskun Tanık: istenen kanıt henüz gösterilmedi, doğrulayan tanıklık kaydedilmez
+  verificationLocked?: boolean;
 }): EvidenceDraft[] {
   const { tags, npcId, locationId, culpritId, caseFacts, locationClues } =
     params;
@@ -194,6 +230,18 @@ export function evidenceFromTags(params: {
         sourceId: 'crime_scene',
         text: finding,
       });
+      // Kurbanın notu bedenle birlikte bulunur (anlatıcı örtüyü kaldırınca söyler)
+      const note = hasVictimNote(caseFacts)
+        ? victimNoteText(caseFacts?.motive)
+        : null;
+      if (note) {
+        drafts.push({
+          kind: 'NOTE',
+          category: 'ITEM',
+          sourceId: 'victim',
+          text: `Kurbanın cebinden çıkan katlanmış not: ${note}`,
+        });
+      }
     }
   }
 
@@ -234,6 +282,7 @@ export function evidenceFromTags(params: {
     }
     // Tanıklıkla gelen doğrulayan kanıt sadece o tanıktan alınabilir
     const isWitness =
+      !params.verificationLocked &&
       placement?.type === 'TESTIMONY' &&
       placement.npcId === npcId &&
       !!caseFacts?.verificationText;

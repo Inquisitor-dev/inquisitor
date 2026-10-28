@@ -57,7 +57,6 @@ export default function LoginPage() {
         userId: string;
         token: string;
         isAdmin: boolean;
-        isPremium?: boolean;
         username?: string;
         avatar?: string;
       }>('/auth/login', { identifier: email.trim(), password }, { token: null });
@@ -67,7 +66,6 @@ export default function LoginPage() {
         data.userId,
         data.token,
         data.isAdmin,
-        data.isPremium || false,
         data.username,
         data.avatar,
       );
@@ -132,7 +130,6 @@ export default function LoginPage() {
         userId: string;
         token: string;
         isAdmin: boolean;
-        isPremium?: boolean;
         username?: string;
         avatar?: string;
       }>('/auth/verify', { email: email.trim(), code }, { token: null });
@@ -142,7 +139,6 @@ export default function LoginPage() {
         data.userId,
         data.token,
         data.isAdmin,
-        data.isPremium || false,
         data.username,
         data.avatar,
       );

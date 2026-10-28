@@ -8,6 +8,7 @@ import {
   getScenarioConfig,
 } from '../scenarios/scenario-config';
 import { townEventsOf } from '../scenarios/personas/town-events';
+import { wildcardsOf } from '../scenarios/wildcards';
 import {
   emptyPersonaState,
   firstMorningPaper,
@@ -62,6 +63,7 @@ export function nightPlanOf(
   return {
     persona,
     townEvents: townEventsOf(caseFacts),
+    wildcards: wildcardsOf(caseFacts),
     letter: hasLetter
       ? {
           text: facts?.threatLetter || fallbackLetter(scenarioType),
@@ -102,6 +104,7 @@ export function initialPersonaState(session: {
         facts?.victim?.name || 'Bir kasabalı',
         place,
         townEventsOf(facts),
+        wildcardsOf(facts),
       ),
     ],
   };

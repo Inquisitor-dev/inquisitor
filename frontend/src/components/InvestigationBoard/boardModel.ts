@@ -86,7 +86,8 @@ export function evidencePhoto(
   item: EvidenceItem,
   crimeScene?: CrimeSceneInfo | null,
 ): string | null {
-  if (item.sourceId === 'crime_scene') {
+  // Kurbanın notu bedenin üstünden çıkar: olay yerinin görseliyle
+  if (item.sourceId === 'crime_scene' || item.kind === 'NOTE') {
     return (
       getCrimeSceneImage(scenarioType, crimeScene) ??
       (scenarioType === 'medieval' ? '/backgrounds/bg_crime_scene.webp' : null)
@@ -102,6 +103,7 @@ export function evidenceTitle(scenarioType: string, item: EvidenceItem): string 
   if (item.kind === 'ALIBI') return 'Mazeret';
   if (item.kind === 'BODY') return 'Beden İncelemesi';
   if (item.kind === 'LETTER') return 'Tehdit Mektubu';
+  if (item.kind === 'NOTE') return 'Kurbanın Notu';
   if (item.kind === 'RAID_TRACE') return 'Kapı Önündeki İz';
   if (item.category === 'STATEMENT') return 'Tanıklık';
   if (item.sourceId === 'crime_scene') return 'Olay Yeri İzi';

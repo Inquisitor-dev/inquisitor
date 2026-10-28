@@ -104,6 +104,8 @@ export function isSupportingEvidence(
   // Katilin mekân ipucu motifini gösterir (panoda kimseyi suçlamasa da hükmün dayanağıdır)
   if (e.kind === 'CLUE' && e.sourceId === facts.culpritId) return true;
   const involvements = facts.involvements ?? [];
+  // Kurbanın notu motifi söyler (Kurbanın Notu wildcard'ı)
+  if (e.kind === 'NOTE') return true;
   if (e.kind === 'BODY')
     return involvements.some((i) => i.kind === 'UNWITTING_HELP');
   if (e.kind === 'TESTIMONY')

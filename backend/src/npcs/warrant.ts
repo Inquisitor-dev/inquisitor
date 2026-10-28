@@ -135,6 +135,8 @@ export function decideWarrants(params: {
   warrantsIssued: number;
   activeWarrants: string[];
   usedWarrants: string[];
+  // Vakanın izin sınırı (Hevesli Kadı wildcard'ında 3; scenarios/wildcards.ts warrantLimitOf)
+  limit?: number;
 }): WarrantDecision | null {
   const {
     userMessage,
@@ -152,7 +154,10 @@ export function decideWarrants(params: {
     return null;
   }
 
-  const remaining = Math.max(0, MAX_WARRANTS - warrantsIssued);
+  const remaining = Math.max(
+    0,
+    (params.limit ?? MAX_WARRANTS) - warrantsIssued,
+  );
   const requested = findRequestedLocations(userMessage, locations);
   const alreadyHeld = requested.filter(
     (id) => activeWarrants.includes(id) || usedWarrants.includes(id),

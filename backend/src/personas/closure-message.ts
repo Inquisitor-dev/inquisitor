@@ -28,6 +28,13 @@ export function closedMessage(
   if (closure.reason === 'DETAINED') {
     return `${place} bugün kapalı: sahibi nezarette. Yarın sabah çıkacak.`;
   }
+  if (closure.reason === 'LEFT') {
+    const who =
+      getScenarioConfig(session.scenarioType, 'hard').npcDefinitions.find(
+        (npc) => npc.id === closure.locationId,
+      )?.name ?? place;
+    return `${who} kasabadan ayrıldı; ${place} artık kapalı.`;
+  }
   if (closure.reason === 'BREAK_IN') {
     return `${place} bugün kapalı: gece biri zorla girmiş, sahibi ortalığı topluyor. Yarın yeniden açılacak.`;
   }

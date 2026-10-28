@@ -350,7 +350,30 @@ describe('StoryPoolService', () => {
       });
     });
 
-    it('personalı (v3) paket güncel kural sürümüyle (4) kaydedilir', async () => {
+    it('personalı ve wildcard listeli paket güncel kural sürümüyle (5) kaydedilir', async () => {
+      mockPrisma.story.create.mockResolvedValue({ id: 'v5-story' });
+      await service.saveDraft(
+        { universe: 'medieval', difficulty: 'easy' },
+        {
+          ...v2Package,
+          plan: {
+            ...v2Package.plan,
+            persona: { persona: 'NONE', events: [] },
+            wildcards: [],
+          },
+          facts: { ...v2Package.facts, culpritCover: 'Yalnızdım.' },
+        },
+      );
+
+      expect(mockPrisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          ruleVersion: STORY_RULE_VERSION,
+        }) as unknown,
+      });
+      expect(STORY_RULE_VERSION).toBe(5);
+    });
+
+    it('wildcard listesi olmayan personalı paket sürüm 4 kalır', async () => {
       mockPrisma.story.create.mockResolvedValue({ id: 'v4-story' });
       await service.saveDraft(
         { universe: 'medieval', difficulty: 'easy' },
@@ -362,11 +385,8 @@ describe('StoryPoolService', () => {
       );
 
       expect(mockPrisma.story.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          ruleVersion: STORY_RULE_VERSION,
-        }) as unknown,
+        data: expect.objectContaining({ ruleVersion: 4 }) as unknown,
       });
-      expect(STORY_RULE_VERSION).toBe(4);
     });
 
     it('findAvailableStory minRuleVersion filtresini doğru uygular', async () => {

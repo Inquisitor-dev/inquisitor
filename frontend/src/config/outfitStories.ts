@@ -175,7 +175,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
         usage: 'Günde 1 kez',
         rules: [
           'Henüz aranmamış bir mekân seçmelisin.',
-          'Bu izin de vakadaki 2 arama izni sınırına sayılır; sınır dolduysa kullanılamaz.',
+          'Bu izin de vakadaki arama izni sınırına (çoğu vakada 2) sayılır; sınır dolduysa kullanılamaz.',
           'İzin kazanmak için yapılan diyaloğu atlamanı sağlar.',
         ],
       },
@@ -335,7 +335,7 @@ export const OUTFIT_STORIES: Record<string, OutfitStory> = {
     story: [
       'Millfield Gazetesi’nin gece vardiyasına staj için girdi ve bir daha çıkmadı. Kasabada herkesin uyuduğu saatlerde polis telsizini dinler, karakolun önünde sabahlar, kimsenin sormadığı soruları sorar.',
       'İlk büyük haberi bir yangındı. Polis dosyayı kaza diye kapattı; o ise üç tanığın birbirini yalanlayan ifadelerini yan yana koyup manşete taşıdı. Kovuldu. Bir hafta sonra kundakçı yakalandı ve geri çağrıldı. O günden beri kural tek: söylenen her söz kayda geçer, kayda geçen her söz sahibine geri okunur.',
-      'Şimdi Millfield’da yeni bir cinayet var ve o, not defteriyle yine en önde. Kimseyi suçlamaz; yalnızca birinin söylediğini ötekine okur ve yüzlerindeki değişimi fotoğraflar. “Kim ne dedi, bende kayıtlı. İnkâr etmek istersen buyur.”',
+      'Şimdi Millfield’de yeni bir cinayet var ve o, not defteriyle yine en önde. Kimseyi suçlamaz; yalnızca birinin söylediğini ötekine okur ve yüzlerindeki değişimi fotoğraflar. “Kim ne dedi, bende kayıtlı. İnkâr etmek istersen buyur.”',
     ],
   },
 

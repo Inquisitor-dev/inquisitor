@@ -65,7 +65,7 @@ export default function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps)
               <p>
                 Kanıtları yalnızca sorgularda değil, mekânları arayarak da bulabilirsin. Bir mekânı aramak için
                 izin gerekir: Ashenmoor’da izni <strong>Peder Malachar</strong>, diğer evrenlerde karakoldaki yetkili
-                verir. Bir soruşturmada en fazla iki izin alabilirsin.
+                verir. Bir soruşturmada genellikle en fazla iki izin alabilirsin; bazı vakalarda yetkililer üçüncüsüne de razı olur.
               </p>
             </div>
           </li>

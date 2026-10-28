@@ -2,6 +2,7 @@ import type { CasePlan } from './case-setup';
 import { DEFAULT_FEAR_THRESHOLD } from './case-catalog';
 import { FEAR_GAIN } from '../npcs/fear';
 import { MAX_WARRANTS } from '../npcs/warrant';
+import { graphWithWildcards } from './wildcards';
 
 // Vakanın kanıt grafiği: oyuncunun bulabileceği her kanıt, ona nasıl ulaşıldığı ve neyi kanıtladığı.
 // Çözücü (case-solver.ts) bu grafik üzerinde oyuncuyu taklit eder; metin değil yapı denetlenir.
@@ -75,6 +76,7 @@ export function buildCaseGraph(
     | 'weaponId'
     | 'involvements'
     | 'fearThresholds'
+    | 'wildcards'
   >,
   options: {
     startFear?: Record<string, number>;
@@ -270,7 +272,7 @@ export function buildCaseGraph(
     }
   }
 
-  return {
+  const graph: CaseGraph = {
     suspects,
     culpritId,
     clues,
@@ -286,4 +288,8 @@ export function buildCaseGraph(
       ),
     warrantLimit: options.warrantLimit ?? MAX_WARRANTS_PER_CASE,
   };
+  // Wildcard'ların etkisi (Suskun Tanık'ın ön koşulu, Ayrılan Tanık'ın kaybolan kanıtları)
+  return plan.wildcards?.length
+    ? graphWithWildcards(graph, plan.wildcards)
+    : graph;
 }

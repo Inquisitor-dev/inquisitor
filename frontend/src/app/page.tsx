@@ -213,10 +213,10 @@ export default function LandingPage() {
               <div className={styles.price}>Ücretsiz</div>
               <ul className={styles.featuresList}>
                 <li>Ashenmoor evreni ve köy haritası</li>
-                <li>Kolay zorlukta 5 şüpheli</li>
-                <li>Günde 2 soruşturma</li>
-                <li>Günde 30 diyalog</li>
-                <li>Oyun sonunda hakikat ve ipucu özeti</li>
+                <li>Acemi Engizitör zorluğu</li>
+                <li>Günde 5 soruşturma ve 100 diyalog</li>
+                <li>İki ücretsiz karakter</li>
+                <li>Oyun sonunda hüküm raporu ve puan</li>
               </ul>
               <button
                 className={styles.btn}
@@ -227,23 +227,19 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <div className={`${styles.priceCard} ${styles.premium}`}>
-              <h3>Baş Engizitör</h3>
+            <div className={`${styles.priceCard} ${styles.featured}`}>
+              <h3>Akçe Marketi</h3>
               <div className={styles.price}>
-                $4.99 <span>/ ay</span>
+                Vaka çöz <span>/ akçe kazan</span>
               </div>
               <ul className={styles.featuresList}>
-                <li>Günde 5 soruşturma ve 100 diyalog</li>
-                <li>Orta ve Zor zorluklar (6 şüpheli)</li>
-                <li>Oakhaven ve Neon Prime evrenleri</li>
-                                <li>Sunuculara öncelikli erişim</li>
+                <li>Çözdüğün her vakaya 100 akçe, hızlı çözüme 50 ek</li>
+                <li>Millfield, Neon Prime, Jinling ve Frosthold evrenleri</li>
+                <li>Kıdemli ve Baş Engizitör zorlukları</li>
+                <li>Yetenekli karakterler ve hazır hikâyeler</li>
               </ul>
-              <button
-                className={styles.btn}
-                style={{ width: '100%' }}
-                onClick={() => router.push('/premium')}
-              >
-                Gerçek Deneyime Başla
+              <button className={styles.btn} style={{ width: '100%' }} onClick={handleStart}>
+                Markete Göz At
               </button>
             </div>
           </div>

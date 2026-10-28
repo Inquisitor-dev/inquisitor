@@ -8,6 +8,7 @@ import {
   normalizeScenarioType,
 } from '../scenarios/scenario-config';
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
+import { shortDayStart, wildcardsOf } from '../scenarios/wildcards';
 import { ScenarioDraft } from '../llm/llm.service';
 import { findOwnedSession, toPublicSession } from './session-access';
 import { buildCaseFacts } from './case-facts';
@@ -115,7 +116,7 @@ export class GameSessionsService {
     return {
       scenarioType,
       difficulty,
-      wildcardCount: 0,
+      wildcardCount: wildcardsOf(plan).length,
       gameMode: 'standard',
       plan,
       facts,
@@ -488,10 +489,12 @@ export class GameSessionsService {
       where: { id: session.id },
       data: {
         currentDay: nextDay,
-        // Çatı Geçişi kullanıldıysa ya da baskında bayılındıysa ertesi günün sabahı kaybedilir
+        // Çatı Geçişi kullanıldıysa ya da baskında bayılındıysa ertesi günün sabahı kaybedilir;
+        // Kısa Gün wildcard'ında sabahın iki dilimi
         timeOfDay: Math.max(
           morningTimeOfDay(abilityState, nextDay),
           raidLostMorning(session.personaState, session.currentDay) ? 1 : 0,
+          shortDayStart(session.caseFacts, nextDay),
         ),
       },
     });

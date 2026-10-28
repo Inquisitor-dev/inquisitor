@@ -7,23 +7,20 @@ export const createAuthSlice: GameSliceCreator<AuthSlice> = (set) => ({
   username: null,
   avatar: 'avatar_1',
   isAdmin: false,
-  isPremium: false,
   hasHydrated: false,
 
-  setUser: (email, userId, token, isAdmin, isPremium = false, username?: string | null, avatar?: string) =>
+  setUser: (email, userId, token, isAdmin, username?: string | null, avatar?: string) =>
     set({
       userEmail: email,
       userId,
       authToken: token,
       isAdmin,
-      isPremium,
       username: username ?? null,
       avatar: avatar || 'avatar_1',
       maxDailyDialogues: 100,
     }),
 
   setProfile: (username, avatar) => set({ username, avatar }),
-  setIsPremium: (val) => set({ isPremium: val, maxDailyDialogues: 100 }),
   setHasHydrated: (val) => set({ hasHydrated: val }),
 
   logout: () =>
@@ -34,7 +31,6 @@ export const createAuthSlice: GameSliceCreator<AuthSlice> = (set) => ({
       username: null,
       avatar: 'avatar_1',
       isAdmin: false,
-      isPremium: false,
       sessionId: null,
       difficulty: 'easy',
       scenarioType: 'medieval',

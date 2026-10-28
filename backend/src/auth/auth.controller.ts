@@ -4,7 +4,7 @@ import { JwtAuthGuard } from './jwt.guard';
 import { CurrentUser } from './current-user.decorator';
 import { UpdateAudioSettingsDto } from './dto/update-audio-settings.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { SendCodeDto, VerifyCodeDto, LoginDto, ActivatePremiumDto } from './dto/auth-requests.dto';
+import { SendCodeDto, VerifyCodeDto, LoginDto } from './dto/auth-requests.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -45,16 +45,6 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(userId, dto);
-  }
-
-  @Post('activate-premium')
-  @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
-  async activatePremium(
-    @CurrentUser('userId') userId: string,
-    @Body() dto: ActivatePremiumDto,
-  ) {
-    return this.authService.activatePremium(userId, dto.activationCode);
   }
 
   @Get('me')

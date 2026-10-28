@@ -6,7 +6,7 @@ import {
   fearThresholdOf,
   EvidenceImpact,
 } from './fear';
-import { EVIDENCE_TAG } from './evidence';
+import { EVIDENCE_TAG, withoutTestimonySentences } from './evidence';
 import {
   confessionText,
   linkPromptLines,
@@ -33,7 +33,16 @@ const WOUND_DESCRIPTIONS: Record<WeaponMethod, string> = {
     'no visible wound; discoloured lips and fingertips and a strange smell, the signs of poison.',
   STRANGLE: 'dark marks around the neck from something pulled tight.',
 };
-import { isWarrantIssuer, MAX_WARRANTS, WarrantDecision } from './warrant';
+import { isWarrantIssuer, WarrantDecision } from './warrant';
+import {
+  hasVictimNote,
+  victimNoteText,
+  warrantLimitOf,
+} from '../scenarios/wildcards';
+import {
+  ownWildcardPlanLines,
+  wildcardPromptLines,
+} from '../personas/wildcard-texts';
 import {
   breakInOwnerLines,
   culpritNightLines,
@@ -109,6 +118,10 @@ export interface BuildNpcPromptParams {
   dreamActive?: boolean;
   // Teyit (Gece Muhabiri): başka bir şüphelinin gerçekten söylediği söz bu karaktere okunur
   verifiedStatement?: VerifiedStatement;
+  // Suskun Tanık: istenen kanıt (olay yeri izi ya da beden) henüz gösterilmedi; tanık gördüğünü anlatmaz
+  reluctantLock?: 'CRIME_SCENE' | 'BODY';
+  // Suskun Tanık: beklediği kanıt tam bu cevapta gösterildi
+  reluctantOpened?: boolean;
 }
 
 export interface VerifiedStatement {
@@ -137,6 +150,8 @@ export function buildNpcPrompt({
   quietRoom = false,
   dreamActive = false,
   verifiedStatement,
+  reluctantLock,
+  reluctantOpened = false,
 }: BuildNpcPromptParams): string {
   const canonicalNpc = scenarioConfig.npcDefinitions.find(
     (n) => n.id === npc.id,
@@ -163,7 +178,16 @@ export function buildNpcPrompt({
 
   const scenarioText = session.scenario ?? '';
   const truthRevealText = session.truthReveal ?? '';
-  const dynamicPromptText = dynamicPrompt ?? '';
+  const witnessFacts = session.caseFacts as Partial<CaseFacts> | null;
+  // Suskun Tanık: kilit açılmadan rol metnindeki tanıklık cümleleri de istemden düşer
+  const dynamicPromptText =
+    reluctantLock && dynamicPrompt && witnessFacts?.verificationText
+      ? withoutTestimonySentences(
+          dynamicPrompt,
+          witnessFacts.verificationText,
+          [canonicalNpc?.name ?? npc.name],
+        )
+      : (dynamicPrompt ?? '');
   const isCulprit = !!session.culpritId && session.culpritId === npc.id;
   // Tamamen masumun sırrı yoktur: "senin de bir sırrın olabilir" denince baskı altında suç uyduruyordu
   const ownInvolvement = (
@@ -274,7 +298,7 @@ INVESTIGATION RULES FOR NARRATOR:
 7. NEVER state the killer's name directly as a fact of the environment. You only describe physical evidence.
 8. NEVER state the victim's name. Refer to them as 'the victim' or 'the body' to maintain mystery.
 9. DO NOT end your description with a guiding question, hook, or suggestion like "Do you want to search here?" or "What do you want to look at?". Just describe the scene and STOP.
-10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.${crimeSceneNarratorRule(scenarioConfig, narratedLocationId, caseFacts?.sceneState, caseFacts?.weaponId)}`;
+10. EVIDENCE TAG: If and only if this reply reveals the canonical hidden clue, end the reply with the tag [${EVIDENCE_TAG.clue}]. Never add it for atmosphere or a wrong spot.${crimeSceneNarratorRule(scenarioConfig, narratedLocationId, caseFacts?.sceneState, caseFacts?.weaponId, hasVictimNote(caseFacts) ? victimNoteText(caseFacts?.motive) : null)}`;
   } else {
     combinedPrompt += `
 PUBLIC IDENTITY:
@@ -372,9 +396,12 @@ The Inquisitor read you a statement that ${verifiedStatement.speakerName} really
       const namesYou =
         confrontation.impact === 'IRRELEVANT' &&
         mentions(confrontation.evidenceText, canonicalNpc?.name ?? npc.name);
-      const impactLine = namesYou
-        ? 'This evidence mentions you but does not make you look guilty. Explain it truthfully from what you know (your whereabouts and your part in the case); never deny the parts of it that match your own account. It does not frighten you.'
-        : impactText[confrontation.impact];
+      // Suskun Tanık: "neden bana gösteriyorsun" diye inkâr etmesin, beklediği kanıt budur
+      const impactLine = reluctantOpened
+        ? 'This is the evidence you said you had to see before you could speak. It does not make you look guilty; seeing it gives you the courage to talk.'
+        : namesYou
+          ? 'This evidence mentions you but does not make you look guilty. Explain it truthfully from what you know (your whereabouts and your part in the case); never deny the parts of it that match your own account. It does not frighten you.'
+          : impactText[confrontation.impact];
 
       combinedPrompt += `
 
@@ -396,7 +423,7 @@ React to the evidence in character.`;
 
       if (!isCulprit && !hasConfessed && !forcedConfession) {
         combinedPrompt += `
-This evidence alone does NOT break you. Do NOT confess your personal secret in this reply: deny, deflect or explain it away, letting your fear show.`;
+This evidence alone does NOT break you. Do NOT confess your personal secret in this reply${reluctantOpened ? '; but you do tell what you saw that night, as written below' : ': deny, deflect or explain it away, letting your fear show'}.`;
       }
     }
 
@@ -421,6 +448,16 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
 
     const placement = caseFacts?.verification?.placement;
     if (
+      reluctantLock &&
+      placement?.type === 'TESTIMONY' &&
+      placement.npcId === npc.id
+    ) {
+      // Tanıklığın metni isteme hiç girmez: model ağzından kaçıramaz, kod da kaydetmez
+      combinedPrompt += `
+
+WHAT YOU SAW THAT NIGHT:
+You saw something important on the night of the murder, but you are too frightened to talk about it. You do not tell what you saw, not even a hint of it, whatever the Inquisitor says. Never claim you saw nothing: you only say you cannot talk about it yet. If they ask about that night, you grow visibly nervous, avoid the subject and say you could only speak if they showed you ${reluctantLock === 'BODY' ? 'what the body itself shows, the findings under the cover' : 'what they found at the crime scene'}. Never invent anything you saw.`;
+    } else if (
       placement?.type === 'TESTIMONY' &&
       placement.npcId === npc.id &&
       caseFacts?.verificationText
@@ -430,6 +467,12 @@ FEAR BREAK: You can no longer hold out. In this reply you break down and confess
 VERIFYING EVIDENCE YOU KNOW:
 ${caseFacts.verificationText}
 Share it only when the Inquisitor asks about the crime scene trace, the related item, or the night of the murder. If and only if you share it in this reply, end the reply with the tag [${EVIDENCE_TAG.verification}].`;
+      // Suskun Tanık: beklediği kanıt bu cevapta gösterildi. Gemini denemesinde tanık anlattı ama
+      // "bu kanıtı bana neden gösteriyorsun" diye şaşırdı
+      if (reluctantOpened) {
+        combinedPrompt += `
+The evidence just shown to you is exactly what you were waiting for before you could speak. In this reply you overcome your fear and, in your own words, tell what you saw (the VERIFYING EVIDENCE above). Never act surprised that you were shown it.`;
+      }
     }
     if (
       dreamActive &&
@@ -459,15 +502,27 @@ Tonight a seer's dream pressed on your conscience. In this reply, even if the In
   }
 
   // Şehir dışına çıkacak kişinin programı en sonda ve ayrı: kişiliğindeki "hep buradayım" onu bastırmasın
-  const schedule = ownPlanLines(
-    townEventsOf(session.caseFacts),
-    session.currentDay ?? 1,
-    npc.id,
-    {
-      scenarioType: session.scenarioType,
-      placeName: (id) => getLocalizedLocationLabel(session.scenarioType, id),
-    },
-  );
+  const scheduleCtx = {
+    scenarioType: session.scenarioType,
+    placeName: (id: string) =>
+      getLocalizedLocationLabel(session.scenarioType, id),
+    npcName: (id: string) =>
+      scenarioConfig.npcDefinitions.find((n) => n.id === id)?.name ?? id,
+  };
+  const schedule = [
+    ...ownPlanLines(
+      townEventsOf(session.caseFacts),
+      session.currentDay ?? 1,
+      npc.id,
+      scheduleCtx,
+    ),
+    ...ownWildcardPlanLines(
+      session.caseFacts,
+      session.currentDay ?? 1,
+      npc.id,
+      scheduleCtx,
+    ),
+  ];
   if (schedule.length > 0) {
     combinedPrompt += `
 
@@ -486,6 +541,8 @@ function crimeSceneNarratorRule(
   narratedLocationId: string | null,
   sceneState: CaseFacts['sceneState'] | undefined,
   weaponId?: string,
+  // Kurbanın Notu wildcard'ı: bedenin üstündeki not (metni koddan)
+  victimNote?: string | null,
 ): string {
   const scene = scenarioConfig.crimeScene;
   // Yaranın türü koddan gelir; anlatıcı aletin adını söylemez, oyuncu silahı ipuçlarından bulur
@@ -495,6 +552,9 @@ function crimeSceneNarratorRule(
   const wound = weapon
     ? ` If the player lifts the cover, the body shows that the victim died this way: ${WOUND_DESCRIPTIONS[weapon.method]} Describe only this kind of wound; never name the exact weapon or object.`
     : ' If the player lifts the cover, describe the body only in line with the absolute truth above.';
+  const note = victimNote
+    ? ` When the player lifts the cover, a folded note is also found in the victim's pocket. Read it out exactly, word for word: ${victimNote} Say nothing about whom it was written to or what it means.`
+    : '';
   if (narratedLocationId !== 'crime_scene' || !scene) return '';
   const appearance =
     sceneState === 'MESSY'
@@ -503,7 +563,7 @@ function crimeSceneNarratorRule(
         ? ' The scene is TIDY: everything around the body is orderly, nothing is knocked over and there are no signs of a struggle. Never describe trampled ground, scattered objects or other disorder.'
         : '';
   return `
-11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
+11. THE SCENE: You narrate "${scene.label}" (${scene.description}). The body lies on the ground, covered with ${scenarioConfig.crimeSceneBody}; the people who found it covered it, not the culprit.${appearance} Keep every description consistent with this picture.${wound}${note} Never state the victim's name.${weapon ? ` If and only if this reply describes the body under the cover, end the reply with the tag [${EVIDENCE_TAG.body}].` : ''}`;
 }
 
 // Gece olayları kasabada herkesin bildiği gerçeklere eklenir; böylece katilin bilmesi onu ayırmaz.
@@ -526,6 +586,7 @@ function nightLines(
   const lines = [
     ...publicNightLines(state, day, ctx),
     ...townPromptLines(townEventsOf(session.caseFacts), day, npcId, ctx),
+    ...wildcardPromptLines(session.caseFacts, day, npcId, ctx),
     ...breakInOwnerLines(state, npcId, isCulprit),
     ...detentionPromptLines(state, day, npcId, ctx),
     ...(isCulprit ? culpritNightLines(state) : []),
@@ -573,7 +634,9 @@ function warrantInstructions(
   session: BuildNpcPromptParams['session'],
   decision: WarrantDecision | null,
 ): string {
-  const remaining = Math.max(0, MAX_WARRANTS - session.warrantsIssued);
+  // Hevesli Kadı wildcard'ında vakada üç izin
+  const limit = warrantLimitOf(session.caseFacts);
+  const remaining = Math.max(0, limit - session.warrantsIssued);
   const active =
     session.activeWarrants.length > 0
       ? placeNames(session.scenarioType, session.activeWarrants)
@@ -583,11 +646,11 @@ function warrantInstructions(
 [SYSTEM - SEARCH WARRANTS]:
 You are the authority who grants search warrants, but the decision is made by the system, not by you. Never promise, grant or refuse a warrant on your own, and never write any tags.
 - Warrants the Inquisitor currently holds: ${active}
-- Warrants left in this case: ${remaining}/${MAX_WARRANTS}`;
+- Warrants left in this case: ${remaining}/${limit}`;
 
   if (!decision) {
     text += `
-If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
+If the Inquisitor asks how many warrants they can still get, tell them the number of warrants left above. If the Inquisitor talks about warrants without clearly asking for one, explain that they must ask for a search warrant and name the place. Never claim you granted one.`;
     return text;
   }
 
@@ -609,7 +672,7 @@ DECISION: The Inquisitor already has (or already used) a warrant for ${placeName
       break;
     case 'LIMIT_REACHED':
       text += `
-DECISION: The Inquisitor asked for another warrant, but the limit of ${MAX_WARRANTS} for this case is reached. Refuse in character.`;
+DECISION: The Inquisitor asked for another warrant, but the limit of ${limit} for this case is reached. Refuse in character.`;
       break;
   }
   return text;

@@ -406,12 +406,12 @@
         transform: translateY(-5px);
     }
 
-    .premium {
+    .featured {
         border-color: var(--color-primary);
         background: linear-gradient(145deg, rgba(20, 20, 20, 1) 0%, rgba(30, 5, 5, 1) 100%);
     }
 
-    .premium::before {
+    .featured::before {
         content: 'ÖNERİLEN';
         position: absolute;
         top: 20px;

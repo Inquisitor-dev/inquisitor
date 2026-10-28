@@ -14,7 +14,7 @@ export const STORY_DETAILS: Record<string, { title: string; era: string; desc: s
     desc: 'Engizisyon, batıl inanç ve sisli mezarlıklar. Her köylünün dualarının altında bir sır yatar.',
   },
   modern: {
-    title: 'Oakhaven',
+    title: 'Millfield',
     era: "90'lar Amerikan Kasabası",
     desc: 'Yerel polis, cinayet dedektifleri ve ormanın kenarında birbirini koruyan şüpheli kasabalılar.',
   },

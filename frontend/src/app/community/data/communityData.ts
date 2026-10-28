@@ -25,7 +25,7 @@ export interface ScenarioForm {
 
 export const SCENARIO_LABELS: Record<ScenarioForm['scenarioType'], string> = {
   medieval: 'Ashenmoor — Karanlık Ortaçağ',
-  modern: "Oakhaven — 90'lar Amerikan Kasabası",
+  modern: "Millfield — 90'lar Amerikan Kasabası",
   cyberpunk: 'Neon Prime — Distopik Cyberpunk',
   china: 'Jinling — Antik Doğu / Feodal Çin',
   winter: 'Frosthold — Kutup / Kar Fırtınası',

@@ -17,7 +17,7 @@ export interface TokenPackDef {
 export const MARKET_ITEMS_CATALOG: MarketItemDef[] = [
   // Evrenler
   { id: 'universe_medieval', category: 'universe', title: 'Ashenmoor', price: 0, ownedByDefault: true },
-  { id: 'universe_modern', category: 'universe', title: 'Oakhaven', price: 500 },
+  { id: 'universe_modern', category: 'universe', title: 'Millfield', price: 500 },
   { id: 'universe_cyberpunk', category: 'universe', title: 'Neon Prime', price: 800 },
   { id: 'universe_china', category: 'universe', title: 'Jinling', price: 650 },
   { id: 'universe_winter', category: 'universe', title: 'Frosthold', price: 650 },

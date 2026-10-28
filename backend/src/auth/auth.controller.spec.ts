@@ -18,7 +18,6 @@ describe('AuthController', () => {
             getAccountSummary: jest.fn(),
             getAudioSettings: jest.fn(),
             updateAudioSettings: jest.fn(),
-            activatePremium: jest.fn(),
           },
         },
       ],

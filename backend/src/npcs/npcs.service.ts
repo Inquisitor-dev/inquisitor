@@ -5,6 +5,7 @@ import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scena
 import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
 import { EVIDENCE_TAG, evidenceFromTags, extractEvidenceTags } from './evidence';
+import { reluctantOf, warrantLimitOf } from '../scenarios/wildcards';
 import { confessionText } from './case-statements';
 import { EMPTY_NPC_REPLY } from '../llm/prompts/npc-prompt.builder';
 import {
@@ -356,6 +357,32 @@ export class NpcsService {
         currentState.session.currentDay,
       );
 
+    // Suskun Tanık: istenen kanıt (olay yeri izi ya da beden) kendisine gösterilmeden doğrulayan
+    // tanıklığını anlatmaz; Rüya Tabiri onu da konuşturur
+    const reluctant = reluctantOf(caseFacts);
+    const awaited =
+      reluctant && reluctant.npcId === currentState.npc.id
+        ? await this.prisma.evidence.findFirst({
+            where: {
+              sessionId,
+              id: { in: currentState.shownEvidenceIds },
+              kind: reluctant.requires === 'BODY' ? 'BODY' : 'CLUE',
+              sourceId: 'crime_scene',
+            },
+          })
+        : null;
+    const reluctantLock =
+      reluctant &&
+      reluctant.npcId === currentState.npc.id &&
+      !dreamActive &&
+      !awaited
+        ? reluctant.requires
+        : undefined;
+    // Beklediği kanıt tam şimdi gösterildi (yüzleştirmede son gösterilen kanıt odur)
+    const lastShown = currentState.shownEvidenceIds.at(-1);
+    const reluctantOpened =
+      !!awaited && !!confrontation && lastShown === awaited.id;
+
     const npcDisplayName = canonicalNpc?.name ?? currentState.npc.name;
     // Talimatları ezmeye çalışan mesajlar LLM'e hiç gönderilmez; karakter içi hazır bir cevap döner
     const isInjectionAttempt =
@@ -385,6 +412,7 @@ export class NpcsService {
             warrantsIssued: currentState.session.warrantsIssued,
             activeWarrants: currentState.session.activeWarrants,
             usedWarrants: currentState.session.usedWarrants,
+            limit: warrantLimitOf(caseFacts),
           })
         : null;
 
@@ -411,6 +439,8 @@ export class NpcsService {
       quietRoom,
       dreamActive,
       verifiedStatement,
+      reluctantLock,
+      reluctantOpened,
     });
 
     const todayHistory = historyData.filter((h) => h.dayNumber === state.session.currentDay);
@@ -518,6 +548,7 @@ export class NpcsService {
         reply: finalReply,
         nameOf: (id) => scenarioConfig.npcDefinitions.find((npc) => npc.id === id)?.name ?? id,
         playerMessage: userMessage,
+        verificationLocked: !!reluctantLock,
         scenarioType: currentState.session.scenarioType,
       }),
     );
