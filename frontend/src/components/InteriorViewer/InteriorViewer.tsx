@@ -21,6 +21,7 @@ import { useAmbientParticles } from './useAmbientParticles';
 import { Check, MapPin, NotebookPen } from 'lucide-react';
 import HotspotGlyph, { isSearchSpot } from './HotspotGlyph';
 import { issuerNames, useWarrantInfo } from '@/features/warrants/useWarrantInfo';
+import { useSearchAvailability } from '@/features/search/useSearchAvailability';
 
 interface InteriorViewerProps {
   locationId: string;
@@ -112,6 +113,8 @@ function InteriorScene({
 
   // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
   const hasWarrant = inventory?.activeWarrants?.includes(locationData.id) ?? false;
+  // Tıkla-bul sahnesi olan mekân orada aranır; olmayan eski yolla, anlatıcıyla
+  const hasSearchScene = useSearchAvailability(locationData.id, hasWarrant);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -360,7 +363,9 @@ function InteriorScene({
                   <div className={styles.clueTitle}>{hasWarrant ? 'Arama iznin var' : 'Arama iznin yok'}</div>
                   <div className={styles.clueText}>
                     {hasWarrant
-                      ? 'Bu mekânı araştırabilirsin. Neyi, nerede aradığını anlat; bulduğun kanıt Envanter’ine düşer.'
+                      ? hasSearchScene
+                        ? 'Bu mekânı araştırabilirsin. Dağınıklığın içinde aradığını bul; bulduğun kanıt Envanter’ine düşer.'
+                        : 'Bu mekânı araştırabilirsin. Neyi, nerede aradığını anlat; bulduğun kanıt Envanter’ine düşer.'
                       : `Burayı araştırmak için önce bu mekân için arama izni almalısın.${
                           warrants.info?.issuers.length
                             ? ` İzni ${issuerNames(warrants.info.issuers, scenarioType || 'medieval')} verir; sorgu ekranındaki "Arama İzni İste" ile iste.`
@@ -394,7 +399,9 @@ function InteriorScene({
                 <Link
                   href={
                     isSearchSpot(activeHotspot)
-                      ? `${activeHotspot.actionHref}?ara=1`
+                      ? hasSearchScene
+                        ? `/search/${locationData.id}`
+                        : `${activeHotspot.actionHref}?ara=1`
                       : activeHotspot.actionHref
                   }
                   className={styles.actionBtn}

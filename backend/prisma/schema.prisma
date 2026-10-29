@@ -62,6 +62,7 @@ model GameSession {
   boardThoughtDay Int              @default(0)  // Son "Düşün"ün günü; günde bir kez düşünülür
   characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
   abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
+  searchState    Json?                          // Mekân aramaları (tıkla-bul): her mekânın denemesi, bulunanlar, süre (src/search/search-game.ts)
   verdictReport  Json?                          // Hüküm Dosyası: oyuncunun raporu ve puanı (src/game-sessions/verdict/verdict-report.ts)
   personaState   Json?                          // Katil personası: işlenen geceler, gerçekleşen hamleler ve sabah gazeteleri (src/personas/persona-night.ts)
   storyId        String?                        // Havuzdan seçilmişse bağlı olduğu hikâye paketi

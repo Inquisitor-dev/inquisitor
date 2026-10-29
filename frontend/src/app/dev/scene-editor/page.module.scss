@@ -1,0 +1,173 @@
+@use '../../../styles/variables' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $sp-md;
+  background: $bg-color;
+  color: $text-parchment;
+  font-family: $font-body;
+  font-size: 0.9rem;
+
+  input,
+  select,
+  textarea {
+    background: #151311;
+    color: $text-parchment;
+    border: 1px solid $border-color;
+    padding: 4px 6px;
+    font: inherit;
+  }
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: $sp-md;
+}
+
+.heading {
+  font-family: $font-title;
+  font-size: 1.3rem;
+  margin: 0;
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: $text-muted;
+}
+
+.grow {
+  flex: 1;
+  min-width: 220px;
+}
+
+.button {
+  padding: 6px 12px;
+  background: $primary;
+  color: $text-parchment;
+  border: none;
+  cursor: pointer;
+}
+
+.help {
+  color: $text-muted;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: $sp-md;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.canvas {
+  overflow: auto;
+}
+
+.frame {
+  position: relative;
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+.box {
+  position: absolute;
+  border: 2px solid #e0bb5e;
+  background: rgba(224, 187, 94, 0.12);
+  pointer-events: none;
+}
+
+.boxFinal {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.boxSelected {
+  border-style: dashed;
+  border-color: #fff;
+}
+
+.boxLabel {
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 11px;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 0 4px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-md;
+}
+
+.list {
+  margin: 0;
+  padding-left: 20px;
+  max-height: 55vh;
+  overflow: auto;
+}
+
+%item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  margin-bottom: 4px;
+  border: 1px solid $border-color;
+
+  input:not([type='checkbox']) {
+    flex: 1 1 100%;
+  }
+}
+
+.item {
+  @extend %item;
+}
+
+.itemSelected {
+  @extend %item;
+  border-color: #e0bb5e;
+}
+
+.check {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.remove {
+  margin-left: auto;
+  background: none;
+  border: 1px solid $border-red;
+  color: $text-parchment;
+  cursor: pointer;
+}
+
+.output {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-sm;
+
+  textarea {
+    font-family: monospace;
+    font-size: 12px;
+  }
+}
