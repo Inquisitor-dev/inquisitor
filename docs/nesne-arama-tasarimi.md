@@ -56,7 +56,7 @@ Arama izni alınan mekân, anlatıcıyla konuşarak değil, mekânın dağınık
 - **Altyapı hazır:**
   - backend: `src/search/`, `GameSession.searchState`;
   - frontend: `/search/[locationId]?alan=<alan>` ekranı, iç mekânda alan başına "Burayı ara" ve `/dev/scene-editor` aracı (evren, mekân, alan seçilir).
-- **Ashenmoor Tavernası:** dört alanın (`barrels`, `fireplace`, `table`, `stairs`) görselleri ve işaretlemesi hazır, 13–20 nesne ve 3 asıl yer. Durumları `DRAFT`, yalnızca test modunda açılır; oynanıp beğenilince `READY` yapılacak.
+- **Ashenmoor (6 mekân, 23 alan):** görseller ve işaretleme hazır: taverna 4, kilise 4, değirmen 4, mezarlık 3, çiftlik 4, revir 4 alan; alan başına 12–22 aranacak nesne ve 3 asıl yer. Hepsi `DRAFT`, yalnızca test modunda açılır; oynanıp beğenilince `READY` yapılacak. Öbür dört evren için henüz görsel yok (eski anlatıcı araması).
 - **Üst üste binen kutular:** iki aranan nesnenin kutusu çakışırsa tıklama küçük kutuya sayılır; büyük eşyanın kutusu içindeki küçük eşyayı yutmaz. Kutusu komşularını da içine alan çapraz uzun eşyalar (kaval, yay) listeye alınmaz.
 
 ## Açık kararlar

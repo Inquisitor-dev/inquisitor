@@ -59,7 +59,7 @@ Run each in its own directory.
 - **A new universe** needs an entry in `UNIVERSE_REGISTRY` (backend), in each frontend per-universe registry plus `config/scenarioRegistry.ts` / `shared/types/scenario.ts`, and in mobile's `gameContent.ts`.
 - **Copy:** user-facing text uses the informal "sen" form and TDK spelling with diacritics (hikâye, mekân, mahkûm, dükkân). Never write Turkish without its special characters.
 - **Uppercase text:** `<html lang="tr">` makes CSS `text-transform: uppercase` follow Turkish rules (i → İ). Mark uppercased English or Latin text with `lang="en"` (e.g. "The Inquisitor"). In JS, use `toLocaleUpperCase('tr-TR')`.
-- **Test mode (no AI):** with `ALLOW_TEST_MODE=true` on the backend, `POST /game-sessions` with `testMode: true` builds a canned scenario and NPCs answer with stock replies — no Gemini quota used, no quota counters touched. Use this for exercising game flow locally. Must stay off in production.
+- **Test mode (no AI):** with `ALLOW_TEST_MODE=true` on the backend, `POST /game-sessions` with `testMode: true` builds a canned scenario and NPCs answer with stock replies — no Gemini quota used, no quota counters touched. The inventory starts with a search warrant for every place of the scenario, so the search scenes can be tried at once. Use this for exercising game flow locally. Must stay off in production.
 - **LLM usage:** every LLM call goes through `LlmService.complete` with a usage context (kind, `sessionId`), so token usage is logged (`backend/CLAUDE.md`, `llm/`).
 - **Request bodies:** a new backend body field must be declared in its `class-validator` DTO or the global `ValidationPipe` drops it (`backend/CLAUDE.md`).
 

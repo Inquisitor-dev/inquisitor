@@ -316,19 +316,26 @@ describe('mizaç', () => {
 });
 
 describe('kanıtın arama alanı', () => {
-  it('sahnesi olan her mekânda kanıt o mekânın bir alanına konur', () => {
-    const plans = plansFor('medieval', 'easy', 60);
-    const tavernAreas = new Set(plans.map((p) => p.searchAreas?.tavern));
-    // Ashenmoor Tavernası'nın dört alanı var; hepsi çekilebilir
-    expect([...tavernAreas].sort()).toEqual([
-      'barrels',
-      'fireplace',
-      'stairs',
-      'table',
-    ]);
-    // Sahnesi olmayan mekânlarda alan yoktur
+  // Ashenmoor'un her mekânının hotspot'ları (frontend config/interiors/medieval.ts) ile aynı kimlikler
+  const AREAS: Record<string, string[]> = {
+    tavern: ['barrels', 'fireplace', 'stairs', 'table'],
+    church: ['altar', 'candelabra', 'pulpit', 'tapestry'],
+    mill: ['grindstone', 'marked_sacks', 'stairs', 'worktable'],
+    graveyard: ['lantern', 'mausoleum', 'open_grave'],
+    farm: ['hay_bales', 'hayloft', 'secret_chest', 'tools'],
+    clinic: ['apothecary_table', 'exam_cot', 'fireplace', 'shelves'],
+  };
+
+  it('sahnesi olan her mekânda kanıt o mekânın bir alanına konur, hepsi çekilebilir', () => {
+    const plans = plansFor('medieval', 'hard', 120);
+    for (const [location, areas] of Object.entries(AREAS)) {
+      const drawn = new Set(plans.map((p) => p.searchAreas?.[location]));
+      expect([...drawn].sort()).toEqual(areas);
+    }
     for (const plan of plans)
-      expect(Object.keys(plan.searchAreas ?? {})).toEqual(['tavern']);
+      expect(Object.keys(plan.searchAreas ?? {}).sort()).toEqual(
+        Object.keys(AREAS).sort(),
+      );
   });
 
   it('sahnesi olmayan evrende alan seçilmez', () => {
