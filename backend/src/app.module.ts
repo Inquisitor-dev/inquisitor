@@ -13,6 +13,7 @@ import { LlmModule } from './llm/llm.module';
 import { MarketModule } from './market/market.module';
 import { PaymentsModule } from './payments/payments.module';
 import { StoriesModule } from './stories/stories.module';
+import { SearchModule } from './search/search.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -36,6 +37,7 @@ import { APP_GUARD } from '@nestjs/core';
     MarketModule,
     PaymentsModule,
     StoriesModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

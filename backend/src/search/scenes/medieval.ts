@@ -1,0 +1,208 @@
+import type { SearchSceneDef } from '../search-scene';
+
+// Ashenmoor Tavernası'nın arama alanları. Görseller docs/nesne-arama-gorselleri.md istemleriyle üretildi;
+// sahnede birden çok kopyası olan eşyalar (kupa, mum, çizme, anahtar…) ve kutusu komşularını da içine alan
+// çapraz uzun eşyalar listeye alınmadı.
+export const MEDIEVAL_SEARCH_SCENES: SearchSceneDef[] = [
+  {
+    universe: 'medieval',
+    locationId: 'tavern',
+    areaId: 'barrels',
+    clueSpot: 'tezgâh arkasındaki raflarda, eşyaların arasında',
+    image: '/search-scenes/medieval/tavern/barrels.webp',
+    status: 'DRAFT',
+    objects: [
+      { id: 'boynuz', label: 'Boynuz', box: [3, 29, 12, 11] },
+      { id: 'davul', label: 'Küçük davul', box: [8, 45, 6, 10] },
+      { id: 'tuy_demeti', label: 'Tüy demeti', box: [3.5, 63, 8.5, 12] },
+      { id: 'mahmuz', label: 'Mahmuz', box: [48.5, 9.5, 9.5, 12] },
+      { id: 'mor_kese', label: 'Mor kese', box: [42, 49, 6.5, 10.5] },
+      { id: 'uzengi', label: 'Üzengi', box: [61, 68, 4.5, 12.5] },
+      { id: 'kamci', label: 'Kamçı', box: [61, 7, 10.5, 24] },
+      { id: 'fener', label: 'Fener', box: [72.5, 5, 4.5, 15] },
+      { id: 'bakir_testi', label: 'Bakır testi', box: [52, 25.5, 6.5, 14.5] },
+      { id: 'acik_kitap', label: 'Açık kitap', box: [64, 26, 13, 14] },
+      { id: 'zirh_eldiveni', label: 'Zırh eldiveni', box: [81, 28, 9, 12] },
+      { id: 'yun_bere', label: 'Yün bere', box: [90, 31, 6, 8.5] },
+      { id: 'deri_matara', label: 'Deri matara', box: [61.5, 48, 5, 11] },
+      { id: 'yirtik_pelerin', label: 'Yırtık pelerin', box: [90, 44, 7, 31] },
+      { id: 'tahil_cuvali', label: 'Tahıl çuvalı', box: [70, 63, 7.5, 14.5] },
+      { id: 'kurklu_palto', label: 'Kürklü palto', box: [70, 81, 9, 18.5] },
+      { id: 'ot_demeti', label: 'Ot demeti', box: [77.5, 76, 6, 21.5] },
+    ],
+    finalSpots: [
+      {
+        id: 'delikli_sandik',
+        box: [50, 50, 8, 9],
+        prompt:
+          'Kanıt ortadaki rafta duran, kapağı delik küçük tahta sandıkta olabilir.',
+      },
+      {
+        id: 'ipli_sandik',
+        box: [22.5, 84, 9, 13.5],
+        prompt: 'Kanıt sol alt rafta, iple sarılmış sandıkta olabilir.',
+      },
+      {
+        id: 'bagli_cuval',
+        box: [42, 83, 6.5, 14],
+        prompt: 'Kanıt alt rafın ortasındaki ağzı bağlı çuvalda olabilir.',
+      },
+    ],
+  },
+  {
+    universe: 'medieval',
+    locationId: 'tavern',
+    areaId: 'fireplace',
+    clueSpot: 'şöminenin rafında, asılı eşyaların arasında',
+    image: '/search-scenes/medieval/tavern/fireplace.webp',
+    status: 'DRAFT',
+    objects: [
+      { id: 'fener', label: 'Fener', box: [43, 1.5, 5.5, 18] },
+      { id: 'catlak_testi', label: 'Çatlak testi', box: [52, 1.5, 6.5, 18] },
+      { id: 'zincir_eldiven', label: 'Zincir eldiven', box: [59, 12.5, 8, 15] },
+      { id: 'tava', label: 'Tava', box: [66, 20.5, 6, 18.5] },
+      { id: 'mahmuz', label: 'Mahmuz', box: [66.5, 41, 5, 8.5] },
+      { id: 'islemeli_canta', label: 'İşlemeli çanta', box: [50, 33, 7, 16] },
+      {
+        id: 'asili_baliklar',
+        label: 'Asılı balıklar',
+        box: [57.5, 50.5, 5, 20],
+      },
+      {
+        id: 'tahta_heykelcik',
+        label: 'Tahta heykelcik',
+        box: [54, 67, 2.5, 12],
+      },
+      { id: 'bakir_kazan', label: 'Bakır kazan', box: [46.8, 71, 5.5, 9] },
+      { id: 'post', label: 'Hayvan postu', box: [63, 60, 9.5, 19] },
+      { id: 'pipo', label: 'Pipo', box: [76, 76.5, 4.5, 5] },
+      { id: 'sarimsak', label: 'Sarımsak dizisi', box: [86.5, 50, 4, 20] },
+      { id: 'ag', label: 'Balık ağı', box: [35.5, 50, 9.5, 17] },
+      { id: 'yun_yumagi', label: 'Yün yumağı', box: [32.5, 73.5, 5, 6.5] },
+      { id: 'tahta_kasik', label: 'Tahta kaşık', box: [37, 70, 10.5, 11] },
+      { id: 'ot_demeti', label: 'Ot demeti', box: [39, 21, 6, 20.5] },
+      { id: 'demir_cengel', label: 'Demir çengel', box: [11.5, 51, 2.5, 17] },
+      { id: 'basak_demeti', label: 'Başak demeti', box: [12, 43, 8, 7.5] },
+      { id: 'atki', label: 'Atkı', box: [86.5, 74, 6, 24] },
+    ],
+    finalSpots: [
+      {
+        id: 'kucuk_kutu',
+        box: [26.3, 70, 6, 9],
+        prompt: 'Kanıt ocak rafının solundaki küçük tahta kutuda olabilir.',
+      },
+      {
+        id: 'tahta_takoz',
+        box: [74.5, 25, 5, 8],
+        prompt: 'Kanıt sağda, üst rafı tutan tahta takozun arkasında olabilir.',
+      },
+      {
+        id: 'bez_bohca',
+        box: [86.5, 72.5, 7.5, 8],
+        prompt: 'Kanıt ocak rafının sağ ucundaki bez bohçada olabilir.',
+      },
+    ],
+  },
+  {
+    universe: 'medieval',
+    locationId: 'tavern',
+    areaId: 'table',
+    clueSpot: 'ortadaki masaların üstünde, dağınık eşyaların arasında',
+    image: '/search-scenes/medieval/tavern/table.webp',
+    status: 'DRAFT',
+    objects: [
+      {
+        id: 'zirh_eldiveni',
+        label: 'Zırh eldiveni',
+        box: [49.5, 14.5, 8.5, 18],
+      },
+      { id: 'migfer', label: 'Miğfer', box: [61, 15, 10, 13] },
+      { id: 'zincir_zirh', label: 'Zincir zırh', box: [65, 28, 11, 22] },
+      { id: 'pusula', label: 'Pusula', box: [44.5, 50.5, 4.5, 7.5] },
+      { id: 'el_aynasi', label: 'Çatlak el aynası', box: [75.5, 50.5, 7, 8] },
+      { id: 'altin_zincir', label: 'Altın zincir', box: [82.5, 49.5, 8, 13] },
+      { id: 'iskambil', label: 'İskambil kartları', box: [66, 61, 10, 17.5] },
+      { id: 'balta', label: 'Balta', box: [61, 70.5, 5.5, 9] },
+      { id: 'makara', label: 'İplik makarası', box: [63.3, 82, 3.8, 5.5] },
+      { id: 'pipo', label: 'Pipo', box: [82.4, 77.5, 4.3, 10] },
+      { id: 'kucuk_fener', label: 'Küçük fener', box: [91, 77.5, 6, 10.5] },
+      { id: 'sepet', label: 'Hasır sepet', box: [92, 38, 7.9, 20] },
+      { id: 'kuru_balik', label: 'Kuru balık', box: [81, 12.5, 7, 9.5] },
+      { id: 'bakir_kepce', label: 'Bakır kepçe', box: [14.3, 63, 7, 15] },
+      {
+        id: 'kilitli_kitap',
+        label: 'Kilitli kitap',
+        box: [43.5, 66, 10.5, 21],
+      },
+      {
+        id: 'kalay_masrapa',
+        label: 'Kalay maşrapa',
+        box: [28.7, 50, 7.7, 13.5],
+      },
+      { id: 'cizme', label: 'Deri çizme', box: [80, 66.5, 8.5, 10] },
+    ],
+    finalSpots: [
+      {
+        id: 'sol_cuval',
+        box: [1, 67, 12.5, 19.5],
+        prompt: 'Kanıt masanın sol ucundaki bağlı çuvalda olabilir.',
+      },
+      {
+        id: 'pelerin_alti',
+        box: [24, 73, 12, 26],
+        prompt:
+          'Kanıt masanın alt ortasına atılmış koyu pelerinin altında olabilir.',
+      },
+      {
+        id: 'sag_cuval',
+        box: [86, 10, 10, 22],
+        prompt: 'Kanıt masanın sağ üst köşesindeki çuvalda olabilir.',
+      },
+    ],
+  },
+  {
+    universe: 'medieval',
+    locationId: 'tavern',
+    areaId: 'stairs',
+    clueSpot: 'merdivenin altındaki eşya yığınında',
+    image: '/search-scenes/medieval/tavern/stairs.webp',
+    status: 'DRAFT',
+    objects: [
+      {
+        id: 'bakir_tabak',
+        label: 'İşlemeli bakır tabak',
+        box: [10.3, 38, 7.2, 11.5],
+      },
+      { id: 'tahta_kepce', label: 'Tahta kepçe', box: [21.2, 89, 9.8, 10.5] },
+      { id: 'matara', label: 'Matara', box: [45, 48.5, 4.8, 10] },
+      { id: 'fener', label: 'Fener', box: [73, 47.5, 5, 15] },
+      { id: 'samdan', label: 'Pirinç şamdan', box: [72.5, 28.5, 5, 11.5] },
+      { id: 'tomar', label: 'Rulo tomar', box: [66.8, 40.5, 3.5, 10] },
+      { id: 'baston', label: 'Baston', box: [85, 8.5, 6.5, 20.5] },
+      { id: 'kalkan', label: 'Kalkan', box: [88, 75.5, 11.9, 24.4] },
+      { id: 'mahmuz', label: 'Mahmuz', box: [77.5, 77, 4.5, 11] },
+      { id: 'kurk', label: 'Kürk parçası', box: [81.3, 60, 6.3, 11.5] },
+      { id: 'ig', label: 'İğ', box: [59, 64.5, 6.5, 15.5] },
+      { id: 'kerpeten', label: 'Kerpeten', box: [66.4, 93.5, 5.3, 6] },
+      { id: 'cekic', label: 'Çekiç', box: [51, 91.5, 5, 8.4] },
+    ],
+    finalSpots: [
+      {
+        id: 'zincirli_sandik',
+        box: [81, 44, 13, 15],
+        prompt: 'Kanıt sağda, zincirle sarılmış sandıkta olabilir.',
+      },
+      {
+        id: 'cekmeceli_kutu',
+        box: [60, 41.5, 7, 10.5],
+        prompt: 'Kanıt ortadaki küçük çekmeceli kutuda olabilir.',
+      },
+      {
+        id: 'sandik_mandali',
+        box: [11.5, 63.5, 4.5, 6.5],
+        prompt:
+          'Kanıt soldaki büyük sandığın demir mandalının altında olabilir.',
+      },
+    ],
+  },
+];

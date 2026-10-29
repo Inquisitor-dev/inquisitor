@@ -1,0 +1,465 @@
+@use '../../styles/variables' as *;
+
+$gold: #e0bb5e;
+
+.viewport {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #030303;
+  user-select: none;
+  // Üst şerit, sahne ve nesne listesi alt alta; şeritler görselin üstüne binmez
+  display: flex;
+  flex-direction: column;
+}
+
+// Görsel bu alana sığar; yakınlaştırınca sürüklenerek gezilir (useSearchPan)
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+}
+
+.sceneFrame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.sceneImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+// ─── TIKLAMA İŞARETLERİ VE İPUCU ───────────────────────────────────────────
+%mark {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: markFade 0.9s ease-out forwards;
+}
+
+.markFound {
+  @extend %mark;
+  border: 2px solid $gold;
+  color: $gold;
+  background: rgba(10, 8, 4, 0.55);
+}
+
+.markMiss {
+  @extend %mark;
+  border: 2px solid #c0392b;
+  color: #e74c3c;
+  background: rgba(20, 4, 4, 0.55);
+}
+
+@keyframes markFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+.hint {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px dashed rgba($gold, 0.85);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  animation: hintPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markFound,
+  .markMiss,
+  .hint,
+  .notice {
+    animation: none;
+  }
+}
+
+// ─── TEST MODU: KUTULARIN YERİ (yalnızca geliştirmede) ─────────────────────
+%testBox {
+  position: absolute;
+  pointer-events: none;
+}
+
+.testBox {
+  @extend %testBox;
+  border: 2px solid #2ecc71;
+}
+
+.testBoxFound {
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+.testFinal {
+  @extend %testBox;
+  border: 3px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.testFinalOther {
+  @extend %testBox;
+  border: 2px dashed rgba(231, 76, 60, 0.7);
+}
+
+.testLabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 1px 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+// ─── ÜST ŞERİT ─────────────────────────────────────────────────────────────
+.topBar {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: $sp-md;
+  padding: $sp-sm $sp-md;
+  background: rgba(8, 7, 6, 0.94);
+  border-bottom: 1px solid rgba($gold, 0.2);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $text-parchment;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border: 1px solid $border-color;
+  background: rgba(10, 10, 10, 0.85);
+
+  &:hover {
+    border-color: $gold;
+  }
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: $font-title;
+  color: $text-parchment;
+  font-size: 1.05rem;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: $sp-sm;
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: $gold;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid rgba($gold, 0.35);
+}
+
+.timerLow {
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.6);
+}
+
+.hintBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid $border-color;
+  color: $text-parchment;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+// ─── ALT ŞERİT: ARANACAKLAR ────────────────────────────────────────────────
+.tray {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  padding: $sp-sm $sp-md $sp-md;
+  background: rgba(8, 7, 6, 0.94);
+  border-top: 1px solid rgba($gold, 0.3);
+}
+
+.targets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 10px;
+}
+
+%chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  border: 1px solid $border-color;
+}
+
+.target {
+  @extend %chip;
+  color: $text-parchment;
+}
+
+.targetFound {
+  @extend %chip;
+  color: $text-muted;
+  text-decoration: line-through;
+  border-color: rgba($gold, 0.4);
+
+  svg {
+    color: $gold;
+  }
+}
+
+.finalStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.finalLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.prompt {
+  margin: 0;
+  text-align: center;
+  font-family: $font-title;
+  color: $gold;
+  font-size: 1.05rem;
+}
+
+// Liste bitince sahnenin ortasında beliren duyuru; tıklamayı engellemez
+.notice {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+  padding: $sp-md $sp-lg;
+  text-align: center;
+  background: rgba(8, 7, 6, 0.9);
+  border: 1px solid rgba($gold, 0.5);
+  color: $text-parchment;
+  pointer-events: none;
+  animation: noticeFade 3.5s ease-out forwards;
+
+  strong {
+    font-family: $font-title;
+    color: $gold;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes noticeFade {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+// ─── PENCERELER ────────────────────────────────────────────────────────────
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $sp-md;
+  background: rgba(3, 3, 3, 0.72);
+}
+
+.card {
+  width: 100%;
+  max-width: 460px;
+  padding: $sp-lg;
+  background: #0e0c0a;
+  border: 1px solid rgba($gold, 0.35);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.cardTitle {
+  margin: 0 0 $sp-md;
+  font-family: $font-title;
+  color: $text-parchment;
+  font-size: 1.4rem;
+}
+
+.cardText {
+  margin: 0 0 $sp-md;
+  color: $text-muted;
+  line-height: 1.55;
+}
+
+.cardNote {
+  margin: 0 0 $sp-md;
+  color: $gold;
+  font-size: 0.85rem;
+}
+
+.clue {
+  margin: 0 0 $sp-md;
+  padding: $sp-md;
+  border-left: 3px solid $primary;
+  background: rgba(232, 220, 196, 0.05);
+  color: $text-parchment;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: $sp-sm;
+}
+
+%btn {
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.primaryBtn {
+  @extend %btn;
+  background: $primary;
+  color: $text-parchment;
+  border-color: $primary;
+
+  &:hover:not(:disabled) {
+    background: #a00404;
+  }
+}
+
+.secondaryBtn {
+  @extend %btn;
+  background: transparent;
+  color: $text-parchment;
+  border-color: $border-color;
+
+  &:hover {
+    border-color: $gold;
+  }
+}
+
+@media (max-width: 640px) {
+  .backText {
+    display: none;
+  }
+
+  // Süre ve ipucu ikinci satıra iner; yer adı sıkışmasın
+  .topBar {
+    flex-wrap: wrap;
+    gap: $sp-sm;
+    padding: $sp-sm;
+  }
+
+  .tools {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .title {
+    font-size: 0.95rem;
+  }
+
+  .target,
+  .targetFound {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+  }
+}

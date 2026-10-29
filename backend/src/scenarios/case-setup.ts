@@ -17,6 +17,7 @@ import { planPersona, type PersonaPlan } from './personas/persona-plan';
 import { planTownEvents, type TownEvent } from './personas/town-events';
 import { planWildcards, type WildcardPlan } from './wildcards';
 import type { CaseGraph } from './case-graph';
+import { SEARCH_SCENES } from '../search/scenes';
 
 // Vakanın kodla belirlenen gerçekleri. Yapay zekâ bu kararları değiştirmez, sadece etraflarına
 // hikâye yazar. Hüküm Dosyası ve Kanıt Defteri bu kayda göre puanlayacak/eşleştirecek.
@@ -44,6 +45,10 @@ export interface CasePlan {
   sceneState: SceneState;
   // Cinayetin işlendiği yer: evrenin olay yerlerinden biri (universes/*.ts crimeScenes)
   crimeSceneId: string;
+  // Her mekânda kanıtın bulunduğu arama alanı (tıkla-bul; search/scenes). Vakadan bağımsız rastgele seçilir,
+  // hikâye kanıtı bu alana yazar; mekânın öteki alanları kilitlidir. Alanı olmayan mekân listede yoktur.
+  // Eski planlarda (havuzdaki hikâyeler) yoktur; alanı arama servisi seçer.
+  searchAreas?: Record<string, string>;
   crimeSceneClue: {
     authentic: boolean;
     // Gerçek izde havuzdan seçilen sabit metin; tuzakta metni yapay zekâ yazar
@@ -186,10 +191,14 @@ export function planCase(
     for (let detail = 0; detail < DETAIL_ATTEMPTS; detail++) {
       plan = withCaseDetails(base, scenarioConfig, difficulty, rng);
       if (isPlanSound(plan, difficulty)) {
-        return withWildcards(
-          withPersona(plan, scenarioConfig, difficulty, rng),
+        return withSearchAreas(
+          withWildcards(
+            withPersona(plan, scenarioConfig, difficulty, rng),
+            scenarioConfig,
+            difficulty,
+            rng,
+          ),
           scenarioConfig,
-          difficulty,
           rng,
         );
       }
@@ -199,12 +208,35 @@ export function planCase(
   logger.warn(
     `Sağlam plan bulunamadı (${scenarioConfig.scenarioType}/${difficulty}/${murderStyle}); son taslak kullanılıyor.`,
   );
-  return withWildcards(
-    withPersona(plan!, scenarioConfig, difficulty, rng),
+  return withSearchAreas(
+    withWildcards(
+      withPersona(plan!, scenarioConfig, difficulty, rng),
+      scenarioConfig,
+      difficulty,
+      rng,
+    ),
     scenarioConfig,
-    difficulty,
     rng,
   );
+}
+
+// Kanıtın her mekânda hangi arama alanında bulunacağı. Wildcard'dan da sonra çekilir: önceki rastgele
+// seçimlerin sırası değişmesin. Seçim vakaya bakmaz; katilin mekânındaki alan ötekilerden farklı seçilmez.
+function withSearchAreas(
+  plan: CasePlan,
+  scenarioConfig: ScenarioConfig,
+  rng: Rng,
+): CasePlan {
+  const searchAreas: Record<string, string> = {};
+  for (const location of scenarioConfig.locationDefinitions) {
+    const areas = SEARCH_SCENES.filter(
+      (s) =>
+        s.universe === scenarioConfig.scenarioType &&
+        s.locationId === location.id,
+    ).map((s) => s.areaId);
+    if (areas.length > 0) searchAreas[location.id] = pick(areas, rng);
+  }
+  return { ...plan, searchAreas };
 }
 
 // Wildcard en sonda çekilir: önceki rastgele seçimlerin sırası değişmesin. Kapanışı olan kişi (şehir dışı,
