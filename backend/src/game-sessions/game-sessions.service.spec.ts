@@ -409,6 +409,24 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
     expectNoSecrets(session);
   });
 
+  it('test oturumunda bütün mekânların arama izni envanterde hazır gelir, normal oturumda gelmez', async () => {
+    const { service, create } = setupCreate();
+    const pkg = await service.generateStoryPackage('medieval', 'hard', {
+      testMode: true,
+    });
+    await service.setupSessionFromPackage('owner', pkg, { isTestMode: true });
+    await service.setupSessionFromPackage('owner', pkg, { isTestMode: false });
+
+    const calls = create.mock.calls as unknown as [
+      { data: { activeWarrants: string[] } },
+    ][];
+    const [test, live] = calls.map((c) => c[0].data);
+    expect([...test.activeWarrants].sort()).toEqual(
+      ['church', 'clinic', 'farm', 'graveyard', 'mill', 'tavern'].sort(),
+    );
+    expect(live.activeWarrants).toEqual([]);
+  });
+
   describe('STORY_POOL_ENABLED ve havuzdan vaka açma', () => {
     afterEach(() => {
       delete process.env.STORY_POOL_ENABLED;

@@ -181,6 +181,12 @@ export class GameSessionsService {
         }) as unknown as Prisma.InputJsonValue,
         status: 'ACTIVE',
         isTestMode,
+        // Test oturumunda bütün mekânların arama izni envanterde hazır gelir (arama sahnelerini denemek için)
+        activeWarrants: isTestMode
+          ? scenarioConfig.locationDefinitions
+              .map((location) => location.id)
+              .filter((id) => id !== 'crime_scene')
+          : [],
         characterId,
         storyId: options?.storyId ?? null,
       },
@@ -391,7 +397,8 @@ export class GameSessionsService {
     }
     // Çatı Geçişi'yle o gece dışarıdaysa baskın olmaz, ev aranmış bulunur (gün olağan kapanır)
     const awayTonight =
-      parseAbilityState(session.abilityState).rooftop?.day === session.currentDay;
+      parseAbilityState(session.abilityState).rooftop?.day ===
+      session.currentDay;
     const raid = await beginRaid(
       this.prisma,
       session,
@@ -432,7 +439,9 @@ export class GameSessionsService {
       session.difficulty,
     ).npcDefinitions.map((npc) => npc.id);
     if (!suspects.includes(npcId)) {
-      throw new BadRequestException('Yalnızca bir şüpheliyi nezarete aldırabilirsin.');
+      throw new BadRequestException(
+        'Yalnızca bir şüpheliyi nezarete aldırabilirsin.',
+      );
     }
     const closed = closedMessage(session, npcId);
     if (closed) throw new BadRequestException(closed);
@@ -464,7 +473,11 @@ export class GameSessionsService {
     if (!view.active || !view.actions?.some((a) => a.id === action)) {
       throw new BadRequestException('Bu aksiyon şu an yapılamaz.');
     }
-    const raid = await applyRaidAction(this.prisma, owned, action as RaidAction);
+    const raid = await applyRaidAction(
+      this.prisma,
+      owned,
+      action as RaidAction,
+    );
     if (raid?.outcome === 'DEATH') {
       const lost = await this.prisma.gameSession.update({
         where: { id: sessionId },
@@ -545,7 +558,10 @@ export class GameSessionsService {
   async getNewspaper(sessionId: string, userId: string) {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
     const day = session.currentDay;
-    return { day, paper: paperForDay(parsePersonaState(session.personaState), day) };
+    return {
+      day,
+      paper: paperForDay(parsePersonaState(session.personaState), day),
+    };
   }
 
   // Arama izinleri: kimin verdiği ve kaç hak kaldığı. İzin vereni oyuncu açıkça görsün diye
@@ -875,7 +891,9 @@ export class GameSessionsService {
       },
     });
     // Baskında çalınan kanıt kaydıyla kalır, "çalındı" diye işaretlenir
-    return rows.map((row) => (stolen.has(row.id) ? { ...row, stolen: true } : row));
+    return rows.map((row) =>
+      stolen.has(row.id) ? { ...row, stolen: true } : row,
+    );
   }
 
   async findActiveSession(userId: string) {
