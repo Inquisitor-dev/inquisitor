@@ -7,12 +7,13 @@ import { recordEvidence } from '../npcs/evidence-recorder';
 import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
 import type { CaseFacts } from '../scenarios/case-setup';
 import { getLocalizedLocationLabel } from '../scenarios/scenario-config';
-import { findSearchScene } from './scenes';
+import { findSearchScene, searchAreas } from './scenes';
 import type { SearchSceneDef } from './search-scene';
 import {
   applyClick,
   parseSearchState,
   publicView,
+  seededRng,
   startAttempt,
   takeHint,
   withExpiry,
@@ -25,7 +26,9 @@ type Session = Awaited<ReturnType<typeof findOwnedSession>>;
 // Gece (game-sessions.service.ts advanceTime ile aynı sınır)
 const MAX_TIME_OF_DAY = 4;
 
-// Mekân araması (tıkla-bul). Arama izniyle başlar; asıl yer bulununca mekânın ipucu kanıt olarak
+// Mekân araması (tıkla-bul). Arama izniyle başlar. Kanıt mekânın tek bir alanındadır (vaka planı,
+// caseFacts.searchAreas; hikâye kanıtı oraya yazar): yalnızca o alan aranabilir, öbürleri kilitlidir ve
+// başarısız aramadan sonra da aynı alan yeni listeyle aranır. Asıl yer bulununca mekânın ipucu kanıt olarak
 // kaydedilir ve izin harcanır. Kanıt metni her zaman vaka kaydından gelir (locationClues).
 @Injectable()
 export class SearchService {
@@ -37,14 +40,13 @@ export class SearchService {
 
   private async load(sessionId: string, userId: string, locationId: string) {
     const session = await findOwnedSession(this.prisma, sessionId, userId);
-    const scene = findSearchScene(
-      session.scenarioType,
-      locationId,
-      session.isTestMode,
-    );
     const state = parseSearchState(session.searchState);
-    // Süresi dolan arama okunduğu anda başarısız sayılır ve vaktini harcar
+    // Son denemenin sahnesi (denemenin yapıldığı alan)
     const stored = state[locationId];
+    const scene = stored
+      ? this.sceneFor(session, locationId, stored.areaId)
+      : null;
+    // Süresi dolan arama okunduğu anda başarısız sayılır ve vaktini harcar
     if (scene && stored?.status === 'RUNNING') {
       const expired = withExpiry(stored, session.difficulty, this.now());
       if (expired.status === 'FAILED') {
@@ -54,6 +56,32 @@ export class SearchService {
     return { session, scene, state };
   }
 
+  private sceneFor(session: Session, locationId: string, areaId: string) {
+    return findSearchScene(
+      session.scenarioType,
+      locationId,
+      areaId,
+      session.isTestMode,
+    );
+  }
+
+  // Kanıtın bulunduğu alan: vaka planındaki alan; planda yoksa (havuzdaki eski hikâyeler) ya da o alanın
+  // sahnesi kullanılamıyorsa oturuma tohumlanmış biri. Vakaya bakmaz.
+  private openArea(session: Session, locationId: string): string | null {
+    const areas = searchAreas(
+      session.scenarioType,
+      locationId,
+      session.isTestMode,
+    );
+    if (areas.length === 0) return null;
+    const planned = (
+      session.caseFacts as { searchAreas?: Record<string, string> } | null
+    )?.searchAreas?.[locationId];
+    if (planned && areas.includes(planned)) return planned;
+    const rng = seededRng(`${session.id}:${locationId}:area`);
+    return areas[Math.floor(rng() * areas.length)];
+  }
+
   // Sahnesi olmayan mekân eski yolla (anlatıcıyla) aranır; istemci buna göre yönlendirir
   async getSearch(sessionId: string, userId: string, locationId: string) {
     const { session, scene, state } = await this.load(
@@ -61,39 +89,60 @@ export class SearchService {
       userId,
       locationId,
     );
-    if (!scene) return { available: false, view: null };
+    const areas = searchAreas(
+      session.scenarioType,
+      locationId,
+      session.isTestMode,
+    );
+    if (areas.length === 0)
+      return { available: false, areas, openArea: null, view: null };
     const attempt = state[locationId];
     return {
       available: true,
-      view: attempt ? this.view(session, scene, attempt) : null,
+      areas,
+      openArea: this.openArea(session, locationId),
+      view: attempt && scene ? this.view(session, scene, attempt) : null,
       timeOfDay: session.timeOfDay,
     };
   }
 
-  async start(sessionId: string, userId: string, locationId: string) {
-    const { session, scene, state } = await this.load(
-      sessionId,
-      userId,
-      locationId,
-    );
+  async start(
+    sessionId: string,
+    userId: string,
+    locationId: string,
+    areaId: string,
+  ) {
+    const {
+      session,
+      scene: lastScene,
+      state,
+    } = await this.load(sessionId, userId, locationId);
     const existing = state[locationId] ?? null;
     // Aranmış mekânın izni harcanmıştır; "izin yok" yerine bu söylenir
     if (existing?.status === 'WON') {
       throw new BadRequestException('Bu mekânı zaten aradın.');
     }
     this.assertCanSearch(session, locationId);
-    if (!scene) {
+    // Kanıt yalnızca açık alanda aranır; öbür alanlar kilitlidir
+    const open = this.openArea(session, locationId);
+    if (!open || areaId !== open) {
       throw new BadRequestException(
-        'Bu mekânın arama sahnesi henüz hazır değil.',
+        'Burada aranmaya değer bir şey görünmüyor.',
       );
     }
-    if (existing?.status === 'RUNNING') {
+    if (existing?.status === 'RUNNING' && lastScene) {
       return {
-        view: this.view(session, scene, existing),
+        view: this.view(session, lastScene, existing),
         timeOfDay: session.timeOfDay,
       };
     }
-    // Başarısız aramadan sonra yeni liste ve yeni asıl yerle yeniden denenir
+    const scene = this.sceneFor(session, locationId, open);
+    if (!scene) {
+      throw new BadRequestException(
+        'Bu alanın arama sahnesi henüz hazır değil.',
+      );
+    }
+    // Başarısız aramadan sonra aynı alan yeni liste ve yeni asıl yerle yeniden aranır
     const attempt = startAttempt({
       scene,
       difficulty: session.difficulty,
@@ -161,6 +210,29 @@ export class SearchService {
       hint: result.hint,
       view: this.view(session, scene, saved),
       timeOfDay: session.timeOfDay,
+    };
+  }
+
+  // Test modu (yapay zekâsız oturum): işaretlemeyi denetlemek için süren denemenin kutuları.
+  // Normal oyunda kutular istemciye hiç gitmez.
+  async testSpots(sessionId: string, userId: string, locationId: string) {
+    const { session, scene, attempt } = await this.running(
+      sessionId,
+      userId,
+      locationId,
+    );
+    if (!session.isTestMode) {
+      throw new BadRequestException('Yalnızca test modunda kullanılabilir.');
+    }
+    return {
+      targets: scene.objects
+        .filter((o) => attempt.targets.includes(o.id))
+        .map((o) => ({ id: o.id, label: o.label, box: o.box })),
+      finalSpots: scene.finalSpots.map((s) => ({
+        id: s.id,
+        box: s.box,
+        current: s.id === attempt.finalSpotId,
+      })),
     };
   }
 

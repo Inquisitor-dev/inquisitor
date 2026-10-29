@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { SearchClickDto } from './dto/search.dto';
+import { SearchClickDto, SearchStartDto } from './dto/search.dto';
 import { SearchService } from './search.service';
 
 type AuthedRequest = { user: { userId: string } };
@@ -35,8 +35,14 @@ export class SearchController {
     @Request() req: AuthedRequest,
     @Param('id') sessionId: string,
     @Param('locationId') locationId: string,
+    @Body() dto: SearchStartDto,
   ) {
-    return this.searchService.start(sessionId, req.user.userId, locationId);
+    return this.searchService.start(
+      sessionId,
+      req.user.userId,
+      locationId,
+      dto.areaId,
+    );
   }
 
   // Bir aramada onlarca tıklama olur; genel 20/dk sınırı burada oyunu keserdi
@@ -66,6 +72,16 @@ export class SearchController {
     @Param('locationId') locationId: string,
   ) {
     return this.searchService.hint(sessionId, req.user.userId, locationId);
+  }
+
+  @Get(':id/search/:locationId/test-spots')
+  @UseGuards(JwtAuthGuard)
+  testSpots(
+    @Request() req: AuthedRequest,
+    @Param('id') sessionId: string,
+    @Param('locationId') locationId: string,
+  ) {
+    return this.searchService.testSpots(sessionId, req.user.userId, locationId);
   }
 
   @Post(':id/search/:locationId/test-solve')

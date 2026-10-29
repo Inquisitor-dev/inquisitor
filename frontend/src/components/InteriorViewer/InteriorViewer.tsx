@@ -111,10 +111,21 @@ function InteriorScene({
     });
   };
 
-  // Sabit ipucu metni olmayan "ipucu" noktası, vakanın gerçek ipucunun aranabileceği bir yerdir
   const hasWarrant = inventory?.activeWarrants?.includes(locationData.id) ?? false;
-  // Tıkla-bul sahnesi olan mekân orada aranır; olmayan eski yolla, anlatıcıyla
-  const hasSearchScene = useSearchAvailability(locationData.id, hasWarrant);
+  // Tıkla-bul alanları olan mekânda kanıt tek bir alandadır (openArea; vaka planı seçer): yalnızca orası
+  // aranabilir, öbür alanlar kilitlidir. Alanı olmayan mekânda sabit ipucu metni olmayan "ipucu" noktası
+  // anlatıcıyla aranır.
+  const search = useSearchAvailability(locationData.id);
+  const searchAreas = search?.areas ?? [];
+  const hasSearchScene = searchAreas.length > 0;
+  const openArea = search?.openArea ?? null;
+  const lastSearch = search?.view ?? null;
+  const running = lastSearch?.status === 'RUNNING';
+  const searched = lastSearch?.status === 'WON';
+  const isSearchable = (hotspot: InteriorHotspot) =>
+    hasSearchScene ? searchAreas.includes(hotspot.id) : isSearchSpot(hotspot);
+  const isLockedArea = (hotspot: InteriorHotspot) =>
+    hasSearchScene && searchAreas.includes(hotspot.id) && hotspot.id !== openArea;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -214,7 +225,7 @@ function InteriorScene({
                 title={hotspot.title}
               >
                 <div className={styles.pinBeacon}>
-                  <HotspotGlyph hotspot={hotspot} size={20} />
+                  <HotspotGlyph hotspot={hotspot} size={20} searchable={isSearchable(hotspot)} />
                 </div>
                 <div className={styles.pinLabel}>
                   <span>{hotspot.title}</span>
@@ -320,14 +331,14 @@ function InteriorScene({
                       onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
                     />
                   ) : (
-                    <HotspotGlyph hotspot={activeHotspot} size={26} />
+                    <HotspotGlyph hotspot={activeHotspot} size={26} searchable={isSearchable(activeHotspot)} />
                   )}
                 </div>
                 <div>
                   <div className={styles.cardCategory}>
                     {activeHotspot.category === 'npc'
                       ? 'Şüpheli ya da Tanık'
-                      : isSearchSpot(activeHotspot)
+                      : isSearchable(activeHotspot)
                       ? 'Aranabilecek Yer'
                       : activeHotspot.category === 'clue'
                       ? 'Gizli İpucu ve Kanıt'
@@ -358,13 +369,31 @@ function InteriorScene({
                 </div>
               )}
 
-              {isSearchSpot(activeHotspot) && (
+              {isLockedArea(activeHotspot) && (
+                <div className={styles.clueBox}>
+                  <div className={styles.clueTitle}>Aranacak bir şey yok</div>
+                  <div className={styles.clueText}>
+                    Burayı göz ucuyla taradın; aranmaya değer bir şey görünmüyor. Dikkatini mekânın başka bir köşesine ver.
+                  </div>
+                </div>
+              )}
+
+              {isSearchable(activeHotspot) && !isLockedArea(activeHotspot) && hasSearchScene && (searched || running) && (
+                <div className={styles.clueBox}>
+                  <div className={styles.clueTitle}>{searched ? 'Bu mekânı aradın' : 'Arama sürüyor'}</div>
+                  <div className={styles.clueText}>
+                    {searched ? 'Bulduğun kanıt Envanter’inde.' : 'Burada başladığın arama sürüyor; süre işliyor.'}
+                  </div>
+                </div>
+              )}
+
+              {isSearchable(activeHotspot) && !isLockedArea(activeHotspot) && !(hasSearchScene && (searched || running)) && (
                 <div className={styles.clueBox}>
                   <div className={styles.clueTitle}>{hasWarrant ? 'Arama iznin var' : 'Arama iznin yok'}</div>
                   <div className={styles.clueText}>
                     {hasWarrant
                       ? hasSearchScene
-                        ? 'Bu mekânı araştırabilirsin. Dağınıklığın içinde aradığını bul; bulduğun kanıt Envanter’ine düşer.'
+                        ? 'Burayı arayabilirsin. Dağınıklığın içinde aradığını bul; bulduğun kanıt Envanter’ine düşer.'
                         : 'Bu mekânı araştırabilirsin. Neyi, nerede aradığını anlat; bulduğun kanıt Envanter’ine düşer.'
                       : `Burayı araştırmak için önce bu mekân için arama izni almalısın.${
                           warrants.info?.issuers.length
@@ -395,19 +424,31 @@ function InteriorScene({
                 </button>
               )}
 
-              {activeHotspot.actionHref && (!isSearchSpot(activeHotspot) || hasWarrant) && (
-                <Link
-                  href={
-                    isSearchSpot(activeHotspot)
-                      ? hasSearchScene
-                        ? `/search/${locationData.id}`
-                        : `${activeHotspot.actionHref}?ara=1`
-                      : activeHotspot.actionHref
-                  }
-                  className={styles.actionBtn}
-                >
-                  {activeHotspot.actionText || 'İlerle'} →
-                </Link>
+              {hasSearchScene && isSearchable(activeHotspot) ? (
+                isLockedArea(activeHotspot) ? null : running ? (
+                  <Link href={`/search/${locationData.id}?alan=${activeHotspot.id}`} className={styles.actionBtn}>
+                    Aramaya dön →
+                  </Link>
+                ) : (
+                  hasWarrant &&
+                  !searched && (
+                    <Link href={`/search/${locationData.id}?alan=${activeHotspot.id}`} className={styles.actionBtn}>
+                      Burayı ara →
+                    </Link>
+                  )
+                )
+              ) : (
+                // Tıkla-bul alanı olan mekânda eski anlatıcı araması (isSearchSpot) yoktur
+                activeHotspot.actionHref &&
+                !(hasSearchScene && isSearchSpot(activeHotspot)) &&
+                (!isSearchSpot(activeHotspot) || hasWarrant) && (
+                  <Link
+                    href={isSearchSpot(activeHotspot) ? `${activeHotspot.actionHref}?ara=1` : activeHotspot.actionHref}
+                    className={styles.actionBtn}
+                  >
+                    {activeHotspot.actionText || 'İlerle'} →
+                  </Link>
+                )
               )}
 
               <button

@@ -15,6 +15,8 @@ import {
 const scene: SearchSceneDef = {
   universe: 'medieval',
   locationId: 'tavern',
+  areaId: 'barrels',
+  clueSpot: 'raflarda',
   image: '/x.webp',
   status: 'READY',
   objects: Array.from({ length: 12 }, (_, i) => ({
@@ -114,6 +116,30 @@ describe('applyClick', () => {
     expect(twice.attempt.penaltyMs).toBe(0);
   });
 
+  it('iç içe kutularda küçük olan sayılır', () => {
+    const nested: SearchSceneDef = {
+      ...scene,
+      objects: [
+        { id: 'buyuk', label: 'Büyük', box: [10, 10, 40, 40] },
+        { id: 'kucuk', label: 'Küçük', box: [20, 20, 4, 4] },
+        ...scene.objects.slice(2),
+      ],
+    };
+    const attempt: SearchAttempt = {
+      ...start(),
+      targets: ['buyuk', 'kucuk'],
+    };
+    const r = applyClick({
+      scene: nested,
+      attempt,
+      difficulty: 'easy',
+      x: 22,
+      y: 22,
+      now: 1000,
+    });
+    expect(r.outcome).toEqual({ kind: 'FOUND', objectId: 'kucuk' });
+  });
+
   it('kenara yakın tıklama payla sayılır', () => {
     const a = start();
     const box = scene.objects.find((o) => o.id === a.targets[0])!.box;
@@ -178,15 +204,16 @@ describe('publicView', () => {
 });
 
 describe('sahne kayıtları', () => {
-  it.each(SEARCH_SCENES.map((s) => [`${s.universe}/${s.locationId}`, s]))(
-    '%s geçerli',
-    (_name, s) => {
-      expect(sceneProblems(s)).toEqual([]);
-    },
-  );
+  it.each(
+    SEARCH_SCENES.map((s) => [`${s.universe}/${s.locationId}/${s.areaId}`, s]),
+  )('%s geçerli', (_name, s) => {
+    expect(sceneProblems(s)).toEqual([]);
+  });
 
-  it('her evren-mekân çiftinin tek sahnesi var', () => {
-    const keys = SEARCH_SCENES.map((s) => `${s.universe}/${s.locationId}`);
+  it('her alanın tek sahnesi var', () => {
+    const keys = SEARCH_SCENES.map(
+      (s) => `${s.universe}/${s.locationId}/${s.areaId}`,
+    );
     expect(new Set(keys).size).toBe(keys.length);
   });
 

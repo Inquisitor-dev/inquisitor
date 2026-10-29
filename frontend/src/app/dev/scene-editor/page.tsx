@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
+import { getInterior } from '@/config/interiorConfig';
 import styles from './page.module.scss';
 
 // Arama sahnesi işaretleme aracı (yalnızca geliştirmede): görselin üstünde sürükleyerek kutu çizilir,
@@ -9,10 +10,10 @@ import styles from './page.module.scss';
 
 type Box = [number, number, number, number];
 type Item = { id: string; label: string; box: Box; final: boolean; prompt: string };
-type Draft = { universe: string; locationId: string; image: string; items: Item[] };
+type Draft = { universe: string; locationId: string; areaId: string; image: string; items: Item[] };
 
 const STORAGE_KEY = 'inquisitor-scene-editor-draft';
-const EMPTY: Draft = { universe: 'medieval', locationId: 'tavern', image: '', items: [] };
+const EMPTY: Draft = { universe: 'medieval', locationId: 'tavern', areaId: 'barrels', image: '', items: [] };
 
 const round = (n: number) => Math.round(n * 10) / 10;
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
@@ -54,6 +55,7 @@ function toCode(d: Draft): string {
   return `  {
     universe: ${q(d.universe)},
     locationId: ${q(d.locationId)},
+    areaId: ${q(d.areaId)},
     image: ${q(d.image)},
     status: 'DRAFT',
     objects: [
@@ -138,6 +140,8 @@ export default function SceneEditorPage() {
     setSelected(null);
   };
 
+  // Arama alanı iç mekânın NPC olmayan bir tıklama noktasıdır
+  const areaOptions = (getInterior(draft.universe, draft.locationId)?.hotspots ?? []).filter((h) => h.category !== 'npc');
   const code = toCode(draft);
   const objectCount = draft.items.filter((i) => !i.final).length;
   const finalCount = draft.items.length - objectCount;
@@ -172,11 +176,22 @@ export default function SceneEditorPage() {
             ))}
           </select>
         </label>
+        <label className={styles.field}>
+          Alan
+          <select value={draft.areaId} onChange={(e) => setDraft({ ...draft, areaId: e.target.value })}>
+            {!areaOptions.some((h) => h.id === draft.areaId) && <option value={draft.areaId}>{draft.areaId || '—'}</option>}
+            {areaOptions.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.id} · {h.title}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className={`${styles.field} ${styles.grow}`}>
           Görsel yolu
           <input
             value={draft.image}
-            placeholder="/search-scenes/medieval/tavern.webp"
+            placeholder="/search-scenes/medieval/tavern/barrels.webp"
             onChange={(e) => setDraft({ ...draft, image: e.target.value.trim() })}
           />
         </label>

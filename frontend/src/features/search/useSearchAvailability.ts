@@ -5,27 +5,29 @@ import { api } from '@/shared/api/client';
 import { useGameStore } from '@/store/useGameStore';
 import type { SearchAvailability } from './searchTypes';
 
-// Mekânın tıkla-bul sahnesi var mı? Yoksa (ya da istek başarısızsa) eski yolla anlatıcıyla aranır.
-// null: henüz bilinmiyor
-export function useSearchAvailability(locationId: string, enabled: boolean): boolean | null {
+const NONE: SearchAvailability = { available: false, areas: [], openArea: null, view: null };
+
+// Mekânın tıkla-bul alanları ve son araması. Alan yoksa (ya da istek başarısızsa) mekân eski yolla,
+// anlatıcıyla aranır. null: henüz bilinmiyor
+export function useSearchAvailability(locationId: string): SearchAvailability | null {
   const sessionId = useGameStore((s) => s.sessionId);
-  const [available, setAvailable] = useState<boolean | null>(null);
+  const [info, setInfo] = useState<SearchAvailability | null>(null);
 
   useEffect(() => {
-    if (!enabled || !sessionId) return;
+    if (!sessionId) return;
     let cancelled = false;
     api
       .get<SearchAvailability>(`/game-sessions/${sessionId}/search/${locationId}`)
       .then((res) => {
-        if (!cancelled) setAvailable(res.available);
+        if (!cancelled) setInfo(res);
       })
       .catch(() => {
-        if (!cancelled) setAvailable(false);
+        if (!cancelled) setInfo(NONE);
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled, sessionId, locationId]);
+  }, [sessionId, locationId]);
 
-  return enabled ? available : null;
+  return info;
 }

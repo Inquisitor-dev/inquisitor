@@ -44,8 +44,10 @@ export const HIT_TOLERANCE = 1.5;
 
 export type SearchStatus = 'RUNNING' | 'WON' | 'FAILED';
 
-// Bir mekândaki aramanın durumu (GameSession.searchState[locationId]); istemciye ham hâli gitmez
+// Bir mekândaki aramanın durumu (GameSession.searchState[locationId]); istemciye ham hâli gitmez.
+// Mekânda bir anda tek arama olur; deneme hangi alanda yapıldığını taşır.
 export interface SearchAttempt {
+  areaId: string;
   attempt: number;
   targets: string[];
   found: string[];
@@ -64,7 +66,12 @@ export type SearchState = Record<string, SearchAttempt>;
 
 export function parseSearchState(raw: unknown): SearchState {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  return raw as SearchState;
+  // Alansız eski kayıtlar (alanlardan önceki düzen) yok sayılır
+  return Object.fromEntries(
+    Object.entries(raw as SearchState).filter(
+      ([, a]) => typeof a?.areaId === 'string',
+    ),
+  );
 }
 
 // Oturum, mekân ve deneme numarasından tohumlanan sayı üreteci: aynı denemede aynı liste gelir
@@ -110,6 +117,7 @@ export function startAttempt(params: {
   const finalSpot =
     scene.finalSpots[Math.floor(rng() * scene.finalSpots.length)];
   return {
+    areaId: scene.areaId,
     attempt,
     targets,
     found: [],
@@ -198,8 +206,12 @@ export function applyClick(params: {
     return miss();
   }
 
-  // Üst üste binen kutularda listedeki ve henüz bulunmamış nesne öne alınır
-  const hits = scene.objects.filter((o) => inBox(o.box, x, y));
+  // Üst üste binen kutularda listedeki ve henüz bulunmamış nesne öne alınır; ikisi de öyleyse küçük kutu
+  // (büyük eşyanın kutusu içindeki küçük eşyayı yutmasın)
+  const area = (box: SceneBox) => box[2] * box[3];
+  const hits = scene.objects
+    .filter((o) => inBox(o.box, x, y))
+    .sort((a, b) => area(a.box) - area(b.box));
   const target = hits.find(
     (o) => current.targets.includes(o.id) && !current.found.includes(o.id),
   );
@@ -269,6 +281,7 @@ export function takeHint(params: {
 
 export interface SearchView {
   locationId: string;
+  areaId: string;
   image: string;
   attempt: number;
   status: SearchStatus;
@@ -296,6 +309,7 @@ export function publicView(params: {
   const listDone = attempt.found.length >= attempt.targets.length;
   return {
     locationId: scene.locationId,
+    areaId: scene.areaId,
     image: scene.image,
     attempt: attempt.attempt,
     status: attempt.status,
@@ -344,5 +358,7 @@ export function sceneProblems(scene: SearchSceneDef): string[] {
   if (scene.objects.length < maxTargets)
     problems.push(`en az ${maxTargets} nesne gerekli`);
   if (scene.finalSpots.length === 0) problems.push('asıl yer yok');
+  if (!scene.clueSpot.trim())
+    problems.push('kanıtın yer ifadesi (clueSpot) boş');
   return problems;
 }

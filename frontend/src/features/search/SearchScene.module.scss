@@ -10,19 +10,23 @@ $gold: #e0bb5e;
   overflow: hidden;
   background-color: #030303;
   user-select: none;
+  // Üst şerit, sahne ve nesne listesi alt alta; şeritler görselin üstüne binmez
+  display: flex;
+  flex-direction: column;
+}
+
+// Görsel bu alana sığar; yakınlaştırınca sürüklenerek gezilir (useSearchPan)
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   cursor: crosshair;
   touch-action: none;
 
   &.dragging {
     cursor: grabbing;
   }
-}
-
-// Sahne iç mekânlardaki gibi ekranı doldurur ve sürüklenerek gezilir (useScenePan)
-.sceneWrapper {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
 }
 
 .sceneFrame {
@@ -102,28 +106,61 @@ $gold: #e0bb5e;
 @media (prefers-reduced-motion: reduce) {
   .markFound,
   .markMiss,
-  .hint {
+  .hint,
+  .notice {
     animation: none;
   }
 }
 
+// ─── TEST MODU: KUTULARIN YERİ (yalnızca geliştirmede) ─────────────────────
+%testBox {
+  position: absolute;
+  pointer-events: none;
+}
+
+.testBox {
+  @extend %testBox;
+  border: 2px solid #2ecc71;
+}
+
+.testBoxFound {
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+.testFinal {
+  @extend %testBox;
+  border: 3px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.testFinalOther {
+  @extend %testBox;
+  border: 2px dashed rgba(231, 76, 60, 0.7);
+}
+
+.testLabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 1px 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+}
+
 // ─── ÜST ŞERİT ─────────────────────────────────────────────────────────────
 .topBar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 10;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: $sp-md;
   padding: $sp-sm $sp-md;
-  background: linear-gradient(to bottom, rgba(5, 5, 5, 0.92), rgba(5, 5, 5, 0));
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-  }
+  background: rgba(8, 7, 6, 0.94);
+  border-bottom: 1px solid rgba($gold, 0.2);
 }
 
 .backLink {
@@ -202,11 +239,9 @@ $gold: #e0bb5e;
 
 // ─── ALT ŞERİT: ARANACAKLAR ────────────────────────────────────────────────
 .tray {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 10;
+  flex-shrink: 0;
   padding: $sp-sm $sp-md $sp-md;
   background: rgba(8, 7, 6, 0.94);
   border-top: 1px solid rgba($gold, 0.3);
@@ -247,12 +282,67 @@ $gold: #e0bb5e;
   }
 }
 
+.finalStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.finalLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
 .prompt {
   margin: 0;
   text-align: center;
   font-family: $font-title;
   color: $gold;
   font-size: 1.05rem;
+}
+
+// Liste bitince sahnenin ortasında beliren duyuru; tıklamayı engellemez
+.notice {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+  padding: $sp-md $sp-lg;
+  text-align: center;
+  background: rgba(8, 7, 6, 0.9);
+  border: 1px solid rgba($gold, 0.5);
+  color: $text-parchment;
+  pointer-events: none;
+  animation: noticeFade 3.5s ease-out forwards;
+
+  strong {
+    font-family: $font-title;
+    color: $gold;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes noticeFade {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 // ─── PENCERELER ────────────────────────────────────────────────────────────

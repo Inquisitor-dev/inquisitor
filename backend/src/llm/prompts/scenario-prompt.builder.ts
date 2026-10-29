@@ -12,6 +12,7 @@ import {
   WEAPONS,
 } from '../../scenarios/case-catalog';
 import { normalizeScenarioType } from '../../scenarios/scenario-config';
+import { SEARCH_SCENES } from '../../search/scenes';
 import { newspaperTextsFor } from '../../personas/newspaper-texts';
 
 export type ScenarioDraft = {
@@ -199,18 +200,37 @@ export function buildScenarioPrompt(params: {
   const npcIds = baseNpcs.map((n) => `"${n.id}"`).join(' | ');
 
   const npcPromptsTemplate = baseNpcs
-    .map((n) => `    "${n.id}": "Your personal secret/role regarding this incident..."`)
-    .join(',\n');
-
-  const locationCluesTemplate = locationDefinitions
     .map(
-      (location) =>
-        `    "${location.id}": "Turkish description of a subtle clue hidden at ${getLocalizedLocationLabel(scenarioType, location.id)}..."`,
+      (n) =>
+        `    "${n.id}": "Your personal secret/role regarding this incident..."`,
     )
     .join(',\n');
 
+  // Kanıtın mekân içindeki yeri kodla seçilir (plan.searchAreas); oyuncu orayı arayarak bulur
+  const clueSpotOf = (locationId: string) => {
+    const areaId = plan.searchAreas?.[locationId];
+    return SEARCH_SCENES.find(
+      (s) =>
+        s.universe === scenarioType &&
+        s.locationId === locationId &&
+        s.areaId === areaId,
+    )?.clueSpot;
+  };
+  const locationCluesTemplate = locationDefinitions
+    .map((location) => {
+      const spot = clueSpotOf(location.id);
+      const where = spot
+        ? ` — the clue is found exactly here: ${spot}; place it there and nowhere else in that place`
+        : '';
+      return `    "${location.id}": "Turkish description of a subtle clue hidden at ${getLocalizedLocationLabel(scenarioType, location.id)}${where}..."`;
+    })
+    .join(',\n');
+
   const alibisTemplate = plan.innocentIds
-    .map((id) => `    "${id}": "Turkish sentence: where this innocent really was during the murder"`)
+    .map(
+      (id) =>
+        `    "${id}": "Turkish sentence: where this innocent really was during the murder"`,
+    )
     .join(',\n');
 
   const difficultyInstruction =

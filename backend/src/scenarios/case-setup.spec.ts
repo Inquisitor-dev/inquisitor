@@ -314,3 +314,25 @@ describe('mizaç', () => {
     }
   });
 });
+
+describe('kanıtın arama alanı', () => {
+  it('sahnesi olan her mekânda kanıt o mekânın bir alanına konur', () => {
+    const plans = plansFor('medieval', 'easy', 60);
+    const tavernAreas = new Set(plans.map((p) => p.searchAreas?.tavern));
+    // Ashenmoor Tavernası'nın dört alanı var; hepsi çekilebilir
+    expect([...tavernAreas].sort()).toEqual([
+      'barrels',
+      'fireplace',
+      'stairs',
+      'table',
+    ]);
+    // Sahnesi olmayan mekânlarda alan yoktur
+    for (const plan of plans)
+      expect(Object.keys(plan.searchAreas ?? {})).toEqual(['tavern']);
+  });
+
+  it('sahnesi olmayan evrende alan seçilmez', () => {
+    for (const plan of plansFor('modern', 'easy', 10))
+      expect(plan.searchAreas).toEqual({});
+  });
+});

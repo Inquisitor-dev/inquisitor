@@ -122,6 +122,22 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     expect(prompt).toContain('"culpritCover"');
   });
 
+  it('kanıtı vaka planının seçtiği arama alanına yazdırır', () => {
+    const prompt = buildScenarioPrompt({
+      difficulty: 'hard',
+      scenarioType: 'medieval',
+      worldDescription: '',
+      styleInstruction: '',
+      baseNpcs: config.npcDefinitions,
+      locationDefinitions: config.locationDefinitions,
+      plan: { ...plan, searchAreas: { tavern: 'stairs' } },
+      caseBrief: brief,
+    });
+    expect(prompt).toContain(
+      'the clue is found exactly here: merdivenin altındaki eşya yığınında',
+    );
+  });
+
   it('tutarlılık kontrolü eşkâli korur', () => {
     const merged = mergeScenarioDraftWithFallback(
       {
