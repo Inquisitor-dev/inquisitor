@@ -1,7 +1,9 @@
+import { gzipSync } from 'node:zlib';
 import { SEARCH_SCENES } from './scenes';
 import type { SearchSceneDef } from './search-scene';
 import {
   applyClick,
+  hitsAt,
   publicView,
   SEARCH_SETTINGS,
   sceneProblems,
@@ -231,5 +233,113 @@ describe('sahne kayıtları', () => {
         'asıl yer yok',
       ]),
     );
+  });
+});
+
+describe('maskeli sahne', () => {
+  // 100x50 hücre: çapraz bir tornavida, kutusunun içinde ama üstünde olmayan bir kurabiye, bir cüzdan
+  const W = 100;
+  const H = 50;
+  const cells = new Uint8Array(W * H);
+  for (let i = 0; i <= 50; i++) {
+    const y = 10 + Math.round(i / 2);
+    cells[y * W + 10 + i] = 1;
+    cells[(y + 1) * W + 10 + i] = 1;
+  }
+  for (let y = 25; y < 30; y++)
+    for (let x = 30; x < 35; x++) cells[y * W + x] = 2;
+  for (let y = 40; y < 46; y++)
+    for (let x = 80; x < 90; x++) cells[y * W + x] = 3;
+  const mask = {
+    width: W,
+    height: H,
+    ids: ['tornavida', 'kurabiye', 'cuzdan'],
+    data: gzipSync(cells).toString('base64'),
+  };
+  const masked: SearchSceneDef = {
+    ...scene,
+    objects: [
+      { id: 'tornavida', label: 'Tornavida', box: [10, 20, 51, 54] },
+      { id: 'kurabiye', label: 'Kurabiye', box: [30, 50, 5, 10] },
+    ],
+    finalSpots: [{ id: 'cuzdan', box: [80, 80, 10, 12], prompt: 'Cüzdan.' }],
+    mask,
+  };
+  // hücrenin ortası, görselin yüzdesi olarak
+  const at = (cx: number, cy: number) => ({
+    x: ((cx + 0.5) / W) * 100,
+    y: ((cy + 0.5) / H) * 100,
+  });
+  const attempt: SearchAttempt = {
+    areaId: 'barrels',
+    attempt: 1,
+    targets: ['tornavida'],
+    found: [],
+    finalSpotId: 'cuzdan',
+    finalFound: false,
+    startedAt: 0,
+    penaltyMs: 0,
+    misses: 0,
+    hintsUsed: 0,
+    status: 'RUNNING',
+  };
+  const tap = (a: SearchAttempt, cx: number, cy: number) => {
+    const { x, y } = at(cx, cy);
+    return applyClick({
+      scene: masked,
+      attempt: a,
+      difficulty: 'easy',
+      x,
+      y,
+      now: 1000,
+    });
+  };
+
+  it('nesnenin kendisine tıklanınca bulur', () => {
+    // i = 30: x 40, y 25-26
+    expect(tap(attempt, 40, 25).outcome).toEqual({
+      kind: 'FOUND',
+      objectId: 'tornavida',
+    });
+  });
+
+  it('kutunun içindeki başka eşyaya tıklamak kaçırmadır', () => {
+    const { x, y } = at(32, 27);
+    expect(hitsAt({ ...masked, mask: undefined }, x, y)).toContain('tornavida');
+    expect(tap(attempt, 32, 27).outcome).toEqual({ kind: 'MISS' });
+  });
+
+  it('kenarın hemen yanı sayılır, biraz ötesi sayılmaz', () => {
+    expect(tap(attempt, 40, 27).outcome).toEqual({
+      kind: 'FOUND',
+      objectId: 'tornavida',
+    });
+    expect(tap(attempt, 40, 29).outcome).toEqual({ kind: 'MISS' });
+  });
+
+  it('liste bitince asıl yeri maskeden bulur', () => {
+    const done = { ...attempt, found: ['tornavida'] };
+    expect(tap(done, 32, 27).outcome).toEqual({ kind: 'MISS' });
+    const won = tap(done, 85, 43);
+    expect(won.outcome).toEqual({ kind: 'FINAL_FOUND' });
+    expect(won.attempt.status).toBe('WON');
+  });
+
+  it('maske kusurlarını bulur', () => {
+    expect(sceneProblems(masked).filter((p) => p.includes('maske'))).toEqual(
+      [],
+    );
+    expect(
+      sceneProblems({
+        ...masked,
+        mask: { ...mask, ids: ['tornavida', 'kurabiye', 'baska'] },
+      }),
+    ).toEqual(expect.arrayContaining(['cuzdan: maskede yok']));
+    expect(sceneProblems({ ...masked, mask: { ...mask, width: 99 } })).toEqual(
+      expect.arrayContaining(['maske boyutu tutmuyor']),
+    );
+    expect(
+      sceneProblems({ ...masked, mask: { ...mask, data: 'bozuk' } }),
+    ).toEqual(expect.arrayContaining(['maske açılamadı']));
   });
 });

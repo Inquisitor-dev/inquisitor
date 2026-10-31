@@ -339,7 +339,7 @@ describe('kanıtın arama alanı', () => {
   });
 
   it('sahnesi olmayan evrende alan seçilmez', () => {
-    for (const plan of plansFor('modern', 'easy', 10))
+    for (const plan of plansFor('cyberpunk', 'easy', 10))
       expect(plan.searchAreas).toEqual({});
   });
 });
