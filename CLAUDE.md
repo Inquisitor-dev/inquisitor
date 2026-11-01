@@ -16,6 +16,7 @@ The repo is a monorepo with three independent npm projects (no root `package.jso
 - `backend/` — NestJS 11 + Prisma (PostgreSQL) API. Deployed to Render (`render.yaml`, `backend/RENDER.md`).
 - `frontend/` — Next.js 16 (App Router) web client, Zustand store, SCSS modules + Tailwind 4.
 - `mobile/` — Expo 54 / React Native client with React Navigation, talks to the same backend.
+- `tools/arama-sahne/` — Node + Python scripts that build the location-search pictures by code (generate objects with Gemini, cut them, lay them on a surface, export the picture, boxes and pixel mask to the game); its `README.md` has the steps.
 
 **Where the details are.** Each project has its own CLAUDE.md, loaded only when working in that folder:
 - `backend/CLAUDE.md` — module architecture (npcs, board, personas, abilities, notebook, llm, stories, scenarios, verdict), the case plan and solver, fear/confession rules, detailed backend commands (`stories:*`).

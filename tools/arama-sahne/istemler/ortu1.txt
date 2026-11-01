@@ -1,0 +1,15 @@
+A detailed semi-realistic digital painting in a 1990s American style: worn, used everyday things, muted retro colors, soft painterly detail. Soft, bright warm light comes from the upper left.
+
+A sheet of 5 separate small things. Each one is seen in a straight top-down view, looking directly down from above, as if it were lying flat on a table. Flat view, no perspective. Every one is drawn large and fills its own space; they do not need to be in their real-life sizes.
+
+They are arranged in one row of five, in this exact order, left to right, top row first:
+1. a crumpled red paisley bandana
+2. a crumpled red-and-white checkered cloth napkin
+3. a single striped tube sock
+4. a crumpled piece of blue flannel cloth
+5. a crumpled knitted wool scarf end with fringe
+
+The background is a plain, flat, uniform light grey with wide empty space around every item; no item touches another item or the edge of the image. No cast shadows on the background, no table, no surface texture.
+
+Highest resolution, 16:9.
+Avoid: shadows on the background, background texture, gradient background, overlapping items, items touching, cropped items, extra items, text, letters, numbers, logos, brand names, people, hands, perspective view, side view, watermark, cartoon.
