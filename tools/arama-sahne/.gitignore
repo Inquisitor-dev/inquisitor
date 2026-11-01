@@ -1,0 +1,5 @@
+# Deneme çıktıları (sahne görselleri, kontrol görselleri, kimlik haritaları)
+cikti/
+# uret.mjs'nin ham çıktısı; kes.py ilk kesimde .webp'ye çevirir
+kaynak/*.png
+__pycache__/
