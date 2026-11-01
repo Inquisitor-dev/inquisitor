@@ -5,6 +5,7 @@ import { MEDIEVAL_CLINIC_SCENES } from './medieval-clinic';
 import { MEDIEVAL_FARM_SCENES } from './medieval-farm';
 import { MEDIEVAL_GRAVEYARD_SCENES } from './medieval-graveyard';
 import { MEDIEVAL_MILL_SCENES } from './medieval-mill';
+import { MODERN_CHURCH_SCENES } from './modern-church';
 
 // Evrenlerin arama sahneleri (her biri bir mekânın bir alanı). Sahnesi olmayan mekân eski yolla
 // (anlatıcıyla) aranır.
@@ -15,6 +16,7 @@ export const SEARCH_SCENES: SearchSceneDef[] = [
   ...MEDIEVAL_GRAVEYARD_SCENES,
   ...MEDIEVAL_FARM_SCENES,
   ...MEDIEVAL_CLINIC_SCENES,
+  ...MODERN_CHURCH_SCENES,
 ];
 
 // Taslak sahneler yalnızca test modunda açılır

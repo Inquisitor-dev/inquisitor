@@ -21,6 +21,17 @@ export interface SceneFinalSpot {
   prompt: string;
 }
 
+// Kodla dizilmiş sahnelerin piksel sahiplik haritası (arama-deneme/diz.py üretir). Görsel küçük
+// hücrelere bölünür; her hücrede o noktada seçilebilen nesnenin `ids` içindeki sırası +1 durur
+// (0 = hiçbir nesne). Satır satır, gzip'li, base64. Tıklama kutuya değil buna bakar: kutu, çapraz
+// duran bir nesnede çevresindeki başka eşyaları da kapsar. İstemciye hiç gitmez.
+export interface SceneMask {
+  width: number;
+  height: number;
+  ids: string[];
+  data: string;
+}
+
 export interface SearchSceneDef {
   universe: string;
   locationId: string;
@@ -35,4 +46,6 @@ export interface SearchSceneDef {
   status: 'DRAFT' | 'READY';
   objects: SceneObject[];
   finalSpots: SceneFinalSpot[];
+  // Varsa tıklama bununla denetlenir; kutular yalnızca ipucu ve test çizimi için kalır
+  mask?: SceneMask;
 }

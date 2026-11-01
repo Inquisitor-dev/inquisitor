@@ -1,7 +1,8 @@
 // Tıkla-bul aramasının saf kuralları: hedef listesinin seçimi, tıklamanın denetimi, süre ve ipucu.
 // Önce listedeki nesneler bulunur, sonra asıl yer (gizli bölme); orası bulununca kanıt çıkar.
 // Hiçbir kural vakaya bakmaz: liste uzunluğu, süre ve ceza yalnızca zorluğa bağlıdır.
-import type { SceneBox, SearchSceneDef } from './search-scene';
+import { gunzipSync } from 'node:zlib';
+import type { SceneBox, SceneMask, SearchSceneDef } from './search-scene';
 
 export interface SearchSettings {
   targets: number;
@@ -162,6 +163,57 @@ export const inBox = (box: SceneBox, x: number, y: number) =>
   y >= box[1] - HIT_TOLERANCE &&
   y <= box[1] + box[3] + HIT_TOLERANCE;
 
+// Maskeli sahnede tıklama payı (görsel genişliğinin yüzdesi): nesnenin hemen kenarına düşen tıklama da sayılır
+export const MASK_TOLERANCE = 0.8;
+
+// Açılmış maskeler bellekte tutulur (sahne tanımları değişmez)
+const maskCache = new WeakMap<SceneMask, Uint8Array>();
+
+export function maskCells(mask: SceneMask): Uint8Array {
+  let cells = maskCache.get(mask);
+  if (!cells) {
+    cells = new Uint8Array(gunzipSync(Buffer.from(mask.data, 'base64')));
+    maskCache.set(mask, cells);
+  }
+  return cells;
+}
+
+// Tıklanan noktadaki nesne önce, sonra pay içindeki öbür nesneler yakından uzağa
+function maskHits(mask: SceneMask, x: number, y: number): string[] {
+  const cells = maskCells(mask);
+  const { width, height } = mask;
+  const cx = Math.min(width - 1, Math.floor((x / 100) * width));
+  const cy = Math.min(height - 1, Math.floor((y / 100) * height));
+  const r = Math.ceil((MASK_TOLERANCE / 100) * width);
+  const nearest = new Map<number, number>();
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      const d = dx * dx + dy * dy;
+      const px = cx + dx;
+      const py = cy + dy;
+      if (d > r * r || px < 0 || py < 0 || px >= width || py >= height)
+        continue;
+      const v = cells[py * width + px];
+      if (v && d < (nearest.get(v) ?? Infinity)) nearest.set(v, d);
+    }
+  }
+  return [...nearest.entries()]
+    .sort((a, b) => a[1] - b[1])
+    .map(([v]) => mask.ids[v - 1])
+    .filter((id) => id !== undefined);
+}
+
+// Noktaya düşen nesneler ve asıl yerler, öncelik sırasıyla. Maske varsa piksel sahipliği, yoksa
+// kutular: üst üste binen kutularda küçük olan önce (büyük eşyanın kutusu içindeki küçük eşyayı yutmasın)
+export function hitsAt(scene: SearchSceneDef, x: number, y: number): string[] {
+  if (scene.mask) return maskHits(scene.mask, x, y);
+  const area = (box: SceneBox) => box[2] * box[3];
+  return [...scene.objects, ...scene.finalSpots]
+    .filter((o) => inBox(o.box, x, y))
+    .sort((a, b) => area(a.box) - area(b.box))
+    .map((o) => o.id);
+}
+
 export type ClickOutcome =
   | { kind: 'FOUND'; objectId: string }
   | { kind: 'FINAL_FOUND' }
@@ -194,10 +246,10 @@ export function applyClick(params: {
     };
   };
 
+  const hits = hitsAt(scene, x, y);
   const listDone = current.found.length >= current.targets.length;
   if (listDone) {
-    const spot = scene.finalSpots.find((s) => s.id === current.finalSpotId);
-    if (spot && inBox(spot.box, x, y)) {
+    if (hits.includes(current.finalSpotId)) {
       return {
         attempt: { ...current, finalFound: true, status: 'WON' },
         outcome: { kind: 'FINAL_FOUND' },
@@ -206,22 +258,17 @@ export function applyClick(params: {
     return miss();
   }
 
-  // Üst üste binen kutularda listedeki ve henüz bulunmamış nesne öne alınır; ikisi de öyleyse küçük kutu
-  // (büyük eşyanın kutusu içindeki küçük eşyayı yutmasın)
-  const area = (box: SceneBox) => box[2] * box[3];
-  const hits = scene.objects
-    .filter((o) => inBox(o.box, x, y))
-    .sort((a, b) => area(a.box) - area(b.box));
+  // Noktada birden çok nesne varsa listedeki ve henüz bulunmamış olan öne alınır
   const target = hits.find(
-    (o) => current.targets.includes(o.id) && !current.found.includes(o.id),
+    (id) => current.targets.includes(id) && !current.found.includes(id),
   );
   if (target) {
     return {
-      attempt: { ...current, found: [...current.found, target.id] },
-      outcome: { kind: 'FOUND', objectId: target.id },
+      attempt: { ...current, found: [...current.found, target] },
+      outcome: { kind: 'FOUND', objectId: target },
     };
   }
-  if (hits.some((o) => current.found.includes(o.id))) {
+  if (hits.some((id) => current.found.includes(id))) {
     return { attempt: current, outcome: { kind: 'ALREADY_FOUND' } };
   }
   return miss();
@@ -352,6 +399,7 @@ export function sceneProblems(scene: SearchSceneDef): string[] {
     if (!s.prompt.trim()) problems.push(`${s.id}: yönlendirme boş`);
     checkBox(s.id, s.box);
   }
+  if (scene.mask) problems.push(...maskProblems(scene.mask, [...ids]));
   const maxTargets = Math.max(
     ...Object.values(SEARCH_SETTINGS).map((s) => s.targets),
   );
@@ -360,5 +408,29 @@ export function sceneProblems(scene: SearchSceneDef): string[] {
   if (scene.finalSpots.length === 0) problems.push('asıl yer yok');
   if (!scene.clueSpot.trim())
     problems.push('kanıtın yer ifadesi (clueSpot) boş');
+  return problems;
+}
+
+// Maskenin açılabildiğini, boyutunu ve her nesnenin ve asıl yerin maskede tıklanabilir bir yeri olduğunu denetler
+function maskProblems(mask: SceneMask, sceneIds: string[]): string[] {
+  let cells: Uint8Array;
+  try {
+    cells = maskCells(mask);
+  } catch {
+    return ['maske açılamadı'];
+  }
+  const problems: string[] = [];
+  if (cells.length !== mask.width * mask.height)
+    problems.push('maske boyutu tutmuyor');
+  if (mask.ids.length > 255) problems.push('maskede en fazla 255 nesne olur');
+  const present = new Set<number>(cells);
+  if (Math.max(...present) > mask.ids.length)
+    problems.push('maskede listede olmayan nesne var');
+  for (const id of sceneIds) {
+    const v = mask.ids.indexOf(id) + 1;
+    if (!v) problems.push(`${id}: maskede yok`);
+    else if (!present.has(v))
+      problems.push(`${id}: maskede tıklanacak yeri yok`);
+  }
   return problems;
 }
