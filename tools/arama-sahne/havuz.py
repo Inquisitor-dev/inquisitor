@@ -1,7 +1,7 @@
 # Arama sahnesi havuzunu doldurur: bir alan için farklı tohumlarla sahneler dizer ve oyuna yazar.
 # Kullanım: python havuz.py <evren>/<mekân>/<alan> [--adet 3]      yeni varyantlar üretir
 #           python havuz.py --dizin                                 yalnızca sahne listesini yeniler
-# Alanın ayarları (kanıtın yer ifadesi, yüzey görseli, yüzeyin genişliği) alanlar.json'dadır.
+# Alanın ayarları (kanıtın yer ifadesi, yüzey görseli, yüzeyin genişliği, lamba) alanlar.json'dadır.
 # Sahneler DRAFT başlar; oynanıp beğenilince dosyasında status 'READY' yapılır.
 import json
 import os
@@ -52,7 +52,7 @@ for _ in range(adet):
     tohum += 1
     print(f"--- {alan} v{tohum}", flush=True)
     subprocess.run(
-        [sys.executable, str(KOK / "diz.py"), str(tohum), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"]],
+        [sys.executable, str(KOK / "diz.py"), str(tohum), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"], *(["--lamba", ayar["lamba"]] if "lamba" in ayar else [])],
         check=True,
         env=ortam,
     )

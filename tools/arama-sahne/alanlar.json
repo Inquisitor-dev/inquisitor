@@ -2,6 +2,7 @@
   "modern/church/static_tv": {
     "clueSpot": "televizyonun önündeki sehpada, eşyaların arasında",
     "masa": "masa",
-    "cm": 70
+    "cm": 70,
+    "lamba": "0.2,0.08,0.6"
   }
 }

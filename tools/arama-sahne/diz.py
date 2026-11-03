@@ -25,11 +25,13 @@ def secenek(ad, varsayilan=None):
 
 
 # seçeneklerin değerleri sıra numaralı argüman sayılmaz
-_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun", "--varyant", "--yer")}
+_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun", "--varyant", "--yer", "--lamba")}
 _sirali = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and i not in _degerler and a != "filtre"]
 TOHUM = int(_sirali[0]) if _sirali else 1
 MASA_CM = float(_sirali[1]) if len(_sirali) > 1 else 80
 MASA = secenek("--masa", "masa")
+# Lamba: "x,y,en_az": ışığın görseldeki yeri (0-1, görselin dışında da olabilir) ve en karanlık yerin parlaklığı
+LAMBA = [float(v) for v in secenek("--lamba").split(",")] if "--lamba" in sys.argv else None
 FILTRE = "filtre" in sys.argv  # sarımtırak, eski, tozlu ortak görünüm (denendi, beğenilmedi)
 ADAY = 60  # her hedef nesne için denenen konum sayısı
 EN_AZ_GORUNUR = 0.45  # üstüne bir şey gelince bile hedef nesnenin en az bu kadarı görünür kalmalı
@@ -40,6 +42,7 @@ DOLGU = 32000  # kimlik haritasında dolgu, kablo ve örtü olmayan süs katman�
 # Görünür sayılmanın ölçütleri (kodun "görünür" dediği, gözün de seçebildiği olsun)
 SECILIR_ISIK = 0.6  # üstüne düşen gölgeyle ilk parlaklığının bu oranının altına kararan piksel seçilemez
 EN_AZ_PARCA = 1500  # bundan küçük görünen parçalar (kıymık) sayılmaz
+EN_AZ_KOYU = 45  # lambalı sahnede görünen kısmının ortalama parlaklığı bundan azsa listeye girmez
 EN_AZ_ETKIN = 0.35  # seçilebilen kısmı bundan az kalan nesne listeye girmez, dağınıklık olarak kalır
 
 # Nesnenin masadan yüksekliği (cm): gölgenin ne kadar uzağa ve ne kadar yumuşak düşeceğini belirler
@@ -150,7 +153,14 @@ def bas(o, x, y, h_cm):
         tuval.paste(katman, (x - pay + round(dx_cm * px_cm), y - pay + round(dy_cm * px_cm)), katman)
 
     # yükseklikle uzayıp yumuşayan düşen gölge, sonra nesnenin dibine yapışık koyu temas gölgesi
-    golge(0.12 + 0.12 * h_cm, 0.35 * h_cm, 0.45 * h_cm, 0.5)
+    if LAMBA:
+        # gölge lambadan uzağa düşer; lambadan uzaktaki nesnenin gölgesi daha uzun
+        dx, dy = (x + o.width / 2) / W - LAMBA[0], (y + o.height / 2) / W - LAMBA[1] * H / W
+        uzaklik = math.hypot(dx, dy) + 1e-6
+        boy = h_cm * (0.3 + 0.5 * uzaklik)
+        golge(0.12 + 0.12 * h_cm, boy * dx / uzaklik, boy * dy / uzaklik, 0.55)
+    else:
+        golge(0.12 + 0.12 * h_cm, 0.35 * h_cm, 0.45 * h_cm, 0.5)
     golge(0.06, 0.04, 0.06, 0.7)
 
     if FILTRE:
@@ -323,11 +333,19 @@ for k, n in yerlesen:
 # Son dokunuş
 dizi = np.asarray(tuval, np.float32)
 yy, xx = np.mgrid[0:H, 0:W]
-vinyet = 1 - 0.25 * (((xx / W - 0.5) ** 2 + (yy / H - 0.5) ** 2) / 0.5)
-dizi = dizi * 0.92 + np.array([255, 200, 140], np.float32) * 0.08 * (dizi.mean(-1, keepdims=True) / 255)
-tuval = Image.fromarray(np.clip(dizi * vinyet[..., None], 0, 255).astype(np.uint8))
+if LAMBA:
+    # Tek lamba: ışık uzaklıkla azalır; aydınlık yer sıcak, karanlık yer soğuk. Masa ve nesneler aynı ışığı alır.
+    uzaklik = np.hypot(xx / W - LAMBA[0], (yy - LAMBA[1] * H) / W)
+    yakinlik = np.exp(-((uzaklik / 0.6) ** 2))[..., None].astype(np.float32)
+    guc = LAMBA[2] + (1 - LAMBA[2]) * yakinlik
+    renk = np.array([0.98, 0.93, 0.82], np.float32) * yakinlik + np.array([0.86, 0.90, 1.02], np.float32) * (1 - yakinlik)
+    tuval = Image.fromarray(np.clip(dizi * guc * renk, 0, 255).astype(np.uint8))
+else:
+    vinyet = 1 - 0.25 * (((xx / W - 0.5) ** 2 + (yy / H - 0.5) ** 2) / 0.5)
+    dizi = dizi * 0.92 + np.array([255, 200, 140], np.float32) * 0.08 * (dizi.mean(-1, keepdims=True) / 255)
+    tuval = Image.fromarray(np.clip(dizi * vinyet[..., None], 0, 255).astype(np.uint8))
 
-ad = f"sahne_{TOHUM}"
+ad = f"sahne_{TOHUM}" + (f"_lamba{LAMBA[2]:g}" if LAMBA else "")
 tuval.save(CIKTI / f"{ad}.webp", quality=85)
 # piksel sahiplik haritası: her pikselde en üstteki hedef nesnenin sırası (isabet denetimi bununla yapılabilir)
 np.save(CIKTI / f"{ad}_kimlik.npy", secilir)
@@ -351,6 +369,12 @@ def konum(b):
     return f"{yatay or dikey} taraftaki" if yatay or dikey else "ortadaki"
 
 
+# Karanlıkta kalan hedef: görünür pikselleri ortalamada çok koyu, oyuncudan bulması istenmez (dağınıklık olarak kalır)
+koyu = set()
+if LAMBA:
+    L = np.asarray(tuval.convert("L"), np.float32)
+    koyu = {k for k, _ in yerlesen if (secilir == k).any() and L[secilir == k].mean() < EN_AZ_KOYU}
+
 nesneler, asil = [], []
 cizim = tuval.copy()
 d = ImageDraw.Draw(cizim)
@@ -358,7 +382,7 @@ gizli = []
 for k, n in yerlesen:
     oran = (secilir == k).sum() / toplam[k]
     yer = ASIL_YERLER.get(n["id"])
-    if oran < EN_AZ_ETKIN and not yer:
+    if (oran < EN_AZ_ETKIN or k in koyu) and not yer:
         gizli.append(n["id"])
         continue
     if not (secilir == k).any():  # asıl yer her durumda listede kalır
@@ -411,7 +435,7 @@ if "--oyun" in sys.argv:
     (uretilen / f"{evren}-{mekan}-{alan}-{varyant}.ts").write_text(
         f"""import type {{ SearchSceneDef }} from '../../search-scene';
 
-// tools/arama-sahne/havuz.py ile üretildi (tohum {TOHUM}, yüzey {MASA}, {MASA_CM:g} cm); elle düzenleme
+// tools/arama-sahne/havuz.py ile üretildi (tohum {TOHUM}, yüzey {MASA}, {MASA_CM:g} cm, lamba {secenek("--lamba", "yok")}); elle düzenleme
 export const SCENE: SearchSceneDef = {{
   universe: {metin(evren)},
   locationId: {metin(mekan)},
