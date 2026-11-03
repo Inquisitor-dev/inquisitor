@@ -66,6 +66,14 @@ ayrı bir anahtar kullan.
   `KABLO`/`ORTU` (dolgu yoğunluğu), `EN_AZ_GORUNUR` (yerleşirken korunur), `SECILIR_ISIK` ve `EN_AZ_ETKIN`
   (gölgede kalan ya da çok örtülen nesne listeye girmez).
 
+## Alanların ayırt edilmesi
+
+Aynı nesnelerle her alan aynı yığın gibi görünüyordu. `alanlar.json`'da her alanın kendi seti var: `sayfalar` ve
+`ekler` (hedef nesneler), `asil` (kanıtın saklanabileceği nesneler ve yönlendirme ifadesi), `dolgu`, `ortu`, `dolgu_adet`
+(alt ve üst katman), `kablo`, `yigin`. Nesne az olunca yüzey görünür: `cm` küçülürse nesneler büyür, yüzey örtülür.
+Alana özel nesne için `istemler/` altına sayfa ekle (örnek `koridor1.txt`). Görünse bile tanınmayan nesneler `diz.py`
+içindeki `TANINMAZ` listesine girer.
+
 ## Bilinen eksikler
 
 - `dolgu1` ve `ortu1` hâlâ gri zeminli; kesimleri temiz çıktığı için yeniden üretilmedi.

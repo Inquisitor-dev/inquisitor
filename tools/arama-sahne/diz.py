@@ -25,7 +25,7 @@ def secenek(ad, varsayilan=None):
 
 
 # seçeneklerin değerleri sıra numaralı argüman sayılmaz
-_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun", "--varyant", "--yer", "--lamba")}
+_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun", "--varyant", "--yer", "--lamba", "--ayar")}
 _sirali = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and i not in _degerler and a != "filtre"]
 TOHUM = int(_sirali[0]) if _sirali else 1
 MASA_CM = float(_sirali[1]) if len(_sirali) > 1 else 80
@@ -54,6 +54,8 @@ YUKSEKLIK = {
     "hesap_makinesi": 1, "dijital_saat": 1, "pudralik": 1, "kelebek_toka": 1, "fis": 0.4, "disket": 0.3,
 }
 # Liste yerine "asıl yer" olacak, içine bir şey saklanabilecek nesneler
+# Görünse bile adından tanınmayan nesneler: sahnede dağınıklık olarak kalır, oyuncudan bulması istenmez
+TANINMAZ = {"firildak", "jak", "kazu", "bileklik"}
 ASIL_YERLER = {"cuzdan": "cüzdanın içinde", "pudralik": "pudralığın içinde", "tek_kullanimlik_kamera": "kameranın arkasında"}
 
 rng = random.Random(TOHUM)
@@ -65,6 +67,19 @@ katalog = json.loads((KOK / "nesneler.json").read_text(encoding="utf-8"))
 hedefler = [n for n in katalog if n["tur"] == "hedef"]
 dolgular = [n for n in katalog if n["tur"] == "dolgu"]
 ortuler = [n for n in katalog if n["tur"] == "ortu"]
+# Alanın kendi nesneleri, dolgusu ve yoğunluğu (alanlar.json): alanlar birbirinden ayırt edilsin diye
+if "--ayar" in sys.argv:
+    ALAN = json.loads((KOK / "alanlar.json").read_text(encoding="utf-8"))[secenek("--ayar")]
+    ASIL_YERLER = ALAN["asil"]
+    ekler = set(ALAN.get("ekler", [])) | set(ASIL_YERLER)
+    hedefler = [n for n in hedefler if n["sayfa"] in ALAN["sayfalar"] or n["id"] in ekler]
+    dolgular = [n for n in dolgular if n["id"] in ALAN["dolgu"]]
+    ortuler = [n for n in ortuler if n["id"] in ALAN["ortu"]]
+    DOLGU_ALT, DOLGU_UST, KABLO = ALAN["dolgu_adet"][0], ALAN["dolgu_adet"][1], ALAN["kablo"]
+    YIGIN = ALAN["yigin"]
+    bulunmayan = ekler - {n["id"] for n in hedefler}
+    if bulunmayan:
+        sys.exit(f"katalogda yok: {', '.join(sorted(bulunmayan))}")
 
 # Masadaki ışık: nesneler de aynı yerde aydınlansın, aynı yerde kararsın
 parlaklik = np.asarray(masa.convert("L").filter(ImageFilter.GaussianBlur(120)), np.float32)
@@ -270,7 +285,7 @@ for _ in range(DOLGU_ALT):
 sira = [("hedef", n) for n in sorted(hedefler, key=lambda n: (n["id"] not in ASIL_YERLER, -n["cm"] * rng.uniform(0.6, 1.4)))]
 for tur in rng.sample(list(KABLO_TURLERI), KABLO):
     sira.insert(rng.randint(len(sira) // 5, len(sira)), ("kablo", tur))
-for n in rng.sample(ortuler, ORTU):
+for n in rng.sample(ortuler, min(ORTU, len(ortuler))):
     sira.insert(rng.randint(len(sira) // 2, len(sira)), ("ortu", n))
 
 yerlesen = []
@@ -382,7 +397,7 @@ gizli = []
 for k, n in yerlesen:
     oran = (secilir == k).sum() / toplam[k]
     yer = ASIL_YERLER.get(n["id"])
-    if (oran < EN_AZ_ETKIN or k in koyu) and not yer:
+    if (oran < EN_AZ_ETKIN or k in koyu or n["id"] in TANINMAZ) and not yer:
         gizli.append(n["id"])
         continue
     if not (secilir == k).any():  # asıl yer her durumda listede kalır

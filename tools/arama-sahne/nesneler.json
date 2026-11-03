@@ -772,6 +772,246 @@
   "h": 3
  },
  {
+  "id": "kul_tablasi",
+  "label": "Kül tablası",
+  "cm": 11,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 2.5
+ },
+ {
+  "id": "murekkep_yastigi",
+  "label": "Mürekkep yastığı",
+  "cm": 8,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 1.5
+ },
+ {
+  "id": "mektup_acacagi",
+  "label": "Mektup açacağı",
+  "cm": 15,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 0.6
+ },
+ {
+  "id": "not_kagidi",
+  "label": "Not kâğıdı",
+  "cm": 12,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 1
+ },
+ {
+  "id": "oda_anahtari",
+  "label": "Oda anahtarı",
+  "cm": 9,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 0.8
+ },
+ {
+  "id": "bant_makinesi",
+  "label": "Bant makinesi",
+  "cm": 13,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 5
+ },
+ {
+  "id": "kalem_kutusu",
+  "label": "Kalem kutusu",
+  "cm": 13,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 8
+ },
+ {
+  "id": "makas",
+  "label": "Makas",
+  "cm": 16,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 1
+ },
+ {
+  "id": "murekkep",
+  "label": "Mürekkep şişesi",
+  "cm": 8,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 7
+ },
+ {
+  "id": "ahize",
+  "label": "Telefon ahizesi",
+  "cm": 20,
+  "tur": "hedef",
+  "sayfa": "tezgah1",
+  "h": 4
+ },
+ {
+  "id": "eski_anahtar",
+  "label": "Eski anahtar",
+  "cm": 8,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 0.5
+ },
+ {
+  "id": "deri_saat",
+  "label": "Deri kayışlı saat",
+  "cm": 15,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 1
+ },
+ {
+  "id": "inci",
+  "label": "İnci kolye",
+  "cm": 13,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 0.8
+ },
+ {
+  "id": "eldiven",
+  "label": "Deri eldiven",
+  "cm": 18,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 1.5
+ },
+ {
+  "id": "kol_dugmesi",
+  "label": "Kol düğmesi",
+  "cm": 3,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 1.5
+ },
+ {
+  "id": "matara",
+  "label": "Cep matarası",
+  "cm": 12,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 2.5
+ },
+ {
+  "id": "emzik",
+  "label": "Emzik",
+  "cm": 6,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 2
+ },
+ {
+  "id": "kemer",
+  "label": "Deri kemer",
+  "cm": 13,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 3
+ },
+ {
+  "id": "kravat",
+  "label": "Kravat",
+  "cm": 14,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 3
+ },
+ {
+  "id": "ayakkabi_cekecegi",
+  "label": "Ayakkabı çekeceği",
+  "cm": 15,
+  "tur": "hedef",
+  "sayfa": "cekmece1",
+  "h": 1
+ },
+ {
+  "id": "ovma_fircasi",
+  "label": "Ovma fırçası",
+  "cm": 14,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 4
+ },
+ {
+  "id": "lastik_eldiven",
+  "label": "Lastik eldiven",
+  "cm": 22,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 1.5
+ },
+ {
+  "id": "ingiliz_anahtari",
+  "label": "İngiliz anahtarı",
+  "cm": 20,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 2
+ },
+ {
+  "id": "kerpeten",
+  "label": "Kerpeten",
+  "cm": 17,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 1.5
+ },
+ {
+  "id": "ampul",
+  "label": "Ampul",
+  "cm": 10,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 6
+ },
+ {
+  "id": "koli_bandi",
+  "label": "Koli bandı",
+  "cm": 10,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 5
+ },
+ {
+  "id": "cekic",
+  "label": "Çekiç",
+  "cm": 25,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 3
+ },
+ {
+  "id": "boya_fircasi",
+  "label": "Boya fırçası",
+  "cm": 17,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 1.5
+ },
+ {
+  "id": "sprey_sise",
+  "label": "Sprey şişesi",
+  "cm": 20,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 6
+ },
+ {
+  "id": "halat",
+  "label": "Halat",
+  "cm": 18,
+  "tur": "hedef",
+  "sayfa": "koridor1",
+  "h": 4
+ },
+ {
   "id": "on_robot",
   "label": "Kurmalı robot",
   "cm": 14,

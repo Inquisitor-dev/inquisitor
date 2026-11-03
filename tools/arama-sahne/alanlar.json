@@ -2,28 +2,195 @@
   "modern/church/static_tv": {
     "clueSpot": "televizyonun önündeki sehpada, eşyaların arasında",
     "masa": "masa",
-    "cm": 70,
-    "lamba": "0.2,0.08,0.6"
+    "cm": 64,
+    "lamba": "0.2,0.08,0.72",
+    "sayfalar": [
+      "sayfa1",
+      "sayfa2",
+      "sayfa4",
+      "sayfa5",
+      "sayfa8",
+      "sayfa9"
+    ],
+    "ekler": [],
+    "asil": {
+      "tek_kullanimlik_kamera": "kameranın arkasında",
+      "termos": "termosun içinde",
+      "kutu": "ezik kutunun içinde"
+    },
+    "dolgu": [
+      "misir1",
+      "misir2",
+      "cips",
+      "simit_kraker",
+      "yer_fistigi",
+      "sam_fistigi",
+      "cekirdek",
+      "kurabiye",
+      "kraker",
+      "seker",
+      "ayi_jeli"
+    ],
+    "dolgu_adet": [
+      110,
+      30
+    ],
+    "kablo": 4,
+    "yigin": 4,
+    "ortu": [
+      "atki",
+      "flanel",
+      "corap"
+    ]
   },
   "modern/church/guest_ledger": {
     "clueSpot": "resepsiyon tezgâhında, eşyaların arasında",
     "masa": "tezgah",
-    "cm": 70,
-    "lamba": "0.2,0.08,0.6",
-    "tohum_kaydir": 1000
+    "cm": 72,
+    "lamba": "0.15,0.05,0.75",
+    "tohum_kaydir": 1000,
+    "sayfalar": [
+      "tezgah1",
+      "sayfa10",
+      "sayfa3"
+    ],
+    "ekler": [
+      "resepsiyon_zili",
+      "pusula",
+      "caki",
+      "cakmak",
+      "at",
+      "fis",
+      "cep_saati",
+      "calar_saat",
+      "zil",
+      "kutu",
+      "kibrit",
+      "kupa",
+      "hesap_makinesi",
+      "disket"
+    ],
+    "asil": {
+      "cuzdan": "cüzdanın içinde",
+      "pudralik": "pudralığın içinde",
+      "bozuk_para_cantasi": "bozuk para çantasının içinde"
+    },
+    "dolgu": [
+      "atac",
+      "lastik",
+      "dugme",
+      "bakir_para",
+      "gumus_para",
+      "kagit_top",
+      "vida"
+    ],
+    "dolgu_adet": [
+      60,
+      20
+    ],
+    "kablo": 2,
+    "yigin": 4,
+    "ortu": [
+      "pecete"
+    ]
   },
   "modern/church/key_rack": {
     "clueSpot": "anahtar dolabının çekmecesinde, kayıp eşyaların arasında",
     "masa": "cekmece",
-    "cm": 70,
-    "lamba": "0.2,0.08,0.6",
-    "tohum_kaydir": 2000
+    "cm": 62,
+    "lamba": "0.5,0.02,0.7",
+    "tohum_kaydir": 2000,
+    "sayfalar": [
+      "cekmece1",
+      "sayfa6",
+      "sayfa3"
+    ],
+    "ekler": [
+      "ruj",
+      "pusula",
+      "cakmak",
+      "kelebek_toka",
+      "toka",
+      "gunes_gozlugu",
+      "cep_saati",
+      "dijital_saat",
+      "ayicik",
+      "lastik_ordek",
+      "yoyo",
+      "kaset",
+      "zar"
+    ],
+    "asil": {
+      "cuzdan": "cüzdanın içinde",
+      "pudralik": "pudralığın içinde",
+      "bozuk_para_cantasi": "bozuk para çantasının içinde"
+    },
+    "dolgu": [
+      "dugme",
+      "boncuk",
+      "bakir_para",
+      "gumus_para",
+      "atac",
+      "lastik",
+      "kagit_top"
+    ],
+    "dolgu_adet": [
+      50,
+      15
+    ],
+    "kablo": 1,
+    "yigin": 3,
+    "ortu": [
+      "pecete",
+      "bandana"
+    ]
   },
   "modern/church/service_door": {
     "clueSpot": "servis kapısının önündeki yığında, eşyaların arasında",
     "masa": "koridor",
-    "cm": 70,
-    "lamba": "0.2,0.08,0.6",
-    "tohum_kaydir": 3000
+    "cm": 76,
+    "lamba": "0.75,0.1,0.62",
+    "tohum_kaydir": 3000,
+    "sayfalar": [
+      "koridor1",
+      "sayfa7",
+      "sayfa9"
+    ],
+    "ekler": [
+      "radyo",
+      "kumanda",
+      "kaset",
+      "kupa",
+      "pizza",
+      "elma",
+      "beyzbol",
+      "kurmali_robot",
+      "cep_telefonu",
+      "lastik_ordek"
+    ],
+    "asil": {
+      "kutu": "ezik kutunun içinde",
+      "termos": "termosun içinde",
+      "kibrit": "kibrit kutusunun içinde"
+    },
+    "dolgu": [
+      "vida",
+      "kapak",
+      "kagit_top",
+      "lastik",
+      "atac",
+      "bakir_para",
+      "cekirdek"
+    ],
+    "dolgu_adet": [
+      50,
+      15
+    ],
+    "kablo": 3,
+    "yigin": 2,
+    "ortu": [
+      "flanel",
+      "corap"
+    ]
   }
 }

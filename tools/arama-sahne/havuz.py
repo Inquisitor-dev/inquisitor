@@ -53,7 +53,7 @@ for _ in range(adet):
     tohum += 1
     print(f"--- {alan} v{tohum}", flush=True)
     subprocess.run(
-        [sys.executable, str(KOK / "diz.py"), str(tohum + ayar.get("tohum_kaydir", 0)), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"], *(["--lamba", ayar["lamba"]] if "lamba" in ayar else [])],
+        [sys.executable, str(KOK / "diz.py"), str(tohum + ayar.get("tohum_kaydir", 0)), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"], "--ayar", alan, *(["--lamba", ayar["lamba"]] if "lamba" in ayar else [])],
         check=True,
         env=ortam,
     )
