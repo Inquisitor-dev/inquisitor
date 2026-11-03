@@ -25,8 +25,8 @@ def dizin():
         "import type { SearchSceneDef } from '../../search-scene';\n"
         + "".join(s + "\n" for s in satirlar)
         + "\n// tools/arama-sahne/havuz.py üretir; elle düzenleme\n"
-        + "export const GENERATED_SCENES: SearchSceneDef[] = ["
-        + ", ".join(ad(i) for i in range(len(dosyalar)))
+        + "export const GENERATED_SCENES: SearchSceneDef[] = [\n"
+        + "".join(f"  {ad(i)},\n" for i in range(len(dosyalar)))
         + "];\n",
         encoding="utf-8",
     )
