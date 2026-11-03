@@ -229,11 +229,16 @@ function withSearchAreas(
 ): CasePlan {
   const searchAreas: Record<string, string> = {};
   for (const location of scenarioConfig.locationDefinitions) {
-    const areas = SEARCH_SCENES.filter(
-      (s) =>
-        s.universe === scenarioConfig.scenarioType &&
-        s.locationId === location.id,
-    ).map((s) => s.areaId);
+    // Alanın kaç varyantı olduğu çekilişi etkilemesin
+    const areas = [
+      ...new Set(
+        SEARCH_SCENES.filter(
+          (s) =>
+            s.universe === scenarioConfig.scenarioType &&
+            s.locationId === location.id,
+        ).map((s) => s.areaId),
+      ),
+    ];
     if (areas.length > 0) searchAreas[location.id] = pick(areas, rng);
   }
   return { ...plan, searchAreas };

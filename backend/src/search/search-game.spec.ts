@@ -1,6 +1,6 @@
 import { gzipSync } from 'node:zlib';
 import { SEARCH_SCENES } from './scenes';
-import type { SearchSceneDef } from './search-scene';
+import { sceneIdOf, type SearchSceneDef } from './search-scene';
 import {
   applyClick,
   hitsAt,
@@ -212,11 +212,19 @@ describe('sahne kayıtları', () => {
     expect(sceneProblems(s)).toEqual([]);
   });
 
-  it('her alanın tek sahnesi var', () => {
-    const keys = SEARCH_SCENES.map(
-      (s) => `${s.universe}/${s.locationId}/${s.areaId}`,
-    );
+  it('her sahnenin kimliği tektir', () => {
+    const keys = SEARCH_SCENES.map(sceneIdOf);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  // Kanıt metni clueSpot'a göre yazılır; hangi varyant atanırsa atansın aynı yer anlatılmalı
+  it('aynı alanın varyantları aynı yeri anlatır', () => {
+    const spots = new Map<string, string>();
+    for (const s of SEARCH_SCENES) {
+      const key = `${s.universe}/${s.locationId}/${s.areaId}`;
+      expect(spots.get(key) ?? s.clueSpot).toBe(s.clueSpot);
+      spots.set(key, s.clueSpot);
+    }
   });
 
   it('kusurları bulur', () => {

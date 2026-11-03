@@ -2,8 +2,8 @@
 # Katmanlar alttan üste: masaya saçılmış dolgu (kırıntı, mısır, para…), yığınlar hâlinde hedef nesneler ve
 # aralarına giren kodla çizilmiş kablolar ile üstlere atılmış örtüler, en üstte biraz daha dolgu.
 # Dolgu, kablo ve örtü listeye girmez; tekrar edebilirler.
-# Kullanım: python diz.py [tohum] [masa genişliği cm] [--masa <kaynak adı>] [--oyun <evren>/<mekân>/<alan>] [filtre]
-#   -> cikti/sahne_<tohum>.webp, _kutular.png (kontrol), .ts; --oyun ile görsel, sahne kaydı ve maske oyuna yazılır
+# Kullanım: python diz.py [tohum] [masa genişliği cm] [--masa <kaynak adı>] [filtre]
+#   -> cikti/sahne_<tohum>.webp, _kutular.png (kontrol), .ts. Oyuna aktarmak için havuz.py.
 import json
 import math
 import random
@@ -25,7 +25,7 @@ def secenek(ad, varsayilan=None):
 
 
 # seçeneklerin değerleri sıra numaralı argüman sayılmaz
-_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun")}
+_degerler = {i + 1 for i, a in enumerate(sys.argv) if a in ("--masa", "--oyun", "--varyant", "--yer")}
 _sirali = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and i not in _degerler and a != "filtre"]
 TOHUM = int(_sirali[0]) if _sirali else 1
 MASA_CM = float(_sirali[1]) if len(_sirali) > 1 else 80
@@ -382,14 +382,15 @@ asil_satir = [f"      {{ id: '{a['id']}', box: {a['box']}, prompt: '{a['prompt']
 print(f"listeye girmeyen (yeterince seçilemiyor): {', '.join(gizli) or 'yok'}")
 print(f"{ad}: {len(nesneler)} hedef nesne, masanın %{bos * 100:.0f}'i boş kaldı")
 
-# --- Oyuna aktarma: python diz.py <tohum> <cm> --oyun modern/church/static_tv -----------------------
+# --- Oyuna aktarma (havuz.py çağırır): python diz.py <tohum> <cm> --oyun <evren>/<mekân>/<alan> --varyant v7 --yer "..."
 # Görseli frontend/public'e, sahne kaydını ve piksel maskesini backend'e yazar. Maske istemciye gitmez.
 if "--oyun" in sys.argv:
     import base64
     import gzip
 
     evren, mekan, alan = secenek("--oyun").split("/")
-    gorsel_yolu = f"/search-scenes/{evren}/{mekan}/{alan}.webp"
+    varyant = secenek("--varyant", f"v{TOHUM}")
+    gorsel_yolu = f"/search-scenes/{evren}/{mekan}/{alan}/{varyant}.webp"
     (DEPO / "frontend/public" / gorsel_yolu.lstrip("/")).parent.mkdir(parents=True, exist_ok=True)
     tuval.save(DEPO / "frontend/public" / gorsel_yolu.lstrip("/"), quality=85)
 
@@ -400,36 +401,39 @@ if "--oyun" in sys.argv:
     hucre = np.zeros(kucuk.shape, np.uint8)
     for k, v in sira.items():
         hucre[kucuk == k] = v
-    veri = base64.b64encode(gzip.compress(hucre.tobytes(), 9)).decode()
+    veri = base64.b64encode(gzip.compress(hucre.tobytes(), 9, mtime=0)).decode()
 
-    sabit = f"{evren}_{mekan}_{alan}".upper().replace("-", "_")
-    dosya = f"{evren}-{mekan}-{alan}"
-    masks = DEPO / "backend/src/search/scenes/masks"
-    masks.mkdir(exist_ok=True)
-    (masks / f"{dosya}.ts").write_text(
-        "import type { SceneMask } from '../../search-scene';\n\n"
-        f"// tools/arama-sahne/diz.py ile üretildi (tohum {TOHUM}, masa {MASA} {MASA_CM:g} cm); elle düzenleme\n"
-        f"export const {sabit}_MASK: SceneMask = {{\n"
-        f"  width: {hucre.shape[1]},\n  height: {hucre.shape[0]},\n  ids: {json.dumps(ids)},\n"
-        f"  data: '{veri}',\n}};\n",
+    metin = lambda v: json.dumps(v, ensure_ascii=False)
+    nesne_satir = "\n".join(f"    {{ id: {metin(o['id'])}, label: {metin(o['label'])}, box: {o['box']} }}," for o in nesneler)
+    asil_satir = "\n".join(f"    {{ id: {metin(a['id'])}, box: {a['box']}, prompt: {metin(a['prompt'])} }}," for a in asil)
+    uretilen = DEPO / "backend/src/search/scenes/generated"
+    uretilen.mkdir(exist_ok=True)
+    (uretilen / f"{evren}-{mekan}-{alan}-{varyant}.ts").write_text(
+        f"""import type {{ SearchSceneDef }} from '../../search-scene';
+
+// tools/arama-sahne/havuz.py ile üretildi (tohum {TOHUM}, yüzey {MASA}, {MASA_CM:g} cm); elle düzenleme
+export const SCENE: SearchSceneDef = {{
+  universe: {metin(evren)},
+  locationId: {metin(mekan)},
+  areaId: {metin(alan)},
+  variant: {metin(varyant)},
+  clueSpot: {metin(secenek("--yer", ""))},
+  image: {metin(gorsel_yolu)},
+  status: 'DRAFT',
+  objects: [
+{nesne_satir}
+  ],
+  finalSpots: [
+{asil_satir}
+  ],
+  mask: {{
+    width: {hucre.shape[1]},
+    height: {hucre.shape[0]},
+    ids: {metin(ids)},
+    data: '{veri}',
+  }},
+}};
+""",
         encoding="utf-8",
     )
-    nesne_satir = "\n".join(f"      {{ id: '{o['id']}', label: {json.dumps(o['label'], ensure_ascii=False)}, box: {o['box']} }}," for o in nesneler)
-    asil_satir = "\n".join(f"      {{ id: '{a['id']}', box: {a['box']}, prompt: {json.dumps(a['prompt'], ensure_ascii=False)} }}," for a in asil)
     print(f"oyuna aktarıldı: {gorsel_yolu}, maske {hucre.shape[1]}x{hucre.shape[0]} ({len(veri) // 1024} KB)")
-    print("--- sahne kaydı ---")
-    print(f"""  {{
-    universe: '{evren}',
-    locationId: '{mekan}',
-    areaId: '{alan}',
-    clueSpot: 'BURAYA YER İFADESİ',
-    image: '{gorsel_yolu}',
-    status: 'DRAFT',
-    objects: [
-{nesne_satir}
-    ],
-    finalSpots: [
-{asil_satir}
-    ],
-    mask: {sabit}_MASK,
-  }},""")

@@ -13,6 +13,7 @@ kez bulunur, her tohumla başka bir diziliş çıkar ve kutularla piksel maskesi
 | `kaynak/` | Üretilen sayfalar ve masa (`.webp`) |
 | `nesneler/` | Kesilmiş saydam nesneler (`<id>.webp`) |
 | `nesneler.json` | Nesne kataloğu: ad, gerçek boyut (cm), masadan yükseklik (cm), tür, sayfa |
+| `alanlar.json` | Havuza üretilecek alanların ayarları |
 | `cikti/` | Deneme sahneleri ve kontrol görselleri (depoya girmez) |
 
 ## Kurulum
@@ -36,10 +37,14 @@ ayrı bir anahtar kullan.
    çevrilir, katalog güncellenir. `cikti/kontrol.png` bütün nesneleri gösterir; kesimi buradan kontrol et.
 3. **Diz:** `python diz.py 5 80` (tohum, masa genişliği cm) → `cikti/sahne_5.webp`, kutuları gösteren
    `sahne_5_kutular.png`. Başka yüzey için `--masa <kaynak adı>`.
-4. **Oyuna aktar:** `python diz.py 5 80 --oyun modern/church/static_tv` görseli
-   `frontend/public/search-scenes/...` altına, maskeyi `backend/src/search/scenes/masks/` altına yazar ve
-   sahne kaydını ekrana basar; kaydı `backend/src/search/scenes/<evren>-<mekân>.ts` dosyasına koy
-   (`clueSpot`'u doldur, sahne `DRAFT` başlar). Ardından `npm test` (backend) `sceneProblems` ile denetler.
+4. **Havuza ekle:** alanı `alanlar.json`'a yaz (kanıtın yer ifadesi `clueSpot`, yüzey görseli `masa`, yüzey
+   genişliği `cm`), sonra `python havuz.py modern/church/static_tv --adet 3`. Her varyant için görsel
+   `frontend/public/search-scenes/<evren>/<mekân>/<alan>/v<N>.webp`, sahne kaydı ve maske
+   `backend/src/search/scenes/generated/` altına yazılır, liste (`index.ts`) kendiliğinden yenilenir. Yeniden
+   çalıştırınca var olan varyantlara dokunmaz, yeni tohumlarla ekler. Varyant silmek için görselini ve `.ts`
+   dosyasını sil, `python havuz.py --dizin` çalıştır. Sonra `npm test` (backend) `sceneProblems` ile denetler.
+5. **Yayına al:** sahneler `DRAFT` başlar, yalnızca test modunda gelir. Oynayıp beğenince dosyasında
+   `status: 'READY'` yap.
 
 ## İstem kuralları (denemelerden)
 

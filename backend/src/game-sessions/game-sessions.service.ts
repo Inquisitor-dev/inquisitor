@@ -9,6 +9,7 @@ import {
   normalizeScenarioType,
 } from '../scenarios/scenario-config';
 import { CaseFacts, CasePlan, planCase } from '../scenarios/case-setup';
+import { assignScenes } from '../search/search-pool';
 import {
   shortDayStart,
   warrantLimitOf,
@@ -161,6 +162,19 @@ export class GameSessionsService {
       },
     });
 
+    // Her mekâna oyuncunun oynamadığı arama sahneleri atanır (hikâye havuzu gibi); katile bakılmaz
+    const plays = await this.prisma.searchScenePlay.findMany({
+      where: { userId },
+      select: { sceneId: true, lastPlayedAt: true },
+    });
+    const searchScenes = assignScenes({
+      universe: pkg.scenarioType,
+      searchAreas: pkg.plan.searchAreas,
+      testMode: isTestMode,
+      plays: new Map(plays.map((p) => [p.sceneId, p.lastPlayedAt.getTime()])),
+      seed: sessionId,
+    });
+
     const session = await this.prisma.gameSession.create({
       data: {
         id: sessionId,
@@ -189,6 +203,7 @@ export class GameSessionsService {
           : [],
         characterId,
         storyId: options?.storyId ?? null,
+        searchScenes,
       },
     });
 

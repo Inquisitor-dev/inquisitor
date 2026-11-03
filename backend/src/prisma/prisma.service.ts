@@ -30,6 +30,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly tokenTransaction = prismaClient.tokenTransaction;
   readonly llmUsage = prismaClient.llmUsage;
   readonly story = prismaClient.story;
+  readonly searchScenePlay = prismaClient.searchScenePlay;
 
   get $transaction() {
     return prismaClient.$transaction.bind(prismaClient);
