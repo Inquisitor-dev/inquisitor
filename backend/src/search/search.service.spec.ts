@@ -49,6 +49,7 @@ function setup(overrides: Record<string, unknown> = {}) {
         return Promise.resolve(session);
       }),
     },
+    searchScenePlay: { upsert: jest.fn(() => Promise.resolve({})) },
     evidence: {
       findMany: jest.fn(() => Promise.resolve(evidence)),
       create: jest.fn(({ data }: { data: Record<string, string | number> }) => {

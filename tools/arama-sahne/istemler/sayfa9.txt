@@ -3,18 +3,18 @@ A detailed semi-realistic digital painting in a 1990s American style: worn, used
 A sheet of 10 separate objects. Each object is seen in a straight top-down view, looking directly down from above, as if it were lying flat on a table. Flat view, no perspective. Objects that normally stand upright are shown lying on their side on the table, seen from above. Every object is drawn large and fills its own space; the objects do not need to be in their real-life sizes.
 
 The objects are arranged in two rows of five, in this exact order, left to right, top row first:
-1. a coffee mug lying on its side
+1. a teal and yellow patterned coffee mug lying on its side
 2. a dented plain unbranded soda can lying on its side
-3. a lollipop
+3. a red, blue and yellow lollipop without a wrapper
 4. a half-eaten slice of pizza
 5. an apple core
-6. a small thermos lying on its side
+6. a small blue thermos with its cup on, lying on its side
 7. a corkscrew
 8. a bottle opener
 9. a plain unprinted box of matches
 10. a teaspoon
 
-Each object appears exactly once. The background is a plain, flat, uniform light grey with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
+Each object appears exactly once. The background is one single continuous, plain, flat, uniform pure magenta (#FF00FF) surface with no panels, no grid and no frames, with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
 
 Highest resolution, 16:9.
-Avoid: shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.
+Avoid: glow, halo, rim light, light around the objects, magenta objects, pink objects, purple objects, printed words, handwriting, shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.

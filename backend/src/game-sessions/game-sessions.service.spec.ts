@@ -340,6 +340,7 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
       );
     const prisma = {
       gameSession: { updateMany: jest.fn(), create },
+      searchScenePlay: { findMany: jest.fn(() => Promise.resolve([])) },
       npc: { findMany: jest.fn().mockResolvedValue([]) },
       sessionNpcState: { create: jest.fn() },
     } as unknown as PrismaService;
@@ -476,6 +477,7 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
 
       const prisma = {
         gameSession: { updateMany: jest.fn(), create },
+      searchScenePlay: { findMany: jest.fn(() => Promise.resolve([])) },
         npc: { findMany: jest.fn().mockResolvedValue([]) },
         sessionNpcState: { create: jest.fn() },
       } as unknown as PrismaService;
@@ -529,6 +531,7 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
 
       const prisma = {
         gameSession: { updateMany: jest.fn(), create },
+      searchScenePlay: { findMany: jest.fn(() => Promise.resolve([])) },
         npc: { findMany: jest.fn().mockResolvedValue([]) },
         sessionNpcState: { create: jest.fn() },
       } as unknown as PrismaService;

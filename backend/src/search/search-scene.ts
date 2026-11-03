@@ -37,6 +37,8 @@ export interface SearchSceneDef {
   locationId: string;
   // İç mekândaki tıklama noktasının id'si (frontend config/interiors/<evren>.ts hotspot id)
   areaId: string;
+  // Aynı alanın başka bir dizilişi (havuz); elle işaretlenmiş tek sahnelerde yok
+  variant?: string;
   // Kanıtın bu alanda nerede durduğunu söyleyen Türkçe yer ifadesi; hikâye istemi kanıtı buraya yazdırır
   // ("tezgâh arkasındaki raflarda")
   clueSpot: string;
@@ -49,3 +51,11 @@ export interface SearchSceneDef {
   // Varsa tıklama bununla denetlenir; kutular yalnızca ipucu ve test çizimi için kalır
   mask?: SceneMask;
 }
+
+// Sahnenin havuzdaki kimliği; oynandı kaydı ve vakaya atama bununla tutulur
+export const sceneIdOf = (
+  scene: Pick<SearchSceneDef, 'universe' | 'locationId' | 'areaId' | 'variant'>,
+) =>
+  [scene.universe, scene.locationId, scene.areaId, scene.variant]
+    .filter(Boolean)
+    .join('/');

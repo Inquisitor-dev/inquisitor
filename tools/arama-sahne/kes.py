@@ -3,6 +3,7 @@
 # Sayfa adı verilmezse hepsi kesilir; verilirse yalnızca onlar yeniden kesilir, öbürleri katalogda kalır.
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +14,17 @@ KOK = Path(__file__).parent
 CIKIS = KOK / "nesneler"
 CIKIS.mkdir(exist_ok=True)
 (KOK / "cikti").mkdir(exist_ok=True)
+
+
+def kaydet(gorsel, yol):
+    # Windows'ta tarayıcı ya da dosya izleyici yeni dosyayı anlık tutabiliyor (Errno 22, 13): kısa aralıkla yeniden dener
+    for kalan in range(5, -1, -1):
+        try:
+            return gorsel.save(yol, quality=90, method=4)
+        except OSError:
+            if not kalan:
+                raise
+            time.sleep(1)
 
 
 def kaynak(ad):
@@ -28,60 +40,77 @@ def kaynak(ad):
 SAYFALAR = {
     "sayfa1": [
         ("yoyo", "Yo-yo", 9), ("zeka_kupu", "Zekâ küpü", 5.7), ("sanal_hayvan", "Sanal evcil hayvan", 8),
-        ("cagri_cihazi", "Çağrı cihazı", 7), ("kasetcalar", "Kasetçalar", 16), ("tek_kullanimlik_kamera", "Tek kullanımlık kamera", 12),
-        ("dijital_saat", "Dijital kol saati", 16), ("el_konsolu", "El konsolu", 15), ("disket", "Disket", 9),
-        ("hesap_makinesi", "Hesap makinesi", 12),
+        ("cagri_cihazi", "Çağrı cihazı", 7), ("kasetcalar", "Kasetçalar", 12), ("tek_kullanimlik_kamera", "Tek kullanımlık kamera", 12),
+        ("dijital_saat", "Dijital kol saati", 13), ("el_konsolu", "El konsolu", 12), None,
+        ("hesap_makinesi", "Hesap makinesi", 11),
     ],
     "sayfa2": [
         ("ayicik", "Ayıcık anahtarlık", 11), ("kar_kuresi", "Kar küresi", 9), ("toka", "Kadife toka", 9),
-        ("kelebek_toka", "Kelebek toka", 6), ("gunes_gozlugu", "Neon güneş gözlüğü", 15), ("lastik_ordek", "Lastik ördek", 9),
-        ("dinozor", "Oyuncak dinozor", 15), ("oyuncak_araba", "Oyuncak araba", 8), ("kurmali_robot", "Kurmalı robot", 12),
+        ("kelebek_toka", "Kelebek toka", 6), ("gunes_gozlugu", "Neon güneş gözlüğü", 13), ("lastik_ordek", "Lastik ördek", 9),
+        ("dinozor", "Oyuncak dinozor", 11), ("oyuncak_araba", "Oyuncak araba", 8), ("kurmali_robot", "Kurmalı robot", 10),
         ("mizika", "Mızıka", 10),
     ],
     "sayfa3": [
         ("pusula", "Pusula", 6), ("caki", "Çakı", 10), ("cakmak", "Çakmak", 7), ("ruj", "Ruj", 8),
         ("pudralik", "Pudralık", 8), ("asma_kilit", "Asma kilit", 7), ("at", "Satranç atı", 5),
-        ("fis", "Poker fişi", 4), ("cuzdan", "Cüzdan", 11), ("donut", "Isırılmış donut", 9),
+        None, ("cuzdan", "Cüzdan", 11), ("donut", "Isırılmış donut", 9),
     ],
     # 4. alan: masadan yükseklik (cm), gölge için
     "sayfa4": [
         ("yay", "Yay oyuncak", 8, 5), ("zipzip", "Zıp zıp top", 5, 5), ("bilye", "Bilye", 1.8, 1.8),
-        ("asker", "Oyuncak asker", 5, 1.5), ("figur", "Aksiyon figürü", 10, 2.5), ("kaleydoskop", "Kaleydoskop", 15, 4),
-        ("kazu", "Kazu", 11, 2), ("duduk", "Düdük", 5, 2), ("raket", "Toplu raket", 22, 1.5), ("firildak", "Fırıldak", 20, 2),
+        ("asker", "Oyuncak asker", 5, 1.5), ("figur", "Aksiyon figürü", 10, 2.5), ("kaleydoskop", "Kaleydoskop", 12, 4),
+        ("kazu", "Kazu", 11, 2), ("duduk", "Düdük", 5, 2), ("raket", "Toplu raket", 16, 1.5), ("firildak", "Fırıldak", 15, 2),
     ],
     "sayfa5": [
-        ("kumanda", "Kumanda", 18, 2), ("kaset", "Kaset", 10, 1.5), ("kartus", "Oyun kartuşu", 12, 2),
-        ("cep_telefonu", "Eski cep telefonu", 20, 4), ("telsiz", "Telsiz", 18, 4), ("radyo", "Cep radyosu", 13, 3.5),
+        ("kumanda", "Kumanda", 15, 2), ("kaset", "Kaset", 10, 1.5), ("kartus", "Oyun kartuşu", 12, 2),
+        ("cep_telefonu", "Eski cep telefonu", 15, 4), ("telsiz", "Telsiz", 14, 4), ("radyo", "Cep radyosu", 13, 3.5),
         ("kulaklik", "Kulaklık", 16, 4), ("film", "Film rulosu", 5, 3.5), ("durbun", "Dürbün", 12, 4.5),
-        ("isik_cubugu", "Işık çubuğu", 15, 1.5),
+        None,
     ],
     "sayfa6": [
         ("yuzuk", "Yüzük", 2.5, 1.5), ("bileklik", "Şaplak bileklik", 9, 1.5), ("kolye", "Dövme kolye", 12, 0.6),
-        ("arkadaslik", "Arkadaşlık bilekliği", 9, 0.6), ("ter_bandi", "Ter bandı", 9, 3), ("okuma_gozlugu", "Okuma gözlüğü", 14, 3),
-        ("yuzucu", "Yüzücü gözlüğü", 17, 3), ("firca", "Saç fırçası", 22, 4), ("tarak", "Tarak", 15, 0.6), ("oje", "Oje", 7, 3),
+        ("arkadaslik", "Arkadaşlık bilekliği", 9, 0.6), ("ter_bandi", "Ter bandı", 9, 3), ("okuma_gozlugu", "Okuma gözlüğü", 12, 3),
+        ("yuzucu", "Yüzücü gözlüğü", 14, 3), ("firca", "Saç fırçası", 16, 4), ("tarak", "Tarak", 13, 0.6), None,
     ],
     "sayfa7": [
-        ("dis_fircasi", "Diş fırçası", 18, 2), ("sabun", "Sabun", 9, 2.5), ("bone", "Bone", 18, 2),
+        ("dis_fircasi", "Diş fırçası", 15, 2), ("sabun", "Sabun", 9, 2.5), ("bone", "Bone", 13, 2),
         ("makara", "İplik makarası", 6, 4), ("yuksuk", "Yüksük", 2.2, 2.5), ("cengelli", "Çengelli iğne", 5, 0.4),
-        ("metre", "Şerit metre", 7, 3.5), ("tornavida", "Tornavida", 18, 2.5), ("fener", "El feneri", 12, 3),
+        ("metre", "Şerit metre", 7, 3.5), ("tornavida", "Tornavida", 14, 2.5), ("fener", "El feneri", 12, 3),
         ("zil", "Bisiklet zili", 7, 4),
     ],
     "sayfa8": [
         ("golf", "Golf topu", 4.3, 4.3), ("pinpon", "Pinpon topu", 4, 4), ("beyzbol", "Beyzbol topu", 7.4, 7.4),
-        ("iskambil", "İskambil kâğıtları", 12, 1.5), ("zar", "Zar", 1.8, 1.8), ("domino", "Domino taşı", 5, 1),
+        ("iskambil", "İskambil kâğıtları", 9, 1.5), ("zar", "Zar", 1.8, 1.8), ("domino", "Domino taşı", 5, 1),
         ("bozuk_para_cantasi", "Bozuk para çantası", 10, 3), ("resepsiyon_zili", "Resepsiyon zili", 8, 6),
-        ("calar_saat", "Çalar saat", 13, 6), ("cep_saati", "Cep saati", 14, 1.5),
+        ("calar_saat", "Çalar saat", 10, 6), ("cep_saati", "Cep saati", 9, 1.5),
     ],
     "sayfa9": [
-        ("kupa", "Kupa", 12, 9), ("kutu", "Ezik kutu", 12, 6.5), ("lolipop", "Lolipop", 12, 2),
-        ("pizza", "Pizza dilimi", 15, 1.5), ("elma", "Elma koçanı", 8, 6), ("termos", "Termos", 22, 8),
+        ("kupa", "Kupa", 9.5, 9), ("kutu", "Ezik kutu", 10, 6.5), ("lolipop", "Lolipop", 12, 2),
+        ("pizza", "Pizza dilimi", 12, 1.5), ("elma", "Elma koçanı", 8, 6), ("termos", "Termos", 15, 8),
         ("tirbuson", "Tirbuşon", 12, 3), ("acacak", "Şişe açacağı", 10, 0.6), ("kibrit", "Kibrit kutusu", 7, 2),
         ("kasik", "Çay kaşığı", 13, 1),
     ],
     "sayfa10": [
         ("kalemtiras", "Kalemtıraş", 3.5, 2), ("silgi", "Silgi", 5, 1.5), ("pastel", "Pastel boya", 9, 1),
-        ("yapistirici", "Yapıştırıcı", 9, 2.5), ("buyutec", "Büyüteç", 15, 2), ("dolma_kalem", "Dolma kalem", 14, 1.5),
-        ("fosforlu", "Fosforlu kalem", 12, 1.8), ("zimba", "Zımba", 13, 5), ("kase", "Kaşe", 5, 5), ("jak", "Jak taşı", 3.5, 3),
+        ("yapistirici", "Yapıştırıcı", 9, 2.5), ("buyutec", "Büyüteç", 12, 2), ("dolma_kalem", "Dolma kalem", 14, 1.5),
+        ("fosforlu", "Fosforlu kalem", 12, 1.8), ("zimba", "Zımba", 11, 5), ("kase", "Kaşe", 5, 5), ("jak", "Jak taşı", 3.5, 3),
+    ],
+    # Düzeltme sayfası: sorunlu çıkan nesneler burada yeniden üretilir, eski sayfadaki yerleri None olur
+    "sayfa11": [
+        ("disket", "Disket", 9, 0.3), ("isik_cubugu", "Işık çubuğu", 13, 1.5), ("fis", "Poker fişi", 4, 0.4), ("oje", "Oje", 7, 3),
+    ],
+    # Önden çizilmiş nesneler (raf yüzeyleri için): uzun kenar cm, tür "on"
+    "on2": [
+        ("on_robot", "Kurmalı robot", 14), ("on_ayi", "Oyuncak ayı", 14), ("on_ordek", "Lastik ördek", 9),
+        ("on_at", "Satranç atı", 8), ("on_kedi", "Porselen kedi", 11), ("on_kupa", "Pirinç kupa", 13),
+        ("on_kum_saati", "Kum saati", 13), ("on_kure", "Küçük dünya küresi", 14), ("on_kumbara", "Domuz kumbara", 10),
+        ("on_figur", "Robot figürü", 12),
+    ],
+    "on3": [
+        ("on_parfum", "Parfüm şişesi", 11), ("on_sprey", "Sprey kutusu", 16), ("on_teneke", "Teneke kutu", 7),
+        ("on_vazo", "Mavi vazo", 14), ("on_caydanlik", "Beyaz demlik", 13), ("on_kamyon", "Oyuncak kamyon", 12),
+        ("on_zil", "Resepsiyon zili", 8), ("on_kalemlik", "Kalemlik", 14), ("on_beyzbol", "Beyzbol topu", 11),
+        ("on_matruska", "Matruşka", 11),
     ],
     "dolgu1": [
         ("misir1", "Patlamış mısır", 2.5), ("misir2", "Patlamış mısır", 2.5), ("cips", "Cips", 4),
@@ -98,9 +127,11 @@ SAYFALAR = {
     ],
 }
 SUTUN = 5
-TUR = {"dolgu1": "dolgu", "ortu1": "ortu"}
+# Gemini'nin kopuk fazladan parça çizdiği nesneler: yalnızca en büyük parça kalır
+TEK_PARCA = {"isik_cubugu"}
+TUR = {"dolgu1": "dolgu", "ortu1": "ortu", "on2": "on", "on3": "on"}
 # Camı ya da şeffaf plastiği olan nesneler
-SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "lolipop"}
+SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "bilye", "kalemtiras", "on_parfum", "on_kum_saati"}
 
 
 def arka_plan(img):
@@ -136,6 +167,10 @@ def maske(img, model):
     gradyan = np.hypot(ndi.sobel(gri, 0), ndi.sobel(gri, 1))
     ham = ndi.binary_closing((fark > 22) | (gradyan > 60), iterations=3)
     m = ndi.binary_fill_holes(ham)
+    # delik yalnızca sayfanın zemin rengindeyse açılır: yerel tahmin, içi düz nesnede (sabun, şeker)
+    # nesnenin kendi rengini zemin sanabiliyor
+    zemin_rengi = np.median(img.reshape(-1, 3), 0)
+    zemine_yakin = np.abs(img - zemin_rengi).sum(-1) < 40
     # donut, toka, kilit halkası gibi iç boşluklar: arka plan renginde ve düz olanları yeniden aç
     delik, n = ndi.label(m & ~ham)
     for i in range(1, n + 1):
@@ -144,10 +179,10 @@ def maske(img, model):
             ys, xs = np.where(d)
             print(f"  delik x{xs.mean():.0f} y{ys.mean():.0f} alan {d.sum()} fark {fark[d].mean():.1f} grad {gradyan[d].mean():.1f} std {img[d].std(0).mean():.1f}")
         # cam (kar küresi, ayna) arka plana benzer ama farkı 10'un üstünde kalıyor
-        if d.sum() > 400 and fark[d].mean() < 9.5 and gradyan[d].mean() < 12:
+        if d.sum() > 400 and fark[d].mean() < 9.5 and gradyan[d].mean() < 12 and zemine_yakin[d].mean() > 0.8:
             m[d] = False
     # boşluğun tamamı düz olmasa da (kulaklık bandıyla gövde arası gibi) arka planla birebir aynı pikseller açılır
-    duz = m & ~ham & (fark < 8)
+    duz = m & ~ham & (fark < 8) & zemine_yakin
     lbl, k = ndi.label(duz)
     for i, boy in enumerate(ndi.sum(duz, lbl, range(1, k + 1)), 1):
         if boy > 300:
@@ -198,9 +233,14 @@ def isle(ad, liste):
     rgb = np.asarray(Image.open(kaynak(ad)).convert("RGB"))
     sonuc = []
     for (i, dilim), bilgi in zip(parcalar, liste):
+        if bilgi is None:  # düzeltme sayfasında yeniden üretildi
+            continue
         nid, etiket_ad, cm = bilgi[:3]
         # kenardaki gri hale kalmasın diye maske 2 px içeri çekilir
         bolge = ndi.binary_erosion(m & (etiket == i), iterations=2)
+        if nid in TEK_PARCA:
+            lbl, say = ndi.label(bolge)
+            bolge = lbl == 1 + int(np.argmax(ndi.sum(bolge, lbl, range(1, say + 1))))
         # yumuşak kenar: maskenin içine doğru 3 px geçiş, arka plana yakın kenar pikselleri saydamlaşır
         ic = ndi.distance_transform_edt(bolge)
         alfa = np.clip(ic / 3, 0, 1) * np.clip(fark / 30, 0.35, 1)
@@ -235,7 +275,7 @@ def isle(ad, liste):
             alfa_kes = alfa[y0:y1, x0:x1]
             alfa[y0:y1, x0:x1] = np.where(kenar, alfa_kes * (1 - np.clip((sizinti[..., 0] - 60) / 100, 0, 1)), alfa_kes)
         rgba = np.dstack([np.clip(temiz, 0, 255).astype(np.uint8), (alfa[y0:y1, x0:x1] * 255).astype(np.uint8)])
-        Image.fromarray(rgba, "RGBA").save(CIKIS / f"{nid}.webp", quality=90, method=6)
+        kaydet(Image.fromarray(rgba, "RGBA"), CIKIS / f"{nid}.webp")
         sonuc.append({"id": nid, "label": etiket_ad, "cm": cm, "tur": TUR.get(ad, "hedef"), "sayfa": ad})
         if len(bilgi) > 3:
             sonuc[-1]["h"] = bilgi[3]
@@ -246,7 +286,7 @@ def kontrol_sayfasi(katalog):
     """Kesilen nesneleri dama zemin üstünde yan yana gösterir."""
     hucre, sutun = 160, 18
     satir = (len(katalog) + sutun - 1) // sutun
-    zemin = Image.new("RGB", (hucre * sutun, hucre * satir), (255, 0, 255))
+    zemin = Image.new("RGB", (hucre * sutun, hucre * satir), (70, 45, 25))
     for k, n in enumerate(katalog):
         o = Image.open(CIKIS / f"{n['id']}.webp")
         o.thumbnail((hucre - 20, hucre - 20))

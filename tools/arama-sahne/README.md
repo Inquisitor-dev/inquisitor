@@ -13,6 +13,7 @@ kez bulunur, her tohumla başka bir diziliş çıkar ve kutularla piksel maskesi
 | `kaynak/` | Üretilen sayfalar ve masa (`.webp`) |
 | `nesneler/` | Kesilmiş saydam nesneler (`<id>.webp`) |
 | `nesneler.json` | Nesne kataloğu: ad, gerçek boyut (cm), masadan yükseklik (cm), tür, sayfa |
+| `alanlar.json` | Havuza üretilecek alanların ayarları |
 | `cikti/` | Deneme sahneleri ve kontrol görselleri (depoya girmez) |
 
 ## Kurulum
@@ -36,32 +37,36 @@ ayrı bir anahtar kullan.
    çevrilir, katalog güncellenir. `cikti/kontrol.png` bütün nesneleri gösterir; kesimi buradan kontrol et.
 3. **Diz:** `python diz.py 5 80` (tohum, masa genişliği cm) → `cikti/sahne_5.webp`, kutuları gösteren
    `sahne_5_kutular.png`. Başka yüzey için `--masa <kaynak adı>`.
-4. **Oyuna aktar:** `python diz.py 5 80 --oyun modern/church/static_tv` görseli
-   `frontend/public/search-scenes/...` altına, maskeyi `backend/src/search/scenes/masks/` altına yazar ve
-   sahne kaydını ekrana basar; kaydı `backend/src/search/scenes/<evren>-<mekân>.ts` dosyasına koy
-   (`clueSpot`'u doldur, sahne `DRAFT` başlar). Ardından `npm test` (backend) `sceneProblems` ile denetler.
+4. **Havuza ekle:** alanı `alanlar.json`'a yaz (kanıtın yer ifadesi `clueSpot`, yüzey görseli `masa`, yüzey
+   genişliği `cm`), sonra `python havuz.py modern/church/static_tv --adet 3`. Her varyant için görsel
+   `frontend/public/search-scenes/<evren>/<mekân>/<alan>/v<N>.webp`, sahne kaydı ve maske
+   `backend/src/search/scenes/generated/` altına yazılır, liste (`index.ts`) kendiliğinden yenilenir. Yeniden
+   çalıştırınca var olan varyantlara dokunmaz, yeni tohumlarla ekler. Varyant silmek için görselini ve `.ts`
+   dosyasını sil, `python havuz.py --dizin` çalıştır. Sonra `npm test` (backend) `sceneProblems` ile denetler.
+5. **Yayına al:** sahneler `DRAFT` başlar, yalnızca test modunda gelir. Oynayıp beğenince dosyasında
+   `status: 'READY'` yap.
 
 ## İstem kuralları (denemelerden)
 
 - **Zemin düz mor (#FF00FF), hale yok:** açık gri zeminde beyaz, gümüş ve cam nesneler zeminden
-  ayrılamadı, Gemini nesnelerin çevresine ışık halesi de boyadı. Mor zemin istemi `istemler/sayfa1.txt`.
-  Mor ya da pembe nesneler mor zemine konmaz; sayfa yeşil zeminle üretilmeli (kes.py henüz yalnızca moru
-  arındırıyor).
+  ayrılamadı, Gemini nesnelerin çevresine ışık halesi de boyadı. Örnek istem: `istemler/sayfa2.txt`.
+  Pembe ve mor nesneler zemine karışır: istemde rengini değiştir ("faded blue scrunchie").
 - **Ayakta duran nesneler "lying on its side":** yandan çizilmiş ördek, robot, kar küresi döndürülünce
   tepeden bakan masada yapay duruyor.
-- **Ad verilen her şey bir kez çizilir**, ama yazı sızabilir (çakmakta "Retro", disket etiketinde el yazısı):
-  böyle nesneler listeye girmesin ya da yeniden üretilsin.
+- **Yazı sızabilir** (fişte "CASINO", disket etiketinde el yazısı): boş olmasını açıkça iste ("blank label",
+  "no print"). Sorunlu nesne için bütün sayfayı üretme: düzeltme sayfasına (`istemler/sayfa11.txt`) ekle,
+  `SAYFALAR`'da eski yerini `None` yap.
 - "Troll doll" istemi Gemini'nin içerik filtresine takıldı.
 
 ## Ayarlar
 
-- `kes.py`: `SAYDAM` (camı olan nesneler yarı saydam kesilir), `SAYFALAR`, `TUR` (dolgu ve örtü sayfaları).
+- `kes.py`: `SAYDAM` (camı olan nesneler yarı saydam kesilir), `TEK_PARCA` (Gemini'nin kopuk parça çizdiği
+  nesnelerde en büyük parça kalır), `SAYFALAR`, `TUR` (dolgu ve örtü sayfaları).
 - `diz.py`: `ASIL_YERLER` (kanıtın saklanabileceği nesneler ve yönlendirme metni), `DOLGU_ALT`/`DOLGU_UST`/
   `KABLO`/`ORTU` (dolgu yoğunluğu), `EN_AZ_GORUNUR` (yerleşirken korunur), `SECILIR_ISIK` ve `EN_AZ_ETKIN`
   (gölgede kalan ya da çok örtülen nesne listeye girmez).
 
 ## Bilinen eksikler
 
-- `sayfa1` ve `sayfa5` dışındaki sayfalar gri zeminli; camlı ve beyaz nesnelerin kenarında iz kalabiliyor.
-- Işık çubuğu yarı saydam olduğu için içinden mor görünüyor; yeşil zeminle yeniden üretilmeli.
-- Termos, kupa, bone gibi büyük nesneler sahnede fazla yer kaplıyor.
+- `dolgu1` ve `ortu1` hâlâ gri zeminli; kesimleri temiz çıktığı için yeniden üretilmedi.
+- `sayfa1` eski istemle üretildi: yandan çizilmiş birkaç nesne var (fotoğraf makinesi, küp).

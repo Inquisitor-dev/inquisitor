@@ -1,0 +1,20 @@
+A detailed semi-realistic digital painting in a 1990s American style: worn, used everyday objects, colorful 90s plastic, faded brass, scuffed vinyl, muted retro colors, soft painterly detail. Soft, bright warm light comes from the upper left.
+
+A sheet of 10 separate objects. Each object is seen in a straight frontal side view at eye level, standing upright on its base as if on a shelf. The camera looks straight at it, not from above. Every object is drawn large and fills its own space; the objects do not need to be in their real-life sizes.
+
+The objects are arranged in two rows of five, in this exact order, left to right, top row first:
+1. a blue wind-up toy robot
+2. a sitting brown teddy bear
+3. a yellow rubber duck seen from the side
+4. a wooden chess knight
+5. a white ceramic cat figurine
+6. a small brass trophy cup with no engraving
+7. an hourglass with a wooden frame
+8. a small desk globe on a stand, with plain painted continents and no writing
+9. a green ceramic piggy bank
+10. a grey plastic robot action figure standing
+
+Each object appears exactly once. The background is one single continuous, plain, flat, uniform pure magenta (#FF00FF) surface with no panels, no grid and no frames, with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no shelf, no table, no surface texture.
+
+Highest resolution, 16:9.
+Avoid: glow, halo, rim light, light around the objects, magenta objects, pink objects, purple objects, printed words, handwriting, shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, top-down view, view from above, objects lying down, watermark, cartoon.

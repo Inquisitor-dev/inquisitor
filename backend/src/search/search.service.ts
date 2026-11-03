@@ -7,7 +7,9 @@ import { recordEvidence } from '../npcs/evidence-recorder';
 import { EVIDENCE_TAG, evidenceFromTags } from '../npcs/evidence';
 import type { CaseFacts } from '../scenarios/case-setup';
 import { getLocalizedLocationLabel } from '../scenarios/scenario-config';
-import { findSearchScene, searchAreas } from './scenes';
+import { searchAreas } from './scenes';
+import { sessionScene } from './search-pool';
+import { sceneIdOf } from './search-scene';
 import type { SearchSceneDef } from './search-scene';
 import {
   applyClick,
@@ -57,12 +59,14 @@ export class SearchService {
   }
 
   private sceneFor(session: Session, locationId: string, areaId: string) {
-    return findSearchScene(
-      session.scenarioType,
+    return sessionScene({
+      universe: session.scenarioType,
       locationId,
       areaId,
-      session.isTestMode,
-    );
+      testMode: session.isTestMode,
+      assigned: session.searchScenes,
+      sessionId: session.id,
+    });
   }
 
   // Kanıtın bulunduğu alan: vaka planındaki alan; planda yoksa (havuzdaki eski hikâyeler) ya da o alanın
@@ -151,6 +155,13 @@ export class SearchService {
       now: this.now(),
     });
     await this.save(session, state, locationId, attempt);
+    // Sahne oynanmış sayılır (yeni vakada önce oynanmamışlar atanır); atanıp açılmayan sayılmaz
+    const lastPlayedAt = new Date(this.now());
+    await this.prisma.searchScenePlay.upsert({
+      where: { userId_sceneId: { userId, sceneId: sceneIdOf(scene) } },
+      create: { userId, sceneId: sceneIdOf(scene), lastPlayedAt },
+      update: { lastPlayedAt },
+    });
     return {
       view: this.view(session, scene, attempt),
       timeOfDay: session.timeOfDay,

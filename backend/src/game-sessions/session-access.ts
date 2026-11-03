@@ -33,6 +33,7 @@ export function toPublicSession<
     caseFacts?: unknown;
     abilityState?: unknown;
     personaState?: unknown;
+    searchScenes?: unknown;
     currentDay?: number;
   },
 >(session: T) {
@@ -58,6 +59,7 @@ export function toPublicSession<
     locationClues,
     caseFacts,
     personaState,
+    searchScenes,
     /* eslint-enable @typescript-eslint/no-unused-vars */
     ...publicSession
   } = session;

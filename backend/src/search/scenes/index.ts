@@ -5,7 +5,7 @@ import { MEDIEVAL_CLINIC_SCENES } from './medieval-clinic';
 import { MEDIEVAL_FARM_SCENES } from './medieval-farm';
 import { MEDIEVAL_GRAVEYARD_SCENES } from './medieval-graveyard';
 import { MEDIEVAL_MILL_SCENES } from './medieval-mill';
-import { MODERN_CHURCH_SCENES } from './modern-church';
+import { GENERATED_SCENES } from './generated';
 
 // Evrenlerin arama sahneleri (her biri bir mekânın bir alanı). Sahnesi olmayan mekân eski yolla
 // (anlatıcıyla) aranır.
@@ -16,26 +16,27 @@ export const SEARCH_SCENES: SearchSceneDef[] = [
   ...MEDIEVAL_GRAVEYARD_SCENES,
   ...MEDIEVAL_FARM_SCENES,
   ...MEDIEVAL_CLINIC_SCENES,
-  ...MODERN_CHURCH_SCENES,
+  ...GENERATED_SCENES,
 ];
 
 // Taslak sahneler yalnızca test modunda açılır
 const usable = (scene: SearchSceneDef, testMode: boolean) =>
   scene.status === 'READY' || testMode;
 
-export function findSearchScene(
+// Bir alanın kullanılabilir sahneleri (havuzdaki varyantları)
+export function areaScenes(
   universe: string,
   locationId: string,
   areaId: string,
   testMode: boolean,
-): SearchSceneDef | null {
-  const scene = SEARCH_SCENES.find(
+): SearchSceneDef[] {
+  return SEARCH_SCENES.filter(
     (s) =>
       s.universe === universe &&
       s.locationId === locationId &&
-      s.areaId === areaId,
+      s.areaId === areaId &&
+      usable(s, testMode),
   );
-  return scene && usable(scene, testMode) ? scene : null;
 }
 
 // Mekânın aranabilir alanları; boşsa mekân anlatıcıyla aranır
@@ -44,10 +45,11 @@ export function searchAreas(
   locationId: string,
   testMode: boolean,
 ): string[] {
-  return SEARCH_SCENES.filter(
+  const areas = SEARCH_SCENES.filter(
     (s) =>
       s.universe === universe &&
       s.locationId === locationId &&
       usable(s, testMode),
   ).map((s) => s.areaId);
+  return [...new Set(areas)];
 }

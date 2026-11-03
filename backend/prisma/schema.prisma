@@ -33,6 +33,7 @@ model User {
   score             Int           @default(0)    // Sıralama için toplam dedektiflik puanı
   createdAt         DateTime      @default(now())
   sessions          GameSession[]
+  searchScenePlays  SearchScenePlay[]
   purchases         UserPurchase[]
   tokenTransactions TokenTransaction[]
 }
@@ -63,6 +64,7 @@ model GameSession {
   characterId    String            @default("engizitor") // Vaka başında kilitlenen oyuncu karakteri; yetenekleri belirler
   abilityState   Json?                          // Yetenek kullanımları ve süren etkileri (src/abilities/abilities.ts AbilityState)
   searchState    Json?                          // Mekân aramaları (tıkla-bul): her mekânın denemesi, bulunanlar, süre (src/search/search-game.ts)
+  searchScenes   Json?                          // Vaka açılırken her mekâna atanan arama sahnesi: { mekân: sahne id } (src/search/search-pool.ts)
   verdictReport  Json?                          // Hüküm Dosyası: oyuncunun raporu ve puanı (src/game-sessions/verdict/verdict-report.ts)
   personaState   Json?                          // Katil personası: işlenen geceler, gerçekleşen hamleler ve sabah gazeteleri (src/personas/persona-night.ts)
   storyId        String?                        // Havuzdan seçilmişse bağlı olduğu hikâye paketi
@@ -96,6 +98,17 @@ model Story {
 
   @@index([universe, difficulty, status])
   @@index([status])
+}
+
+// Oyuncunun oynadığı arama sahneleri: yeni vakada önce oynamadıkları atanır. Sahneler kodla birlikte
+// gelir (görselleri frontend/public'te), bu yüzden burada yalnızca kimlikleri durur.
+model SearchScenePlay {
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  sceneId      String
+  lastPlayedAt DateTime @default(now())
+
+  @@id([userId, sceneId])
 }
 
 model Npc {
