@@ -4,5 +4,26 @@
     "masa": "masa",
     "cm": 70,
     "lamba": "0.2,0.08,0.6"
+  },
+  "modern/church/guest_ledger": {
+    "clueSpot": "resepsiyon tezgâhında, eşyaların arasında",
+    "masa": "tezgah",
+    "cm": 70,
+    "lamba": "0.2,0.08,0.6",
+    "tohum_kaydir": 1000
+  },
+  "modern/church/key_rack": {
+    "clueSpot": "anahtar dolabının çekmecesinde, kayıp eşyaların arasında",
+    "masa": "cekmece",
+    "cm": 70,
+    "lamba": "0.2,0.08,0.6",
+    "tohum_kaydir": 2000
+  },
+  "modern/church/service_door": {
+    "clueSpot": "servis kapısının önündeki yığında, eşyaların arasında",
+    "masa": "koridor",
+    "cm": 70,
+    "lamba": "0.2,0.08,0.6",
+    "tohum_kaydir": 3000
   }
 }
