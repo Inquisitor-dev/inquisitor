@@ -10,6 +10,7 @@ import {
   settingsFor,
   startAttempt,
   takeHint,
+  targetPool,
   withExpiry,
   type SearchAttempt,
 } from './search-game';
@@ -155,6 +156,43 @@ describe('applyClick', () => {
     expect(withExpiry(a, 'easy', late).status).toBe('FAILED');
     const { x, y } = center(a.targets[0]);
     expect(click(a, x, y, 'easy', late).outcome.kind).toBe('NOT_RUNNING');
+  });
+});
+
+describe('targetPool', () => {
+  // o0 en görünür, o11 en az görünür
+  const visible: SearchSceneDef = {
+    ...scene,
+    objects: scene.objects.map((o, i) => ({ ...o, visibility: 100 - i })),
+  };
+  const draw = (s: SearchSceneDef, difficulty: string, seed: string) =>
+    startAttempt({ scene: s, difficulty, seed, attempt: 1, now: 0 }).targets;
+  const ids = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => `o${from + i}`);
+
+  it('kolay en görünür yarıdan, zor en az görünür yarıdan seçer', () => {
+    expect(targetPool(visible, 'easy', 6)).toEqual(ids(0, 5));
+    expect(targetPool(visible, 'hard', 6)).toEqual(ids(6, 11));
+    for (const seed of ['a', 'b', 'c']) {
+      expect(ids(0, 5)).toEqual(
+        expect.arrayContaining(draw(visible, 'easy', seed)),
+      );
+    }
+  });
+
+  it('orta bütün nesnelerden seçer', () => {
+    expect(targetPool(visible, 'medium', 8)).toHaveLength(12);
+  });
+
+  it('istenen hedef sayısı yarıdan çoksa yeterince geniş tutar', () => {
+    const pool = targetPool(visible, 'hard', 10);
+    expect(pool).toEqual(ids(2, 11));
+    expect(new Set(draw(visible, 'hard', 'a')).size).toBe(10);
+  });
+
+  it('görünürlüğü olmayan sahnede hepsinden seçer, liste değişmez', () => {
+    expect(targetPool(scene, 'easy', 6)).toHaveLength(12);
+    expect(draw({ ...scene }, 'easy', 's1')).toEqual(start('easy').targets);
   });
 });
 

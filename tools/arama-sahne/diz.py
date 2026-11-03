@@ -428,7 +428,7 @@ if "--oyun" in sys.argv:
     veri = base64.b64encode(gzip.compress(hucre.tobytes(), 9, mtime=0)).decode()
 
     metin = lambda v: json.dumps(v, ensure_ascii=False)
-    nesne_satir = "\n".join(f"    {{ id: {metin(o['id'])}, label: {metin(o['label'])}, box: {o['box']} }}," for o in nesneler)
+    nesne_satir = "\n".join(f"    {{ id: {metin(o['id'])}, label: {metin(o['label'])}, box: {o['box']}, visibility: {o['gorunur']} }}," for o in nesneler)
     asil_satir = "\n".join(f"    {{ id: {metin(a['id'])}, box: {a['box']}, prompt: {metin(a['prompt'])} }}," for a in asil)
     uretilen = DEPO / "backend/src/search/scenes/generated"
     uretilen.mkdir(exist_ok=True)
