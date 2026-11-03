@@ -99,6 +99,19 @@ SAYFALAR = {
     "sayfa11": [
         ("disket", "Disket", 9, 0.3), ("isik_cubugu", "Işık çubuğu", 13, 1.5), ("fis", "Poker fişi", 4, 0.4), ("oje", "Oje", 7, 3),
     ],
+    # Önden çizilmiş nesneler (raf yüzeyleri için): uzun kenar cm, tür "on"
+    "on2": [
+        ("on_robot", "Kurmalı robot", 14), ("on_ayi", "Oyuncak ayı", 14), ("on_ordek", "Lastik ördek", 9),
+        ("on_at", "Satranç atı", 8), ("on_kedi", "Porselen kedi", 11), ("on_kupa", "Pirinç kupa", 13),
+        ("on_kum_saati", "Kum saati", 13), ("on_kure", "Küçük dünya küresi", 14), ("on_kumbara", "Domuz kumbara", 10),
+        ("on_figur", "Robot figürü", 12),
+    ],
+    "on3": [
+        ("on_parfum", "Parfüm şişesi", 11), ("on_sprey", "Sprey kutusu", 16), ("on_teneke", "Teneke kutu", 7),
+        ("on_vazo", "Mavi vazo", 14), ("on_caydanlik", "Beyaz demlik", 13), ("on_kamyon", "Oyuncak kamyon", 12),
+        ("on_zil", "Resepsiyon zili", 8), ("on_kalemlik", "Kalemlik", 14), ("on_beyzbol", "Beyzbol topu", 11),
+        ("on_matruska", "Matruşka", 11),
+    ],
     "dolgu1": [
         ("misir1", "Patlamış mısır", 2.5), ("misir2", "Patlamış mısır", 2.5), ("cips", "Cips", 4),
         ("simit_kraker", "Kraker simidi", 5), ("yer_fistigi", "Yer fıstığı", 3.5), ("sam_fistigi", "Fıstık kabuğu", 2),
@@ -116,9 +129,9 @@ SAYFALAR = {
 SUTUN = 5
 # Gemini'nin kopuk fazladan parça çizdiği nesneler: yalnızca en büyük parça kalır
 TEK_PARCA = {"isik_cubugu"}
-TUR = {"dolgu1": "dolgu", "ortu1": "ortu"}
+TUR = {"dolgu1": "dolgu", "ortu1": "ortu", "on2": "on", "on3": "on"}
 # Camı ya da şeffaf plastiği olan nesneler
-SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "bilye", "kalemtiras"}
+SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "bilye", "kalemtiras", "on_parfum", "on_kum_saati"}
 
 
 def arka_plan(img):
