@@ -44,24 +44,24 @@ ayrı bir anahtar kullan.
 ## İstem kuralları (denemelerden)
 
 - **Zemin düz mor (#FF00FF), hale yok:** açık gri zeminde beyaz, gümüş ve cam nesneler zeminden
-  ayrılamadı, Gemini nesnelerin çevresine ışık halesi de boyadı. Mor zemin istemi `istemler/sayfa1.txt`.
-  Mor ya da pembe nesneler mor zemine konmaz; sayfa yeşil zeminle üretilmeli (kes.py henüz yalnızca moru
-  arındırıyor).
+  ayrılamadı, Gemini nesnelerin çevresine ışık halesi de boyadı. Örnek istem: `istemler/sayfa2.txt`.
+  Pembe ve mor nesneler zemine karışır: istemde rengini değiştir ("faded blue scrunchie").
 - **Ayakta duran nesneler "lying on its side":** yandan çizilmiş ördek, robot, kar küresi döndürülünce
   tepeden bakan masada yapay duruyor.
-- **Ad verilen her şey bir kez çizilir**, ama yazı sızabilir (çakmakta "Retro", disket etiketinde el yazısı):
-  böyle nesneler listeye girmesin ya da yeniden üretilsin.
+- **Yazı sızabilir** (fişte "CASINO", disket etiketinde el yazısı): boş olmasını açıkça iste ("blank label",
+  "no print"). Sorunlu nesne için bütün sayfayı üretme: düzeltme sayfasına (`istemler/sayfa11.txt`) ekle,
+  `SAYFALAR`'da eski yerini `None` yap.
 - "Troll doll" istemi Gemini'nin içerik filtresine takıldı.
 
 ## Ayarlar
 
-- `kes.py`: `SAYDAM` (camı olan nesneler yarı saydam kesilir), `SAYFALAR`, `TUR` (dolgu ve örtü sayfaları).
+- `kes.py`: `SAYDAM` (camı olan nesneler yarı saydam kesilir), `TEK_PARCA` (Gemini'nin kopuk parça çizdiği
+  nesnelerde en büyük parça kalır), `SAYFALAR`, `TUR` (dolgu ve örtü sayfaları).
 - `diz.py`: `ASIL_YERLER` (kanıtın saklanabileceği nesneler ve yönlendirme metni), `DOLGU_ALT`/`DOLGU_UST`/
   `KABLO`/`ORTU` (dolgu yoğunluğu), `EN_AZ_GORUNUR` (yerleşirken korunur), `SECILIR_ISIK` ve `EN_AZ_ETKIN`
   (gölgede kalan ya da çok örtülen nesne listeye girmez).
 
 ## Bilinen eksikler
 
-- `sayfa1` ve `sayfa5` dışındaki sayfalar gri zeminli; camlı ve beyaz nesnelerin kenarında iz kalabiliyor.
-- Işık çubuğu yarı saydam olduğu için içinden mor görünüyor; yeşil zeminle yeniden üretilmeli.
-- Termos, kupa, bone gibi büyük nesneler sahnede fazla yer kaplıyor.
+- `dolgu1` ve `ortu1` hâlâ gri zeminli; kesimleri temiz çıktığı için yeniden üretilmedi.
+- `sayfa1` eski istemle üretildi: yandan çizilmiş birkaç nesne var (fotoğraf makinesi, küp).

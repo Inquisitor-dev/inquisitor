@@ -30,7 +30,7 @@
  {
   "id": "kasetcalar",
   "label": "Kasetçalar",
-  "cm": 16,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa1"
  },
@@ -44,28 +44,21 @@
  {
   "id": "dijital_saat",
   "label": "Dijital kol saati",
-  "cm": 16,
+  "cm": 13,
   "tur": "hedef",
   "sayfa": "sayfa1"
  },
  {
   "id": "el_konsolu",
   "label": "El konsolu",
-  "cm": 15,
-  "tur": "hedef",
-  "sayfa": "sayfa1"
- },
- {
-  "id": "disket",
-  "label": "Disket",
-  "cm": 9,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa1"
  },
  {
   "id": "hesap_makinesi",
   "label": "Hesap makinesi",
-  "cm": 12,
+  "cm": 11,
   "tur": "hedef",
   "sayfa": "sayfa1"
  },
@@ -100,7 +93,7 @@
  {
   "id": "gunes_gozlugu",
   "label": "Neon güneş gözlüğü",
-  "cm": 15,
+  "cm": 13,
   "tur": "hedef",
   "sayfa": "sayfa2"
  },
@@ -114,7 +107,7 @@
  {
   "id": "dinozor",
   "label": "Oyuncak dinozor",
-  "cm": 15,
+  "cm": 11,
   "tur": "hedef",
   "sayfa": "sayfa2"
  },
@@ -128,7 +121,7 @@
  {
   "id": "kurmali_robot",
   "label": "Kurmalı robot",
-  "cm": 12,
+  "cm": 10,
   "tur": "hedef",
   "sayfa": "sayfa2"
  },
@@ -189,13 +182,6 @@
   "sayfa": "sayfa3"
  },
  {
-  "id": "fis",
-  "label": "Poker fişi",
-  "cm": 4,
-  "tur": "hedef",
-  "sayfa": "sayfa3"
- },
- {
   "id": "cuzdan",
   "label": "Cüzdan",
   "cm": 11,
@@ -252,7 +238,7 @@
  {
   "id": "kaleydoskop",
   "label": "Kaleydoskop",
-  "cm": 15,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa4",
   "h": 4
@@ -276,7 +262,7 @@
  {
   "id": "raket",
   "label": "Toplu raket",
-  "cm": 22,
+  "cm": 16,
   "tur": "hedef",
   "sayfa": "sayfa4",
   "h": 1.5
@@ -284,7 +270,7 @@
  {
   "id": "firildak",
   "label": "Fırıldak",
-  "cm": 20,
+  "cm": 15,
   "tur": "hedef",
   "sayfa": "sayfa4",
   "h": 2
@@ -292,7 +278,7 @@
  {
   "id": "kumanda",
   "label": "Kumanda",
-  "cm": 18,
+  "cm": 15,
   "tur": "hedef",
   "sayfa": "sayfa5",
   "h": 2
@@ -316,7 +302,7 @@
  {
   "id": "cep_telefonu",
   "label": "Eski cep telefonu",
-  "cm": 20,
+  "cm": 15,
   "tur": "hedef",
   "sayfa": "sayfa5",
   "h": 4
@@ -324,7 +310,7 @@
  {
   "id": "telsiz",
   "label": "Telsiz",
-  "cm": 18,
+  "cm": 14,
   "tur": "hedef",
   "sayfa": "sayfa5",
   "h": 4
@@ -360,14 +346,6 @@
   "tur": "hedef",
   "sayfa": "sayfa5",
   "h": 4.5
- },
- {
-  "id": "isik_cubugu",
-  "label": "Işık çubuğu",
-  "cm": 15,
-  "tur": "hedef",
-  "sayfa": "sayfa5",
-  "h": 1.5
  },
  {
   "id": "yuzuk",
@@ -412,7 +390,7 @@
  {
   "id": "okuma_gozlugu",
   "label": "Okuma gözlüğü",
-  "cm": 14,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa6",
   "h": 3
@@ -420,7 +398,7 @@
  {
   "id": "yuzucu",
   "label": "Yüzücü gözlüğü",
-  "cm": 17,
+  "cm": 14,
   "tur": "hedef",
   "sayfa": "sayfa6",
   "h": 3
@@ -428,7 +406,7 @@
  {
   "id": "firca",
   "label": "Saç fırçası",
-  "cm": 22,
+  "cm": 16,
   "tur": "hedef",
   "sayfa": "sayfa6",
   "h": 4
@@ -436,23 +414,15 @@
  {
   "id": "tarak",
   "label": "Tarak",
-  "cm": 15,
+  "cm": 13,
   "tur": "hedef",
   "sayfa": "sayfa6",
   "h": 0.6
  },
  {
-  "id": "oje",
-  "label": "Oje",
-  "cm": 7,
-  "tur": "hedef",
-  "sayfa": "sayfa6",
-  "h": 3
- },
- {
   "id": "dis_fircasi",
   "label": "Diş fırçası",
-  "cm": 18,
+  "cm": 15,
   "tur": "hedef",
   "sayfa": "sayfa7",
   "h": 2
@@ -468,7 +438,7 @@
  {
   "id": "bone",
   "label": "Bone",
-  "cm": 18,
+  "cm": 13,
   "tur": "hedef",
   "sayfa": "sayfa7",
   "h": 2
@@ -508,7 +478,7 @@
  {
   "id": "tornavida",
   "label": "Tornavida",
-  "cm": 18,
+  "cm": 14,
   "tur": "hedef",
   "sayfa": "sayfa7",
   "h": 2.5
@@ -556,7 +526,7 @@
  {
   "id": "iskambil",
   "label": "İskambil kâğıtları",
-  "cm": 12,
+  "cm": 9,
   "tur": "hedef",
   "sayfa": "sayfa8",
   "h": 1.5
@@ -596,7 +566,7 @@
  {
   "id": "calar_saat",
   "label": "Çalar saat",
-  "cm": 13,
+  "cm": 10,
   "tur": "hedef",
   "sayfa": "sayfa8",
   "h": 6
@@ -604,7 +574,7 @@
  {
   "id": "cep_saati",
   "label": "Cep saati",
-  "cm": 14,
+  "cm": 9,
   "tur": "hedef",
   "sayfa": "sayfa8",
   "h": 1.5
@@ -612,7 +582,7 @@
  {
   "id": "kupa",
   "label": "Kupa",
-  "cm": 12,
+  "cm": 9.5,
   "tur": "hedef",
   "sayfa": "sayfa9",
   "h": 9
@@ -620,7 +590,7 @@
  {
   "id": "kutu",
   "label": "Ezik kutu",
-  "cm": 12,
+  "cm": 10,
   "tur": "hedef",
   "sayfa": "sayfa9",
   "h": 6.5
@@ -636,7 +606,7 @@
  {
   "id": "pizza",
   "label": "Pizza dilimi",
-  "cm": 15,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa9",
   "h": 1.5
@@ -652,7 +622,7 @@
  {
   "id": "termos",
   "label": "Termos",
-  "cm": 22,
+  "cm": 15,
   "tur": "hedef",
   "sayfa": "sayfa9",
   "h": 8
@@ -724,7 +694,7 @@
  {
   "id": "buyutec",
   "label": "Büyüteç",
-  "cm": 15,
+  "cm": 12,
   "tur": "hedef",
   "sayfa": "sayfa10",
   "h": 2
@@ -748,7 +718,7 @@
  {
   "id": "zimba",
   "label": "Zımba",
-  "cm": 13,
+  "cm": 11,
   "tur": "hedef",
   "sayfa": "sayfa10",
   "h": 5
@@ -767,6 +737,38 @@
   "cm": 3.5,
   "tur": "hedef",
   "sayfa": "sayfa10",
+  "h": 3
+ },
+ {
+  "id": "disket",
+  "label": "Disket",
+  "cm": 9,
+  "tur": "hedef",
+  "sayfa": "sayfa11",
+  "h": 0.3
+ },
+ {
+  "id": "isik_cubugu",
+  "label": "Işık çubuğu",
+  "cm": 13,
+  "tur": "hedef",
+  "sayfa": "sayfa11",
+  "h": 1.5
+ },
+ {
+  "id": "fis",
+  "label": "Poker fişi",
+  "cm": 4,
+  "tur": "hedef",
+  "sayfa": "sayfa11",
+  "h": 0.4
+ },
+ {
+  "id": "oje",
+  "label": "Oje",
+  "cm": 7,
+  "tur": "hedef",
+  "sayfa": "sayfa11",
   "h": 3
  },
  {

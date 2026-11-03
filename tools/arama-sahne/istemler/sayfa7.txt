@@ -5,16 +5,16 @@ A sheet of 10 separate objects. Each object is seen in a straight top-down view,
 The objects are arranged in two rows of five, in this exact order, left to right, top row first:
 1. a toothbrush
 2. a used bar of soap
-3. a crumpled shower cap
+3. a crumpled blue floral shower cap
 4. a spool of thread
-5. a thimble
+5. a brass thimble lying on its side
 6. a safety pin
-7. a retractable tape measure
+7. a plain yellow retractable tape measure with the tape fully inside and no markings
 8. a screwdriver
 9. a small flashlight
 10. a bicycle bell
 
-Each object appears exactly once. The background is a plain, flat, uniform light grey with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
+Each object appears exactly once. The background is one single continuous, plain, flat, uniform pure magenta (#FF00FF) surface with no panels, no grid and no frames, with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
 
 Highest resolution, 16:9.
-Avoid: shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.
+Avoid: glow, halo, rim light, light around the objects, magenta objects, pink objects, purple objects, printed words, handwriting, shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.

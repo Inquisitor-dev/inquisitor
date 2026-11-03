@@ -6,15 +6,15 @@ The objects are arranged in two rows of five, in this exact order, left to right
 1. a golf ball
 2. a ping-pong ball
 3. a scuffed baseball
-4. a deck of playing cards
+4. a closed deck of playing cards with a plain blue back
 5. a single die
 6. a domino tile
 7. a small coin purse
 8. a brass hotel desk bell
-9. a wind-up alarm clock lying on its back
+9. a wind-up alarm clock lying on its back, its dial with marks instead of numbers
 10. a pocket watch with its chain
 
-Each object appears exactly once. The background is a plain, flat, uniform light grey with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
+Each object appears exactly once. The background is one single continuous, plain, flat, uniform pure magenta (#FF00FF) surface with no panels, no grid and no frames, with wide empty space around every object; no object touches another object or the edge of the image. No cast shadows on the background, no table, no surface texture.
 
 Highest resolution, 16:9.
-Avoid: shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.
+Avoid: glow, halo, rim light, light around the objects, magenta objects, pink objects, purple objects, printed words, handwriting, shadows on the background, background texture, gradient background, overlapping objects, objects touching, cropped objects, extra objects, duplicate objects, text, letters, numbers, logos, brand names, labels, people, hands, perspective view, side view, standing objects, watermark, cartoon.
