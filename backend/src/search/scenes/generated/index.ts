@@ -13,4 +13,17 @@ import { SCENE as SCENE_10 } from './modern-church-static_tv-v2';
 import { SCENE as SCENE_11 } from './modern-church-static_tv-v3';
 
 // tools/arama-sahne/havuz.py üretir; elle düzenleme
-export const GENERATED_SCENES: SearchSceneDef[] = [SCENE_0, SCENE_1, SCENE_2, SCENE_3, SCENE_4, SCENE_5, SCENE_6, SCENE_7, SCENE_8, SCENE_9, SCENE_10, SCENE_11];
+export const GENERATED_SCENES: SearchSceneDef[] = [
+  SCENE_0,
+  SCENE_1,
+  SCENE_2,
+  SCENE_3,
+  SCENE_4,
+  SCENE_5,
+  SCENE_6,
+  SCENE_7,
+  SCENE_8,
+  SCENE_9,
+  SCENE_10,
+  SCENE_11,
+];
