@@ -38,7 +38,7 @@ ayrı bir anahtar kullan.
 3. **Diz:** `python diz.py 5 80` (tohum, masa genişliği cm) → `cikti/sahne_5.webp`, kutuları gösteren
    `sahne_5_kutular.png`. Başka yüzey için `--masa <kaynak adı>`.
 4. **Havuza ekle:** alanı `alanlar.json`'a yaz (kanıtın yer ifadesi `clueSpot`, yüzey görseli `masa`, yüzey
-   genişliği `cm`), sonra `python havuz.py modern/church/static_tv --adet 3`. Her varyant için görsel
+   genişliği `cm`, ışık `lamba`: "x,y,en_az", lambanın yeri ve en karanlık yerin parlaklığı; `tohum_kaydir`: her alana farklı bir sayı, yoksa alanlar aynı dizilişi alır), sonra `python havuz.py modern/church/static_tv --adet 3`. Her varyant için görsel
    `frontend/public/search-scenes/<evren>/<mekân>/<alan>/v<N>.webp`, sahne kaydı ve maske
    `backend/src/search/scenes/generated/` altına yazılır, liste (`index.ts`) kendiliğinden yenilenir. Yeniden
    çalıştırınca var olan varyantlara dokunmaz, yeni tohumlarla ekler. Varyant silmek için görselini ve `.ts`
@@ -62,9 +62,17 @@ ayrı bir anahtar kullan.
 
 - `kes.py`: `SAYDAM` (camı olan nesneler yarı saydam kesilir), `TEK_PARCA` (Gemini'nin kopuk parça çizdiği
   nesnelerde en büyük parça kalır), `SAYFALAR`, `TUR` (dolgu ve örtü sayfaları).
-- `diz.py`: `ASIL_YERLER` (kanıtın saklanabileceği nesneler ve yönlendirme metni), `DOLGU_ALT`/`DOLGU_UST`/
+- `diz.py`: `EN_AZ_KOYU` (lambalı sahnede fazla karanlıkta kalan nesne listeye girmez), `ASIL_YERLER` (kanıtın saklanabileceği nesneler ve yönlendirme metni), `DOLGU_ALT`/`DOLGU_UST`/
   `KABLO`/`ORTU` (dolgu yoğunluğu), `EN_AZ_GORUNUR` (yerleşirken korunur), `SECILIR_ISIK` ve `EN_AZ_ETKIN`
   (gölgede kalan ya da çok örtülen nesne listeye girmez).
+
+## Alanların ayırt edilmesi
+
+Aynı nesnelerle her alan aynı yığın gibi görünüyordu. `alanlar.json`'da her alanın kendi seti var: `sayfalar` ve
+`ekler` (hedef nesneler), `asil` (kanıtın saklanabileceği nesneler ve yönlendirme ifadesi), `dolgu`, `ortu`, `dolgu_adet`
+(alt ve üst katman), `kablo`, `yigin`. Nesne az olunca yüzey görünür: `cm` küçülürse nesneler büyür, yüzey örtülür.
+Alana özel nesne için `istemler/` altına sayfa ekle (örnek `koridor1.txt`). Görünse bile tanınmayan nesneler `diz.py`
+içindeki `TANINMAZ` listesine girer.
 
 ## Bilinen eksikler
 

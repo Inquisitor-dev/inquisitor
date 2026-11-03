@@ -101,6 +101,24 @@ function shuffled<T>(items: T[], rng: () => number): T[] {
   return copy;
 }
 
+// Hedeflerin seçileceği nesneler. Görünürlüğü bilinen sahnede kolay zorluk en görünür yarıdan, zor en az görünür
+// yarıdan seçer, orta hepsinden; sıralamaya bakıldığı için her sahnede yeterli hedef kalır. Elle işaretlenmiş
+// sahnede görünürlük yoktur, hepsinden seçilir. Yalnızca zorluğa bağlıdır, vakaya bakmaz.
+export function targetPool(
+  scene: SearchSceneDef,
+  difficulty: string,
+  count: number,
+): string[] {
+  const all = scene.objects.map((o) => o.id);
+  if (difficulty !== 'easy' && difficulty !== 'hard') return all;
+  if (scene.objects.some((o) => o.visibility === undefined)) return all;
+  const sorted = [...scene.objects]
+    .sort((a, b) => b.visibility! - a.visibility!)
+    .map((o) => o.id);
+  const half = Math.max(count, Math.ceil(sorted.length / 2));
+  return difficulty === 'easy' ? sorted.slice(0, half) : sorted.slice(-half);
+}
+
 export function startAttempt(params: {
   scene: SearchSceneDef;
   difficulty: string;
@@ -111,10 +129,10 @@ export function startAttempt(params: {
   const { scene, difficulty, attempt, now } = params;
   const rng = seededRng(`${params.seed}:${attempt}`);
   const count = Math.min(settingsFor(difficulty).targets, scene.objects.length);
-  const targets = shuffled(
-    scene.objects.map((o) => o.id),
-    rng,
-  ).slice(0, count);
+  const targets = shuffled(targetPool(scene, difficulty, count), rng).slice(
+    0,
+    count,
+  );
   const finalSpot =
     scene.finalSpots[Math.floor(rng() * scene.finalSpots.length)];
   return {

@@ -99,6 +99,22 @@ SAYFALAR = {
     "sayfa11": [
         ("disket", "Disket", 9, 0.3), ("isik_cubugu", "Işık çubuğu", 13, 1.5), ("fis", "Poker fişi", 4, 0.4), ("oje", "Oje", 7, 3),
     ],
+    # Alana özel nesneler (alanlar.json hangi alanın hangi sayfaları kullanacağını söyler)
+    "tezgah1": [
+        ("kul_tablasi", "Kül tablası", 11, 2.5), ("murekkep_yastigi", "Mürekkep yastığı", 8, 1.5), ("mektup_acacagi", "Mektup açacağı", 15, 0.6),
+        ("not_kagidi", "Not kâğıdı", 12, 1), ("oda_anahtari", "Oda anahtarı", 9, 0.8), ("bant_makinesi", "Bant makinesi", 13, 5),
+        ("kalem_kutusu", "Kalem kutusu", 13, 8), ("makas", "Makas", 16, 1), ("murekkep", "Mürekkep şişesi", 8, 7), ("ahize", "Telefon ahizesi", 20, 4),
+    ],
+    "cekmece1": [
+        ("eski_anahtar", "Eski anahtar", 8, 0.5), ("deri_saat", "Deri kayışlı saat", 15, 1), ("inci", "İnci kolye", 13, 0.8),
+        ("eldiven", "Deri eldiven", 18, 1.5), ("kol_dugmesi", "Kol düğmesi", 3, 1.5), ("matara", "Cep matarası", 12, 2.5),
+        ("emzik", "Emzik", 6, 2), ("kemer", "Deri kemer", 13, 3), ("kravat", "Kravat", 14, 3), ("ayakkabi_cekecegi", "Ayakkabı çekeceği", 15, 1),
+    ],
+    "koridor1": [
+        ("ovma_fircasi", "Ovma fırçası", 14, 4), ("lastik_eldiven", "Lastik eldiven", 22, 1.5), ("ingiliz_anahtari", "İngiliz anahtarı", 20, 2),
+        ("kerpeten", "Kerpeten", 17, 1.5), ("ampul", "Ampul", 10, 6), ("koli_bandi", "Koli bandı", 10, 5), ("cekic", "Çekiç", 25, 3),
+        ("boya_fircasi", "Boya fırçası", 17, 1.5), ("sprey_sise", "Sprey şişesi", 20, 6), ("halat", "Halat", 18, 4),
+    ],
     # Önden çizilmiş nesneler (raf yüzeyleri için): uzun kenar cm, tür "on"
     "on2": [
         ("on_robot", "Kurmalı robot", 14), ("on_ayi", "Oyuncak ayı", 14), ("on_ordek", "Lastik ördek", 9),
@@ -131,7 +147,7 @@ SUTUN = 5
 TEK_PARCA = {"isik_cubugu"}
 TUR = {"dolgu1": "dolgu", "ortu1": "ortu", "on2": "on", "on3": "on"}
 # Camı ya da şeffaf plastiği olan nesneler
-SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "bilye", "kalemtiras", "on_parfum", "on_kum_saati"}
+SAYDAM = {"kar_kuresi", "buyutec", "okuma_gozlugu", "yuzucu", "kaset", "bilye", "kalemtiras", "on_parfum", "on_kum_saati", "ampul"}
 
 
 def arka_plan(img):

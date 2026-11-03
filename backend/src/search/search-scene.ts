@@ -11,6 +11,8 @@ export interface SceneObject {
   // Listede görünen ad ("Kalay kupa")
   label: string;
   box: SceneBox;
+  // Nesnenin görünen yüzdesi (kodla dizilmiş sahnelerde): zorluk hedefleri buna göre seçer
+  visibility?: number;
 }
 
 // Liste bitince aranan asıl yer (gizli bölme, gevşek tahta); kanıt buradan çıkar

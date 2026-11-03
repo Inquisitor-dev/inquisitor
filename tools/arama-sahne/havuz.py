@@ -1,7 +1,8 @@
 # Arama sahnesi havuzunu doldurur: bir alan için farklı tohumlarla sahneler dizer ve oyuna yazar.
 # Kullanım: python havuz.py <evren>/<mekân>/<alan> [--adet 3]      yeni varyantlar üretir
 #           python havuz.py --dizin                                 yalnızca sahne listesini yeniler
-# Alanın ayarları (kanıtın yer ifadesi, yüzey görseli, yüzeyin genişliği) alanlar.json'dadır.
+# Alanın ayarları (kanıtın yer ifadesi, yüzey görseli, yüzeyin genişliği, lamba) alanlar.json'dadır.
+# tohum_kaydir: alanların dizilişi birbirinin aynısı olmasın diye tohuma eklenir.
 # Sahneler DRAFT başlar; oynanıp beğenilince dosyasında status 'READY' yapılır.
 import json
 import os
@@ -24,8 +25,8 @@ def dizin():
         "import type { SearchSceneDef } from '../../search-scene';\n"
         + "".join(s + "\n" for s in satirlar)
         + "\n// tools/arama-sahne/havuz.py üretir; elle düzenleme\n"
-        + "export const GENERATED_SCENES: SearchSceneDef[] = ["
-        + ", ".join(ad(i) for i in range(len(dosyalar)))
+        + "export const GENERATED_SCENES: SearchSceneDef[] = [\n"
+        + "".join(f"  {ad(i)},\n" for i in range(len(dosyalar)))
         + "];\n",
         encoding="utf-8",
     )
@@ -52,7 +53,7 @@ for _ in range(adet):
     tohum += 1
     print(f"--- {alan} v{tohum}", flush=True)
     subprocess.run(
-        [sys.executable, str(KOK / "diz.py"), str(tohum), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"]],
+        [sys.executable, str(KOK / "diz.py"), str(tohum + ayar.get("tohum_kaydir", 0)), str(ayar["cm"]), "--masa", ayar["masa"], "--oyun", alan, "--varyant", f"v{tohum}", "--yer", ayar["clueSpot"], "--ayar", alan, *(["--lamba", ayar["lamba"]] if "lamba" in ayar else [])],
         check=True,
         env=ortam,
     )
