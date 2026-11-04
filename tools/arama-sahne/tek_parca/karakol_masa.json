@@ -1,0 +1,302 @@
+{
+ "gorsel": "karakol_masa.webp",
+ "evren": "modern",
+ "mekan": "tavern",
+ "alan": "case_files",
+ "varyant": "t1",
+ "yer": "şerifin masasındaki yığında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "radyo",
+   "ad": "Radyo",
+   "kutu": [
+    26,
+    5.5,
+    11.8,
+    17.8
+   ]
+  },
+  {
+   "id": "spor_ayakkabi",
+   "ad": "Spor ayakkabı",
+   "kutu": [
+    40,
+    6.5,
+    11.3,
+    19.2
+   ]
+  },
+  {
+   "id": "el_feneri",
+   "ad": "El feneri",
+   "kutu": [
+    22.3,
+    19.8,
+    12.8,
+    12.7
+   ]
+  },
+  {
+   "id": "bisiklet_zili",
+   "ad": "Bisiklet zili",
+   "kutu": [
+    15.2,
+    9.8,
+    10,
+    10.8
+   ]
+  },
+  {
+   "id": "oyuncak_ayi",
+   "ad": "Oyuncak ayı",
+   "kutu": [
+    12.5,
+    35,
+    13,
+    24.6
+   ]
+  },
+  {
+   "id": "termos",
+   "ad": "Termos",
+   "kutu": [
+    22.8,
+    34.5,
+    8.7,
+    28
+   ]
+  },
+  {
+   "id": "calar_saat",
+   "ad": "Çalar saat",
+   "kutu": [
+    30,
+    43,
+    7.4,
+    17
+   ]
+  },
+  {
+   "id": "kablo",
+   "ad": "Kablo tomarı",
+   "kutu": [
+    43.5,
+    34.5,
+    14.5,
+    13.5
+   ]
+  },
+  {
+   "id": "telsiz",
+   "ad": "Telsiz",
+   "kutu": [
+    63.7,
+    12,
+    12.8,
+    37
+   ]
+  },
+  {
+   "id": "kupa",
+   "ad": "Pirinç kupa",
+   "kutu": [
+    83.5,
+    38.5,
+    8.7,
+    16.6
+   ]
+  },
+  {
+   "id": "buyutec",
+   "ad": "Büyüteç",
+   "kutu": [
+    61.2,
+    48,
+    8,
+    9.5
+   ]
+  },
+  {
+   "id": "gozluk",
+   "ad": "Gözlük",
+   "kutu": [
+    53.2,
+    48.8,
+    8.2,
+    8.7
+   ]
+  },
+  {
+   "id": "baret",
+   "ad": "Sarı baret",
+   "kutu": [
+    60.7,
+    58.2,
+    14.6,
+    21.2
+   ]
+  },
+  {
+   "id": "cetvel",
+   "ad": "Tahta cetvel",
+   "kutu": [
+    44,
+    64,
+    17,
+    11
+   ]
+  },
+  {
+   "id": "kase",
+   "ad": "Kâse",
+   "kutu": [
+    38.3,
+    69,
+    10,
+    17.1
+   ]
+  },
+  {
+   "id": "mezura",
+   "ad": "Mezura",
+   "kutu": [
+    25.5,
+    63.2,
+    10,
+    11.6
+   ]
+  },
+  {
+   "id": "yesil_kamyonet",
+   "ad": "Yeşil kamyonet",
+   "kutu": [
+    32.8,
+    67.2,
+    6.8,
+    7.6
+   ]
+  },
+  {
+   "id": "kirmizi_araba",
+   "ad": "Kırmızı araba",
+   "kutu": [
+    27.5,
+    79.8,
+    8.5,
+    10.8
+   ]
+  },
+  {
+   "id": "topac",
+   "ad": "Topaç",
+   "kutu": [
+    22,
+    70.3,
+    6.3,
+    11.7
+   ]
+  },
+  {
+   "id": "matara",
+   "ad": "Matara",
+   "kutu": [
+    10.7,
+    59,
+    12.5,
+    23.9
+   ]
+  },
+  {
+   "id": "manken",
+   "ad": "Tahta manken",
+   "kutu": [
+    2.2,
+    71.2,
+    9,
+    23.8
+   ]
+  },
+  {
+   "id": "makas",
+   "ad": "Makas",
+   "kutu": [
+    67.5,
+    77.5,
+    7.5,
+    8.8
+   ]
+  },
+  {
+   "id": "anahtarlar",
+   "ad": "Anahtarlar",
+   "kutu": [
+    59.7,
+    78,
+    4.8,
+    8.8
+   ]
+  },
+  {
+   "id": "yesil_sise",
+   "ad": "Yeşil şişe",
+   "kutu": [
+    8.2,
+    47,
+    7.8,
+    18
+   ]
+  },
+  {
+   "id": "boya_kovasi",
+   "ad": "Boya kutusu",
+   "kutu": [
+    74.8,
+    82.9,
+    6,
+    17
+   ]
+  },
+  {
+   "id": "yumak",
+   "ad": "Yün yumağı",
+   "kutu": [
+    93.5,
+    92.3,
+    6.5,
+    7.7
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "metal_kutu",
+   "yonlendirme": "Kanıt sağdaki gümüş rengi metal kutuda olabilir.",
+   "kutu": [
+    76,
+    54.7,
+    19.1,
+    27.4
+   ]
+  },
+  {
+   "id": "yesil_kutu",
+   "yonlendirme": "Kanıt sağ üstteki yeşil kutuda olabilir.",
+   "kutu": [
+    68,
+    5.8,
+    14.2,
+    18
+   ]
+  },
+  {
+   "id": "hasir_sepet",
+   "yonlendirme": "Kanıt sağ alttaki hasır sepette olabilir.",
+   "kutu": [
+    81,
+    77.5,
+    15.3,
+    22.5
+   ]
+  }
+ ]
+}
