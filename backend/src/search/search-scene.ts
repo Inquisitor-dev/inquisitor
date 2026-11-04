@@ -11,7 +11,7 @@ export interface SceneObject {
   // Listede görünen ad ("Kalay kupa")
   label: string;
   box: SceneBox;
-  // Nesnenin görünen yüzdesi (kodla dizilmiş sahnelerde): zorluk hedefleri buna göre seçer
+  // Nesnenin görünen yüzdesi (ölçülmüşse): zorluk hedefleri buna göre seçer
   visibility?: number;
 }
 
@@ -23,7 +23,7 @@ export interface SceneFinalSpot {
   prompt: string;
 }
 
-// Kodla dizilmiş sahnelerin piksel sahiplik haritası (tools/arama-sahne/diz.py üretir). Görsel küçük
+// Sahnenin piksel sahiplik haritası (tools/arama-sahne/maske.py üretir). Görsel küçük
 // hücrelere bölünür; her hücrede o noktada seçilebilen nesnenin `ids` içindeki sırası +1 durur
 // (0 = hiçbir nesne). Satır satır, gzip'li, base64. Tıklama kutuya değil buna bakar: kutu, çapraz
 // duran bir nesnede çevresindeki başka eşyaları da kapsar. İstemciye hiç gitmez.

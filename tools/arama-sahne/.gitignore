@@ -1,5 +1,7 @@
-# Deneme çıktıları (sahne görselleri, kontrol görselleri, kimlik haritaları)
+# Kontrol görselleri
 cikti/
-# uret.mjs'nin ham çıktısı; kes.py ilk kesimde .webp'ye çevirir
+# uret.mjs'nin ham çıktısı; sahneye girecekse .webp olarak kaydet
 kaynak/*.png
 __pycache__/
+# SAM model dosyası (maske.py)
+*.pt

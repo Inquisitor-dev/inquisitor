@@ -1,0 +1,336 @@
+{
+ "gorsel": "otel_raf.webp",
+ "evren": "modern",
+ "mekan": "church",
+ "alan": "key_rack",
+ "varyant": "raf1",
+ "yer": "anahtar dolabında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "trompet",
+   "ad": "Trompet",
+   "kutu": [
+    7.7,
+    19.0,
+    9.7,
+    6.0
+   ]
+  },
+  {
+   "id": "kaset_radyo",
+   "ad": "Kasetli radyo",
+   "kutu": [
+    18.0,
+    7.3,
+    6.2,
+    8.2
+   ]
+  },
+  {
+   "id": "gumus_demlik",
+   "ad": "Gümüş demlik",
+   "kutu": [
+    31.4,
+    7.0,
+    6.4,
+    8.7
+   ]
+  },
+  {
+   "id": "yuzlu_testi",
+   "ad": "Yüzlü testi",
+   "kutu": [
+    39.8,
+    9.0,
+    4.2,
+    10.3
+   ]
+  },
+  {
+   "id": "tost_makinesi",
+   "ad": "Ekmek kızartıcı",
+   "kutu": [
+    47.0,
+    13.9,
+    7.3,
+    9.8
+   ]
+  },
+  {
+   "id": "yaban_ordegi",
+   "ad": "Yaban ördeği",
+   "kutu": [
+    50.2,
+    17.0,
+    8.2,
+    8.0
+   ]
+  },
+  {
+   "id": "domuz_kumbara",
+   "ad": "Domuz kumbara",
+   "kutu": [
+    76.1,
+    18.0,
+    5.2,
+    7.0
+   ]
+  },
+  {
+   "id": "oyuncak_robot",
+   "ad": "Oyuncak robot",
+   "kutu": [
+    86.8,
+    13.9,
+    3.3,
+    11.2
+   ]
+  },
+  {
+   "id": "oyuncak_ayi",
+   "ad": "Oyuncak ayı",
+   "kutu": [
+    3.9,
+    27.7,
+    8.6,
+    15.7
+   ]
+  },
+  {
+   "id": "oyuncak_ev",
+   "ad": "Oyuncak ev",
+   "kutu": [
+    31.5,
+    30.0,
+    10.5,
+    18.5
+   ]
+  },
+  {
+   "id": "cam_top",
+   "ad": "Fileli cam top",
+   "kutu": [
+    41.2,
+    40.7,
+    4.0,
+    7.1
+   ]
+  },
+  {
+   "id": "vantilator",
+   "ad": "Vantilatör",
+   "kutu": [
+    44.7,
+    33.7,
+    5.5,
+    14.8
+   ]
+  },
+  {
+   "id": "paten",
+   "ad": "Paten",
+   "kutu": [
+    55.7,
+    39,
+    7.5,
+    9.6
+   ],
+   "parcalar": [
+    [
+     55.7,
+     39,
+     4.1,
+     9.6
+    ],
+    [
+     59.8,
+     39,
+     3.4,
+     9.6
+    ]
+   ]
+  },
+  {
+   "id": "durbun",
+   "ad": "Dürbün",
+   "kutu": [
+    81.0,
+    41.8,
+    3.0,
+    6.7
+   ]
+  },
+  {
+   "id": "oyuncak_ucak",
+   "ad": "Oyuncak uçak",
+   "kutu": [
+    89.7,
+    37.5,
+    7.0,
+    5.4
+   ]
+  },
+  {
+   "id": "sac_kurutma",
+   "ad": "Saç kurutma makinesi",
+   "kutu": [
+    9.9,
+    64.0,
+    6.2,
+    6.3
+   ]
+  },
+  {
+   "id": "kurabiye_kavanozu",
+   "ad": "Kurabiye kavanozu",
+   "kutu": [
+    15.1,
+    58.1,
+    4.6,
+    10.5
+   ]
+  },
+  {
+   "id": "kaset",
+   "ad": "Kaset",
+   "kutu": [
+    18.1,
+    66.4,
+    4.2,
+    3.6
+   ]
+  },
+  {
+   "id": "kristal_surahi",
+   "ad": "Kristal sürahi",
+   "kutu": [
+    33.9,
+    57.9,
+    3.2,
+    12.2
+   ]
+  },
+  {
+   "id": "bust",
+   "ad": "Büst",
+   "kutu": [
+    37.1,
+    55.2,
+    4.4,
+    15.2
+   ]
+  },
+  {
+   "id": "sari_eldiven",
+   "ad": "Sarı eldiven",
+   "kutu": [
+    54.9,
+    62.8,
+    3.5,
+    6.3
+   ]
+  },
+  {
+   "id": "gaz_lambasi",
+   "ad": "Gaz lambası",
+   "kutu": [
+    76.2,
+    58.0,
+    3.8,
+    12.9
+   ]
+  },
+  {
+   "id": "abakus",
+   "ad": "Abaküs",
+   "kutu": [
+    79.3,
+    55.2,
+    6.0,
+    14.3
+   ]
+  },
+  {
+   "id": "masa_saati",
+   "ad": "Masa saati",
+   "kutu": [
+    85.2,
+    63.7,
+    6.0,
+    6.7
+   ]
+  },
+  {
+   "id": "akvaryum",
+   "ad": "Akvaryum",
+   "kutu": [
+    90.5,
+    60.1,
+    5.8,
+    9.0
+   ]
+  },
+  {
+   "id": "kar_ayakkabisi",
+   "ad": "Kar ayakkabısı",
+   "kutu": [
+    54.2,
+    73.7,
+    8.0,
+    11.2
+   ]
+  },
+  {
+   "id": "teraryum",
+   "ad": "Teraryum",
+   "kutu": [
+    60.2,
+    83.8,
+    6.6,
+    11.8
+   ]
+  },
+  {
+   "id": "bakir_kase",
+   "ad": "Bakır kâse",
+   "kutu": [
+    67.4,
+    87.1,
+    4.2,
+    7.9
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "deri_canta",
+   "yonlendirme": "Kanıt sol üstteki deri çantada olabilir.",
+   "kutu": [
+    3.7,
+    9.4,
+    8.8,
+    16.6
+   ]
+  },
+  {
+   "id": "alet_kutusu",
+   "yonlendirme": "Kanıt oyuncak ayının yanındaki metal alet kutusunda olabilir.",
+   "kutu": [
+    10.2,
+    31.3,
+    9.6,
+    9.4
+   ]
+  },
+  {
+   "id": "eski_sandik",
+   "yonlendirme": "Kanıt sağ alttaki eski sandıkta olabilir.",
+   "kutu": [
+    85.2,
+    80.8,
+    9.8,
+    13.0
+   ]
+  }
+ ]
+}
