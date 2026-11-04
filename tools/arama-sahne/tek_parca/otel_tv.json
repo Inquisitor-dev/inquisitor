@@ -1,0 +1,292 @@
+{
+ "gorsel": "otel_tv.webp",
+ "evren": "modern",
+ "mekan": "church",
+ "alan": "static_tv",
+ "varyant": "t1",
+ "yer": "televizyon dolabında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "oyuncak_ayi",
+   "ad": "Oyuncak ayı",
+   "kutu": [
+    26.6,
+    5.1,
+    11.7,
+    21.4
+   ]
+  },
+  {
+   "id": "tabak",
+   "ad": "Süs tabağı",
+   "kutu": [
+    41,
+    6.7,
+    10.4,
+    18.9
+   ]
+  },
+  {
+   "id": "dinozor",
+   "ad": "Oyuncak dinozor",
+   "kutu": [
+    44.4,
+    8.5,
+    13.4,
+    17.5
+   ]
+  },
+  {
+   "id": "el_konsolu",
+   "ad": "El konsolu",
+   "kutu": [
+    57,
+    8.5,
+    7.1,
+    17.3
+   ]
+  },
+  {
+   "id": "calar_saat",
+   "ad": "Çalar saat",
+   "kutu": [
+    64.1,
+    7.6,
+    7.4,
+    18.3
+   ]
+  },
+  {
+   "id": "yapboz",
+   "ad": "Yapboz",
+   "kutu": [
+    71.5,
+    9.9,
+    14.1,
+    15.6
+   ]
+  },
+  {
+   "id": "masa_zili",
+   "ad": "Pirinç zil",
+   "kutu": [
+    83.4,
+    5.8,
+    6.1,
+    20
+   ]
+  },
+  {
+   "id": "fotograf_makinesi",
+   "ad": "Fotoğraf makinesi",
+   "kutu": [
+    17.2,
+    14.3,
+    9.3,
+    11.5
+   ]
+  },
+  {
+   "id": "hasir_sepet",
+   "ad": "Hasır sepet",
+   "kutu": [
+    3.4,
+    31.2,
+    10.7,
+    18.3
+   ]
+  },
+  {
+   "id": "renkli_araba",
+   "ad": "Renkli araba",
+   "kutu": [
+    18,
+    40.2,
+    11.8,
+    9.9
+   ]
+  },
+  {
+   "id": "seramik_kopek",
+   "ad": "Seramik köpek",
+   "kutu": [
+    30,
+    34.1,
+    8.8,
+    15.5
+   ]
+  },
+  {
+   "id": "hesap_makinesi",
+   "ad": "Hesap makinesi",
+   "kutu": [
+    37.7,
+    31.8,
+    7.5,
+    18
+   ]
+  },
+  {
+   "id": "gunes_gozlugu",
+   "ad": "Güneş gözlüğü",
+   "kutu": [
+    61.7,
+    43.9,
+    9.8,
+    5.9
+   ]
+  },
+  {
+   "id": "zeka_kupu",
+   "ad": "Zekâ küpü",
+   "kutu": [
+    73,
+    39.2,
+    6.8,
+    10.9
+   ]
+  },
+  {
+   "id": "muhur",
+   "ad": "Mühür",
+   "kutu": [
+    84.5,
+    44.7,
+    4.8,
+    5.1
+   ]
+  },
+  {
+   "id": "telsiz",
+   "ad": "Telsiz",
+   "kutu": [
+    14.1,
+    49.8,
+    6,
+    23.6
+   ]
+  },
+  {
+   "id": "beyzbol_eldiveni",
+   "ad": "Beyzbol eldiveni",
+   "kutu": [
+    35.7,
+    52.7,
+    11.8,
+    20.9
+   ]
+  },
+  {
+   "id": "durbun",
+   "ad": "Dürbün",
+   "kutu": [
+    46.7,
+    57,
+    8.3,
+    16.6
+   ]
+  },
+  {
+   "id": "termos",
+   "ad": "Termos",
+   "kutu": [
+    55.7,
+    52.9,
+    4.2,
+    20.2
+   ]
+  },
+  {
+   "id": "kure",
+   "ad": "Dünya küresi",
+   "kutu": [
+    76.9,
+    56.3,
+    7.1,
+    17.3
+   ]
+  },
+  {
+   "id": "video_kaseti",
+   "ad": "Video kaseti",
+   "kutu": [
+    3.6,
+    81.2,
+    12.7,
+    15.2
+   ]
+  },
+  {
+   "id": "pembe_araba",
+   "ad": "Pembe araba",
+   "kutu": [
+    27.1,
+    90.6,
+    5.8,
+    6.9
+   ]
+  },
+  {
+   "id": "yesil_kamyonet",
+   "ad": "Yeşil kamyonet",
+   "kutu": [
+    33.7,
+    90.6,
+    5.8,
+    6.5
+   ]
+  },
+  {
+   "id": "kumanda",
+   "ad": "Kumanda",
+   "kutu": [
+    40,
+    80.5,
+    11.3,
+    16.9
+   ]
+  },
+  {
+   "id": "is_eldiveni",
+   "ad": "İş eldiveni",
+   "kutu": [
+    57.5,
+    81.2,
+    12.2,
+    16.6
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "deri_kese",
+   "yonlendirme": "Kanıt ikinci rafın ortasındaki deri kesede olabilir.",
+   "kutu": [
+    44.4,
+    35.2,
+    7.6,
+    14
+   ]
+  },
+  {
+   "id": "teneke_kutu",
+   "yonlendirme": "Kanıt üçüncü rafın solundaki teneke kutuda olabilir.",
+   "kutu": [
+    21.5,
+    57.9,
+    11.8,
+    15.7
+   ]
+  },
+  {
+   "id": "karton_kutu",
+   "yonlendirme": "Kanıt ikinci rafın sağındaki karton kutuda olabilir.",
+   "kutu": [
+    86.8,
+    30.9,
+    9.7,
+    18.9
+   ]
+  }
+ ]
+}

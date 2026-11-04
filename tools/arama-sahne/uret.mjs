@@ -1,5 +1,5 @@
 // Gemini API ile görsel üretir. Kullanım: node uret.mjs istemler/<ad>.txt [istemler/<ad2>.txt ...]
-// Her istem için kaynak/<ad>.png kaydeder (kes.py .png ve .webp okur). Anahtar GEMINI_API_KEY ortam
+// Her istem için kaynak/<ad>.png kaydeder. Görsel başına yaklaşık 0,13 $; Gemini uygulamasından üretmek ücretsiz. Anahtar GEMINI_API_KEY ortam
 // değişkeninden, yoksa backend/.env'den okunur; oyunun kotasını harcamamak için ayrı bir anahtar önerilir.
 import fs from 'node:fs';
 import path from 'node:path';

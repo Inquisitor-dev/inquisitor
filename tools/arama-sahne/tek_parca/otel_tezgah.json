@@ -1,0 +1,202 @@
+{
+ "gorsel": "otel_tezgah.webp",
+ "evren": "modern",
+ "mekan": "church",
+ "alan": "guest_ledger",
+ "varyant": "t1",
+ "yer": "resepsiyon tezgâhında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "semsiye",
+   "ad": "Şemsiye",
+   "kutu": [
+    6,
+    0,
+    28.5,
+    43
+   ]
+  },
+  {
+   "id": "hasir_sepet",
+   "ad": "Hasır sepet",
+   "kutu": [
+    65.2,
+    3.4,
+    17.5,
+    32
+   ]
+  },
+  {
+   "id": "termos",
+   "ad": "Ekose termos",
+   "kutu": [
+    62.9,
+    26.5,
+    11.1,
+    22.4
+   ]
+  },
+  {
+   "id": "konserve",
+   "ad": "Konserve kutusu",
+   "kutu": [
+    42.2,
+    21.3,
+    4.6,
+    8.7
+   ]
+  },
+  {
+   "id": "kasket",
+   "ad": "Kasket",
+   "kutu": [
+    26.5,
+    9.4,
+    11.3,
+    12.1
+   ]
+  },
+  {
+   "id": "oyuncak_araba",
+   "ad": "Oyuncak araba",
+   "kutu": [
+    86.7,
+    25.3,
+    6.2,
+    5.6
+   ]
+  },
+  {
+   "id": "calar_saat",
+   "ad": "Çalar saat",
+   "kutu": [
+    87.1,
+    37.5,
+    5.4,
+    13.6
+   ]
+  },
+  {
+   "id": "biblo",
+   "ad": "Biblo",
+   "kutu": [
+    83.5,
+    39.5,
+    3.3,
+    12.5
+   ]
+  },
+  {
+   "id": "deri_ayakkabi",
+   "ad": "Deri ayakkabı",
+   "kutu": [
+    41.9,
+    38.6,
+    11.1,
+    17.9
+   ]
+  },
+  {
+   "id": "gozluk",
+   "ad": "Gözlük",
+   "kutu": [
+    46,
+    57,
+    7,
+    4.5
+   ]
+  },
+  {
+   "id": "durbun",
+   "ad": "Dürbün",
+   "kutu": [
+    74.1,
+    52.9,
+    9.1,
+    11.6
+   ]
+  },
+  {
+   "id": "resepsiyon_zili",
+   "ad": "Resepsiyon zili",
+   "kutu": [
+    60.2,
+    66.4,
+    7.7,
+    12.6
+   ]
+  },
+  {
+   "id": "altin_kase",
+   "ad": "Altın kâse",
+   "kutu": [
+    68.7,
+    62.3,
+    6.3,
+    8.1
+   ]
+  },
+  {
+   "id": "fener",
+   "ad": "El feneri",
+   "kutu": [
+    56.2,
+    66.8,
+    5,
+    10.8
+   ]
+  },
+  {
+   "id": "buyutec",
+   "ad": "Büyüteç",
+   "kutu": [
+    43.5,
+    67.7,
+    10.2,
+    10.3
+   ]
+  },
+  {
+   "id": "altin_kalip",
+   "ad": "Altın kutu",
+   "kutu": [
+    41.7,
+    84.3,
+    6.3,
+    8.5
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "el_cantasi",
+   "yonlendirme": "Kanıt sağdaki deri el çantasında olabilir.",
+   "kutu": [
+    73.5,
+    33.2,
+    9.3,
+    18
+   ]
+  },
+  {
+   "id": "sirt_cantasi",
+   "yonlendirme": "Kanıt ortadaki sırt çantasında olabilir.",
+   "kutu": [
+    56.5,
+    43.9,
+    12,
+    24.2
+   ]
+  },
+  {
+   "id": "bez_kese",
+   "yonlendirme": "Kanıt önde duran bez kesede olabilir.",
+   "kutu": [
+    30.2,
+    78.9,
+    9.5,
+    21.1
+   ]
+  }
+ ]
+}
