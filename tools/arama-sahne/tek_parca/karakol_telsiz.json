@@ -1,0 +1,38 @@
+{
+ "gorsel": "karakol_telsiz.webp", "evren": "modern", "mekan": "tavern", "alan": "radio_console", "varyant": "t1",
+ "yer": "telsiz köşesindeki raflarda, eşyaların arasında",
+ "nesneler": [
+  {"id": "el_telsizi", "ad": "El telsizi", "kutu": [32, 3, 3.7, 21]},
+  {"id": "gaz_lambasi", "ad": "Gaz lambası", "kutu": [36, 5, 6.4, 19]},
+  {"id": "telsiz_cihazi", "ad": "Telsiz cihazı", "kutu": [44, 13.8, 12.8, 10.4]},
+  {"id": "mikrofon", "ad": "Mikrofon", "kutu": [52, 2.2, 5.2, 11.3]},
+  {"id": "termos", "ad": "Ekose termos", "kutu": [57.4, 5, 3.9, 19]},
+  {"id": "vantilator", "ad": "Vantilatör", "kutu": [61.2, 3, 9.1, 21]},
+  {"id": "olta_makarasi", "ad": "Olta makarası", "kutu": [72, 10.5, 6.5, 6.5]},
+  {"id": "durbun", "ad": "Dürbün", "kutu": [68.4, 19, 7.9, 5]},
+  {"id": "hortum", "ad": "Siyah hortum", "kutu": [76.5, 12.5, 8.5, 11.5]},
+  {"id": "halat", "ad": "Halat", "kutu": [17.7, 40.6, 13.3, 9.7]},
+  {"id": "bot", "ad": "Deri bot", "kutu": [31, 35, 10.5, 13.8]},
+  {"id": "calar_saat", "ad": "Çalar saat", "kutu": [41, 35, 4.9, 12.3]},
+  {"id": "zimba", "ad": "Zımba", "kutu": [43.8, 42.5, 9.3, 6.5]},
+  {"id": "mengene", "ad": "Mengene", "kutu": [52.7, 37.2, 4.4, 17.4]},
+  {"id": "kerpeten", "ad": "Kerpeten", "kutu": [55.7, 31.8, 3, 13]},
+  {"id": "koli_bandi", "ad": "Koli bandı", "kutu": [64.2, 44.3, 4.7, 5]},
+  {"id": "domuz_kumbara", "ad": "Domuz kumbara", "kutu": [72.7, 39.9, 6.1, 9.2]},
+  {"id": "kupa", "ad": "Pirinç kupa", "kutu": [84.7, 37.1, 4.5, 12]},
+  {"id": "paten", "ad": "Paten", "kutu": [88.7, 32.7, 8, 16]},
+  {"id": "bere", "ad": "Yün bere", "kutu": [72.7, 27.8, 7.1, 12]},
+  {"id": "anahtarlik", "ad": "Anahtar demeti", "kutu": [92.2, 47.5, 3.4, 8.5]},
+  {"id": "kasetcalar", "ad": "Kasetçalar", "kutu": [55.2, 62.7, 7.8, 9.7]},
+  {"id": "el_konsolu", "ad": "El konsolu", "kutu": [73.7, 60.2, 6.4, 13.5]},
+  {"id": "satranc", "ad": "Satranç tahtası", "kutu": [76.5, 52, 11.2, 20.6]},
+  {"id": "semsiye", "ad": "Şemsiye", "kutu": [45.7, 53.3, 5.1, 22]},
+  {"id": "matara", "ad": "Matara", "kutu": [51.7, 80.2, 6.5, 16.3]},
+  {"id": "is_eldiveni", "ad": "İş eldiveni", "kutu": [63.5, 70.3, 5.7, 12.6]}
+ ],
+ "asil": [
+  {"id": "alet_kutusu", "yonlendirme": "Kanıt ikinci rafın solundaki kırmızı alet kutusunda olabilir.", "kutu": [6.7, 31.4, 15.6, 17.5]},
+  {"id": "yesil_kapakli", "yonlendirme": "Kanıt üçüncü rafın sağındaki yeşil kapaklı kutuda olabilir.", "kutu": [86.5, 66.3, 12.8, 7.4]},
+  {"id": "kanvas_canta", "yonlendirme": "Kanıt alt raftaki kanvas çantada olabilir.", "kutu": [58.5, 78, 8.5, 21]}
+ ]
+}
