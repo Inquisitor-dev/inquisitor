@@ -45,9 +45,14 @@ export class NpcsController {
       );
     }
     // Selamlama sinyali sorgu hakkı harcamaz
-    await this.checkSessionAndQuota(dto.sessionId, userId, !isGreeting, dto.npcId);
+    const spendsQuota = await this.checkSessionAndQuota(
+      dto.sessionId,
+      userId,
+      !isGreeting,
+      dto.npcId,
+    );
 
-    return await this.npcsService.interact(
+    const result = await this.npcsService.interact(
       dto.sessionId,
       dto.npcId,
       dto.message,
@@ -55,6 +60,8 @@ export class NpcsController {
       undefined,
       dto.warrantLocationId,
     );
+    if (spendsQuota) await this.authService.incrementMessageCount(userId);
+    return result;
   }
 
   // Yüzleştirme: Kanıt Defteri'nden bir kanıtı karaktere göster. Bir sorgu hakkı harcar.
@@ -71,13 +78,20 @@ export class NpcsController {
       dto.npcId,
       dto.evidenceId,
     );
-    await this.checkSessionAndQuota(dto.sessionId, userId, true, dto.npcId);
-    return await this.npcsService.confront(
+    const spendsQuota = await this.checkSessionAndQuota(
+      dto.sessionId,
+      userId,
+      true,
+      dto.npcId,
+    );
+    const result = await this.npcsService.confront(
       dto.sessionId,
       dto.npcId,
       dto.evidenceId,
       dto.message,
     );
+    if (spendsQuota) await this.authService.incrementMessageCount(userId);
+    return result;
   }
 
   // Teyit (Gece Muhabiri): okunabilecek sözler
@@ -98,16 +112,29 @@ export class NpcsController {
     await this.npcsService.getOwnedSession(dto.sessionId, userId);
     // Geçersiz ya da kullanılmış yetenek sorgu hakkı harcamasın
     await this.npcsService.assertVerifiable(dto.sessionId, dto.npcId, dto.quoteId);
-    await this.checkSessionAndQuota(dto.sessionId, userId, true, dto.npcId);
-    return await this.npcsService.verifyQuote(dto.sessionId, dto.npcId, dto.quoteId);
+    const spendsQuota = await this.checkSessionAndQuota(
+      dto.sessionId,
+      userId,
+      true,
+      dto.npcId,
+    );
+    const result = await this.npcsService.verifyQuote(
+      dto.sessionId,
+      dto.npcId,
+      dto.quoteId,
+    );
+    if (spendsQuota) await this.authService.incrementMessageCount(userId);
+    return result;
   }
 
+  // Sorgu hakkı cevap geldikten sonra düşer (vaka açılışı gibi): LLM hatası hak yemez.
+  // Dönen değer bu turun kotadan düşüp düşmeyeceğidir.
   private async checkSessionAndQuota(
     sessionId: string,
     userId: string,
     usesQuota: boolean,
     npcId: string,
-  ) {
+  ): Promise<boolean> {
     const session = await this.npcsService.getOwnedSession(sessionId, userId);
     if (session.status !== 'ACTIVE') {
       throw new BadRequestException('Bu soruşturma sona erdi.');
@@ -131,8 +158,9 @@ export class NpcsController {
       if (quota.dailyMessageCount >= maxMessages) {
         throw new ForbiddenException(`Bugünkü sorgu hakkın doldu (${maxMessages}/${maxMessages}). Yarın tekrar gel.`);
       }
-      await this.authService.incrementMessageCount(userId);
+      return true;
     }
+    return false;
   }
 
   @Post('history')

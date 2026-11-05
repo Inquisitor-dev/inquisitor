@@ -25,7 +25,11 @@ import { mentions } from '../npcs/case-statements';
 import { cleanInternalIds } from './prompts/internal-ids';
 import { CasePlan } from '../scenarios/case-setup';
 import type { ThoughtLine } from '../board/board';
-import { CompletionRequest, GeminiClient } from './client/gemini-client';
+import {
+  CompletionRequest,
+  GeminiClient,
+  LlmCreditError,
+} from './client/gemini-client';
 import { LlmUsageContext, LlmUsageRecorder } from './usage/llm-usage.recorder';
 import {
   buildNpcDialogueSystemPrompt,
@@ -207,6 +211,11 @@ export function cleanDraftIds(
   };
 }
 
+// Kredi bitince vaka eksik onarımla açılmaz, NPC turu da hata metniyle kaydedilmez: temiz başarısız olur
+function rethrowIfOutOfCredit(error: unknown): void {
+  if (error instanceof LlmCreditError) throw error;
+}
+
 @Injectable()
 export class LlmService {
   private readonly client = new GeminiClient();
@@ -287,6 +296,7 @@ export class LlmService {
       const reply = parseNpcReply(responseText, (msg) => this.logger.warn(msg));
       return { reply };
     } catch (error: any) {
+      rethrowIfOutOfCredit(error);
       this.logger.error(`Gemini API Error: ${error?.message || error}`);
       this.logger.error(
         `Type: ${error?.constructor?.name}, Status: ${error?.status}, Code: ${error?.code}`,
@@ -418,7 +428,8 @@ export class LlmService {
         ...cleaned,
         npcPrompts: removeConfessionInstructions(cleaned.npcPrompts ?? {}),
       };
-    } catch {
+    } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.error(`Failed to parse scenario JSON. Response: ${responseText}`);
       throw new Error('Failed to generate scenario JSON');
     }
@@ -478,6 +489,7 @@ export class LlmService {
         response?.choices?.[0]?.message?.content || '',
       );
     } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.warn(`Culprit clue repair failed. ${error}`);
     }
 
@@ -548,6 +560,7 @@ export class LlmService {
         response?.choices?.[0]?.message?.content || '',
       );
     } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.warn(`Planted trace repair failed. ${error}`);
     }
 
@@ -653,6 +666,7 @@ export class LlmService {
           response?.choices?.[0]?.message?.content || '',
         );
       } catch (error) {
+        rethrowIfOutOfCredit(error);
         this.logger.warn(`Alibi place repair failed. ${error}`);
       }
       changed = true;
@@ -730,6 +744,7 @@ export class LlmService {
         keys,
       );
     } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.warn(`Innocent leak repair failed. ${error}`);
     }
 
@@ -804,6 +819,7 @@ export class LlmService {
         response?.choices?.[0]?.message?.content || '',
       );
     } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.warn(`Witness repair failed. ${error}`);
     }
 
@@ -876,6 +892,7 @@ export class LlmService {
         locationDefinitions.map((location) => location.id),
       );
     } catch (error) {
+      rethrowIfOutOfCredit(error);
       this.logger.warn(
         `Scenario continuity reconciliation failed, using draft as-is. ${error}`,
       );

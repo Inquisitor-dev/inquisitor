@@ -402,15 +402,13 @@ export default function NpcDialogueScreen({ npcKey }: NpcDialogueScreenProps) {
       } else {
         setMessages((prev) => [...prev, { role: 'npc', text: '*Karşındaki sessiz kaldı.*', timestamp: new Date() }]);
       }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'npc',
-          text: '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*',
-          timestamp: new Date(),
-        },
-      ]);
+    } catch (err) {
+      // Sunucu reddettiyse (ör. yapay zekâ hizmeti kullanılamıyor) sebebi gösterilir
+      const text =
+        err instanceof ApiError
+          ? `*[${err.message}]*`
+          : '*Sunucuya ulaşılamıyor. Bağlantını kontrol edip birazdan tekrar dene.*';
+      setMessages((prev) => [...prev, { role: 'npc', text, timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
