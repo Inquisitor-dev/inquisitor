@@ -136,6 +136,8 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     expect(prompt).toContain(
       'the clue is found exactly here: merdivenin altındaki eşya yığınında',
     );
+    // Yeri yazdırınca Gemini ifadeyi kopyalıyor ya da görselde olmayan raf, kutu uyduruyor
+    expect(prompt).toContain('the text must not say where it lies');
   });
 
   it('tutarlılık kontrolü eşkâli korur', () => {

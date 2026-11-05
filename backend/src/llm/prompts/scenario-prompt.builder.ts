@@ -220,7 +220,7 @@ export function buildScenarioPrompt(params: {
     .map((location) => {
       const spot = clueSpotOf(location.id);
       const where = spot
-        ? ` — the clue is found exactly here: ${spot}; place it there and nowhere else in that place`
+        ? ` — the clue is found exactly here: ${spot}. The player finds that spot in a picture, so the text must not say where it lies: write only what the object is and what it shows, in ordinary Turkish sentences that start with a capital letter, with no place, shelf, container, material or surrounding objects`
         : '';
       return `    "${location.id}": "Turkish description of a subtle clue hidden at ${getLocalizedLocationLabel(scenarioType, location.id)}${where}..."`;
     })
