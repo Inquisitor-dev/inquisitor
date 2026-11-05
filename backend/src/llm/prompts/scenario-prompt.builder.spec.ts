@@ -123,7 +123,7 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     expect(prompt).toContain('"culpritCover"');
   });
 
-  it('kanıtı vaka planının seçtiği arama alanına yazdırır', () => {
+  it('taslak sahnenin yerini yazdırmaz: gerçek vakada orası anlatıcıyla aranır', () => {
     const prompt = buildScenarioPrompt({
       difficulty: 'hard',
       scenarioType: 'medieval',
@@ -134,8 +134,45 @@ describe('Vaka Motoru v2 vaka özeti', () => {
       plan: { ...plan, searchAreas: { tavern: 'stairs' } },
       caseBrief: brief,
     });
+    expect(prompt).not.toContain('the clue is found exactly here');
+    expect(prompt).not.toContain('the text must not say where it lies');
+  });
+
+  it('tutarlılık kontrolü taslak sahneli mekânda yer yazdırır', () => {
+    const medieval = getScenarioConfig('medieval', 'easy');
+    const prompt = buildReconciliationPrompt({
+      draft: {
+        scenario: '',
+        truthReveal: '',
+        culpritId: 'mill',
+        npcPrompts: {},
+        locationClues: {},
+      },
+      scenarioType: 'medieval',
+      locationDefinitions: medieval.locationDefinitions,
+      culpritId: 'mill',
+      caseBrief: '',
+    });
+    expect(prompt).toMatch(
+      /For [a-z_, ]*\bmill\b[a-z_, ]*: also give its exact/,
+    );
+    expect(prompt).not.toContain('never say where it lies');
+  });
+
+  it('kanıtı yayındaki sahnenin arama alanına yazdırır', () => {
+    const modern = getScenarioConfig('modern', 'easy');
+    const prompt = buildScenarioPrompt({
+      difficulty: 'easy',
+      scenarioType: 'modern',
+      worldDescription: '',
+      styleInstruction: '',
+      baseNpcs: modern.npcDefinitions,
+      locationDefinitions: modern.locationDefinitions,
+      plan: { ...plan, searchAreas: { farm: 'plate_log' } },
+      caseBrief: brief,
+    });
     expect(prompt).toContain(
-      'the clue is found exactly here: merdivenin altındaki eşya yığınında',
+      'the clue is found exactly here: istasyon tezgâhındaki yığında',
     );
     // Yeri yazdırınca Gemini ifadeyi kopyalıyor ya da görselde olmayan raf, kutu uyduruyor
     expect(prompt).toContain('the text must not say where it lies');

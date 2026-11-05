@@ -206,11 +206,13 @@ export function buildScenarioPrompt(params: {
     )
     .join(',\n');
 
-  // Kanıtın mekân içindeki yeri kodla seçilir (plan.searchAreas); oyuncu orayı arayarak bulur
+  // Kanıtın mekân içindeki yeri kodla seçilir (plan.searchAreas); oyuncu orayı arayarak bulur.
+  // Taslak sahne gerçek vakada açılmaz: orası anlatıcıyla aranır, metin yeri kendi söylemeli.
   const clueSpotOf = (locationId: string) => {
     const areaId = plan.searchAreas?.[locationId];
     return SEARCH_SCENES.find(
       (s) =>
+        s.status === 'READY' &&
         s.universe === scenarioType &&
         s.locationId === locationId &&
         s.areaId === areaId,
@@ -329,10 +331,14 @@ export function buildReconciliationPrompt(params: {
     )
     .join('\n');
 
-  // Arama sahnesi olan mekânda oyuncu yeri görselde bulur; metin yer yazarsa görselle çelişir
+  // Yayındaki arama sahnesi olan mekânda oyuncu yeri görselde bulur; metin yer yazarsa görselle çelişir.
+  // Taslak sahne gerçek vakada açılmaz, orası anlatıcıyla aranır ve metin yeri söylemelidir.
   const hasScene = (id: string) =>
     SEARCH_SCENES.some(
-      (s) => s.universe === scenarioType && s.locationId === id,
+      (s) =>
+        s.status === 'READY' &&
+        s.universe === scenarioType &&
+        s.locationId === id,
     );
   const ids = locationDefinitions.map((location) => location.id);
   const pictured = ids.filter(hasScene);
