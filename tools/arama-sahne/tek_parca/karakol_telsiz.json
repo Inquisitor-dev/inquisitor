@@ -1,5 +1,5 @@
 {
- "gorsel": "karakol_telsiz.webp", "evren": "modern", "mekan": "tavern", "alan": "radio_console", "varyant": "t1",
+ "durum": "READY", "gorsel": "karakol_telsiz.webp", "evren": "modern", "mekan": "tavern", "alan": "radio_console", "varyant": "t1",
  "yer": "telsiz köşesindeki raflarda, eşyaların arasında",
  "nesneler": [
   {"id": "el_telsizi", "ad": "El telsizi", "kutu": [32, 3, 3.7, 21]},

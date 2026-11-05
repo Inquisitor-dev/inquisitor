@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "bar tezgâhındaki yığında, eşyaların arasında",
   image: "/search-scenes/modern/clinic/ashtray/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "krem_top", label: "Krem top", box: [39.2, 8, 6, 10.5] },
     { id: "dart", label: "Dart oku", box: [46.7, 8.5, 15.8, 14] },

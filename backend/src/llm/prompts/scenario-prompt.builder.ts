@@ -329,6 +329,26 @@ export function buildReconciliationPrompt(params: {
     )
     .join('\n');
 
+  // Arama sahnesi olan mekânda oyuncu yeri görselde bulur; metin yer yazarsa görselle çelişir
+  const hasScene = (id: string) =>
+    SEARCH_SCENES.some(
+      (s) => s.universe === scenarioType && s.locationId === id,
+    );
+  const ids = locationDefinitions.map((location) => location.id);
+  const pictured = ids.filter(hasScene);
+  const told = ids.filter((id) => !hasScene(id));
+  const clueRule = [
+    'Every location clue must name a concrete object or mark.',
+    told.length > 0
+      ? `For ${told.join(', ')}: also give its exact hiding spot or physical position.`
+      : '',
+    pictured.length > 0
+      ? `For ${pictured.join(', ')}: the player finds the spot in a picture, so never say where it lies. Write only what the object is and what it shows, and remove any place, shelf, container, material or surrounding objects from the draft's clue.`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return `You are a continuity editor for a detective game. Your job is to make the hidden truth and the canonical location clues perfectly consistent with each other.
 
 CANONICAL LOCATIONS:
@@ -344,7 +364,7 @@ CONTINUITY RULES:
 2. Keep the same overall mystery, motives, and NPC secret structure unless a small rewrite is needed for consistency.
 3. Every CASE FACT above must still hold: crime scene appearance, genuine/planted clue, verifying evidence placement, victim and alibis. Fix the draft where it breaks them.
 4. Ensure every canonical location has exactly one location clue.
-5. Every location clue must name a concrete object/mark AND its exact hiding spot or physical position.
+5. ${clueRule}
 6. The truthReveal paragraph must explain or support all location clues, the verifying evidence and the alibis. If needed, rewrite truthReveal so they make sense. Remove any hidden, planted or stolen item from truthReveal that is not in 'locationClues' (for example "he also hid a chip at the bar" when the bar's clue is something else).
 6c. Only the culprit, and whoever unknowingly gave them the weapon, know who the culprit is. No other innocent's npcPrompt, no innocent's location clue and no "verificationText" may name or hint at the culprit; a witness who saw the act did not see who it was, and a record of a sale or loan does not show the buyer's name. The one who gave the weapon knows whom they gave it to (never "I did not see who it was"). No npcPrompt tells the character to confess.
 6a. Each INNOCENT's location clue must prove that innocent's own alibi secret, at the same place and time as the alibi. If a clue places them somewhere else or doing something else at the time of death, rewrite the clue to match the alibi. If one shows the victim's belongings, blood, the weapon, or points at the culprit or another NPC, rewrite it into physical proof of that innocent's alibi.
@@ -367,7 +387,7 @@ Return a valid JSON object with the EXACT same top-level shape as the draft:
   "alibis": { ... },
   "npcPrompts": { ... },
   "locationClues": {
-    "locationId": "Single-sentence Turkish clue with exact spot and object"
+    "locationId": "Single-sentence Turkish clue that follows rule 5"
   }
 }`;
 }

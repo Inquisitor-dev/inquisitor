@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "televizyon dolabında, eşyaların arasında",
   image: "/search-scenes/modern/church/static_tv/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "oyuncak_ayi", label: "Oyuncak ayı", box: [26.6, 5.1, 11.7, 21.4] },
     { id: "tabak", label: "Süs tabağı", box: [41, 6.7, 10.4, 18.9] },

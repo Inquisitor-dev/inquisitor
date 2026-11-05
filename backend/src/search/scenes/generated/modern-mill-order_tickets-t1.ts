@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "lokanta tezgâhındaki yığında, eşyaların arasında",
   image: "/search-scenes/modern/mill/order_tickets/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "huni", label: "Huni", box: [22.5, 4.9, 9.5, 12.5] },
     { id: "sari_telefon", label: "Sarı telefon", box: [0, 74, 10.8, 21.5] },

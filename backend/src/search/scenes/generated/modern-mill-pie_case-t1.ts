@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "turta vitrininin raflarında, eşyaların arasında",
   image: "/search-scenes/modern/mill/pie_case/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "zil", label: "Pirinç zil", box: [4.5, 30.5, 8.8, 18.8] },
     { id: "kizartici", label: "Ekmek kızartıcı", box: [14.5, 31.8, 12.7, 17] },

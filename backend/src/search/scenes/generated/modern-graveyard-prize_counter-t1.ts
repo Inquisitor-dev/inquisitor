@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "ödül vitrininin raflarında, eşyaların arasında",
   image: "/search-scenes/modern/graveyard/prize_counter/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "kupa", label: "Çatlak kupa", box: [5, 7.2, 7.8, 18.4] },
     { id: "mavi_bardak", label: "Mavi bardak", box: [10.2, 17.5, 5, 8.5] },

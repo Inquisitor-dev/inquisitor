@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "arka depodaki dolabın raflarında, eşyaların arasında",
   image: "/search-scenes/modern/farm/storeroom/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "oglan", label: "Tulumlu oğlan biblosu", box: [34.2, 11.7, 2.8, 12] },
     { id: "kopek", label: "Köpek biblosu", box: [36.7, 16, 3.3, 8] },

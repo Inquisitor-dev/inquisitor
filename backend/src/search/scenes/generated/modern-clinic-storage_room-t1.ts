@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "bar deposundaki dolabın raflarında, eşyaların arasında",
   image: "/search-scenes/modern/clinic/storage_room/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "sise", label: "Pirinç şişe", box: [4.7, 5.4, 3.8, 18.4] },
     { id: "kavanoz", label: "Büyük cam kavanoz", box: [33.6, 9, 5.7, 14.8] },

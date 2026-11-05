@@ -2,7 +2,7 @@
 # Kullanım: python maske.py tek_parca/<sahne>.json [model]   -> görsel, scenes/generated/<sahne>.ts, cikti/maske_<sahne>.png
 # Sahne listesi kendiliğinden yenilenir (yalnızca liste için: python maske.py --dizin). Kontrol görselinde şekli kötü çıkan nesneyi düzelt ya da listeden çıkar.
 # Bağımlılıklar requirements.txt'te (ultralytics ve torch ~1 GB; ayrı bir ortama kur).
-# Sahne dosyası: gorsel (kaynak/ altında), evren, mekan, alan, varyant, yer, nesneler, asil. Her nesnede kutu [x, y, g, y]
+# Sahne dosyası: gorsel (kaynak/ altında), evren, mekan, alan, varyant, yer, nesneler, asil; durum READY ise oyunda açılır (yoksa DRAFT). Her nesnede kutu [x, y, g, y]
 # (görselin yüzdesi); iki parçalı nesnede (bir çift paten) "parcalar": [[...], [...]] kutuların her biri ayrı işlenir.
 import base64
 import gzip
@@ -89,7 +89,7 @@ export const SCENE: SearchSceneDef = {{
   variant: {metin(T['varyant'])},
   clueSpot: {metin(T['yer'])},
   image: {metin(gorsel_yolu)},
-  status: 'DRAFT',
+  status: {metin(T.get('durum', 'DRAFT')).replace(chr(34), chr(39))},
   objects: [
 {nesne_satir}
   ],

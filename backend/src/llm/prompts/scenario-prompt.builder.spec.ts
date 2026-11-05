@@ -1,4 +1,5 @@
 import {
+  buildReconciliationPrompt,
   buildCaseBrief,
   buildScenarioPrompt,
   mergeScenarioDraftWithFallback,
@@ -138,6 +139,29 @@ describe('Vaka Motoru v2 vaka özeti', () => {
     );
     // Yeri yazdırınca Gemini ifadeyi kopyalıyor ya da görselde olmayan raf, kutu uyduruyor
     expect(prompt).toContain('the text must not say where it lies');
+  });
+
+  it('tutarlılık kontrolü arama sahnesi olan mekânda yer yazdırmaz, olmayanda yazdırır', () => {
+    const config = getScenarioConfig('modern', 'easy');
+    const prompt = buildReconciliationPrompt({
+      draft: {
+        scenario: '',
+        truthReveal: '',
+        culpritId: 'mill',
+        npcPrompts: {},
+        locationClues: {},
+      },
+      scenarioType: 'modern',
+      locationDefinitions: config.locationDefinitions,
+      culpritId: 'mill',
+      caseBrief: '',
+    });
+    expect(prompt).toContain(
+      'For crime_scene: also give its exact hiding spot',
+    );
+    expect(prompt).toMatch(/For [a-z_, ]*\bfarm\b[a-z_, ]*: the player finds/);
+    expect(prompt).toContain('never say where it lies');
+    expect(prompt).not.toContain('with exact spot and object');
   });
 
   it('tutarlılık kontrolü eşkâli korur', () => {

@@ -26,7 +26,7 @@ parça çizimlerin gerisinde kaldı. O iş yerel `arsiv/kodla-dizme` dalında.
    `frontend/public/search-scenes/...`, sahne kaydı ve maske `backend/src/search/scenes/generated/` altına yazılır, liste yenilenir.
 4. **Kontrol et:** `cikti/maske_<ad>.png`. Arkasındakini alan ya da yarım kalan şekil çıkabilir: kutuyu daralt, `parcalar` ile
    ikiye böl ya da nesneyi listeden çıkar. Sonra `npm test` (backend) `sceneProblems` ile denetler.
-5. **Yayına al:** sahneler `DRAFT` başlar, yalnızca test modunda gelir. Oynayıp beğenince sahne dosyasında `status: 'READY'` yap.
+5. **Yayına al:** sahneler `DRAFT` başlar, yalnızca test modunda gelir. Oynayıp beğenince tanım dosyasına `"durum": "READY"` ekle; `maske.py` sahneyi buna göre yazar. Modern'in 14 sahnesi READY.
 
 ## İstem kuralları (denemelerden)
 

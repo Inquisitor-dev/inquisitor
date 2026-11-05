@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "telsiz köşesindeki raflarda, eşyaların arasında",
   image: "/search-scenes/modern/tavern/radio_console/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "el_telsizi", label: "El telsizi", box: [32, 3, 3.7, 21] },
     { id: "gaz_lambasi", label: "Gaz lambası", box: [36, 5, 6.4, 19] },

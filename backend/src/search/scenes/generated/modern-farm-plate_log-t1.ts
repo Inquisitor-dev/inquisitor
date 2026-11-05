@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "istasyon tezgâhındaki yığında, eşyaların arasında",
   image: "/search-scenes/modern/farm/plate_log/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "makara", label: "Olta makarası", box: [2.5, 5, 12.5, 16.5] },
     { id: "piston", label: "Piston", box: [30, 3.5, 7, 10] },

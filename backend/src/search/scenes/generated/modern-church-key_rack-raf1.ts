@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "raf1",
   clueSpot: "anahtar dolabında, eşyaların arasında",
   image: "/search-scenes/modern/church/key_rack/raf1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "trompet", label: "Trompet", box: [7.7, 19.0, 9.7, 6.0] },
     { id: "kaset_radyo", label: "Kasetli radyo", box: [18.0, 7.3, 6.2, 8.2] },
