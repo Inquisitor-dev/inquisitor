@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
+import { LlmCreditError } from '../llm/client/gemini-client';
 import { getLocalizedLocationLabel, getScenarioConfig } from '../scenarios/scenario-config';
 import { findOwnedSession } from '../game-sessions/session-access';
 import { CaseFacts, crimeSceneIdOf } from '../scenarios/case-setup';
@@ -153,6 +154,8 @@ export class NpcsService {
       alreadyShown: false,
     });
 
+    const fearBefore = state.currentFear;
+    const shownBefore = [...state.shownEvidenceIds];
     await this.prisma.sessionNpcState.update({
       where: { id: state.id },
       data: {
@@ -176,17 +179,31 @@ export class NpcsService {
     const playerLine =
       `*Ona bir kanıt gösteriyorsun:* ${evidence.text}` +
       (cleanRemark ? `\n${cleanRemark}` : '');
-    return this.interact(sessionId, npcId, playerLine, {
-      evidenceText: evidence.text,
-      impact,
-      origin: describeEvidenceOrigin(
-        evidence,
-        npcId,
-        state.session.scenarioType,
-        nameOf,
-      ),
-      remark: cleanRemark,
-    });
+    try {
+      return await this.interact(sessionId, npcId, playerLine, {
+        evidenceText: evidence.text,
+        impact,
+        origin: describeEvidenceOrigin(
+          evidence,
+          npcId,
+          state.session.scenarioType,
+          nameOf,
+        ),
+        remark: cleanRemark,
+      });
+    } catch (error) {
+      // Kanıt bir kişiye bir kez gösterilebilir: cevap gelmediyse gösterilmemiş sayılır
+      if (error instanceof LlmCreditError) {
+        await this.prisma.sessionNpcState.update({
+          where: { id: state.id },
+          data: {
+            currentFear: fearBefore,
+            shownEvidenceIds: { set: shownBefore },
+          },
+        });
+      }
+      throw error;
+    }
   }
 
   // Teyit (Gece Muhabiri) için seçilebilecek sözler: oyuncunun duyduğu şüpheli cevapları
@@ -308,8 +325,9 @@ export class NpcsService {
 
     const isGreetingSignal = userMessage === '__NEW_DAY_GREETING__';
 
+    let playerRowId: string | undefined;
     if (!isGreetingSignal) {
-      await this.prisma.dialogueHistory.create({
+      const playerRow = await this.prisma.dialogueHistory.create({
         data: {
           sessionId,
           npcId,
@@ -318,6 +336,7 @@ export class NpcsService {
           dayNumber: state.session.currentDay,
         },
       });
+      playerRowId = playerRow.id;
     }
 
     const currentState = state;
@@ -470,23 +489,33 @@ export class NpcsService {
             quietRoom,
           ),
         }
-      : await this.llm.generateNpcResponse(
-          canonicalNpc?.name ?? currentState.npc.name,
-          combinedPrompt,
-          chatHistory,
-          effectiveMessage,
-          isNewDay,
-          {
-            kind: isNarrator
-              ? 'NARRATOR'
-              : confrontation
-                ? 'CONFRONT'
-                : verifiedStatement
-                  ? 'VERIFY_QUOTE'
-                  : 'NPC_REPLY',
-            sessionId,
-          },
-        );
+      : await this.llm
+          .generateNpcResponse(
+            canonicalNpc?.name ?? currentState.npc.name,
+            combinedPrompt,
+            chatHistory,
+            effectiveMessage,
+            isNewDay,
+            {
+              kind: isNarrator
+                ? 'NARRATOR'
+                : confrontation
+                  ? 'CONFRONT'
+                  : verifiedStatement
+                    ? 'VERIFY_QUOTE'
+                    : 'NPC_REPLY',
+              sessionId,
+            },
+          )
+          .catch(async (error: unknown) => {
+            // Cevapsız kalan mesaj geçmişte kalmaz: sonraki turun bağlamını ve Sabır sayısını bozar
+            if (error instanceof LlmCreditError && playerRowId) {
+              await this.prisma.dialogueHistory.delete({
+                where: { id: playerRowId },
+              });
+            }
+            throw error;
+          });
 
     // Cevapta prompt'un bölüm başlıkları görünüyorsa model gizli talimatları sızdırmıştır
     let finalReply = leaksHiddenPrompt(llmResponse.reply)

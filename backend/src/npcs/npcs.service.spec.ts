@@ -1,5 +1,6 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
+import { LlmCreditError } from '../llm/client/gemini-client';
 import { NpcsService } from './npcs.service';
 
 function setup(
@@ -76,6 +77,8 @@ function setup(
       isTestMode,
     },
   };
+  const dialogueCreate = jest.fn().mockResolvedValue({ id: 'player-row' });
+  const dialogueDelete = jest.fn().mockResolvedValue({});
   const prisma = {
     sessionNpcState: {
       findUnique: jest.fn().mockResolvedValue(state),
@@ -83,11 +86,17 @@ function setup(
         ({
           data,
         }: {
-          data: { currentFear: number; shownEvidenceIds?: { push: string } };
+          data: {
+            currentFear: number;
+            shownEvidenceIds?: { push?: string; set?: string[] };
+          };
         }) => {
           state.currentFear = data.currentFear;
-          if (data.shownEvidenceIds) {
+          if (data.shownEvidenceIds?.push) {
             state.shownEvidenceIds.push(data.shownEvidenceIds.push);
+          }
+          if (data.shownEvidenceIds?.set) {
+            state.shownEvidenceIds = data.shownEvidenceIds.set;
           }
           return Promise.resolve(state);
         },
@@ -95,7 +104,8 @@ function setup(
     },
     dialogueHistory: {
       findMany: jest.fn().mockResolvedValue([]),
-      create: jest.fn().mockResolvedValue({}),
+      create: dialogueCreate,
+      delete: dialogueDelete,
     },
     gameSession: {
       findUnique: jest.fn(() => Promise.resolve(sessionRow)),
@@ -125,11 +135,62 @@ function setup(
     service: new NpcsService(prisma, llm),
     generateNpcResponse,
     evidenceCreate,
+    dialogueCreate,
+    dialogueDelete,
     state,
     evidenceRows,
     sessionRow,
   };
 }
+
+describe('NpcsService — API kredisi bitince (402)', () => {
+  it('mesaj geçmişten silinir, kanıt ve cevap kaydedilmez', async () => {
+    const {
+      service,
+      generateNpcResponse,
+      dialogueCreate,
+      dialogueDelete,
+      evidenceCreate,
+    } = setup();
+    generateNpcResponse.mockRejectedValue(new LlmCreditError());
+
+    await expect(
+      service.interact('session-1', 'tavern', 'Neredeydin?'),
+    ).rejects.toBeInstanceOf(LlmCreditError);
+
+    expect(dialogueCreate).toHaveBeenCalledTimes(1);
+    expect(dialogueDelete).toHaveBeenCalledWith({
+      where: { id: 'player-row' },
+    });
+    expect(evidenceCreate).not.toHaveBeenCalled();
+  });
+
+  it('yüzleştirmede kanıt gösterilmemiş sayılır, korku geri alınır, yeniden gösterilebilir', async () => {
+    const { service, generateNpcResponse, state } = setup(
+      undefined,
+      false,
+      'tavern',
+      {
+        currentFear: 2,
+        existingEvidence: [
+          { id: 'ev-1', kind: 'CLUE', sourceId: 'tavern', text: 'Bir iz.' },
+        ],
+      },
+    );
+    generateNpcResponse.mockRejectedValueOnce(new LlmCreditError());
+
+    await expect(
+      service.confront('session-1', 'tavern', 'ev-1'),
+    ).rejects.toBeInstanceOf(LlmCreditError);
+
+    expect(state.currentFear).toBe(2);
+    expect(state.shownEvidenceIds).toEqual([]);
+
+    // Hizmet dönünce aynı kanıt reddedilmeden gösterilir
+    await service.confront('session-1', 'tavern', 'ev-1');
+    expect(state.shownEvidenceIds).toEqual(['ev-1']);
+  });
+});
 
 describe('NpcsService — prompt korumaları', () => {
   it('normal soruyu LLM e iletir', async () => {

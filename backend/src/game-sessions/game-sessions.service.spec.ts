@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
+import { LlmCreditError } from '../llm/client/gemini-client';
 import { GameSessionsService } from './game-sessions.service';
 
 const activeSession = {
@@ -387,6 +388,32 @@ describe('GameSessionsService — vaka kurulumu (test modu)', () => {
       expect(saved.locationClues.crime_scene).toBeTruthy();
     },
   );
+
+  it('API kredisi bitince (402) yarım oturum kalmaz, önceki vaka bozulmaz', async () => {
+    const updateMany = jest.fn();
+    const create = jest.fn();
+    const stateCreate = jest.fn();
+    const prisma = {
+      gameSession: { updateMany, create },
+      searchScenePlay: { findMany: jest.fn(() => Promise.resolve([])) },
+      npc: { findMany: jest.fn().mockResolvedValue([]) },
+      sessionNpcState: { create: stateCreate },
+    } as unknown as PrismaService;
+    const llm = {
+      generateSessionScenario: jest
+        .fn()
+        .mockRejectedValue(new LlmCreditError()),
+    } as unknown as LlmService;
+    const service = new GameSessionsService(prisma, llm);
+
+    await expect(
+      service.createSession('owner', 'easy', 'medieval', false),
+    ).rejects.toBeInstanceOf(LlmCreditError);
+
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+    expect(stateCreate).not.toHaveBeenCalled();
+  });
 
   it('paket üret ve paketten kur bağımsız çalışabilir', async () => {
     const { service, create } = setupCreate();

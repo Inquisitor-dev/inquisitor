@@ -7,6 +7,9 @@ import {
 import { LlmUsageRecorder } from './usage/llm-usage.recorder';
 import { storyReviewFields } from '../stories/story-review';
 import { CLEAN_REVIEW_CASE } from '../stories/review-fixtures';
+import { LlmCreditError } from './client/gemini-client';
+import { planCase } from '../scenarios/case-setup';
+import { getScenarioConfig } from '../scenarios/scenario-config';
 
 describe('LlmService', () => {
   let service: LlmService;
@@ -24,6 +27,107 @@ describe('LlmService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('API kredisi bitince (402)', () => {
+    const scenarioArgs = () =>
+      [
+        'easy',
+        'medieval',
+        planCase(getScenarioConfig('medieval', 'easy'), 'easy'),
+        'session-1',
+      ] as const;
+    const clientWith = (createCompletion: jest.Mock) =>
+      Object.assign(service, { client: { createCompletion } });
+
+    it('senaryonun ilk çağrısında hata olduğu gibi oyuncuya gider', async () => {
+      const createCompletion = jest.fn().mockRejectedValue(new LlmCreditError());
+      clientWith(createCompletion);
+      await expect(
+        service.generateSessionScenario(...scenarioArgs()),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+      expect(createCompletion).toHaveBeenCalledTimes(1);
+    });
+
+    it('kredi senaryo yazıldıktan sonra biterse vaka eksik onarımla açılmaz', async () => {
+      const draft = {
+        scenario: 'Köyde bir cinayet.',
+        truthReveal: 'Gerçek.',
+        locationClues: {},
+        npcPrompts: {},
+      };
+      const createCompletion = jest
+        .fn()
+        .mockResolvedValueOnce({
+          choices: [{ message: { content: JSON.stringify(draft) } }],
+        })
+        .mockRejectedValue(new LlmCreditError());
+      clientWith(createCompletion);
+      await expect(
+        service.generateSessionScenario(...scenarioArgs()),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+      expect(createCompletion).toHaveBeenCalledTimes(2);
+    });
+
+    it('katilin ipucu onarımı kod yedeğine düşmez, hata yukarı çıkar', async () => {
+      Object.assign(service, {
+        complete: jest.fn().mockRejectedValue(new LlmCreditError()),
+      });
+      const target = service as unknown as {
+        repairCulpritClue: (
+          d: unknown,
+          p: unknown,
+          s: string,
+        ) => Promise<unknown>;
+      };
+      await expect(
+        target.repairCulpritClue(
+          { truthReveal: '', locationClues: { tavern: 'Kanlı bir bıçak.' } },
+          {
+            culpritId: 'tavern',
+            verification: {
+              placement: { type: 'TESTIMONY', npcId: 'graveyard' },
+            },
+          },
+          'medieval',
+        ),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+    });
+
+    it('NPC cevabı hata metni olarak kaydedilmez, hata oyuncuya gider', async () => {
+      clientWith(jest.fn().mockRejectedValue(new LlmCreditError()));
+      await expect(
+        service.generateNpcResponse('Aldric', 'prompt', [], 'Neredeydin?'),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+    });
+
+    it('başka hatalarda NPC karakter içi cevap vermeyi sürdürür', async () => {
+      clientWith(
+        jest.fn().mockRejectedValue(Object.assign(new Error(), { status: 429 })),
+      );
+      const { reply } = await service.generateNpcResponse(
+        'Aldric',
+        'prompt',
+        [],
+        'Neredeydin?',
+      );
+      expect(reply).toContain('Sunucu şu an çok yoğun');
+    });
+
+    it('kendi yedeği olan çağrılar yedeğine düşer', async () => {
+      clientWith(jest.fn().mockRejectedValue(new LlmCreditError()));
+      await expect(
+        service.generateBoardThought(['x'], 'medieval', 'session-1'),
+      ).resolves.toBeNull();
+      await expect(
+        service.findContradictions(
+          'Aldric',
+          ['bir', 'iki'],
+          'medieval',
+          'session-1',
+        ),
+      ).resolves.toBeNull();
+    });
   });
 
   describe('doğrulayan tanık katilin adını söylemez', () => {
@@ -69,6 +173,12 @@ describe('LlmService', () => {
         run: () => target.repairWitnessLeak(draft, plan, 'cyberpunk', names),
       };
     };
+
+    it('kredi bitince kod yedeğine düşmez, hata yukarı çıkar', async () => {
+      const { complete, run } = repairOf('');
+      complete.mockRejectedValue(new LlmCreditError());
+      await expect(run()).rejects.toBeInstanceOf(LlmCreditError);
+    });
 
     it('ad geçerse iki metin onarılır', async () => {
       const { complete, run } = repairOf(
@@ -131,6 +241,16 @@ describe('LlmService', () => {
       const target = service as unknown as { repairPlantedTrace: Repair };
       return target.repairPlantedTrace(draft, plan, 'cyberpunk', names);
     };
+
+    it('kredi bitince kod yedeğine düşmez, hata yukarı çıkar', async () => {
+      const target = service as unknown as { repairPlantedTrace: Repair };
+      Object.assign(service, {
+        complete: jest.fn().mockRejectedValue(new LlmCreditError()),
+      });
+      await expect(
+        target.repairPlantedTrace(draft, plan, 'cyberpunk', names),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+    });
 
     it('eksik kişi onarımla ize eklenir', async () => {
       const result = await runWith(
@@ -203,6 +323,16 @@ describe('LlmService', () => {
         result: target.repairInnocentLeaks(draft, plan, 'cyberpunk', names),
       };
     };
+
+    it('kredi bitince kod yedeğine düşmez, hata yukarı çıkar', async () => {
+      Object.assign(service, {
+        complete: jest.fn().mockRejectedValue(new LlmCreditError()),
+      });
+      const target = service as unknown as { repairInnocentLeaks: Repair };
+      await expect(
+        target.repairInnocentLeaks(draft, plan, 'cyberpunk', names),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+    });
 
     it('adı geçen ipucu ve rol metni tek çağrıyla onarılır', async () => {
       const { complete, result } = runWith(
@@ -285,6 +415,16 @@ describe('LlmService', () => {
         result: target.repairAlibiPlaces(draft, plan, 'medieval', names),
       };
     };
+
+    it('kredi bitince kod yedeğine düşmez, hata yukarı çıkar', async () => {
+      Object.assign(service, {
+        complete: jest.fn().mockRejectedValue(new LlmCreditError()),
+      });
+      const target = service as unknown as { repairAlibiPlaces: Repair };
+      await expect(
+        target.repairAlibiPlaces(draft, plan, 'medieval', names),
+      ).rejects.toBeInstanceOf(LlmCreditError);
+    });
 
     it('farklı mekân söyleyen eşin mazereti ve ipucu ilkinin yerine göre onarılır', async () => {
       const { complete, result } = runWith(
