@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "servis kapısının önündeki yığında, eşyaların arasında",
   image: "/search-scenes/modern/church/service_door/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "telefon", label: "Çevirmeli telefon", box: [56, 17, 7.8, 10.8] },
     { id: "vantilator", label: "Vantilatör", box: [65, 9.4, 10.6, 20] },

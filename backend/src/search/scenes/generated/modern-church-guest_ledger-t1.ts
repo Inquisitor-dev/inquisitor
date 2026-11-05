@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "resepsiyon tezgâhında, eşyaların arasında",
   image: "/search-scenes/modern/church/guest_ledger/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "semsiye", label: "Şemsiye", box: [6, 0, 28.5, 43] },
     { id: "hasir_sepet", label: "Hasır sepet", box: [65.2, 3.4, 17.5, 32] },

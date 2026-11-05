@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "telsiz köşesindeki raflarda, eşyaların arasında",
   image: "/search-scenes/modern/tavern/radio_console/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "el_telsizi", label: "El telsizi", box: [32, 3, 3.7, 21] },
     { id: "gaz_lambasi", label: "Gaz lambası", box: [36, 5, 6.4, 19] },
@@ -32,7 +32,7 @@ export const SCENE: SearchSceneDef = {
     { id: "bere", label: "Yün bere", box: [72.7, 27.8, 7.1, 12] },
     { id: "anahtarlik", label: "Anahtar demeti", box: [92.2, 47.5, 3.4, 8.5] },
     { id: "kasetcalar", label: "Kasetçalar", box: [55.2, 62.7, 7.8, 9.7] },
-    { id: "el_konsolu", label: "El konsolu", box: [73.7, 60.2, 6.4, 13.5] },
+    { id: "el_konsolu", label: "Ekranlı cihaz", box: [73.7, 60.2, 6.4, 13.5] },
     { id: "satranc", label: "Satranç tahtası", box: [76.5, 52, 11.2, 20.6] },
     { id: "semsiye", label: "Şemsiye", box: [45.7, 53.3, 5.1, 22] },
     { id: "matara", label: "Matara", box: [51.7, 80.2, 6.5, 16.3] },

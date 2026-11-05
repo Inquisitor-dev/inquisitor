@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "arka odadaki yığında, eşyaların arasında",
   image: "/search-scenes/modern/graveyard/back_room/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "sari_fener", label: "Sarı el feneri", box: [43.3, 32, 9, 11.2] },
     { id: "dinozor", label: "Oyuncak dinozor", box: [51.5, 30.5, 7.8, 13.5] },

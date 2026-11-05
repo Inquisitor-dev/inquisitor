@@ -1,0 +1,282 @@
+{
+ "durum": "READY", "gorsel": "bar_tezgah.webp",
+ "evren": "modern",
+ "mekan": "clinic",
+ "alan": "ashtray",
+ "varyant": "t1",
+ "yer": "bar tezgâhındaki yığında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "krem_top",
+   "ad": "Krem top",
+   "kutu": [
+    39.2,
+    8,
+    6,
+    10.5
+   ]
+  },
+  {
+   "id": "dart",
+   "ad": "Dart oku",
+   "kutu": [
+    46.7,
+    8.5,
+    15.8,
+    14
+   ]
+  },
+  {
+   "id": "eldiven",
+   "ad": "Deri eldiven",
+   "kutu": [
+    79.5,
+    2,
+    19,
+    31.5
+   ]
+  },
+  {
+   "id": "mercek",
+   "ad": "Mercek kapağı",
+   "kutu": [
+    62.5,
+    18.4,
+    8.5,
+    14
+   ]
+  },
+  {
+   "id": "makine",
+   "ad": "Fotoğraf makinesi",
+   "kutu": [
+    3.2,
+    23.8,
+    13,
+    22.4
+   ]
+  },
+  {
+   "id": "kaset",
+   "ad": "Kaset",
+   "kutu": [
+    32,
+    29,
+    15.3,
+    16
+   ]
+  },
+  {
+   "id": "biblo",
+   "ad": "Şapkalı biblo",
+   "kutu": [
+    58.2,
+    35,
+    6.5,
+    16
+   ]
+  },
+  {
+   "id": "mendil",
+   "ad": "Bordo mendil",
+   "kutu": [
+    77.2,
+    29.6,
+    14,
+    17
+   ]
+  },
+  {
+   "id": "gozluk",
+   "ad": "Altın çerçeveli gözlük",
+   "kutu": [
+    75.5,
+    43,
+    15.3,
+    15.5
+   ]
+  },
+  {
+   "id": "caki",
+   "ad": "Çakı",
+   "kutu": [
+    44.2,
+    42,
+    18.3,
+    20
+   ]
+  },
+  {
+   "id": "cep_saati",
+   "ad": "Cep saati",
+   "kutu": [
+    36.2,
+    46.5,
+    7.3,
+    13
+   ]
+  },
+  {
+   "id": "anahtarlar",
+   "ad": "Anahtar demeti",
+   "kutu": [
+    46,
+    56,
+    13.8,
+    19.5
+   ]
+  },
+  {
+   "id": "uzun_anahtar",
+   "ad": "Uzun ingiliz anahtarı",
+   "kutu": [
+    63.2,
+    51.6,
+    23,
+    13
+   ]
+  },
+  {
+   "id": "turuncu_kamyon",
+   "ad": "Turuncu kamyon",
+   "kutu": [
+    90.2,
+    57,
+    6.5,
+    10.7
+   ]
+  },
+  {
+   "id": "yesil_kamyon",
+   "ad": "Yeşil kamyon",
+   "kutu": [
+    86.2,
+    55,
+    6.7,
+    9.5
+   ]
+  },
+  {
+   "id": "fener",
+   "ad": "El feneri",
+   "kutu": [
+    70.7,
+    75,
+    19.8,
+    24
+   ]
+  },
+  {
+   "id": "cuzdan",
+   "ad": "Deri cüzdan",
+   "kutu": [
+    48.7,
+    76.2,
+    16.3,
+    23.3
+   ]
+  },
+  {
+   "id": "kalem",
+   "ad": "Sarı kalem",
+   "kutu": [
+    45.2,
+    83,
+    3.5,
+    17
+   ]
+  },
+  {
+   "id": "hesap",
+   "ad": "Hesap makinesi",
+   "kutu": [
+    13,
+    66.4,
+    10.3,
+    18.3
+   ]
+  },
+  {
+   "id": "cagri",
+   "ad": "Çağrı cihazı",
+   "kutu": [
+    24.5,
+    63.7,
+    8.7,
+    14
+   ]
+  },
+  {
+   "id": "bebek",
+   "ad": "Bebek biblosu",
+   "kutu": [
+    4.7,
+    65.5,
+    6,
+    13.5
+   ]
+  },
+  {
+   "id": "makara",
+   "ad": "Krem makara",
+   "kutu": [
+    32,
+    67.3,
+    4.7,
+    7.7
+   ]
+  },
+  {
+   "id": "sari_kutu",
+   "ad": "Sarı kutu",
+   "kutu": [
+    5.7,
+    53,
+    6.8,
+    12
+   ]
+  },
+  {
+   "id": "ayna",
+   "ad": "Turuncu el aynası",
+   "kutu": [
+    18.7,
+    85.6,
+    7.3,
+    14
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "beyaz_kutu",
+   "yonlendirme": "Kanıt yığının solundaki beyaz kutuda olabilir.",
+   "kutu": [
+    14.7,
+    50.2,
+    13.6,
+    14.4
+   ]
+  },
+  {
+   "id": "pasli_teneke",
+   "yonlendirme": "Kanıt sağdaki paslı tenekede olabilir.",
+   "kutu": [
+    77.2,
+    62.8,
+    14.8,
+    20.6
+   ]
+  },
+  {
+   "id": "kirmizi_teneke",
+   "yonlendirme": "Kanıt ortadaki kırmızı tenekede olabilir.",
+   "kutu": [
+    46.2,
+    25.5,
+    8.5,
+    14.5
+   ]
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 {
- "gorsel": "karakol_telsiz.webp", "evren": "modern", "mekan": "tavern", "alan": "radio_console", "varyant": "t1",
+ "durum": "READY", "gorsel": "karakol_telsiz.webp", "evren": "modern", "mekan": "tavern", "alan": "radio_console", "varyant": "t1",
  "yer": "telsiz köşesindeki raflarda, eşyaların arasında",
  "nesneler": [
   {"id": "el_telsizi", "ad": "El telsizi", "kutu": [32, 3, 3.7, 21]},
@@ -24,7 +24,7 @@
   {"id": "bere", "ad": "Yün bere", "kutu": [72.7, 27.8, 7.1, 12]},
   {"id": "anahtarlik", "ad": "Anahtar demeti", "kutu": [92.2, 47.5, 3.4, 8.5]},
   {"id": "kasetcalar", "ad": "Kasetçalar", "kutu": [55.2, 62.7, 7.8, 9.7]},
-  {"id": "el_konsolu", "ad": "El konsolu", "kutu": [73.7, 60.2, 6.4, 13.5]},
+  {"id": "el_konsolu", "ad": "Ekranlı cihaz", "kutu": [73.7, 60.2, 6.4, 13.5]},
   {"id": "satranc", "ad": "Satranç tahtası", "kutu": [76.5, 52, 11.2, 20.6]},
   {"id": "semsiye", "ad": "Şemsiye", "kutu": [45.7, 53.3, 5.1, 22]},
   {"id": "matara", "ad": "Matara", "kutu": [51.7, 80.2, 6.5, 16.3]},

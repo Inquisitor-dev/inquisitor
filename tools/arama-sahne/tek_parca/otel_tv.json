@@ -1,5 +1,5 @@
 {
- "gorsel": "otel_tv.webp",
+ "durum": "READY", "gorsel": "otel_tv.webp",
  "evren": "modern",
  "mekan": "church",
  "alan": "static_tv",
@@ -38,7 +38,7 @@
   },
   {
    "id": "el_konsolu",
-   "ad": "El konsolu",
+   "ad": "Ekranlı cihaz",
    "kutu": [
     57,
     8.5,

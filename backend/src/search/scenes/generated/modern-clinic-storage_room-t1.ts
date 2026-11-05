@@ -1,0 +1,48 @@
+import type { SearchSceneDef } from '../../search-scene';
+
+// Görsel Gemini'nin tek parça çizimi; kutular elle, maske SAM ile (tools/arama-sahne/maske.py, bar_depo.json); elle düzenleme
+export const SCENE: SearchSceneDef = {
+  universe: "modern",
+  locationId: "clinic",
+  areaId: "storage_room",
+  variant: "t1",
+  clueSpot: "bar deposundaki dolabın raflarında, eşyaların arasında",
+  image: "/search-scenes/modern/clinic/storage_room/t1.webp",
+  status: 'READY',
+  objects: [
+    { id: "sise", label: "Pirinç şişe", box: [4.7, 5.4, 3.8, 18.4] },
+    { id: "kavanoz", label: "Büyük cam kavanoz", box: [33.6, 9, 5.7, 14.8] },
+    { id: "surahi", label: "Çiçekli sürahi", box: [60.2, 12, 6.7, 12] },
+    { id: "bej_araba", label: "Bej araba", box: [68.5, 18.8, 7, 5] },
+    { id: "kirmizi_araba", label: "Kırmızı araba", box: [75.9, 19, 8.5, 5] },
+    { id: "gozluk", label: "Güneş gözlüğü", box: [20.6, 40.8, 10.9, 7.2] },
+    { id: "kahve_cuzdan", label: "Kahverengi cüzdan", box: [32, 32.7, 8.5, 14.8] },
+    { id: "siyah_cuzdan", label: "Siyah cüzdan", box: [47.2, 29.6, 8.7, 12.6] },
+    { id: "makine", label: "Fotoğraf makinesi", box: [59.5, 34.5, 7.8, 13] },
+    { id: "tarak", label: "Krem tarak", box: [63.6, 42.6, 7.7, 5.4] },
+    { id: "tornavida", label: "Büyük sarı tornavida", box: [11, 64.6, 8.5, 8.5] },
+    { id: "canta", label: "Sarı çanta", box: [70, 29, 9.5, 11.7] },
+    { id: "gri_eldiven", label: "Gri eldiven", box: [7, 84, 15, 12] },
+    { id: "krem_eldiven", label: "Krem eldiven", box: [7, 31.8, 14.2, 16] },
+    { id: "yesil_kutu", label: "Küçük yeşil kutu", box: [82, 35.9, 3.3, 5.8] },
+    { id: "kus_evi", label: "Kuş evi biblosu", box: [19.5, 56, 5.3, 17] },
+    { id: "pembe_araba", label: "Pembe araba", box: [33, 67.3, 8, 5.7] },
+    { id: "kirmizi_fener", label: "Kırmızı el feneri", box: [67, 68.2, 8.5, 4.6] },
+    { id: "simsek", label: "Şimşekli kutu", box: [75.5, 61.4, 4.5, 10.3] },
+    { id: "karabina", label: "Karabina", box: [72, 90.8, 6.2, 6] },
+    { id: "kibrit", label: "Kırmızı kibrit kutusu", box: [42.5, 91, 8, 6] },
+    { id: "tabaka", label: "Sarı tabaka", box: [65, 63, 6.8, 6.5] },
+    { id: "caki", label: "Kırmızı çakı", box: [17.2, 56, 3.2, 9] },
+  ],
+  finalSpots: [
+    { id: "kirmizi_teneke", box: [85.7, 14.8, 7.5, 9], prompt: "Kanıt üst rafın sağındaki kırmızı sarı tenekede olabilir." },
+    { id: "sari_teneke", box: [34.2, 85.6, 7.5, 9.4], prompt: "Kanıt alt raftaki anahtarlı sarı tenekede olabilir." },
+    { id: "gumus_kutu", box: [86, 90, 7.5, 7], prompt: "Kanıt alt rafın sağındaki gümüş kutuda olabilir." },
+  ],
+  mask: {
+    width: 688,
+    height: 384,
+    ids: ["sise", "kavanoz", "surahi", "bej_araba", "kirmizi_araba", "gozluk", "kahve_cuzdan", "siyah_cuzdan", "makine", "tarak", "tornavida", "canta", "gri_eldiven", "krem_eldiven", "yesil_kutu", "kus_evi", "pembe_araba", "kirmizi_fener", "simsek", "karabina", "kibrit", "tabaka", "caki", "kirmizi_teneke", "sari_teneke", "gumus_kutu"],
+    data: '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',
+  },
+};

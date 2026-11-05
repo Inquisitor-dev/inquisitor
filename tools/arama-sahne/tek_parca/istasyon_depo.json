@@ -1,0 +1,282 @@
+{
+ "durum": "READY", "gorsel": "istasyon_depo.webp",
+ "evren": "modern",
+ "mekan": "farm",
+ "alan": "storeroom",
+ "varyant": "t1",
+ "yer": "arka depodaki dolabın raflarında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "oglan",
+   "ad": "Tulumlu oğlan biblosu",
+   "kutu": [
+    34.2,
+    11.7,
+    2.8,
+    12
+   ]
+  },
+  {
+   "id": "kopek",
+   "ad": "Köpek biblosu",
+   "kutu": [
+    36.7,
+    16,
+    3.3,
+    8
+   ]
+  },
+  {
+   "id": "adam",
+   "ad": "Yaşlı adam biblosu",
+   "kutu": [
+    40,
+    9,
+    3,
+    14.7
+   ]
+  },
+  {
+   "id": "kiz",
+   "ad": "Kız biblosu",
+   "kutu": [
+    43,
+    13.5,
+    2.4,
+    10.5
+   ]
+  },
+  {
+   "id": "heykelcik",
+   "ad": "Altın heykelcik",
+   "kutu": [
+    45.2,
+    12.5,
+    3,
+    11.5
+   ]
+  },
+  {
+   "id": "gozluk",
+   "ad": "Siyah gözlük",
+   "kutu": [
+    23,
+    17.5,
+    7.7,
+    6
+   ]
+  },
+  {
+   "id": "acacak",
+   "ad": "Şişe açacağı",
+   "kutu": [
+    58,
+    9,
+    3.3,
+    15
+   ]
+  },
+  {
+   "id": "deri_eldiven",
+   "ad": "Deri eldiven",
+   "kutu": [
+    20.7,
+    15,
+    14.5,
+    19.5
+   ]
+  },
+  {
+   "id": "beyaz_eldiven",
+   "ad": "Beyaz eldiven",
+   "kutu": [
+    63.5,
+    22.7,
+    7,
+    14
+   ]
+  },
+  {
+   "id": "yesil_fener",
+   "ad": "Yeşil el feneri",
+   "kutu": [
+    63.5,
+    18,
+    9.5,
+    6
+   ]
+  },
+  {
+   "id": "kirmizi_fener",
+   "ad": "Kırmızı el feneri",
+   "kutu": [
+    58,
+    28.5,
+    7.5,
+    7
+   ]
+  },
+  {
+   "id": "turuncu_fener",
+   "ad": "Turuncu el feneri",
+   "kutu": [
+    48.7,
+    62.8,
+    8.7,
+    10.7
+   ]
+  },
+  {
+   "id": "gumus_fener",
+   "ad": "Gümüş el feneri",
+   "kutu": [
+    74,
+    9.8,
+    2.6,
+    14
+   ]
+  },
+  {
+   "id": "caki",
+   "ad": "Kırmızı saplı çakı",
+   "kutu": [
+    4.7,
+    45,
+    15,
+    6
+   ]
+  },
+  {
+   "id": "spatula",
+   "ad": "Sarı saplı spatula",
+   "kutu": [
+    44.2,
+    81.6,
+    8.3,
+    15.5
+   ]
+  },
+  {
+   "id": "makas",
+   "ad": "Kırmızı saplı makas",
+   "kutu": [
+    19.5,
+    78,
+    6,
+    11
+   ]
+  },
+  {
+   "id": "sari_top",
+   "ad": "Sarı top",
+   "kutu": [
+    42.2,
+    62.3,
+    3.5,
+    6.7
+   ]
+  },
+  {
+   "id": "turkuaz_top",
+   "ad": "Turkuaz top",
+   "kutu": [
+    21.5,
+    64.5,
+    4,
+    7
+   ]
+  },
+  {
+   "id": "cizgili_kutu",
+   "ad": "Kırmızı çizgili kutu",
+   "kutu": [
+    79.7,
+    66.4,
+    4.3,
+    7.2
+   ]
+  },
+  {
+   "id": "mavi_kilif",
+   "ad": "Mavi kılıf",
+   "kutu": [
+    9,
+    59,
+    8,
+    6
+   ]
+  },
+  {
+   "id": "cuzdan",
+   "ad": "Siyah cüzdan",
+   "kutu": [
+    25.2,
+    66,
+    9.5,
+    7.5
+   ]
+  },
+  {
+   "id": "yuvarlak_kutu",
+   "ad": "Kırmızı yuvarlak kutu",
+   "kutu": [
+    40,
+    85.6,
+    5,
+    8
+   ]
+  },
+  {
+   "id": "pirinc_teneke",
+   "ad": "Pirinç teneke",
+   "kutu": [
+    52.5,
+    5.8,
+    4.8,
+    14.8
+   ]
+  },
+  {
+   "id": "tel",
+   "ad": "Tel yumağı",
+   "kutu": [
+    74.5,
+    83,
+    10.5,
+    17
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "sepet",
+   "yonlendirme": "Kanıt ikinci rafın sağındaki hasır sepette olabilir.",
+   "kutu": [
+    88.5,
+    36,
+    7,
+    12.5
+   ]
+  },
+  {
+   "id": "sari_kutu",
+   "yonlendirme": "Kanıt ikinci raftaki sarı teneke kutuda olabilir.",
+   "kutu": [
+    20.5,
+    38.5,
+    7,
+    10
+   ]
+  },
+  {
+   "id": "kirmizi_kutu",
+   "yonlendirme": "Kanıt üçüncü raftaki kırmızı kutuda olabilir.",
+   "kutu": [
+    34.5,
+    60.5,
+    6.5,
+    10
+   ]
+  }
+ ]
+}

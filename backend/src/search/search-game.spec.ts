@@ -190,6 +190,26 @@ describe('targetPool', () => {
     expect(new Set(draw(visible, 'hard', 'a')).size).toBe(10);
   });
 
+  it('maskeli sahnede maskede büyük kalan nesne görünür sayılır', () => {
+    // o0 bir hücre, o11 on iki hücre kaplar
+    const sizes = scene.objects.flatMap((_, i) =>
+      new Array<number>(i + 1).fill(i + 1),
+    );
+    const cells = Uint8Array.from(sizes);
+    const masked: SearchSceneDef = {
+      ...scene,
+      mask: {
+        width: cells.length,
+        height: 1,
+        ids: scene.objects.map((o) => o.id),
+        data: gzipSync(cells).toString('base64'),
+      },
+    };
+    expect(targetPool(masked, 'easy', 6)).toEqual(ids(6, 11).reverse());
+    expect(targetPool(masked, 'hard', 6)).toEqual(ids(0, 5).reverse());
+    expect(targetPool(masked, 'medium', 8)).toHaveLength(12);
+  });
+
   it('görünürlüğü olmayan sahnede hepsinden seçer, liste değişmez', () => {
     expect(targetPool(scene, 'easy', 6)).toHaveLength(12);
     expect(draw({ ...scene }, 'easy', 's1')).toEqual(start('easy').targets);

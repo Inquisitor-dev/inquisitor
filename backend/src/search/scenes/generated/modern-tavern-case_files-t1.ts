@@ -8,7 +8,7 @@ export const SCENE: SearchSceneDef = {
   variant: "t1",
   clueSpot: "şerifin masasındaki yığında, eşyaların arasında",
   image: "/search-scenes/modern/tavern/case_files/t1.webp",
-  status: 'DRAFT',
+  status: 'READY',
   objects: [
     { id: "radyo", label: "Radyo", box: [26, 5.5, 11.8, 17.8] },
     { id: "spor_ayakkabi", label: "Spor ayakkabı", box: [40, 6.5, 11.3, 19.2] },

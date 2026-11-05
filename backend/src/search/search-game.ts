@@ -101,9 +101,24 @@ function shuffled<T>(items: T[], rng: () => number): T[] {
   return copy;
 }
 
+// Nesnenin ne kadar kolay görüldüğü: yazılmışsa görünürlüğü, yoksa maskede kapladığı alan (öndeki nesnelerin
+// kapattığı kısım sayılmaz). İkisi de yoksa bilinmez.
+function visibilityOf(scene: SearchSceneDef): Map<string, number> | null {
+  if (scene.objects.every((o) => o.visibility !== undefined)) {
+    return new Map(scene.objects.map((o) => [o.id, o.visibility!]));
+  }
+  if (!scene.mask) return null;
+  const counts = new Map<string, number>();
+  for (const cell of maskCells(scene.mask)) {
+    const id = scene.mask.ids[cell - 1];
+    if (id !== undefined) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return counts;
+}
+
 // Hedeflerin seçileceği nesneler. Görünürlüğü bilinen sahnede kolay zorluk en görünür yarıdan, zor en az görünür
 // yarıdan seçer, orta hepsinden; sıralamaya bakıldığı için her sahnede yeterli hedef kalır. Elle işaretlenmiş
-// sahnede görünürlük yoktur, hepsinden seçilir. Yalnızca zorluğa bağlıdır, vakaya bakmaz.
+// maskesiz sahnede görünürlük yoktur, hepsinden seçilir. Yalnızca zorluğa bağlıdır, vakaya bakmaz.
 export function targetPool(
   scene: SearchSceneDef,
   difficulty: string,
@@ -111,10 +126,10 @@ export function targetPool(
 ): string[] {
   const all = scene.objects.map((o) => o.id);
   if (difficulty !== 'easy' && difficulty !== 'hard') return all;
-  if (scene.objects.some((o) => o.visibility === undefined)) return all;
-  const sorted = [...scene.objects]
-    .sort((a, b) => b.visibility! - a.visibility!)
-    .map((o) => o.id);
+  const visibility = visibilityOf(scene);
+  if (!visibility) return all;
+  const seenOf = (id: string) => visibility.get(id) ?? 0;
+  const sorted = [...all].sort((a, b) => seenOf(b) - seenOf(a));
   const half = Math.max(count, Math.ceil(sorted.length / 2));
   return difficulty === 'easy' ? sorted.slice(0, half) : sorted.slice(-half);
 }

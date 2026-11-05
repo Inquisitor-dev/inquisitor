@@ -1,0 +1,272 @@
+{
+ "durum": "READY", "gorsel": "bar_depo.webp",
+ "evren": "modern",
+ "mekan": "clinic",
+ "alan": "storage_room",
+ "varyant": "t1",
+ "yer": "bar deposundaki dolabın raflarında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "sise",
+   "ad": "Pirinç şişe",
+   "kutu": [
+    4.7,
+    5.4,
+    3.8,
+    18.4
+   ]
+  },
+  {
+   "id": "kavanoz",
+   "ad": "Büyük cam kavanoz",
+   "kutu": [
+    33.6,
+    9,
+    5.7,
+    14.8
+   ]
+  },
+  {
+   "id": "surahi",
+   "ad": "Çiçekli sürahi",
+   "kutu": [
+    60.2,
+    12,
+    6.7,
+    12
+   ]
+  },
+  {
+   "id": "bej_araba",
+   "ad": "Bej araba",
+   "kutu": [
+    68.5,
+    18.8,
+    7,
+    5
+   ]
+  },
+  {
+   "id": "kirmizi_araba",
+   "ad": "Kırmızı araba",
+   "kutu": [
+    75.9,
+    19,
+    8.5,
+    5
+   ]
+  },
+  {
+   "id": "gozluk",
+   "ad": "Güneş gözlüğü",
+   "kutu": [
+    20.6,
+    40.8,
+    10.9,
+    7.2
+   ]
+  },
+  {
+   "id": "kahve_cuzdan",
+   "ad": "Kahverengi cüzdan",
+   "kutu": [
+    32,
+    32.7,
+    8.5,
+    14.8
+   ]
+  },
+  {
+   "id": "siyah_cuzdan",
+   "ad": "Siyah cüzdan",
+   "kutu": [
+    47.2,
+    29.6,
+    8.7,
+    12.6
+   ]
+  },
+  {
+   "id": "makine",
+   "ad": "Fotoğraf makinesi",
+   "kutu": [
+    59.5,
+    34.5,
+    7.8,
+    13
+   ]
+  },
+  {
+   "id": "tarak",
+   "ad": "Krem tarak",
+   "kutu": [
+    63.6,
+    42.6,
+    7.7,
+    5.4
+   ]
+  },
+  {
+   "id": "tornavida",
+   "ad": "Büyük sarı tornavida",
+   "kutu": [
+    11,
+    64.6,
+    8.5,
+    8.5
+   ]
+  },
+  {
+   "id": "canta",
+   "ad": "Sarı çanta",
+   "kutu": [
+    70,
+    29,
+    9.5,
+    11.7
+   ]
+  },
+  {
+   "id": "gri_eldiven",
+   "ad": "Gri eldiven",
+   "kutu": [
+    7,
+    84,
+    15,
+    12
+   ]
+  },
+  {
+   "id": "krem_eldiven",
+   "ad": "Krem eldiven",
+   "kutu": [
+    7,
+    31.8,
+    14.2,
+    16
+   ]
+  },
+  {
+   "id": "yesil_kutu",
+   "ad": "Küçük yeşil kutu",
+   "kutu": [
+    82,
+    35.9,
+    3.3,
+    5.8
+   ]
+  },
+  {
+   "id": "kus_evi",
+   "ad": "Kuş evi biblosu",
+   "kutu": [
+    19.5,
+    56,
+    5.3,
+    17
+   ]
+  },
+  {
+   "id": "pembe_araba",
+   "ad": "Pembe araba",
+   "kutu": [
+    33,
+    67.3,
+    8,
+    5.7
+   ]
+  },
+  {
+   "id": "kirmizi_fener",
+   "ad": "Kırmızı el feneri",
+   "kutu": [
+    67,
+    68.2,
+    8.5,
+    4.6
+   ]
+  },
+  {
+   "id": "simsek",
+   "ad": "Şimşekli kutu",
+   "kutu": [
+    75.5,
+    61.4,
+    4.5,
+    10.3
+   ]
+  },
+  {
+   "id": "karabina",
+   "ad": "Karabina",
+   "kutu": [
+    72,
+    90.8,
+    6.2,
+    6
+   ]
+  },
+  {
+   "id": "kibrit",
+   "ad": "Kırmızı kibrit kutusu",
+   "kutu": [
+    42.5,
+    91,
+    8,
+    6
+   ]
+  },
+  {
+   "id": "tabaka",
+   "ad": "Sarı tabaka",
+   "kutu": [
+    65,
+    63,
+    6.8,
+    6.5
+   ]
+  },
+  {
+   "id": "caki",
+   "ad": "Kırmızı çakı",
+   "kutu": [
+    17.2,
+    56,
+    3.2,
+    9
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "kirmizi_teneke",
+   "yonlendirme": "Kanıt üst rafın sağındaki kırmızı sarı tenekede olabilir.",
+   "kutu": [
+    85.7,
+    14.8,
+    7.5,
+    9
+   ]
+  },
+  {
+   "id": "sari_teneke",
+   "yonlendirme": "Kanıt alt raftaki anahtarlı sarı tenekede olabilir.",
+   "kutu": [
+    34.2,
+    85.6,
+    7.5,
+    9.4
+   ]
+  },
+  {
+   "id": "gumus_kutu",
+   "yonlendirme": "Kanıt alt rafın sağındaki gümüş kutuda olabilir.",
+   "kutu": [
+    86,
+    90,
+    7.5,
+    7
+   ]
+  }
+ ]
+}
