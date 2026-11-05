@@ -1,0 +1,426 @@
+{
+ "gorsel": "arcade_vitrin.webp",
+ "evren": "modern",
+ "mekan": "graveyard",
+ "alan": "prize_counter",
+ "varyant": "t1",
+ "yer": "ödül vitrininin raflarında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "kupa",
+   "ad": "Çatlak kupa",
+   "kutu": [
+    5,
+    7.2,
+    7.8,
+    18.4
+   ]
+  },
+  {
+   "id": "mavi_bardak",
+   "ad": "Mavi bardak",
+   "kutu": [
+    10.2,
+    17.5,
+    5,
+    8.5
+   ]
+  },
+  {
+   "id": "beyzbol_eldiveni",
+   "ad": "Beyzbol eldiveni",
+   "kutu": [
+    16.2,
+    11.7,
+    10.8,
+    14.3
+   ]
+  },
+  {
+   "id": "robot",
+   "ad": "Oyuncak robot",
+   "kutu": [
+    20.2,
+    12,
+    4.8,
+    9.5
+   ]
+  },
+  {
+   "id": "yoyo",
+   "ad": "Yo-yo",
+   "kutu": [
+    32.2,
+    20.6,
+    3.2,
+    5.4
+   ]
+  },
+  {
+   "id": "uzay_tabancasi",
+   "ad": "Uzay tabancası",
+   "kutu": [
+    36,
+    12,
+    8,
+    13
+   ]
+  },
+  {
+   "id": "cuce",
+   "ad": "Bahçe cücesi",
+   "kutu": [
+    43,
+    7.6,
+    4.3,
+    18.4
+   ]
+  },
+  {
+   "id": "kus_evi",
+   "ad": "Kuş evi",
+   "kutu": [
+    69.7,
+    7.2,
+    8,
+    13.4
+   ]
+  },
+  {
+   "id": "araba",
+   "ad": "Gümüş araba",
+   "kutu": [
+    73.2,
+    18.8,
+    7,
+    7.2
+   ]
+  },
+  {
+   "id": "yatik_sise",
+   "ad": "Devrik şişe",
+   "kutu": [
+    79.5,
+    16,
+    8.8,
+    9.5
+   ]
+  },
+  {
+   "id": "yapboz",
+   "ad": "Tahta yapboz",
+   "kutu": [
+    86.5,
+    10,
+    7.5,
+    11.5
+   ]
+  },
+  {
+   "id": "durbun",
+   "ad": "Dürbün",
+   "kutu": [
+    89.7,
+    20.6,
+    7.3,
+    5.2
+   ]
+  },
+  {
+   "id": "kemer",
+   "ad": "Deri kemer",
+   "kutu": [
+    84.7,
+    21.5,
+    5,
+    10.3
+   ]
+  },
+  {
+   "id": "termos",
+   "ad": "Termos",
+   "kutu": [
+    4.4,
+    31,
+    4.4,
+    18
+   ]
+  },
+  {
+   "id": "gemi",
+   "ad": "Oyuncak gemi",
+   "kutu": [
+    25.2,
+    31.4,
+    10.8,
+    12.5
+   ]
+  },
+  {
+   "id": "kumbara",
+   "ad": "Domuz kumbara",
+   "kutu": [
+    34,
+    35.9,
+    6,
+    9.4
+   ]
+  },
+  {
+   "id": "bebek",
+   "ad": "Sandalyedeki bebek",
+   "kutu": [
+    56.3,
+    29,
+    9.2,
+    19.7
+   ]
+  },
+  {
+   "id": "slinky",
+   "ad": "Yay oyuncak",
+   "kutu": [
+    63.8,
+    40.4,
+    6.7,
+    9
+   ]
+  },
+  {
+   "id": "cizme",
+   "ad": "Lastik çizme",
+   "kutu": [
+    68.7,
+    33.6,
+    8.5,
+    15.2
+   ]
+  },
+  {
+   "id": "abakus",
+   "ad": "Abaküs",
+   "kutu": [
+    73.8,
+    30.5,
+    9,
+    17
+   ]
+  },
+  {
+   "id": "pusula",
+   "ad": "Pusula",
+   "kutu": [
+    89.2,
+    43.5,
+    2.8,
+    5.4
+   ]
+  },
+  {
+   "id": "flut",
+   "ad": "Tahta flüt",
+   "kutu": [
+    47.7,
+    46.2,
+    11.9,
+    4.4
+   ]
+  },
+  {
+   "id": "samdan",
+   "ad": "Şamdan",
+   "kutu": [
+    3.3,
+    56.5,
+    4.8,
+    14.8
+   ]
+  },
+  {
+   "id": "satranc",
+   "ad": "Satranç takımı",
+   "kutu": [
+    6.8,
+    61.9,
+    13.2,
+    10.7
+   ]
+  },
+  {
+   "id": "tren",
+   "ad": "Oyuncak tren",
+   "kutu": [
+    38,
+    62.8,
+    6.5,
+    9
+   ]
+  },
+  {
+   "id": "demlik",
+   "ad": "Beyaz demlik",
+   "kutu": [
+    50.2,
+    61,
+    8,
+    10.3
+   ]
+  },
+  {
+   "id": "bloklar",
+   "ad": "Oyuncak bloklar",
+   "kutu": [
+    62.7,
+    64.1,
+    7,
+    8
+   ]
+  },
+  {
+   "id": "sulama_kabi",
+   "ad": "Sulama kabı",
+   "kutu": [
+    64.2,
+    52.5,
+    10.5,
+    17.5
+   ],
+   "parcalar": [
+    [
+     64.2,
+     56,
+     5.3,
+     11
+    ],
+    [
+     68,
+     52.5,
+     6.7,
+     17.5
+    ]
+   ]
+  },
+  {
+   "id": "zil",
+   "ad": "Pirinç zil",
+   "kutu": [
+    81.7,
+    65,
+    3.5,
+    6.7
+   ]
+  },
+  {
+   "id": "trompet",
+   "ad": "Trompet",
+   "kutu": [
+    17.5,
+    74,
+    14.8,
+    12.5
+   ]
+  },
+  {
+   "id": "ucak",
+   "ad": "Tahta uçak",
+   "kutu": [
+    27.7,
+    87.4,
+    8.2,
+    9
+   ]
+  },
+  {
+   "id": "kamyon",
+   "ad": "Oyuncak kamyon",
+   "kutu": [
+    37,
+    85.2,
+    9.8,
+    8.5
+   ]
+  },
+  {
+   "id": "gitar",
+   "ad": "Gitar",
+   "kutu": [
+    46,
+    68.6,
+    13.3,
+    26.4
+   ]
+  },
+  {
+   "id": "asker",
+   "ad": "Kurşun asker",
+   "kutu": [
+    53.7,
+    84.3,
+    2.3,
+    12
+   ]
+  },
+  {
+   "id": "vantilator",
+   "ad": "Vantilatör",
+   "kutu": [
+    66.5,
+    74.4,
+    7,
+    17
+   ]
+  },
+  {
+   "id": "at",
+   "ad": "Oyuncak at",
+   "kutu": [
+    74,
+    75.3,
+    9,
+    14.8
+   ]
+  },
+  {
+   "id": "tava",
+   "ad": "Tava",
+   "kutu": [
+    81.2,
+    76.2,
+    8.5,
+    18.4
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "beslenme_cantasi",
+   "yonlendirme": "Kanıt üst raftaki metal beslenme çantasında olabilir.",
+   "kutu": [
+    56,
+    6.7,
+    13.2,
+    18.8
+   ]
+  },
+  {
+   "id": "evrak_cantasi",
+   "yonlendirme": "Kanıt alt raftaki deri evrak çantasında olabilir.",
+   "kutu": [
+    33,
+    75.8,
+    9.7,
+    14.2
+   ]
+  },
+  {
+   "id": "tahta_kasa",
+   "yonlendirme": "Kanıt üçüncü rafın sağındaki tahta kasada olabilir.",
+   "kutu": [
+    87.5,
+    60,
+    8.7,
+    11.7
+   ]
+  }
+ ]
+}
