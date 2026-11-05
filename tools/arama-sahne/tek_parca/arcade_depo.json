@@ -1,0 +1,172 @@
+{
+ "gorsel": "arcade_depo.webp",
+ "evren": "modern",
+ "mekan": "graveyard",
+ "alan": "back_room",
+ "varyant": "t1",
+ "yer": "arka odadaki yığında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "sari_fener",
+   "ad": "Sarı el feneri",
+   "kutu": [
+    43.3,
+    32,
+    9,
+    11.2
+   ]
+  },
+  {
+   "id": "dinozor",
+   "ad": "Oyuncak dinozor",
+   "kutu": [
+    51.5,
+    30.5,
+    7.8,
+    13.5
+   ]
+  },
+  {
+   "id": "radyo",
+   "ad": "Radyo",
+   "kutu": [
+    78.2,
+    38,
+    15.8,
+    25
+   ]
+  },
+  {
+   "id": "mavi_kasa",
+   "ad": "Mavi kasa",
+   "kutu": [
+    64.7,
+    17.5,
+    17.6,
+    34
+   ]
+  },
+  {
+   "id": "jeton_kapagi",
+   "ad": "Jeton kapağı",
+   "kutu": [
+    22.2,
+    44,
+    11.8,
+    35
+   ]
+  },
+  {
+   "id": "yoyo",
+   "ad": "Kırmızı yo-yo",
+   "kutu": [
+    57.5,
+    65,
+    3.9,
+    7.3
+   ]
+  },
+  {
+   "id": "kova",
+   "ad": "Paslı kova",
+   "kutu": [
+    87.7,
+    79,
+    12.3,
+    21
+   ]
+  },
+  {
+   "id": "semsiye",
+   "ad": "Şemsiye",
+   "kutu": [
+    79.5,
+    2.7,
+    11.8,
+    40
+   ]
+  },
+  {
+   "id": "cips",
+   "ad": "Cips paketi",
+   "kutu": [
+    61,
+    40,
+    6.5,
+    13
+   ]
+  },
+  {
+   "id": "disli",
+   "ad": "Dişli",
+   "kutu": [
+    33,
+    73.5,
+    4,
+    7.2
+   ]
+  },
+  {
+   "id": "sari_dugme",
+   "ad": "Sarı düğme",
+   "kutu": [
+    32.5,
+    49,
+    2.3,
+    4
+   ]
+  },
+  {
+   "id": "mavi_dugme",
+   "ad": "Mavi düğme",
+   "kutu": [
+    35,
+    53,
+    2.3,
+    3.6
+   ]
+  },
+  {
+   "id": "metal_panel",
+   "ad": "Metal panel",
+   "kutu": [
+    2.7,
+    6.7,
+    5.7,
+    17
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "parca_kolisi",
+   "yonlendirme": "Kanıt sağ alttaki parça dolu kolide olabilir.",
+   "kutu": [
+    67,
+    53.8,
+    23.7,
+    35.4
+   ]
+  },
+  {
+   "id": "bez_torba",
+   "yonlendirme": "Kanıt sol alttaki bez torbada olabilir.",
+   "kutu": [
+    1.5,
+    76.7,
+    10.5,
+    23.3
+   ]
+  },
+  {
+   "id": "sirt_cantasi",
+   "yonlendirme": "Kanıt sağ üstteki sırt çantasında olabilir.",
+   "kutu": [
+    89,
+    6.5,
+    10,
+    19
+   ]
+  }
+ ]
+}
