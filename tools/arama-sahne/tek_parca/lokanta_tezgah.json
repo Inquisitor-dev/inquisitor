@@ -1,0 +1,236 @@
+{
+ "gorsel": "lokanta_tezgah.webp",
+ "evren": "modern",
+ "mekan": "mill",
+ "alan": "order_tickets",
+ "varyant": "t1",
+ "yer": "lokanta tezgâhındaki yığında, eşyaların arasında",
+ "nesneler": [
+  {
+   "id": "huni",
+   "ad": "Huni",
+   "kutu": [
+    22.5,
+    4.9,
+    9.5,
+    12.5
+   ]
+  },
+  {
+   "id": "sari_telefon",
+   "ad": "Sarı telefon",
+   "kutu": [
+    0,
+    74,
+    10.8,
+    21.5
+   ]
+  },
+  {
+   "id": "gri_telefon",
+   "ad": "Gri telefon",
+   "kutu": [
+    74.5,
+    17.5,
+    8,
+    17.5
+   ]
+  },
+  {
+   "id": "kirmizi_yoyo",
+   "ad": "Kırmızı yo-yo",
+   "kutu": [
+    35.7,
+    87.9,
+    4.6,
+    9.4
+   ]
+  },
+  {
+   "id": "yesil_yoyo",
+   "ad": "Yeşil yo-yo",
+   "kutu": [
+    62,
+    17,
+    3.5,
+    5.8
+   ]
+  },
+  {
+   "id": "araba",
+   "ad": "Kırmızı araba",
+   "kutu": [
+    41.2,
+    77.1,
+    8.3,
+    8.9
+   ]
+  },
+  {
+   "id": "cuzdan",
+   "ad": "Deri cüzdan",
+   "kutu": [
+    23.7,
+    62.8,
+    10.8,
+    15.6
+   ]
+  },
+  {
+   "id": "caydanlik",
+   "ad": "Çaydanlık",
+   "kutu": [
+    78.2,
+    55.2,
+    12.3,
+    22.4
+   ]
+  },
+  {
+   "id": "yesil_zimba",
+   "ad": "Yeşil zımba",
+   "kutu": [
+    80.5,
+    39.9,
+    9,
+    12.1
+   ]
+  },
+  {
+   "id": "krem_zimba",
+   "ad": "Krem zımba",
+   "kutu": [
+    16,
+    74,
+    11,
+    12.5
+   ]
+  },
+  {
+   "id": "cirpici",
+   "ad": "Tel çırpıcı",
+   "kutu": [
+    76.7,
+    76.7,
+    9.5,
+    23.3
+   ]
+  },
+  {
+   "id": "bere",
+   "ad": "Yün bere",
+   "kutu": [
+    33.7,
+    49.8,
+    8.8,
+    9.9
+   ]
+  },
+  {
+   "id": "semsiye",
+   "ad": "Şemsiye",
+   "kutu": [
+    13.2,
+    10,
+    22,
+    53
+   ],
+   "parcalar": [
+    [
+     13.2,
+     10,
+     4.5,
+     11
+    ],
+    [
+     16.3,
+     20,
+     19,
+     43
+    ]
+   ]
+  },
+  {
+   "id": "cep_saati",
+   "ad": "Cep saati",
+   "kutu": [
+    23.5,
+    55.2,
+    5.3,
+    8.5
+   ]
+  },
+  {
+   "id": "tuzluk_standi",
+   "ad": "Tuzluk standı",
+   "kutu": [
+    69.7,
+    45.3,
+    10.6,
+    16
+   ]
+  },
+  {
+   "id": "yesil_top",
+   "ad": "Yeşil top",
+   "kutu": [
+    39.7,
+    59.6,
+    3.3,
+    5.4
+   ]
+  },
+  {
+   "id": "tepsi",
+   "ad": "Bölmeli tepsi",
+   "kutu": [
+    61.7,
+    22.9,
+    11.5,
+    13.4
+   ]
+  },
+  {
+   "id": "tabak",
+   "ad": "Tabak",
+   "kutu": [
+    0,
+    22,
+    3.8,
+    12.4
+   ]
+  }
+ ],
+ "asil": [
+  {
+   "id": "tahta_sandik",
+   "yonlendirme": "Kanıt ortadaki tahta sandıkta olabilir.",
+   "kutu": [
+    37.2,
+    63.2,
+    13,
+    13.4
+   ]
+  },
+  {
+   "id": "renkli_teneke",
+   "yonlendirme": "Kanıt ortadaki kırmızı yeşil teneke kutuda olabilir.",
+   "kutu": [
+    55,
+    24.2,
+    7.5,
+    16
+   ]
+  },
+  {
+   "id": "alt_kutu",
+   "yonlendirme": "Kanıt en alttaki açık tahta kutuda olabilir.",
+   "kutu": [
+    50.5,
+    90,
+    11.5,
+    10
+   ]
+  }
+ ]
+}
